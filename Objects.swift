@@ -52,11 +52,8 @@ class Ship: SKSpriteNode{
 }
 
 
-class Planet: SKSpriteNode{
-    var radius: CGFloat = 0
-    var mass: CGFloat = 0
-    var angularVelocity: CGFloat = 0
-    func update(){
+class Planet: Ship{
+    override func update(){
         self.zRotation += angularVelocity
     }
     func gravity(_ n: Ship) -> Bool{
@@ -86,25 +83,20 @@ class Planet: SKSpriteNode{
         }
         return false
     }
-    
-    init(radius: CGFloat, mass: CGFloat = -1){
-        super.init(texture: SKTexture(), color: UIColor.clear, size: CGSize(width: radius * 2, height: radius * 2))
-        self.body(radius: radius, mass: mass)
+}
+class Ray{
+    var position: CGPoint
+    var direction: CGFloat
+    init(position: CGPoint, direction: CGFloat){
+        self.position = position
+        self.direction = direction
     }
-    func body(radius: CGFloat, mass: CGFloat = -1){
-        self.radius = radius
-        var m = mass
-        if mass == -1{m = radius * radius}
-        self.mass = m
-        self.size.width = radius * 2
-        self.size.height = radius * 2
-    }
-    
-    convenience init(){
-        self.init(radius: 0)
-    }
-    
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    func intersects(_ n: Ship) -> Bool{
+        let x = n.position.x - self.position.x
+        let y = n.position.y - self.position.y
+        let ang = atan2(y, x)
+        let width = atan(n.radius / sqrt(x*x + y*y))
+        let a = abs(ang - self.direction)
+        return a < width || a > .pi*2 - width
     }
 }
