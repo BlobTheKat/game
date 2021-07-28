@@ -29,29 +29,28 @@ class Play: SKScene{
     }
     
     func spaceUpdate(){
-        return
-        if thrust{
-            ship.velocity.dx += -sin(ship.zRotation) / 50
-            ship.velocity.dy += cos(ship.zRotation) / 50
+        var landed = false
+        for planet in planets{
+            if !landed{
+                landed = planet.gravity(ship)
+            }
+            planet.update()
         }
-        if thrustRight{
+        if thrust{
+            ship.velocity.dx += -sin(ship.zRotation) / 30
+            ship.velocity.dy += cos(ship.zRotation) / 30
+        }
+        if thrustRight && !landed{
             ship.angularVelocity -= 0.002
         }
-        if thrustLeft{
+        if thrustLeft && !landed{
             ship.angularVelocity += 0.002
         }
         ship.angularVelocity *= 0.95
-        
-        for planet in planets{
-            planet.gravity(ship)
-        }
         ship.update()
        
     }
     override func didMove(to view: SKView) {
-        
-        
-  
         cam.position = pos(mx: 0.0, my: 0.0)
         self.addChild(cam)
         self.camera = cam
@@ -66,27 +65,19 @@ class Play: SKScene{
         let planet1 = Planet(radius: 150)
         planets.append(planet1)
         self.addChild(planet1)
-        let planet2 = Planet(radius: 300, mass: 500)
+        let planet2 = Planet(radius: 300)
         planets.append(planet2)
         self.addChild(planet2)
         planet2.position = CGPoint(x: 800, y: 300)
         self.addChild(ship)
     }
-    
     func startGame(){
         self.tapToStart.run(SKAction.fadeOut(withDuration: 0.3).ease(.easeOut))
         self.tapToStart.run(SKAction.scale(by: 1.5, duration: 0.2))
     }
-    
-    
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for touch in touches{
-            
-            if tapToStart.contains(touch.location(in: cam)){//TAP TO START HAS BEEN PRESSED
-                startGame()
-            }
-            
-            
+    override func nodeDown(_ node: SKNode, at _: CGPoint) {
+        if node == tapToStart{
+            startGame()
         }
     }
     override func keyDown(_ key: UIKeyboardHIDUsage) {
@@ -127,5 +118,3 @@ class Play: SKScene{
         spaceUpdate()
     }
 }
-
-print("hi")

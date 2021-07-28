@@ -8,7 +8,7 @@
 import Foundation
 import SpriteKit
 
-let G: CGFloat = 0.04
+let G: CGFloat = 0.0001
 
 struct bitmask{
     static let ship: UInt32 = 1
@@ -23,11 +23,7 @@ class Ship: SKSpriteNode{
     var angularVelocity: CGFloat = 0
     init(radius: CGFloat, mass: CGFloat = -1, texture: SKTexture = SKTexture()){
         super.init(texture: texture, color: UIColor.clear, size: CGSize(width: radius * 2, height: radius * 2))
-        var m = mass
-        if m == -1{
-            m = radius * radius
-        }
-        self.body(radius: radius, mass: m)
+        self.body(radius: radius, mass: mass)
     }
     func update(){
         position.x += velocity.dx
@@ -35,7 +31,11 @@ class Ship: SKSpriteNode{
         zRotation += angularVelocity
     }
     func body(radius: CGFloat, mass: CGFloat){
-        self.mass = mass
+        var m = mass
+        if m == -1{
+            m = radius * radius
+        }
+        self.mass = m
         self.radius = radius
         self.size.width = radius * 2
         self.size.height = radius * 2
@@ -56,13 +56,35 @@ class Planet: SKSpriteNode{
     var radius: CGFloat = 0
     var mass: CGFloat = 0
     var angularVelocity: CGFloat = 0
-    func gravity(_ n: Ship){
+    func update(){
+        self.zRotation += angularVelocity
+    }
+    func gravity(_ n: Ship) -> Bool{
         let mass: CGFloat = self.physicsBody?.mass ?? self.size.width * self.size.height / 4
         let x = n.position.x - self.position.x
         let y = n.position.y - self.position.y
-        let m = -(mass*G)/(x * x + y * y)
-        n.velocity.dx += x * m
-        n.velocity.dy += y * m
+        let d = (x * x + y * y)
+        var r = self.radius * self.radius - n.radius * n.radius
+        r += (2 * sqrt(r) + n.radius) * n.radius
+        if d < r - 1{
+            //collided
+            let m = sqrt(r / d) - 1
+            n.position.x += x * m
+            n.position.y += y * m
+            n.velocity.dx = 0
+            n.velocity.dy = 0
+            n.angularVelocity = 0
+            n.zRotation = atan2(y, x) - .pi/2
+            return true
+        }else if d < r{
+            //resting on planet
+            return true
+        }else{
+            let m = -(mass*G)/d
+            n.velocity.dx += x * m
+            n.velocity.dy += y * m
+        }
+        return false
     }
     
     init(radius: CGFloat, mass: CGFloat = -1){
@@ -70,14 +92,12 @@ class Planet: SKSpriteNode{
         self.body(radius: radius, mass: mass)
     }
     func body(radius: CGFloat, mass: CGFloat = -1){
+        self.radius = radius
         var m = mass
         if mass == -1{m = radius * radius}
-        self.physicsBody = SKPhysicsBody(circleOfRadius: radius)
-        self.physicsBody!.mass = m
-        self.physicsBody!.isDynamic = false
-        self.physicsBody!.categoryBitMask = bitmask.planet
-        self.physicsBody!.collisionBitMask = bitmask.ship
-        self.physicsBody!.restitution = 0
+        self.mass = m
+        self.size.width = radius * 2
+        self.size.height = radius * 2
     }
     
     convenience init(){
