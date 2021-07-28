@@ -70,6 +70,15 @@ class Play: SKScene{
         self.addChild(planet2)
         planet2.position = CGPoint(x: 800, y: 300)
         self.addChild(ship)
+        let _ = interval(3) {
+            
+            self.tapToStart.run(SKAction.moveBy(x: 0, y: 10, duration: 2).ease(.easeOut))
+        }
+        let _ = timeout(1.5) {
+            let _ = self.interval(3){
+                self.tapToStart.run(SKAction.moveBy(x: 0, y: -10, duration: 2).ease(.easeOut))
+            }
+        }
     }
     func startGame(){
         self.tapToStart.run(SKAction.fadeOut(withDuration: 0.3).ease(.easeOut))
