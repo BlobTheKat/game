@@ -127,3 +127,5 @@ class Play: SKScene{
         spaceUpdate()
     }
 }
+
+print("hi")
