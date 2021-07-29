@@ -20,16 +20,19 @@ class Play: SKScene{
     var particles: [Particle] = []
     let tapToStart =  SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular") // TAP TO START LABEL
     var camOffset = CGPoint(x: 0, y: 0.2)
-    
+    var vel = CGFloat()
     
     var started = false
     func cameraUpdate(){
         let x = ship.position.x - cam.position.x - camOffset.x * self.size.width * cam.xScale
         let y = ship.position.y - cam.position.y - camOffset.y * self.size.height * cam.yScale
-        
-        cam.position.x += x / 100
-        cam.position.y += y / 100
-        
+        cam.position.x += x / 50
+        cam.position.y += y / 50
+        if started{
+            let tg = max(pow(vel+36,0.6)/50,0.5) - cam.xScale
+            cam.xScale += tg / 50
+            cam.yScale += tg / 50
+        }
     }
     let pos = SKLabelNode()
     func spaceUpdate(){
@@ -64,7 +67,8 @@ class Play: SKScene{
             }
             a += 1
         }
-        pos.text = "x: \(ship.position.x.rounded() + 0), y: \(ship.position.y.rounded() + 0)"
+        let vel = (CGFloat(sqrt(ship.velocity.dx*ship.velocity.dx+ship.velocity.dy*ship.velocity.dy))*CGFloat(gameFPS))
+        pos.text = "x: \(ship.position.x.rounded() + 0), y: \(ship.position.y.rounded() + 0), v: \(vel.rounded())"
     }
     override func didMove(to view: SKView) {
         cam.position = CGPoint.zero

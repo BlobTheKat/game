@@ -39,6 +39,8 @@ class Ship: SKSpriteNode{
         if parent != nil{
             parent!.addChild(parent!.particles.last!)
         }
+        velocity.dx *= 0.999
+        velocity.dy *= 0.999
     }
     func body(radius: CGFloat, mass: CGFloat, texture: SKTexture? = nil){
         var m = mass
