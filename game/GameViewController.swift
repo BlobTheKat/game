@@ -22,11 +22,10 @@ class GameViewController: UIViewController {
         super.viewDidLoad()
         if let view = self.view as! SKView? {
             skview = view
-            Menu.renderTo(view)
+            Play.renderTo(view)
             view.preferredFramesPerSecond = 60
-            view.ignoresSiblingOrder = true
+            view.showsNodeCount = true
             view.showsFPS = true
-            view.showsPhysics = true
         }
         if let s = UserDefaults.standard.string(forKey: "server"){
             server = s
