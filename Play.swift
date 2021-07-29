@@ -29,9 +29,18 @@ class Play: SKScene{
         cam.position.x += x / 50
         cam.position.y += y / 50
         if started{
-            let tg = max(pow(vel+36,0.6)/50,0.5) - cam.xScale
-            cam.xScale += tg / 50
-            cam.yScale += tg / 50
+            let xStress = abs(x / (self.size.width * cam.xScale))
+            let yStress = abs(y / (self.size.height * cam.yScale))
+            let stress = xStress*2 + yStress*2
+
+            let scale = (cam.xScale + cam.yScale) / 2
+            if stress > 0.6{
+                let ts = min((stress / 0.6 - 1) * scale, 10 - scale)
+                cam.setScale(scale + ts / 50)
+            }else if stress < 0.4{
+                let ts = max((stress / 0.4 - 1) * scale, 1 - scale)
+                cam.setScale(scale + ts / 50)
+            }
         }
     }
     let pos = SKLabelNode()
