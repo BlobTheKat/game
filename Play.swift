@@ -21,7 +21,7 @@ class Play: SKScene{
     let tapToStart =  SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular") // TAP TO START LABEL
     var camOffset = CGPoint(x: 0, y: 0.2)
     var vel = CGFloat()
-    
+    var startPressed = false
     var started = false
     func cameraUpdate(){
         let x = ship.position.x - cam.position.x - camOffset.x * self.size.width * cam.xScale
@@ -35,10 +35,10 @@ class Play: SKScene{
 
             let scale = (cam.xScale + cam.yScale) / 2
             if stress > 0.6{
-                let ts = min((stress / 0.6 - 1) * scale, 10 - scale)
+                let ts = min((stress / 0.6 - 1) * scale, 2 - scale)
                 cam.setScale(scale + ts / 50)
             }else if stress < 0.4{
-                let ts = max((stress / 0.4 - 1) * scale, 1 - scale)
+                let ts = max((stress / 0.4 - 1) * scale, 0.5 - scale)
                 cam.setScale(scale + ts / 50)
             }
         }
@@ -80,6 +80,7 @@ class Play: SKScene{
         pos.text = "x: \(ship.position.x.rounded() + 0), y: \(ship.position.y.rounded() + 0), v: \(vel.rounded())"
     }
     override func didMove(to view: SKView) {
+        startAnimation()
         cam.position = CGPoint.zero
         self.addChild(cam)
         self.camera = cam
@@ -103,18 +104,68 @@ class Play: SKScene{
             }
         }
     }
+    
+    var trails: [SKSpriteNode] = []
+    func startAnimation(){
+        var delay = 0.0
+        for i in 1...20{
+            let trail = SKSpriteNode(imageNamed: "trail\((i%5)+1)")
+            trails.append(trail)
+            delay += 0.1
+            let _ = timeout(delay) {
+                self.moveTrail(trail: trail)
+                self.addChild(trail)
+            }
+        }
+        
+        
+     
+ 
+    }
+    func random() -> CGFloat{
+        return CGFloat(Float(arc4random()) / 0x100000000)
+    }
+    func random(min: CGFloat, max: CGFloat) -> CGFloat{
+        return floor(random() * (max - min) + min)
+    }
+    
+    func moveTrail(trail: SKSpriteNode){
+        let randomPosition = random(min: -25, max: 25)
+        trail.position = pos(mx: randomPosition/100 , my: 0.3)
+        trail.zPosition = 2
+        trail.setScale(0.1)
+        trail.run(SKAction.moveBy(x: 0, y: -500, duration: 0.5))
+        
+        let _ = timeout(0.5){
+            trail.position = self.pos(mx: 0, my: 0.3)
+            if self.startPressed{
+                trail.removeFromParent()
+                self.trails.remove(at: self.trails.firstIndex(of: trail)!)
+                if self.trails.count == 0{
+                    self.started = true
+                }
+            }else{
+                self.moveTrail(trail: trail)
+            }
+        }
+    }
     func startGame(){
         self.tapToStart.run(SKAction.fadeOut(withDuration: 0.3).ease(.easeOut))
         self.tapToStart.run(SKAction.scale(by: 1.5, duration: 0.2))
-        started = true
-        let planet1 = Planet(radius: 150, texture: SKTexture(imageNamed: "planet1"))
-        planets.append(planet1)
-        self.addChild(planet1)
+        startPressed = true
         camOffset.y = 0
         cam.run(SKAction.scale(to: 0.6, duration: 1).ease(.easeInEaseOut))
+        let _ = timeout(0.5) { [self] in
+            let planet1 = Planet(radius: 150, texture: SKTexture(imageNamed: "planet1"))
+            planet1.position.y = 500
+            planet1.position.x = -50
+            planets.append(planet1)
+            self.addChild(planet1)
+        }
+        
     }
     override func nodeDown(_ node: SKNode, at _: CGPoint) {
-        if node == tapToStart{
+        if !startPressed{
             startGame()
         }
     }
