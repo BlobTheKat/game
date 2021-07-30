@@ -18,12 +18,15 @@ class Play: PlayConvenience{
     var thrustRight = false
     var thrustLeft = false
     var particles: [Particle] = []
+    var objects: [Ship] = []
     let tapToStart =  SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular") // TAP TO START LABEL
     var camOffset = CGPoint(x: 0, y: 0.2)
     var vel = CGFloat()
     var startPressed = false
     var started = false
     let defaultSprite = SKSpriteNode(imageNamed: "default")
+    let thrustButton = SKSpriteNode(imageNamed: "thrustOn")
+    let dPad = SKSpriteNode(imageNamed: "Dpad")
     func cameraUpdate(){
         let x = ship.position.x - cam.position.x - camOffset.x * self.size.width * cam.xScale
         let y = ship.position.y - cam.position.y - camOffset.y * self.size.height * cam.yScale
@@ -64,8 +67,12 @@ class Play: PlayConvenience{
         if thrustLeft && !ship.landed{
             ship.angularVelocity += 0.002
         }
-        ship.angularVelocity *= 0.95
-        ship.update()
+        var i = 0
+        for s in objects{
+            
+            s.update(collisionNodes: objects.suffix(from: i))
+            i += 1
+        }
         var a = 0
         for i in particles{
             i.update()
@@ -76,7 +83,7 @@ class Play: PlayConvenience{
             a += 1
         }
         let vel = (CGFloat(sqrt(ship.velocity.dx*ship.velocity.dx+ship.velocity.dy*ship.velocity.dy))*CGFloat(gameFPS))
-        pos.text = "x: \(ship.position.x.rounded() + 0), y: \(ship.position.y.rounded() + 0), v: \(vel.rounded())"
+        pos.text = "x: \(ship.position.x.rounded() + 0), y: \(ship.position.y.rounded() + 0), v: \(vel.rounded()), b: \(Int(360-(ship.zRotation/(.pi)*180).truncatingRemainder(dividingBy: 360))%360)"
     }
     override func didMove(to view: SKView) {
         startAnimation()
@@ -84,17 +91,18 @@ class Play: PlayConvenience{
         self.addChild(cam)
         self.camera = cam
         cam.setScale(0.4)
-        //SETTING TAP TO START LABEL RELATIVE TO CAM
+        //setting tapToSrart label relative to camera (static)
         self.label(node: tapToStart, "tap to start", pos: pos(mx: 0, my: -0.4), size: fmed, color: UIColor.white, font: "HalogenbyPixelSurplus-Regular", zPos: 1000, isStatic: true)
-        self.label(node: pos, "x: , y: ", pos: pos(mx: -0.5, my: -0.5, x: 20, y: 20), size: 20, color: UIColor.white, font: "HalogenbyPixelSurplus-Regular", zPos: 1000, isStatic: true)
+        //position indicator
+        self.label(node: pos, "x: , y: , v: , b: ", pos: pos(mx: -0.5, my: -0.5, x: 20, y: 20), size: 20, color: UIColor.white, font: "HalogenbyPixelSurplus-Regular", zPos: 1000, isStatic: true)
         pos.horizontalAlignmentMode = .left
         pos.verticalAlignmentMode = .top
         tapToStart.alpha = 0.7
         ship.zPosition = 5
         ship.position.y = 160
         self.addChild(ship)
+        objects.append(ship)
         let _ = interval(3) {
-            
             self.tapToStart.run(SKAction.moveBy(x: 0, y: 10, duration: 2).ease(.easeOut))
         }
         let _ = timeout(1.5) {
@@ -103,7 +111,6 @@ class Play: PlayConvenience{
             }
         }
     }
-    
     var trails: [SKSpriteNode] = []
     func startAnimation(){
         var delay = 0.0
@@ -118,21 +125,13 @@ class Play: PlayConvenience{
             }
         }
         vibrateCamera(camera: cam)
-        
-        
-     
- 
     }
-    
-    
     func moveTrail(trail: SKSpriteNode){
-        
         let randomPosition = random(min: -50, max: 50)
         trail.position = pos(mx: randomPosition/100 , my: 0.5)
         trail.zPosition = 2
         trail.setScale(0.2)
         trail.run(SKAction.moveBy(x: 0, y: -self.size.height, duration: 0.5))
-        
         let _ = timeout(0.5){
             if self.startPressed{
                 trail.removeFromParent()
@@ -200,7 +199,6 @@ class Play: PlayConvenience{
             latency += ti
             return
         }
-        //
         cameraUpdate()
         spaceUpdate()
     }

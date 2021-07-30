@@ -16,32 +16,44 @@ struct bitmask{
 }
 
 class Ship: SKSpriteNode{
+    var ship = true
     var landed = false
     var radius: CGFloat = 0
     var mass: CGFloat = 1
     var velocity: CGVector = CGVector()
     var angularVelocity: CGFloat = 0
-    var particleOffset: Int = 0
+    var particleOffset: Int = -1
     var producesParticles: Bool = false
+    var particle = {() -> Particle in fatalError("particle() accessed before super.init call")}
+    var asteroid: Asteroid{
+        guard ship else { fatalError("Attempt to get asteroid value from non-asteroid object") }
+        return self as! Asteroid
+    }
+    var particleDelay = 5
     init(radius: CGFloat, mass: CGFloat = -1, texture: SKTexture = SKTexture()){
         super.init(texture: texture, color: UIColor.clear, size: texture.size())
         self.body(radius: radius, mass: mass)
+        particle = { [self]() -> Particle in return Particle(type: "fire", position: position, velocity: CGVector(dx: velocity.dx + sin(zRotation) / 2, dy: velocity.dy - cos(zRotation) / 2), texture: SKTexture(imageNamed: "trail"), color: UIColor.yellow, size: CGSize(width: 10, height: 10), alpha: 0.9, decayRate: 0.01, spin: 0.05, sizedif: CGVector(dx: 0.1, dy: 0.1), endcolor: UIColor.red)}
     }
-    func update(){
+    func update(collisionNodes: ArraySlice<Ship>){
+        if ship{
+            self.angularVelocity *= 0.95
+        }
         let parent = self.parent as? Play
-        
         position.x += velocity.dx
         position.y += velocity.dy
         zRotation += angularVelocity
-        guard producesParticles else {particleOffset=0;return}
-        particleOffset = (particleOffset + 1) % 5
+        guard producesParticles else {particleOffset = -1;return}
+        particleOffset = (particleOffset + 1) % particleDelay
         guard particleOffset == 0 else {return}
-        parent?.particles.append(Particle(type: "fire", position: position, velocity: CGVector(dx: velocity.dx + sin(zRotation) / 2, dy: velocity.dy - cos(zRotation) / 2), texture: SKTexture(imageNamed: "trail"), color: UIColor.blue, size: CGSize(width: 10, height: 10), alpha: 0.9, decayRate: 0.01, spin: 0.05, sizedif: CGVector(dx: 0.1, dy: 0.1), endcolor: UIColor.red))
+        parent?.particles.append(self.particle())
         if parent != nil{
             parent!.addChild(parent!.particles.last!)
         }
         velocity.dx *= 0.99
         velocity.dy *= 0.99
+        
+        
     }
     func body(radius: CGFloat, mass: CGFloat, texture: SKTexture? = nil){
         var m = mass
@@ -66,10 +78,19 @@ class Ship: SKSpriteNode{
     }
     
 }
-
+class Asteroid: Ship{
+    override init(radius: CGFloat, mass: CGFloat = -1, texture: SKTexture = SKTexture()){
+        super.init(radius: radius, mass: mass, texture: texture)
+        self.ship = false
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
 
 class Planet: Ship{
-    override func update(){
+    func update(){
         zRotation += angularVelocity
     }
     func gravity(_ n: Ship){
