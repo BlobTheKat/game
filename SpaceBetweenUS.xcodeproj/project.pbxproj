@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		3346242D26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 3346242C26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf */; };
+		33FC9DB826B45A1400216BC7 /* PlayConvenience.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33FC9DB726B45A1400216BC7 /* PlayConvenience.swift */; };
 		34844ADA26A6FC1800A3F790 /* VirtualServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34844AD926A6FC1800A3F790 /* VirtualServer.swift */; };
 		34844AE026A9955900A3F790 /* Objects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34844ADF26A9955900A3F790 /* Objects.swift */; };
 		34844AE126A9A44B00A3F790 /* Convenience.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34844ADD26A9944500A3F790 /* Convenience.swift */; };
@@ -23,6 +24,7 @@
 
 /* Begin PBXFileReference section */
 		3346242C26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "HalogenbyPixelSurplus-Regular.otf"; sourceTree = SOURCE_ROOT; };
+		33FC9DB726B45A1400216BC7 /* PlayConvenience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayConvenience.swift; sourceTree = "<group>"; };
 		34844AD926A6FC1800A3F790 /* VirtualServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualServer.swift; sourceTree = "<group>"; };
 		34844ADD26A9944500A3F790 /* Convenience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Convenience.swift; sourceTree = "<group>"; };
 		34844ADF26A9955900A3F790 /* Objects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Objects.swift; sourceTree = SOURCE_ROOT; };
@@ -73,6 +75,7 @@
 				DC9F527A269249AB00DDF0AF /* AppDelegate.swift */,
 				DC9F5282269249AB00DDF0AF /* GameViewController.swift */,
 				34844ADD26A9944500A3F790 /* Convenience.swift */,
+				33FC9DB726B45A1400216BC7 /* PlayConvenience.swift */,
 				DC9F5280269249AB00DDF0AF /* Menu.swift */,
 				DC78185B26944D7C00A19FE9 /* Play.swift */,
 				DC78185D26945B9200A19FE9 /* Connect.swift */,
@@ -157,6 +160,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				34844ADA26A6FC1800A3F790 /* VirtualServer.swift in Sources */,
+				33FC9DB826B45A1400216BC7 /* PlayConvenience.swift in Sources */,
 				34844AE126A9A44B00A3F790 /* Convenience.swift in Sources */,
 				DC78185C26944D7D00A19FE9 /* Play.swift in Sources */,
 				34844AE026A9955900A3F790 /* Objects.swift in Sources */,

@@ -7,7 +7,7 @@
 
 import SpriteKit
 
-class Play: SKScene{
+class Play: PlayConvenience{
     var latency = 0.0
     var lastUpdate: TimeInterval? = nil
     var gameFPS = 60.0
@@ -23,6 +23,7 @@ class Play: SKScene{
     var vel = CGFloat()
     var startPressed = false
     var started = false
+    let defaultSprite = SKSpriteNode(imageNamed: "default")
     func cameraUpdate(){
         let x = ship.position.x - cam.position.x - camOffset.x * self.size.width * cam.xScale
         let y = ship.position.y - cam.position.y - camOffset.y * self.size.height * cam.yScale
@@ -46,11 +47,9 @@ class Play: SKScene{
     let pos = SKLabelNode()
     func spaceUpdate(){
         if !started{return}
-        var landed = false
+        ship.landed = false
         for planet in planets{
-            if !landed{
-                landed = planet.gravity(ship)
-            }
+            planet.gravity(ship)
             planet.update()
         }
         ship.producesParticles = false
@@ -59,10 +58,10 @@ class Play: SKScene{
             ship.velocity.dy += cos(ship.zRotation) / 30
             ship.producesParticles = true
         }
-        if thrustRight && !landed{
+        if thrustRight && !ship.landed{
             ship.angularVelocity -= 0.002
         }
-        if thrustLeft && !landed{
+        if thrustLeft && !ship.landed{
             ship.angularVelocity += 0.002
         }
         ship.angularVelocity *= 0.95
@@ -114,30 +113,27 @@ class Play: SKScene{
             delay += 0.1
             let _ = timeout(delay) {
                 self.moveTrail(trail: trail)
-                self.addChild(trail)
+                self.vibrateObject(sprite: trail)
+                self.cam.addChild(trail)
             }
         }
+        vibrateCamera(camera: cam)
         
         
      
  
     }
-    func random() -> CGFloat{
-        return CGFloat(Float(arc4random()) / 0x100000000)
-    }
-    func random(min: CGFloat, max: CGFloat) -> CGFloat{
-        return floor(random() * (max - min) + min)
-    }
+    
     
     func moveTrail(trail: SKSpriteNode){
-        let randomPosition = random(min: -25, max: 25)
-        trail.position = pos(mx: randomPosition/100 , my: 0.3)
+        
+        let randomPosition = random(min: -50, max: 50)
+        trail.position = pos(mx: randomPosition/100 , my: 0.5)
         trail.zPosition = 2
-        trail.setScale(0.1)
-        trail.run(SKAction.moveBy(x: 0, y: -500, duration: 0.5))
+        trail.setScale(0.2)
+        trail.run(SKAction.moveBy(x: 0, y: -self.size.height, duration: 0.5))
         
         let _ = timeout(0.5){
-            trail.position = self.pos(mx: 0, my: 0.3)
             if self.startPressed{
                 trail.removeFromParent()
                 self.trails.remove(at: self.trails.firstIndex(of: trail)!)
@@ -157,12 +153,14 @@ class Play: SKScene{
         cam.run(SKAction.scale(to: 0.6, duration: 1).ease(.easeInEaseOut))
         let _ = timeout(0.5) { [self] in
             let planet1 = Planet(radius: 150, texture: SKTexture(imageNamed: "planet1"))
-            planet1.position.y = 500
+            planet1.position.y = 400
             planet1.position.x = -50
+            planet1.angularVelocity = 0.001
             planets.append(planet1)
             self.addChild(planet1)
         }
-        
+        cam.removeAction(forKey: "vibratingCamera")
+        cam.removeAction(forKey: "vibratingCameras")
     }
     override func nodeDown(_ node: SKNode, at _: CGPoint) {
         if !startPressed{
