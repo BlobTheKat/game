@@ -30,8 +30,8 @@ class Play: PlayConvenience{
     func cameraUpdate(){
         let x = ship.position.x - cam.position.x - camOffset.x * self.size.width * cam.xScale
         let y = ship.position.y - cam.position.y - camOffset.y * self.size.height * cam.yScale
-        cam.position.x += x / 50
-        cam.position.y += y / 50
+        cam.position.x += x / 30
+        cam.position.y += y / 30
         if started{
             let xStress = abs(x / (self.size.width * cam.xScale))
             let yStress = abs(y / (self.size.height * cam.yScale))
@@ -162,8 +162,8 @@ class Play: PlayConvenience{
         cam.removeAction(forKey: "vibratingCameras")
         
         
-        dPad.position = pos(mx: 0.35, my: -0.3 )
-        dPad.alpha = 0.3
+        dPad.position = pos(mx: 0.35, my: -0.3)
+        dPad.alpha = 0.1
         dPad.zPosition = 10
         dPad.setScale(0.45)
         cam.addChild(dPad)
@@ -180,6 +180,7 @@ class Play: PlayConvenience{
             startGame()
         }
         if thrustButton == node{
+            thrustButton.texture = SKTexture(imageNamed: "thrustOn")
             thrust = true
         }
         if dPad == node{
@@ -206,6 +207,7 @@ class Play: PlayConvenience{
     }
     override func nodeUp(_ node: SKNode, at _: CGPoint) {
         if thrustButton == node{
+            thrustButton.texture = SKTexture(imageNamed: "thrustOff")
             thrust = false
         }
         if dPad == node{
@@ -214,20 +216,20 @@ class Play: PlayConvenience{
         }
     }
     override func keyDown(_ key: UIKeyboardHIDUsage) {
-        if key == .keyboardUpArrow{
+        if key == .keyboardUpArrow || key == .keyboardW{
             thrust = true
-        }else if key == .keyboardRightArrow{
+        }else if key == .keyboardRightArrow || key == .keyboardD{
             thrustRight = true
-        }else if key == .keyboardLeftArrow{
+        }else if key == .keyboardLeftArrow || key == .keyboardA{
             thrustLeft = true
         }
     }
     override func keyUp(_ key: UIKeyboardHIDUsage) {
-        if key == .keyboardUpArrow{
+        if key == .keyboardUpArrow || key == .keyboardW{
             thrust = false
-        }else if key == .keyboardRightArrow{
+        }else if key == .keyboardRightArrow || key == .keyboardD{
             thrustRight = false
-        }else if key == .keyboardLeftArrow{
+        }else if key == .keyboardLeftArrow || key == .keyboardA{
             thrustLeft = false
         }
     }

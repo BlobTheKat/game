@@ -33,7 +33,7 @@ class Ship: SKSpriteNode{
     init(radius: CGFloat, mass: CGFloat = -1, texture: SKTexture = SKTexture()){
         super.init(texture: texture, color: UIColor.clear, size: texture.size())
         self.body(radius: radius, mass: mass)
-        particle = { [self]() -> Particle in return Particle(type: "fire", position: position, velocity: CGVector(dx: velocity.dx + sin(zRotation) / 2, dy: velocity.dy - cos(zRotation) / 2), texture: SKTexture(imageNamed: "trail"), color: UIColor.yellow, size: CGSize(width: 10, height: 10), alpha: 0.9, decayRate: 0.01, spin: 0.05, sizedif: CGVector(dx: 0.1, dy: 0.1), endcolor: UIColor.red)}
+        particle = { [self]() -> Particle in return Particle(type: "fire", position: CGPoint(x: position.x - velocity.dx, y: position.y - velocity.dy), velocity: CGVector(dx: velocity.dx + sin(zRotation) / 2, dy: velocity.dy - cos(zRotation) / 2), color: UIColor.yellow, size: CGSize(width: 10, height: 10), alpha: 0.9, decayRate: 0.01, spin: 0.05, sizedif: CGVector(dx: 0.1, dy: 0.1), endcolor: UIColor.red)}
     }
     func update(collisionNodes: ArraySlice<Ship>){
         if ship{
@@ -47,13 +47,23 @@ class Ship: SKSpriteNode{
         particleOffset = (particleOffset + 1) % particleDelay
         guard particleOffset == 0 else {return}
         parent?.particles.append(self.particle())
-        if parent != nil{
-            parent!.addChild(parent!.particles.last!)
-        }
+        parent?.addChild(parent?.particles.last! ?? self.particle())
         velocity.dx *= 0.99
         velocity.dy *= 0.99
-        
-        
+        for node in collisionNodes{
+            let x = self.position.x - node.position.x
+            let y = self.position.y - node.position.y
+            let d = (x * x + y * y)
+            if d > self.radius * self.radius + node.radius * node.radius{
+                //self and node collided
+                //both have a restitution of 1 so we swap momentum
+                let m = node.mass / self.mass
+                self.velocity.dx = node.velocity.dx * m
+                self.velocity.dy = node.velocity.dy * m
+                node.velocity.dx = self.velocity.dx / m
+                node.velocity.dy = self.velocity.dy / m
+            }
+        }
     }
     func body(radius: CGFloat, mass: CGFloat, texture: SKTexture? = nil){
         var m = mass
@@ -147,8 +157,7 @@ class Particle: SKSpriteNode{
     var spin: CGFloat
     var sizedif: CGVector
     var coldelta: (r: CGFloat, g: CGFloat, b: CGFloat)
-    init(type: String, position: CGPoint, velocity: CGVector, texture: SKTexture, color: UIColor, size: CGSize, alpha: CGFloat, decayRate: CGFloat, spin: CGFloat, sizedif: CGVector, endcolor: UIColor){
-        
+    init(type: String, position: CGPoint, velocity: CGVector, color: UIColor, size: CGSize, alpha: CGFloat, decayRate: CGFloat, spin: CGFloat, sizedif: CGVector, endcolor: UIColor){
         let lifetime = alpha / decayRate
         self.sizedif = sizedif
         var red = CGFloat()
@@ -164,10 +173,9 @@ class Particle: SKSpriteNode{
         self.velocity = velocity
         self.decayRate = decayRate
         self.spin = spin
-        super.init(texture: SKTexture(), color: color, size: size)
+        super.init(texture: nil, color: color, size: size)
         self.alpha = alpha
         self.position = position
-        self.texture = nil
     }
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
