@@ -25,7 +25,7 @@ class Play: PlayConvenience{
     var startPressed = false
     var started = false
     let defaultSprite = SKSpriteNode(imageNamed: "default")
-    let thrustButton = SKSpriteNode(imageNamed: "thrustOn")
+    let thrustButton = SKSpriteNode(imageNamed: "thrustOff")
     let dPad = SKSpriteNode(imageNamed: "Dpad")
     func cameraUpdate(){
         let x = ship.position.x - cam.position.x - camOffset.x * self.size.width * cam.xScale
@@ -160,10 +160,57 @@ class Play: PlayConvenience{
         }
         cam.removeAction(forKey: "vibratingCamera")
         cam.removeAction(forKey: "vibratingCameras")
+        
+        
+        dPad.position = pos(mx: 0.35, my: -0.3 )
+        dPad.alpha = 0.3
+        dPad.zPosition = 10
+        dPad.setScale(0.45)
+        cam.addChild(dPad)
+        
+        
+        thrustButton.position = pos(mx: -0.35, my: -0.25 )
+        thrustButton.alpha = 1
+        thrustButton.zPosition = 10
+        thrustButton.setScale(0.1)
+        cam.addChild(thrustButton)
     }
-    override func nodeDown(_ node: SKNode, at _: CGPoint) {
+    override func nodeDown(_ node: SKNode, at point: CGPoint) {
         if !startPressed{
             startGame()
+        }
+        if thrustButton == node{
+            thrust = true
+        }
+        if dPad == node{
+            print(point.x, dPad.position.x)
+            if point.x > dPad.position.x{
+                thrustRight = true
+                thrustLeft = false
+            }else{
+                thrustLeft = true
+                thrustRight = false
+            }
+        }
+    }
+    override func nodeMoved(_ node: SKNode, at point: CGPoint) {
+        if dPad == node{
+            if point.x > dPad.position.x{
+                thrustRight = true
+                thrustLeft = false
+            }else{
+                thrustLeft = true
+                thrustRight = false
+            }
+        }
+    }
+    override func nodeUp(_ node: SKNode, at _: CGPoint) {
+        if thrustButton == node{
+            thrust = false
+        }
+        if dPad == node{
+            thrustLeft = false
+            thrustRight = false
         }
     }
     override func keyDown(_ key: UIKeyboardHIDUsage) {

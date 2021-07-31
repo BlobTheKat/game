@@ -79,41 +79,45 @@ extension SKScene{
     }
     open override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for t in touches {
-            let loc = t.location(in: self)
-            for node in self.nodes(at: loc){
-                self.nodeDown(node, at: loc)
+            for node in self.nodes(at: t.location(in: self)){
+                self.nodeDown(node, at: t.location(in: node.parent ?? self))
             }
-            touch(at: loc)
+            touch(at: t.location(in: camera ?? self))
         }
     }
     
     open override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         for t in touches {
-            let loc = t.location(in: self)
-            for node in self.nodes(at: loc){
-                self.nodeMoved(node, at: loc)
+            var oldNodes = Set(self.nodes(at: t.previousLocation(in: self)))
+            for node in self.nodes(at: t.location(in: self)){
+                if oldNodes.remove(node) == nil{
+                    self.nodeDown(node, at: t.location(in: node.parent ?? self))
+                }else{
+                    self.nodeMoved(node, at: t.location(in: node.parent ?? self))
+                }
             }
-            swipe(at: loc)
+            for node in oldNodes{
+                self.nodeUp(node, at: t.location(in: node.parent ?? self))
+            }
+            swipe(at: t.location(in: camera ?? self))
         }
     }
     
     open override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         for t in touches {
-            let loc = t.location(in: self)
-            for node in self.nodes(at: loc){
-                self.nodeUp(node, at: loc)
+            for node in self.nodes(at: t.location(in: self)){
+                self.nodeUp(node, at: t.location(in: node.parent ?? self))
             }
-            release(at: loc)
+            release(at: t.location(in: camera ?? self))
         }
     }
     
     open override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         for t in touches {
-            let loc = t.location(in: self)
-            for node in self.nodes(at: loc){
-                self.nodeUp(node, at: loc)
+            for node in self.nodes(at: t.location(in: self)){
+                self.nodeUp(node, at: t.location(in: node.parent ?? self))
             }
-            release(at: loc)
+            release(at: t.location(in: camera ?? self))
         }
     }
     func interval(_ every: Double, _ a: @escaping () -> ()) -> (() -> ()){
