@@ -27,6 +27,9 @@ class Play: PlayConvenience{
     let defaultSprite = SKSpriteNode(imageNamed: "default")
     let thrustButton = SKSpriteNode(imageNamed: "thrustOff")
     let dPad = SKSpriteNode(imageNamed: "Dpad")
+    
+    let tunnel1 = SKSpriteNode(imageNamed: "tunnel1")
+    let tunnel2 = SKSpriteNode(imageNamed: "tunnel2")
     func cameraUpdate(){
         let x = ship.position.x - cam.position.x - camOffset.x * self.size.width * cam.xScale
         let y = ship.position.y - cam.position.y - camOffset.y * self.size.height * cam.yScale
@@ -52,7 +55,9 @@ class Play: PlayConvenience{
         if !started{return}
         ship.landed = false
         for planet in planets{
-            planet.gravity(ship)
+            for s in objects{
+                planet.gravity(s)
+            }
             planet.update()
         }
         ship.producesParticles = false
@@ -69,8 +74,7 @@ class Play: PlayConvenience{
         }
         var i = 0
         for s in objects{
-            
-            s.update(collisionNodes: objects.suffix(from: i))
+            s.update(collisionNodes: objects.suffix(from: i+1))
             i += 1
         }
         var a = 0
@@ -114,7 +118,7 @@ class Play: PlayConvenience{
     var trails: [SKSpriteNode] = []
     func startAnimation(){
         var delay = 0.0
-        for i in 1...20{
+        for i in 1...15{
             let trail = SKSpriteNode(imageNamed: "trail\((i%5)+1)")
             trails.append(trail)
             delay += 0.1
@@ -124,18 +128,41 @@ class Play: PlayConvenience{
                 self.cam.addChild(trail)
             }
         }
+        
+        for i in 1...3{
+            let longTrail = SKSpriteNode(imageNamed: "longTrail\(i)")
+            trails.append(longTrail)
+            delay += 0.1
+            let _ = timeout(delay) {
+                self.moveTrail(trail: longTrail)
+                self.vibrateObject(sprite: longTrail)
+                self.cam.addChild(longTrail)
+            }
+        }
+        
         vibrateCamera(camera: cam)
+        
+        tunnel1.position = pos(mx: -0.12, my: 0)
+        tunnel1.setScale(0.155)
+        self.addChild(tunnel1)
+        vibrateObject(sprite: tunnel1)
+        
+        tunnel2.position = pos(mx: 0.12, my: 0)
+        tunnel2.setScale(0.155)
+        self.addChild(tunnel2)
+        vibrateObject(sprite: tunnel2)
     }
     func moveTrail(trail: SKSpriteNode){
-        let randomPosition = random(min: -50, max: 50)
+        let randomPosition = random(min: -25, max: 25)
         trail.position = pos(mx: randomPosition/100 , my: 0.5)
         trail.zPosition = 2
         trail.setScale(0.2)
-        trail.run(SKAction.moveBy(x: 0, y: -self.size.height, duration: 0.5))
+        trail.run(SKAction.moveBy(x: 0, y: -self.size.height - trail.size.height/2, duration: 0.2))
         let _ = timeout(0.5){
             if self.startPressed{
                 trail.removeFromParent()
                 self.trails.remove(at: self.trails.firstIndex(of: trail)!)
+                
                 if self.trails.count == 0{
                     self.started = true
                 }
@@ -152,11 +179,15 @@ class Play: PlayConvenience{
         cam.run(SKAction.scale(to: 0.6, duration: 1).ease(.easeInEaseOut))
         let _ = timeout(0.5) { [self] in
             let planet1 = Planet(radius: 150, texture: SKTexture(imageNamed: "planet1"))
-            planet1.position.y = 400
+            planet1.position.y = 350
             planet1.position.x = -50
             planet1.angularVelocity = 0.001
             planets.append(planet1)
             self.addChild(planet1)
+            let ast = Asteroid(radius: 40, mass: 1000, texture: SKTexture(imageNamed: "asteroid"))
+            self.addChild(ast)
+            objects.append(ast)
+            ast.position.x = 200
         }
         cam.removeAction(forKey: "vibratingCamera")
         cam.removeAction(forKey: "vibratingCameras")
@@ -174,6 +205,14 @@ class Play: PlayConvenience{
         thrustButton.zPosition = 10
         thrustButton.setScale(0.1)
         cam.addChild(thrustButton)
+        
+        
+        tunnel1.run(SKAction.moveBy(x: -200, y: 30, duration: 0.6).ease(.easeOut))
+        tunnel1.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeOut))
+        tunnel1.removeFromParent()
+        tunnel2.run(SKAction.moveBy(x: 200, y: 30, duration: 0.6).ease(.easeOut))
+        tunnel2.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeOut))
+        tunnel2.removeFromParent()
     }
     override func nodeDown(_ node: SKNode, at point: CGPoint) {
         if !startPressed{

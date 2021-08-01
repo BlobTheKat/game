@@ -40,30 +40,36 @@ class Ship: SKSpriteNode{
             self.angularVelocity *= 0.95
         }
         let parent = self.parent as? Play
-        position.x += velocity.dx
-        position.y += velocity.dy
-        zRotation += angularVelocity
-        guard producesParticles else {particleOffset = -1;return}
-        particleOffset = (particleOffset + 1) % particleDelay
-        guard particleOffset == 0 else {return}
-        parent?.particles.append(self.particle())
-        parent?.addChild(parent?.particles.last! ?? self.particle())
-        velocity.dx *= 0.99
-        velocity.dy *= 0.99
+        if producesParticles{
+            particleOffset = (particleOffset + 1) % particleDelay
+            if particleOffset == 0{
+                parent?.particles.append(self.particle())
+                parent?.addChild(parent?.particles.last! ?? self.particle())
+            }
+        }else{particleOffset = -1}
+        velocity.dx *= 0.998
+        velocity.dy *= 0.998
         for node in collisionNodes{
             let x = self.position.x - node.position.x
             let y = self.position.y - node.position.y
             let d = (x * x + y * y)
-            if d > self.radius * self.radius + node.radius * node.radius{
+            if d < (self.radius + node.radius) * (self.radius + node.radius){
                 //self and node collided
-                //both have a restitution of 1 so we swap momentum
+                //simplified elastic collision
+                let dx = self.velocity.dx - node.velocity.dx
+                let dy = self.velocity.dy - node.velocity.dx
                 let m = node.mass / self.mass
-                self.velocity.dx = node.velocity.dx * m
-                self.velocity.dy = node.velocity.dy * m
-                node.velocity.dx = self.velocity.dx / m
-                node.velocity.dy = self.velocity.dy / m
+                node.velocity.dx += 0.5 * dx / m
+                node.velocity.dy += 0.5 * dy / m
+                self.velocity.dx += (node.velocity.dx * m * -0.5 - dx)
+                self.velocity.dy += (node.velocity.dy * m * -0.5 - dy)
+                
+                
             }
         }
+        position.x += velocity.dx
+        position.y += velocity.dy
+        zRotation += angularVelocity
     }
     func body(radius: CGFloat, mass: CGFloat, texture: SKTexture? = nil){
         var m = mass
@@ -111,6 +117,16 @@ class Planet: Ship{
         var r = self.radius * self.radius - n.radius * n.radius
         r += (2 * sqrt(r) + n.radius) * n.radius
         if d < r - 1{
+            if !n.ship{
+                let parent = n.parent as? Play
+                if parent != nil, let i = parent!.objects.firstIndex(of: n){
+                    parent!.objects.remove(at: i)
+                    n.run(SKAction.sequence([SKAction.fadeOut(withDuration: 1),SKAction.run{n.removeFromParent()}]))
+                    n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * CGFloat(parent!.gameFPS), dy: n.velocity.dy * CGFloat(parent!.gameFPS)), duration: 1))
+                }
+                
+                return
+            }
             //collided
             let m = sqrt(r / d) - 1
             n.position.x += x * m
@@ -120,7 +136,7 @@ class Planet: Ship{
             n.angularVelocity = 0
             n.zRotation = atan2(y, x) - .pi/2
             n.landed = true
-        }else if d <= r+2{
+        }else if d <= r+2 && n.ship{
             n.zRotation += angularVelocity
             let t = atan2(x,y) - angularVelocity
             n.velocity = CGVector(dx: sin(t)*sqrt(d)-x, dy: cos(t)*sqrt(d)-y)
