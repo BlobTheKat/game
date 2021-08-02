@@ -61,8 +61,8 @@ class Ship: SKSpriteNode{
                 let m = node.mass / self.mass
                 node.velocity.dx += 0.5 * dx / m
                 node.velocity.dy += 0.5 * dy / m
-                self.velocity.dx += (node.velocity.dx * m * -0.5 - dx)
-                self.velocity.dy += (node.velocity.dy * m * -0.5 - dy)
+                self.velocity.dx = node.velocity.dx - dx * m * 0.5
+                self.velocity.dy = node.velocity.dy - dy * m * 0.5
                 
                 
             }
