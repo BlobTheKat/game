@@ -9,14 +9,11 @@
 /* Begin PBXBuildFile section */
 		3346242D26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 3346242C26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf */; };
 		33FC9DB826B45A1400216BC7 /* PlayConvenience.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33FC9DB726B45A1400216BC7 /* PlayConvenience.swift */; };
-		34844ADA26A6FC1800A3F790 /* VirtualServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34844AD926A6FC1800A3F790 /* VirtualServer.swift */; };
 		34844AE026A9955900A3F790 /* Objects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34844ADF26A9955900A3F790 /* Objects.swift */; };
 		34844AE126A9A44B00A3F790 /* Convenience.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34844ADD26A9944500A3F790 /* Convenience.swift */; };
-		DC36E1B126936520008EB47F /* BlobBits.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DC36E1B026936520008EB47F /* BlobBits.ttf */; };
 		DC78185C26944D7D00A19FE9 /* Play.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC78185B26944D7C00A19FE9 /* Play.swift */; };
 		DC78185E26945B9200A19FE9 /* Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC78185D26945B9200A19FE9 /* Connect.swift */; };
 		DC9F527B269249AB00DDF0AF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC9F527A269249AB00DDF0AF /* AppDelegate.swift */; };
-		DC9F5281269249AB00DDF0AF /* Menu.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC9F5280269249AB00DDF0AF /* Menu.swift */; };
 		DC9F5283269249AB00DDF0AF /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC9F5282269249AB00DDF0AF /* GameViewController.swift */; };
 		DC9F5286269249AB00DDF0AF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DC9F5284269249AB00DDF0AF /* Main.storyboard */; };
 		DC9F5288269249AC00DDF0AF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC9F5287269249AC00DDF0AF /* Assets.xcassets */; };
@@ -25,15 +22,12 @@
 /* Begin PBXFileReference section */
 		3346242C26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "HalogenbyPixelSurplus-Regular.otf"; sourceTree = SOURCE_ROOT; };
 		33FC9DB726B45A1400216BC7 /* PlayConvenience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayConvenience.swift; sourceTree = "<group>"; };
-		34844AD926A6FC1800A3F790 /* VirtualServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualServer.swift; sourceTree = "<group>"; };
 		34844ADD26A9944500A3F790 /* Convenience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Convenience.swift; sourceTree = "<group>"; };
 		34844ADF26A9955900A3F790 /* Objects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Objects.swift; sourceTree = SOURCE_ROOT; };
-		DC36E1B026936520008EB47F /* BlobBits.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = BlobBits.ttf; sourceTree = "<group>"; };
 		DC78185B26944D7C00A19FE9 /* Play.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Play.swift; sourceTree = SOURCE_ROOT; };
 		DC78185D26945B9200A19FE9 /* Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connect.swift; sourceTree = "<group>"; };
 		DC9F5277269249AB00DDF0AF /* game.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = game.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC9F527A269249AB00DDF0AF /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		DC9F5280269249AB00DDF0AF /* Menu.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = Menu.swift; sourceTree = "<group>"; tabWidth = 2; usesTabs = 1; };
 		DC9F5282269249AB00DDF0AF /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
 		DC9F5285269249AB00DDF0AF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		DC9F5287269249AC00DDF0AF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -76,13 +70,10 @@
 				DC9F5282269249AB00DDF0AF /* GameViewController.swift */,
 				34844ADD26A9944500A3F790 /* Convenience.swift */,
 				33FC9DB726B45A1400216BC7 /* PlayConvenience.swift */,
-				DC9F5280269249AB00DDF0AF /* Menu.swift */,
 				DC78185B26944D7C00A19FE9 /* Play.swift */,
 				DC78185D26945B9200A19FE9 /* Connect.swift */,
-				34844AD926A6FC1800A3F790 /* VirtualServer.swift */,
 				DC9F5284269249AB00DDF0AF /* Main.storyboard */,
 				DC9F5287269249AC00DDF0AF /* Assets.xcassets */,
-				DC36E1B026936520008EB47F /* BlobBits.ttf */,
 				DC9F5289269249AC00DDF0AF /* Info.plist */,
 			);
 			path = game;
@@ -147,7 +138,6 @@
 			files = (
 				3346242D26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf in Resources */,
 				DC9F5286269249AB00DDF0AF /* Main.storyboard in Resources */,
-				DC36E1B126936520008EB47F /* BlobBits.ttf in Resources */,
 				DC9F5288269249AC00DDF0AF /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -159,12 +149,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				34844ADA26A6FC1800A3F790 /* VirtualServer.swift in Sources */,
 				33FC9DB826B45A1400216BC7 /* PlayConvenience.swift in Sources */,
 				34844AE126A9A44B00A3F790 /* Convenience.swift in Sources */,
 				DC78185C26944D7D00A19FE9 /* Play.swift in Sources */,
 				34844AE026A9955900A3F790 /* Objects.swift in Sources */,
-				DC9F5281269249AB00DDF0AF /* Menu.swift in Sources */,
 				DC9F5283269249AB00DDF0AF /* GameViewController.swift in Sources */,
 				DC78185E26945B9200A19FE9 /* Connect.swift in Sources */,
 				DC9F527B269249AB00DDF0AF /* AppDelegate.swift in Sources */,
