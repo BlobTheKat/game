@@ -63,6 +63,7 @@ class Play: PlayConvenience{
             if i.alpha <= 0{
                 i.removeFromParent()
                 particles.remove(at: a)
+                a -= 1
             }
             a += 1
         }
@@ -111,8 +112,12 @@ class Play: PlayConvenience{
         ship.producesParticles = true
         var step = 0
         ship.particle = { [self]() -> Particle in
-            step = (step + 1) % 20
-            return Particle(type: "", position: CGPoint(x: ship.position.x, y: ship.position.y - 5), velocity: CGVector(dx: 0, dy: -2.5), color: UIColor.cyan, size: CGSize(width: 13, height: 10), alpha: step < 10 ? 0.6 : 0.5, decayRate: 0.5, spin: 0, sizedif: CGVector(dx: -1, dy: 0), endcolor: UIColor.white)
+            step = (step + 1) % 16
+            return Particle(type: "", position: CGPoint(x: ship.position.x, y: ship.position.y - 5), velocity: CGVector(dx: 0, dy: -1), color: UIColor.cyan, size: CGSize(width: 11, height: 2), alpha: 0.7, decayRate: 0.02, spin: 0, sizedif: CGVector(dx: -0.4, dy: 0), endcolor: UIColor.white).updates{ (this: Particle) in
+                this.coldelta.r += 0.001
+                this.decayRate = step < 8 ? 0.02 : 0.03
+                this.sizedif.dx += 0.01
+            }
         }
         ship.particleDelay = 1
         self.addChild(ship)
@@ -183,6 +188,10 @@ class Play: PlayConvenience{
         }
     }
     func startGame(){
+        let send = connect("192.168.1.64:65152"){ data in
+            
+        }
+        send("PING".data(using: String.Encoding.utf8)!)
         self.tapToStart.run(SKAction.fadeOut(withDuration: 0.3).ease(.easeOut))
         self.tapToStart.run(SKAction.scale(by: 1.5, duration: 0.2))
         startPressed = true
@@ -190,7 +199,7 @@ class Play: PlayConvenience{
         cam.run(SKAction.scale(to: 0.6, duration: 1).ease(.easeInEaseOut))
         let _ = timeout(0.5) { [self] in
             let planet1 = Planet(radius: 150, texture: SKTexture(imageNamed: "planet1"))
-            planet1.position.y = 350
+            planet1.position.y = 400
             planet1.position.x = -50
             planet1.angularVelocity = 0.001
             planets.append(planet1)
@@ -199,6 +208,8 @@ class Play: PlayConvenience{
             self.addChild(ast)
             objects.append(ast)
             ast.position.x = 600
+            ship.particle = ship.defParticle
+            ship.particleDelay = 5
         }
         cam.removeAction(forKey: "vibratingCamera")
         cam.removeAction(forKey: "vibratingCameras")

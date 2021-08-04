@@ -29,11 +29,14 @@ class Ship: SKSpriteNode{
         guard ship else { fatalError("Attempt to get asteroid value from non-asteroid object") }
         return self as! Asteroid
     }
+    func defParticle() -> Particle{
+        return Particle(type: "fire", position: CGPoint(x: position.x - velocity.dx, y: position.y - velocity.dy), velocity: CGVector(dx: velocity.dx + sin(zRotation) / 2, dy: velocity.dy - cos(zRotation) / 2), color: UIColor.yellow, size: CGSize(width: 10, height: 10), alpha: 0.9, decayRate: 0.01, spin: 0.05, sizedif: CGVector(dx: 0.1, dy: 0.1), endcolor: UIColor.red)
+    }
     var particleDelay = 5
     init(radius: CGFloat, mass: CGFloat = -1, texture: SKTexture = SKTexture()){
         super.init(texture: texture, color: UIColor.clear, size: texture.size())
         self.body(radius: radius, mass: mass)
-        particle = { [self]() -> Particle in return Particle(type: "fire", position: CGPoint(x: position.x - velocity.dx, y: position.y - velocity.dy), velocity: CGVector(dx: velocity.dx + sin(zRotation) / 2, dy: velocity.dy - cos(zRotation) / 2), color: UIColor.yellow, size: CGSize(width: 10, height: 10), alpha: 0.9, decayRate: 0.01, spin: 0.05, sizedif: CGVector(dx: 0.1, dy: 0.1), endcolor: UIColor.red)}
+        particle = defParticle
     }
     func update(collisionNodes: ArraySlice<Ship>){
         if ship{
@@ -166,6 +169,7 @@ class Ray{
     }
 }
 class Particle: SKSpriteNode{
+    private var onupdate = {(_: Particle) -> () in}
     var velocity: CGVector
     var type: String
     var decayRate: CGFloat
@@ -195,7 +199,12 @@ class Particle: SKSpriteNode{
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    func updates(a: @escaping (Particle) -> ()) -> Particle{
+        self.onupdate = a
+        return self
+    }
     func update(){
+        self.onupdate(self)
         self.position.x += velocity.dx
         self.position.y += velocity.dy
         self.alpha -= decayRate

@@ -150,3 +150,31 @@ extension SKAction{
         return self
     }
 }
+
+extension Data{
+    mutating func write<T>(_ a: T){
+        if let s = a as? String{
+            write(s.count)
+            for i in s{
+                write(i)
+            }
+            return
+        }
+        var f = a
+        self.append(Data.init(bytes: &f, count: MemoryLayout.size(ofValue: a)))
+    }
+    mutating func read<T>() -> T{
+        if T.self is String.Type{
+            let count: Int = read()
+            var a = ""
+            for _ in 1...count{
+                a += read()
+            }
+            return a as! T
+        }
+        
+        let f: T = self.withUnsafeBytes{(a) in return a.load(as: T.self)}
+        self.removeFirst(MemoryLayout<T>.size)
+        return f
+    }
+}
