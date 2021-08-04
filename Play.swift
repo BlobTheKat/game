@@ -52,6 +52,20 @@ class Play: PlayConvenience{
     }
     let pos = SKLabelNode()
     func spaceUpdate(){
+        var a = 0
+        var i = 0
+        for s in objects{
+            s.update(collisionNodes: objects.suffix(from: i+1))
+            i += 1
+        }
+        for i in particles{
+            i.update()
+            if i.alpha <= 0{
+                i.removeFromParent()
+                particles.remove(at: a)
+            }
+            a += 1
+        }
         if !started{return}
         ship.landed = false
         for planet in planets{
@@ -72,20 +86,10 @@ class Play: PlayConvenience{
         if thrustLeft && !ship.landed{
             ship.angularVelocity += 0.002
         }
-        var i = 0
-        for s in objects{
-            s.update(collisionNodes: objects.suffix(from: i+1))
-            i += 1
-        }
-        var a = 0
-        for i in particles{
-            i.update()
-            if i.alpha <= 0{
-                i.removeFromParent()
-                particles.remove(at: a)
-            }
-            a += 1
-        }
+        
+        
+        
+        
         let vel = (CGFloat(sqrt(ship.velocity.dx*ship.velocity.dx+ship.velocity.dy*ship.velocity.dy))*CGFloat(gameFPS))
         pos.text = "x: \(ship.position.x.rounded() + 0), y: \(ship.position.y.rounded() + 0), v: \(vel.rounded()), b: \(Int(360-(ship.zRotation/(.pi)*180).truncatingRemainder(dividingBy: 360))%360)"
     }
@@ -104,6 +108,13 @@ class Play: PlayConvenience{
         tapToStart.alpha = 0.7
         ship.zPosition = 5
         ship.position.y = 160
+        ship.producesParticles = true
+        var step = 0
+        ship.particle = { [self]() -> Particle in
+            step = (step + 1) % 20
+            return Particle(type: "", position: CGPoint(x: ship.position.x, y: ship.position.y - 5), velocity: CGVector(dx: 0, dy: -2.5), color: UIColor.cyan, size: CGSize(width: 13, height: 10), alpha: step < 10 ? 0.6 : 0.5, decayRate: 0.5, spin: 0, sizedif: CGVector(dx: -1, dy: 0), endcolor: UIColor.white)
+        }
+        ship.particleDelay = 1
         self.addChild(ship)
         objects.append(ship)
         let _ = interval(3) {
@@ -187,7 +198,7 @@ class Play: PlayConvenience{
             let ast = Asteroid(radius: 40, mass: 300, texture: SKTexture(imageNamed: "asteroid"))
             self.addChild(ast)
             objects.append(ast)
-            ast.position.x = 200
+            ast.position.x = 600
         }
         cam.removeAction(forKey: "vibratingCamera")
         cam.removeAction(forKey: "vibratingCameras")
