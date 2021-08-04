@@ -56,15 +56,14 @@ class Ship: SKSpriteNode{
             if d < (self.radius + node.radius) * (self.radius + node.radius){
                 //self and node collided
                 //simplified elastic collision
-                let dx = self.velocity.dx - node.velocity.dx
-                let dy = self.velocity.dy - node.velocity.dx
-                let m = node.mass / self.mass
-                node.velocity.dx += 0.5 * dx / m
-                node.velocity.dy += 0.5 * dy / m
-                self.velocity.dx = node.velocity.dx - dx * m * 0.5
-                self.velocity.dy = node.velocity.dy - dy * m * 0.5
-                
-                
+                let sum = mass + node.mass
+                let diff = mass - node.mass
+                let newvelx = (velocity.dx * diff + (2 * node.mass * node.velocity.dx)) / sum
+                let newvely = (velocity.dy * diff + (2 * node.mass * node.velocity.dy)) / sum
+                node.velocity.dx = ((2 * mass * velocity.dx) - node.velocity.dx * diff) / sum
+                node.velocity.dy = ((2 * mass * velocity.dy) - node.velocity.dy * diff) / sum
+                velocity.dx = newvelx
+                velocity.dy = newvely
             }
         }
         position.x += velocity.dx

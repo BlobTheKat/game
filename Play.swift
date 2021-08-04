@@ -184,7 +184,7 @@ class Play: PlayConvenience{
             planet1.angularVelocity = 0.001
             planets.append(planet1)
             self.addChild(planet1)
-            let ast = Asteroid(radius: 40, mass: 1000, texture: SKTexture(imageNamed: "asteroid"))
+            let ast = Asteroid(radius: 40, mass: 300, texture: SKTexture(imageNamed: "asteroid"))
             self.addChild(ast)
             objects.append(ast)
             ast.position.x = 200
