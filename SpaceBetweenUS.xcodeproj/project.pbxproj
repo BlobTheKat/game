@@ -12,6 +12,7 @@
 		34844AE026A9955900A3F790 /* Objects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34844ADF26A9955900A3F790 /* Objects.swift */; };
 		34844AE126A9A44B00A3F790 /* Convenience.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34844ADD26A9944500A3F790 /* Convenience.swift */; };
 		34A5547226BBE13D00D43C04 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A5547126BBE13C00D43C04 /* Constants.swift */; };
+		34A5547426BC201800D43C04 /* Disconnected.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A5547326BC201800D43C04 /* Disconnected.swift */; };
 		DC78185C26944D7D00A19FE9 /* Play.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC78185B26944D7C00A19FE9 /* Play.swift */; };
 		DC78185E26945B9200A19FE9 /* Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC78185D26945B9200A19FE9 /* Connect.swift */; };
 		DC9F527B269249AB00DDF0AF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC9F527A269249AB00DDF0AF /* AppDelegate.swift */; };
@@ -26,6 +27,7 @@
 		34844ADD26A9944500A3F790 /* Convenience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Convenience.swift; sourceTree = "<group>"; };
 		34844ADF26A9955900A3F790 /* Objects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Objects.swift; sourceTree = SOURCE_ROOT; };
 		34A5547126BBE13C00D43C04 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		34A5547326BC201800D43C04 /* Disconnected.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Disconnected.swift; sourceTree = "<group>"; };
 		DC78185B26944D7C00A19FE9 /* Play.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Play.swift; sourceTree = SOURCE_ROOT; };
 		DC78185D26945B9200A19FE9 /* Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connect.swift; sourceTree = "<group>"; };
 		DC9F5277269249AB00DDF0AF /* game.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = game.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -66,15 +68,16 @@
 		DC9F5279269249AB00DDF0AF /* game */ = {
 			isa = PBXGroup;
 			children = (
-				34A5547126BBE13C00D43C04 /* Constants.swift */,
-				34844ADF26A9955900A3F790 /* Objects.swift */,
 				3346242C26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf */,
 				DC9F527A269249AB00DDF0AF /* AppDelegate.swift */,
 				DC9F5282269249AB00DDF0AF /* GameViewController.swift */,
+				34844ADF26A9955900A3F790 /* Objects.swift */,
+				34A5547126BBE13C00D43C04 /* Constants.swift */,
 				34844ADD26A9944500A3F790 /* Convenience.swift */,
 				33FC9DB726B45A1400216BC7 /* PlayConvenience.swift */,
 				DC78185B26944D7C00A19FE9 /* Play.swift */,
 				DC78185D26945B9200A19FE9 /* Connect.swift */,
+				34A5547326BC201800D43C04 /* Disconnected.swift */,
 				DC9F5284269249AB00DDF0AF /* Main.storyboard */,
 				DC9F5287269249AC00DDF0AF /* Assets.xcassets */,
 				DC9F5289269249AC00DDF0AF /* Info.plist */,
@@ -160,6 +163,7 @@
 				DC78185E26945B9200A19FE9 /* Connect.swift in Sources */,
 				DC9F527B269249AB00DDF0AF /* AppDelegate.swift in Sources */,
 				34A5547226BBE13D00D43C04 /* Constants.swift in Sources */,
+				34A5547426BC201800D43C04 /* Disconnected.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -94,7 +94,7 @@ class Play: PlayConvenience{
     override func didMove(to view: SKView) {
         var send = connect("192.168.1.64:65152"){ data in
             if data.count == 0{
-                
+                Disconnected.renderTo(skview)
             }
         }
         try! send(messages.hello(name: "BlobKat"))
