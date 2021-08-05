@@ -6,11 +6,6 @@
 //
 import Foundation
 import Network
-struct servers{
-    static let uswest = ""
-    static let backup = ""
-    static let home = "192.168.1.64"
-}
 
 
 func connect(_ host: String = "192.168.1.64:65152", _ a: @escaping (Data) -> ()) -> (Data) -> (){
@@ -66,3 +61,24 @@ func fetch<json: Decodable>(_ url: String, _ done: @escaping (json) -> (), _ err
         }
     }
 }
+
+enum ProtocolError: Error{
+    case valueTooLarge(msg: String)
+    case invalidCase(msg: String)
+    case serverUnhappy(msg: String)
+}
+
+struct M{
+    enum msg: UInt8{
+        case hello = 0
+    }
+    func hello(name: String) throws -> Data{
+        if name.count > 64{throw ProtocolError.valueTooLarge(msg: "name cannot be longer than 64 characters")}
+        var data = Data([])
+        data.write(msg.hello)
+        data.write(UInt64(Date().timeIntervalSince1970*1000))
+        data.write(name)
+        return data
+    }
+}
+let messages = M()

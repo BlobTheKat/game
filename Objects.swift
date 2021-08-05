@@ -8,14 +8,12 @@
 import Foundation
 import SpriteKit
 
-let G: CGFloat = 0.0001
-struct bitmask{
-    static let ship: UInt32 = 1
-    static let planet: UInt32 = 2
-    static let asteroid: UInt32 = 4
+protocol DataCodable {
+    func encode(data: inout Data)
+    init?(data: inout Data)
 }
 
-class Ship: SKSpriteNode{
+class Ship: SKSpriteNode, DataCodable{
     var ship = true
     var landed = false
     var radius: CGFloat = 0
@@ -94,7 +92,24 @@ class Ship: SKSpriteNode{
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+    required init?(data: inout Data){
+        super.init(texture: SKTexture(), color: UIColor.clear, size: CGSize())
+        particle = defParticle
+        self.body(radius: data.read(), mass: data.read(), texture: .from(data.read()))
+        self.position = data.read()
+        self.zRotation = data.read()
+        self.velocity = data.read()
+        self.angularVelocity = data.read()
+    }
+    func encode(data: inout Data){
+        data.write(self.radius)
+        data.write(self.mass)
+        data.write(self.texture?.code() ?? 0)
+        data.write(self.position)
+        data.write(self.zRotation)
+        data.write(self.velocity)
+        data.write(self.angularVelocity)
+    }
 }
 class Asteroid: Ship{
     override init(radius: CGFloat, mass: CGFloat = -1, texture: SKTexture = SKTexture()){
@@ -105,9 +120,22 @@ class Asteroid: Ship{
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    required init?(data: inout Data) {
+        super.init(radius: data.read(), mass: data.read(), texture: SKTexture(imageNamed: data.read()))
+        self.position = data.read()
+        self.zRotation = data.read()
+        self.velocity = data.read()
+        self.angularVelocity = data.read()
+        self.ship = false
+    }
 }
 
 class Planet: Ship{
+    override init(radius: CGFloat, mass: CGFloat = -1, texture: SKTexture = SKTexture()){
+        super.init(radius: radius, mass: mass, texture: texture)
+        self.ship = false
+    }
     func update(){
         zRotation += angularVelocity
     }
@@ -150,6 +178,24 @@ class Planet: Ship{
             n.velocity.dy += y * m
             n.zRotation += angularVelocity * r / d
         }
+    }
+    required init?(data: inout Data) {
+        super.init(radius: data.read(), mass: data.read(), texture: SKTexture(imageNamed: data.read()))
+        self.ship = false
+        self.position = data.read()
+        self.zRotation = data.read()
+        self.angularVelocity = data.read()
+    }
+    override func encode(data: inout Data) {
+        data.write(self.radius)
+        data.write(self.mass)
+        data.write(self.texture?.code() ?? 0)
+        data.write(self.position)
+        data.write(self.zRotation)
+        data.write(self.angularVelocity)
+    }
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 }
 class Ray{

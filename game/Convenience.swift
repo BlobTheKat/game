@@ -152,27 +152,21 @@ extension SKAction{
 }
 
 extension Data{
+    mutating func write(_ a: String, encoding: String.Encoding = .utf8){
+        guard a.count < 4294967296 else{fatalError("Buffer overload when writing string (smh how much ram do you have??)")}
+        write(UInt32(a.count))
+        self.append(a.data(using: encoding)!)
+    }
+    mutating func read(encoding: String.Encoding = .utf8) -> String?{
+        let count: UInt32 = read()
+        let data = self.dropFirst(Int(count))
+        return String(data: data, encoding: encoding)
+    }
     mutating func write<T>(_ a: T){
-        if let s = a as? String{
-            write(s.count)
-            for i in s{
-                write(i)
-            }
-            return
-        }
         var f = a
         self.append(Data.init(bytes: &f, count: MemoryLayout.size(ofValue: a)))
     }
     mutating func read<T>() -> T{
-        if T.self is String.Type{
-            let count: Int = read()
-            var a = ""
-            for _ in 1...count{
-                a += read()
-            }
-            return a as! T
-        }
-        
         let f: T = self.withUnsafeBytes{(a) in return a.load(as: T.self)}
         self.removeFirst(MemoryLayout<T>.size)
         return f

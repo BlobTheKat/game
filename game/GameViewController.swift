@@ -10,15 +10,12 @@ import SpriteKit
 import GameplayKit
 
 var skview: SKView = SKView()
-let fsmall: CGFloat = 32
-let fmed: CGFloat = 48
-let fbig: CGFloat = 72
 var server = servers.uswest
 
 class GameViewController: UIViewController {
 
     override func viewDidLoad() {
-        SKScene.font = "BlobBits"
+        SKScene.font = "HalogenbyPixelSurplus-Regular"
         super.viewDidLoad()
         if let view = self.view as! SKView? {
             skview = view

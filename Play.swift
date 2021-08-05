@@ -8,10 +8,11 @@
 import SpriteKit
 
 class Play: PlayConvenience{
+    
     var latency = 0.0
     var lastUpdate: TimeInterval? = nil
     var gameFPS = 60.0
-    var ship = Ship(radius: 15, mass: 100, texture: SKTexture(imageNamed: "spaceship"))
+    var ship = Ship(radius: 15, mass: 100, texture: .from(1))
     var planets: [Planet] = []
     var cam = SKCameraNode()
     var thrust = false
@@ -87,14 +88,16 @@ class Play: PlayConvenience{
         if thrustLeft && !ship.landed{
             ship.angularVelocity += 0.002
         }
-        
-        
-        
-        
         let vel = (CGFloat(sqrt(ship.velocity.dx*ship.velocity.dx+ship.velocity.dy*ship.velocity.dy))*CGFloat(gameFPS))
         pos.text = "x: \(ship.position.x.rounded() + 0), y: \(ship.position.y.rounded() + 0), v: \(vel.rounded()), b: \(Int(360-(ship.zRotation/(.pi)*180).truncatingRemainder(dividingBy: 360))%360)"
     }
     override func didMove(to view: SKView) {
+        var send = connect("192.168.1.64:65152"){ data in
+            if data.count == 0{
+                
+            }
+        }
+        try! send(messages.hello(name: "BlobKat"))
         startAnimation()
         cam.position = CGPoint.zero
         self.addChild(cam)
@@ -105,6 +108,7 @@ class Play: PlayConvenience{
         //position indicator
         self.label(node: pos, "x: , y: , v: , b: ", pos: pos(mx: -0.5, my: -0.5, x: 20, y: 20), size: 20, color: UIColor.white, font: "HalogenbyPixelSurplus-Regular", zPos: 1000, isStatic: true)
         pos.horizontalAlignmentMode = .left
+        
         pos.verticalAlignmentMode = .top
         tapToStart.alpha = 0.7
         ship.zPosition = 5
@@ -188,23 +192,20 @@ class Play: PlayConvenience{
         }
     }
     func startGame(){
-        let send = connect("192.168.1.64:65152"){ data in
-            
-        }
-        send("PING".data(using: String.Encoding.utf8)!)
+        ship.producesParticles = false
         self.tapToStart.run(SKAction.fadeOut(withDuration: 0.3).ease(.easeOut))
         self.tapToStart.run(SKAction.scale(by: 1.5, duration: 0.2))
         startPressed = true
         camOffset.y = 0
         cam.run(SKAction.scale(to: 0.6, duration: 1).ease(.easeInEaseOut))
         let _ = timeout(0.5) { [self] in
-            let planet1 = Planet(radius: 150, texture: SKTexture(imageNamed: "planet1"))
+            let planet1 = Planet(radius: 150, texture: .from(2))
             planet1.position.y = 400
             planet1.position.x = -50
             planet1.angularVelocity = 0.001
             planets.append(planet1)
             self.addChild(planet1)
-            let ast = Asteroid(radius: 40, mass: 300, texture: SKTexture(imageNamed: "asteroid"))
+            let ast = Asteroid(radius: 40, mass: 300, texture: .from(3))
             self.addChild(ast)
             objects.append(ast)
             ast.position.x = 600
