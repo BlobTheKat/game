@@ -8,16 +8,12 @@
 import SpriteKit
 
 class Play: PlayConvenience{
-    
     var latency = 0.0
     var lastUpdate: TimeInterval? = nil
     var gameFPS = 60.0
     var ship = Ship(radius: 15, mass: 100, texture: .from(1))
     var planets: [Planet] = []
     var cam = SKCameraNode()
-    var thrust = false
-    var thrustRight = false
-    var thrustLeft = false
     var particles: [Particle] = []
     var objects: [Ship] = []
     let tapToStart =  SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular") // TAP TO START LABEL
@@ -54,11 +50,6 @@ class Play: PlayConvenience{
     let pos = SKLabelNode()
     func spaceUpdate(){
         var a = 0
-        var i = 0
-        for s in objects{
-            s.update(collisionNodes: objects.suffix(from: i+1))
-            i += 1
-        }
         for i in particles{
             i.update()
             if i.alpha <= 0{
@@ -68,25 +59,16 @@ class Play: PlayConvenience{
             }
             a += 1
         }
-        if !started{return}
-        ship.landed = false
         for planet in planets{
             for s in objects{
                 planet.gravity(s)
             }
             planet.update()
         }
-        ship.producesParticles = false
-        if thrust{
-            ship.velocity.dx += -sin(ship.zRotation) / 30
-            ship.velocity.dy += cos(ship.zRotation) / 30
-            ship.producesParticles = true
-        }
-        if thrustRight && !ship.landed{
-            ship.angularVelocity -= 0.002
-        }
-        if thrustLeft && !ship.landed{
-            ship.angularVelocity += 0.002
+        a = 0
+        for s in objects{
+            s.update(collisionNodes: objects.suffix(from: a+1))
+            a += 1
         }
         let vel = (CGFloat(sqrt(ship.velocity.dx*ship.velocity.dx+ship.velocity.dy*ship.velocity.dy))*CGFloat(gameFPS))
         pos.text = "x: \(ship.position.x.rounded() + 0), y: \(ship.position.y.rounded() + 0), v: \(vel.rounded()), b: \(Int(360-(ship.zRotation/(.pi)*180).truncatingRemainder(dividingBy: 360))%360)"
@@ -96,6 +78,7 @@ class Play: PlayConvenience{
             if data.count == 0{
                 Disconnected.renderTo(skview)
             }
+            
         }
         try! send(messages.hello(name: "BlobKat"))
         startAnimation()
@@ -148,7 +131,6 @@ class Play: PlayConvenience{
                 self.cam.addChild(trail)
             }
         }
-        
         for i in 1...3{
             let longTrail = SKSpriteNode(imageNamed: "longTrail\(i)")
             trails.append(longTrail)
@@ -199,6 +181,8 @@ class Play: PlayConvenience{
         camOffset.y = 0
         cam.run(SKAction.scale(to: 0.6, duration: 1).ease(.easeInEaseOut))
         let _ = timeout(0.5) { [self] in
+            ship.controls = true
+            ship.dynamic = true
             let planet1 = Planet(radius: 150, texture: .from(2))
             planet1.position.y = 400
             planet1.position.x = -50
@@ -243,56 +227,67 @@ class Play: PlayConvenience{
         }
         if thrustButton == node{
             thrustButton.texture = SKTexture(imageNamed: "thrustOn")
-            thrust = true
+            ship.thrust = true
         }
         if dPad == node{
             print(point.x, dPad.position.x)
             if point.x > dPad.position.x{
-                thrustRight = true
-                thrustLeft = false
+                ship.thrustRight = true
+                ship.thrustLeft = false
             }else{
-                thrustLeft = true
-                thrustRight = false
+                ship.thrustLeft = true
+                ship.thrustRight = false
             }
         }
     }
     override func nodeMoved(_ node: SKNode, at point: CGPoint) {
         if dPad == node{
             if point.x > dPad.position.x{
-                thrustRight = true
-                thrustLeft = false
+                ship.thrustRight = true
+                ship.thrustLeft = false
             }else{
-                thrustLeft = true
-                thrustRight = false
+                ship.thrustLeft = true
+                ship.thrustRight = false
             }
         }
     }
     override func nodeUp(_ node: SKNode, at _: CGPoint) {
         if thrustButton == node{
             thrustButton.texture = SKTexture(imageNamed: "thrustOff")
-            thrust = false
+            ship.thrust = false
         }
         if dPad == node{
-            thrustLeft = false
-            thrustRight = false
+            ship.thrustLeft = false
+            ship.thrustRight = false
         }
     }
+    var d = Data()
     override func keyDown(_ key: UIKeyboardHIDUsage) {
         if key == .keyboardUpArrow || key == .keyboardW{
-            thrust = true
+            ship.thrust = true
         }else if key == .keyboardRightArrow || key == .keyboardD{
-            thrustRight = true
+            ship.thrustRight = true
         }else if key == .keyboardLeftArrow || key == .keyboardA{
-            thrustLeft = true
+            ship.thrustLeft = true
+        }
+        if key == .keyboardN{
+            ship.encode(data: &d)
+        }else if key == .keyboardB{
+            guard d.count >= 45 else{return}
+            objects.remove(at: objects.firstIndex(of: ship)!)
+            ship.removeFromParent()
+            ship = Ship(data: &d)!
+            self.addChild(ship)
+            objects.append(ship)
         }
     }
     override func keyUp(_ key: UIKeyboardHIDUsage) {
         if key == .keyboardUpArrow || key == .keyboardW{
-            thrust = false
+            ship.thrust = false
         }else if key == .keyboardRightArrow || key == .keyboardD{
-            thrustRight = false
+            ship.thrustRight = false
         }else if key == .keyboardLeftArrow || key == .keyboardA{
-            thrustLeft = false
+            ship.thrustLeft = false
         }
     }
     override func update(_ currentTime: TimeInterval){

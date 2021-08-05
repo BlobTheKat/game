@@ -167,8 +167,12 @@ extension Data{
         self.append(Data.init(bytes: &f, count: MemoryLayout.size(ofValue: a)))
     }
     mutating func read<T>() -> T{
-        let f: T = self.withUnsafeBytes{(a) in return a.load(as: T.self)}
-        self.removeFirst(MemoryLayout<T>.size)
+        let l = MemoryLayout<T>.size
+        var d = Data(self.prefix(l))
+        let f: T = d.withUnsafeMutableBytes { a in
+            return a.load(as: T.self)
+        }
+        self.removeFirst(l)
         return f
     }
 }
