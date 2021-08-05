@@ -10,7 +10,7 @@ import SpriteKit
 
 protocol DataCodable {
     func encode(data: inout Data)
-    init?(data: inout Data)
+    func decode(data: inout Data)
 }
 
 class Ship: SKSpriteNode, DataCodable{
@@ -35,7 +35,7 @@ class Ship: SKSpriteNode, DataCodable{
         return self as! Asteroid
     }
     func defParticle() -> Particle{
-        return Particle(type: "fire", position: CGPoint(x: position.x - velocity.dx, y: position.y - velocity.dy), velocity: CGVector(dx: velocity.dx + sin(zRotation) / 2, dy: velocity.dy - cos(zRotation) / 2), color: UIColor.yellow, size: CGSize(width: 10, height: 10), alpha: 0.9, decayRate: 0.01, spin: 0.05, sizedif: CGVector(dx: 0.1, dy: 0.1), endcolor: UIColor.red)
+        return Particle(type: "fire", position: CGPoint(x: position.x, y: position.y), velocity: CGVector(dx: velocity.dx + sin(zRotation) / 2, dy: velocity.dy - cos(zRotation) / 2), color: UIColor.yellow, size: CGSize(width: 10, height: 10), alpha: 0.9, decayRate: 0.01, spin: 0.05, sizedif: CGVector(dx: 0.1, dy: 0.1), endcolor: UIColor.red)
     }
     var particleDelay = 5
     init(radius: CGFloat, mass: CGFloat = -1, texture: SKTexture = SKTexture()){
@@ -55,8 +55,10 @@ class Ship: SKSpriteNode, DataCodable{
                 parent?.addChild(parent?.particles.last! ?? self.particle())
             }
         }else{particleOffset = -1}
-        velocity.dx *= 0.998
-        velocity.dy *= 0.998
+        if ship{
+            velocity.dx *= 0.998
+            velocity.dy *= 0.998
+        }
         for node in collisionNodes{
             let x = self.position.x - node.position.x
             let y = self.position.y - node.position.y
@@ -100,6 +102,7 @@ class Ship: SKSpriteNode, DataCodable{
         }
         self.mass = m
         self.radius = radius
+        self.setScale(1)
         if let t = texture{
             self.texture = t
             self.size = t.size()
@@ -114,9 +117,7 @@ class Ship: SKSpriteNode, DataCodable{
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    required init?(data: inout Data){
-        super.init(texture: SKTexture(), color: UIColor.clear, size: CGSize())
-        particle = defParticle
+    func decode(data: inout Data){
         self.body(radius: CGFloat(data.read() as Float), mass: CGFloat(data.read() as Float), texture: .from(data.read()))
         self.position = CGPoint(x: CGFloat(data.read() as Float), y: CGFloat(data.read() as Float))
         self.zRotation = CGFloat(data.read() as Float)
@@ -219,8 +220,8 @@ class Planet: Ship{
             n.zRotation += angularVelocity * r / d
         }
     }
-    required init?(data: inout Data) {
-        super.init(radius: CGFloat(data.read() as Float), mass: CGFloat(data.read() as Float), texture: SKTexture(imageNamed: data.read()))
+    override func decode(data: inout Data) {
+        body(radius: CGFloat(data.read() as Float), mass: CGFloat(data.read() as Float), texture: SKTexture(imageNamed: data.read()))
         self.ship = false
         self.position = CGPoint(x: CGFloat(data.read() as Float), y: CGFloat(data.read() as Float))
         self.zRotation = CGFloat(data.read() as Float)

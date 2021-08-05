@@ -45,4 +45,22 @@ class PlayConvenience: SKScene{
     func random(min: CGFloat, max: CGFloat) -> CGFloat{
         return floor(random() * (max - min) + min)
     }
+    
+    
+    
+    func pulsate(node: SKNode, amount: CGFloat, duration: CGFloat){
+        
+        
+        
+        let _ = interval(Double(duration)) {
+            node.run(SKAction.fadeAlpha(by: -amount, duration: Double(duration)/2).ease(.easeInEaseOut))
+            
+            let _ = self.timeout(Double(duration)/2) {
+                node.run(SKAction.fadeAlpha(by: amount, duration: Double(duration)/2).ease(.easeInEaseOut))
+            }
+        }
+        
+        
+        
+    }
 }

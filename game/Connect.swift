@@ -31,6 +31,12 @@ func connect(_ host: String = "192.168.1.64:65152", _ a: @escaping (Data) -> ())
                         a(data ?? Data())
                     }
                 }
+            case .cancelled:
+                print("failed")
+                Disconnected.renderTo(skview)
+            case .failed(_):
+                print("failed")
+                Disconnected.renderTo(skview)
             default:()
         }
     }

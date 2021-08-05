@@ -10,7 +10,7 @@ import SpriteKit
 
 extension SKScene{
     static var font = "Arial"
-    static var transition = SKTransition.crossFade(withDuration: 0.2)
+    static var transition = SKTransition.crossFade(withDuration: 0)
     static var _k = 0
     static func renderTo(_ view: SKView){
         let scene = self.init(size: view.frame.size)

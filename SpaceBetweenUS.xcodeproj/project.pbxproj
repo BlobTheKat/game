@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		3346242D26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 3346242C26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf */; };
+		33E378B526BC906D0034B14E /* Loading.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33E378B426BC906D0034B14E /* Loading.swift */; };
 		33FC9DB826B45A1400216BC7 /* PlayConvenience.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33FC9DB726B45A1400216BC7 /* PlayConvenience.swift */; };
 		34844AE026A9955900A3F790 /* Objects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34844ADF26A9955900A3F790 /* Objects.swift */; };
 		34844AE126A9A44B00A3F790 /* Convenience.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34844ADD26A9944500A3F790 /* Convenience.swift */; };
@@ -23,6 +24,7 @@
 
 /* Begin PBXFileReference section */
 		3346242C26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "HalogenbyPixelSurplus-Regular.otf"; sourceTree = SOURCE_ROOT; };
+		33E378B426BC906D0034B14E /* Loading.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loading.swift; sourceTree = "<group>"; };
 		33FC9DB726B45A1400216BC7 /* PlayConvenience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayConvenience.swift; sourceTree = "<group>"; };
 		34844ADD26A9944500A3F790 /* Convenience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Convenience.swift; sourceTree = "<group>"; };
 		34844ADF26A9955900A3F790 /* Objects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Objects.swift; sourceTree = SOURCE_ROOT; };
@@ -71,6 +73,7 @@
 				3346242C26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf */,
 				DC9F527A269249AB00DDF0AF /* AppDelegate.swift */,
 				DC9F5282269249AB00DDF0AF /* GameViewController.swift */,
+				33E378B426BC906D0034B14E /* Loading.swift */,
 				34844ADF26A9955900A3F790 /* Objects.swift */,
 				34A5547126BBE13C00D43C04 /* Constants.swift */,
 				34844ADD26A9944500A3F790 /* Convenience.swift */,
@@ -157,6 +160,7 @@
 			files = (
 				33FC9DB826B45A1400216BC7 /* PlayConvenience.swift in Sources */,
 				34844AE126A9A44B00A3F790 /* Convenience.swift in Sources */,
+				33E378B526BC906D0034B14E /* Loading.swift in Sources */,
 				DC78185C26944D7D00A19FE9 /* Play.swift in Sources */,
 				34844AE026A9955900A3F790 /* Objects.swift in Sources */,
 				DC9F5283269249AB00DDF0AF /* GameViewController.swift in Sources */,

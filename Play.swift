@@ -73,8 +73,20 @@ class Play: PlayConvenience{
         let vel = (CGFloat(sqrt(ship.velocity.dx*ship.velocity.dx+ship.velocity.dy*ship.velocity.dy))*CGFloat(gameFPS))
         pos.text = "x: \(ship.position.x.rounded() + 0), y: \(ship.position.y.rounded() + 0), v: \(vel.rounded()), b: \(Int(360-(ship.zRotation/(.pi)*180).truncatingRemainder(dividingBy: 360))%360)"
     }
+    var send = {(_: Data) -> () in}
+    override init(size: CGSize) {
+        ship.position.y = 160
+        ship.alpha = 0
+        ship.run(SKAction.fadeAlpha(by: 1, duration: 1).ease(.easeOut))
+        super.init(size: size)
+        self.addChild(ship)
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     override func didMove(to view: SKView) {
-        var send = connect("192.168.1.64:65152"){ data in
+        send = connect("192.168.1.64:65152"){ data in
             if data.count == 0{
                 Disconnected.renderTo(skview)
             }
@@ -95,19 +107,17 @@ class Play: PlayConvenience{
         pos.verticalAlignmentMode = .top
         tapToStart.alpha = 0.7
         ship.zPosition = 5
-        ship.position.y = 160
         ship.producesParticles = true
         var step = 0
         ship.particle = { [self]() -> Particle in
             step = (step + 1) % 16
-            return Particle(type: "", position: CGPoint(x: ship.position.x, y: ship.position.y - 5), velocity: CGVector(dx: 0, dy: -1), color: UIColor.cyan, size: CGSize(width: 11, height: 2), alpha: 0.7, decayRate: 0.02, spin: 0, sizedif: CGVector(dx: -0.4, dy: 0), endcolor: UIColor.white).updates{ (this: Particle) in
+            return Particle(type: "", position: CGPoint(x: ship.position.x, y: ship.position.y - 5), velocity: CGVector(dx: 0, dy: -1), color: UIColor.cyan, size: CGSize(width: 11, height: 2), alpha: ship.alpha - 0.3, decayRate: 0.02, spin: 0, sizedif: CGVector(dx: -0.4, dy: 0), endcolor: UIColor.white).updates{ (this: Particle) in
                 this.coldelta.r += 0.001
                 this.decayRate = step < 8 ? 0.02 : 0.03
                 this.sizedif.dx += 0.01
             }
         }
         ship.particleDelay = 1
-        self.addChild(ship)
         objects.append(ship)
         let _ = interval(3) {
             self.tapToStart.run(SKAction.moveBy(x: 0, y: 10, duration: 2).ease(.easeOut))
@@ -187,6 +197,7 @@ class Play: PlayConvenience{
             planet1.position.y = 400
             planet1.position.x = -50
             planet1.angularVelocity = 0.001
+            planet1.zPosition = -1
             planets.append(planet1)
             self.addChild(planet1)
             let ast = Asteroid(radius: 40, mass: 300, texture: .from(3))
@@ -274,11 +285,10 @@ class Play: PlayConvenience{
             ship.encode(data: &d)
         }else if key == .keyboardB{
             guard d.count >= 45 else{return}
-            objects.remove(at: objects.firstIndex(of: ship)!)
-            ship.removeFromParent()
-            ship = Ship(data: &d)!
-            self.addChild(ship)
-            objects.append(ship)
+            ship.decode(data: &d)
+        }else if key == .keyboardQ{
+            send(Data([]))
+            Disconnected.renderTo(skview)
         }
     }
     override func keyUp(_ key: UIKeyboardHIDUsage) {
@@ -291,6 +301,7 @@ class Play: PlayConvenience{
         }
     }
     override func update(_ currentTime: TimeInterval){
+        if view == nil{return}
         //this piece of code prevents speedhack and/or performance from slowing down gametime by running update more or less times based on delay (the currentTime parameter)
         let ti = 1/gameFPS
         if lastUpdate == nil{
