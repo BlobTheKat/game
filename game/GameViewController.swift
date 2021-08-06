@@ -19,7 +19,9 @@ class GameViewController: UIViewController {
         super.viewDidLoad()
         if let view = self.view as! SKView? {
             skview = view
-            Disconnected.renderTo(view)
+            SKScene.transition = SKTransition.crossFade(withDuration: 1.5)
+            Play.renderTo(skview)
+            SKScene.transition = SKTransition.crossFade(withDuration: 0)
             view.preferredFramesPerSecond = 60
             view.showsNodeCount = true
             view.showsFPS = true

@@ -7,6 +7,7 @@
 import Foundation
 import Network
 
+var dmessage = "Disconnected!"
 
 func connect(_ host: String = "192.168.1.64:65152", _ a: @escaping (Data) -> ()) -> (Data) -> (){
     var connection: NWConnection?
@@ -77,12 +78,12 @@ enum ProtocolError: Error{
 struct M{
     enum msg: UInt8{
         case hello = 0
+        case keepalive = 1
     }
     func hello(name: String) throws -> Data{
         if name.count > 64{throw ProtocolError.valueTooLarge(msg: "name cannot be longer than 64 characters")}
         var data = Data([])
         data.write(msg.hello)
-        data.write(UInt64(Date().timeIntervalSince1970*1000))
         data.write(name)
         return data
     }

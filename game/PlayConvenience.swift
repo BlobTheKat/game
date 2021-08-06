@@ -45,7 +45,7 @@ class PlayConvenience: SKScene{
     func random(min: CGFloat, max: CGFloat) -> CGFloat{
         return floor(random() * (max - min) + min)
     }
-    
+    func recieved(data: Data){}
     
     
     func pulsate(node: SKNode, amount: CGFloat, duration: CGFloat){

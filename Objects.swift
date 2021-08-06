@@ -13,13 +13,14 @@ protocol DataCodable {
     func decode(data: inout Data)
 }
 
-class Ship: SKSpriteNode, DataCodable{
+class Object: SKSpriteNode, DataCodable{
+    var type = 0
+    var level = 1
     var dynamic = false
     var controls = false
     var thrust = false
     var thrustLeft = false
     var thrustRight = false
-    var ship = true
     var landed = false
     var radius: CGFloat = 0
     var mass: CGFloat = 1
@@ -30,21 +31,20 @@ class Ship: SKSpriteNode, DataCodable{
     var particleOffset: Int = -1
     var producesParticles: Bool = false
     var particle = {() -> Particle in fatalError("particle() accessed before super.init call")}
-    var asteroid: Asteroid{
-        guard ship else { fatalError("Attempt to get asteroid value from non-asteroid object") }
-        return self as! Asteroid
-    }
+    var asteroid: Bool
     func defParticle() -> Particle{
         return Particle(type: "fire", position: CGPoint(x: position.x, y: position.y), velocity: CGVector(dx: velocity.dx + sin(zRotation) / 2, dy: velocity.dy - cos(zRotation) / 2), color: UIColor.yellow, size: CGSize(width: 10, height: 10), alpha: 0.9, decayRate: 0.01, spin: 0.05, sizedif: CGVector(dx: 0.1, dy: 0.1), endcolor: UIColor.red)
     }
     var particleDelay = 5
-    init(radius: CGFloat, mass: CGFloat = -1, texture: SKTexture = SKTexture()){
+    init(radius: CGFloat, mass: CGFloat = -1, texture: SKTexture = SKTexture(), asteroid: Bool = false){
+        self.asteroid = asteroid
         super.init(texture: texture, color: UIColor.clear, size: texture.size())
         self.body(radius: radius, mass: mass)
         particle = defParticle
+        self.asteroid = asteroid
     }
-    func update(collisionNodes: ArraySlice<Ship>){
-        if ship{
+    func update(collisionNodes: ArraySlice<Object>){
+        if !asteroid{
             self.angularVelocity *= 0.95
         }
         let parent = self.parent as? Play
@@ -55,9 +55,9 @@ class Ship: SKSpriteNode, DataCodable{
                 parent?.addChild(parent?.particles.last! ?? self.particle())
             }
         }else{particleOffset = -1}
-        if ship{
-            velocity.dx *= 0.998
-            velocity.dy *= 0.998
+        if !asteroid{
+            if velocity.dx > 10{velocity.dx *= 0.998}
+            if velocity.dy > 10{velocity.dy *= 0.998}
         }
         for node in collisionNodes{
             let x = self.position.x - node.position.x
@@ -79,15 +79,17 @@ class Ship: SKSpriteNode, DataCodable{
         if controls{
             producesParticles = false
             if thrust{
-                velocity.dx += -sin(zRotation) / 30
-                velocity.dy += cos(zRotation) / 30
+                velocity.dx += -sin(zRotation) * thrustMultiplier / 30
+                velocity.dy += cos(zRotation) * thrustMultiplier / 30
                 producesParticles = true
             }
-            if thrustRight && !landed{
-                angularVelocity -= 0.002
+            if landed{thrustLeft=false;thrustRight=false}
+            if thrustLeft && thrustRight{thrustLeft = false; thrustRight = false}
+            if thrustRight{
+                angularVelocity -= 0.002 * angularThrustMultiplier
             }
-            if thrustLeft && !landed{
-                angularVelocity += 0.002
+            if thrustLeft{
+                angularVelocity += 0.002 * angularThrustMultiplier
             }
         }
         position.x += velocity.dx
@@ -117,7 +119,7 @@ class Ship: SKSpriteNode, DataCodable{
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    func decode(data: inout Data){
+    /*func decode(data: inout Data){
         self.body(radius: CGFloat(data.read() as Float), mass: CGFloat(data.read() as Float), texture: .from(data.read()))
         self.position = CGPoint(x: CGFloat(data.read() as Float), y: CGFloat(data.read() as Float))
         self.zRotation = CGFloat(data.read() as Float)
@@ -129,7 +131,7 @@ class Ship: SKSpriteNode, DataCodable{
         thrust = bits & 1 != 0
         thrustLeft = bits & 2 != 0
         thrustRight = bits & 4 != 0
-        ship = bits & 8 != 0
+        asteroid = bits & 8 != 0
         landed = bits & 16 != 0
         producesParticles = bits & 32 != 0
         self.controls = true
@@ -147,38 +149,50 @@ class Ship: SKSpriteNode, DataCodable{
         data.write(Float(self.angularVelocity))
         data.write(Float(self.thrustMultiplier))
         data.write(Float(self.angularThrustMultiplier))
-        data.write(UInt8(thrust ? 1 : 0) + UInt8(thrustLeft ? 2 : 0) + UInt8(thrustRight ? 4 : 0) + UInt8(ship ? 8 : 0) + UInt8(landed ? 16 : 0) + UInt8(producesParticles ? 32 : 0))
+        data.write(UInt8(thrust ? 1 : 0) + UInt8(thrustLeft ? 2 : 0) + UInt8(thrustRight ? 4 : 0) + UInt8(asteroid ? 8 : 0) + UInt8(landed ? 16 : 0) + UInt8(producesParticles ? 32 : 0))
+    }*/
+    func encode(data: inout Data){
+        data.write(Float(self.position.x))
+        data.write(Float(self.position.y))
+        data.write(Int8(round(self.zRotation * 40)))
+        data.write(Float(self.velocity.dx))
+        data.write(Float(self.velocity.dy))
+        
+        data.write(Int8(self.angularVelocity * 768))
+        data.write(UInt8(thrust ? 1 : 0) + UInt8(thrustLeft ? 2 : 0) + UInt8(thrustRight ? 4 : 0) + UInt8(self.level * 8))
+        data.write(UInt8(self.type))
     }
-}
-class Asteroid: Ship{
-    override init(radius: CGFloat, mass: CGFloat = -1, texture: SKTexture = SKTexture()){
-        super.init(radius: radius, mass: mass, texture: texture)
-        self.ship = false
-    }
-    
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    required init?(data: inout Data) {
-        super.init(radius: data.read(), mass: data.read(), texture: SKTexture(imageNamed: data.read()))
-        self.position = data.read()
-        self.zRotation = data.read()
-        self.velocity = data.read()
-        self.angularVelocity = data.read()
-        self.ship = false
+    func decode(data: inout Data){
+        self.position = CGPoint(x: CGFloat(data.read() as Float), y: CGFloat(data.read() as Float))
+        
+        self.zRotation = CGFloat(data.read() as Int8) / 40
+        self.velocity = CGVector(dx: CGFloat(data.read() as Float), dy: CGFloat(data.read() as Float))
+        self.angularVelocity = CGFloat(data.read() as Int8) / 768
+        let bits: UInt8 = data.read()
+        thrust = bits & 1 != 0
+        thrustLeft = bits & 2 != 0
+        thrustRight = bits & 4 != 0
+        if thrustLeft && thrustRight{
+            thrustLeft = false
+            thrustRight = false
+            asteroid = true
+        }else if asteroid && (thrustLeft || thrustRight){
+            asteroid = false
+        }
+        producesParticles = thrust
+        self.controls = true
+        self.dynamic = true
     }
 }
 
-class Planet: Ship{
-    override init(radius: CGFloat, mass: CGFloat = -1, texture: SKTexture = SKTexture()){
-        super.init(radius: radius, mass: mass, texture: texture)
-        self.ship = false
+class Planet: Object{
+    override init(radius: CGFloat, mass: CGFloat = -1, texture: SKTexture = SKTexture(), asteroid: Bool = false){
+        super.init(radius: radius, mass: mass, texture: texture, asteroid: asteroid)
     }
     func update(){
         zRotation += angularVelocity
     }
-    func gravity(_ n: Ship){
+    func gravity(_ n: Object){
         guard n.dynamic else{return}
         n.landed = false
         let mass: CGFloat = self.mass
@@ -188,7 +202,7 @@ class Planet: Ship{
         var r = self.radius * self.radius - n.radius * n.radius
         r += (2 * sqrt(r) + n.radius) * n.radius
         if d < r - 1{
-            if !n.ship{
+            if n.asteroid{
                 let parent = n.parent as? Play
                 if parent != nil, let i = parent!.objects.firstIndex(of: n){
                     parent!.objects.remove(at: i)
@@ -207,7 +221,7 @@ class Planet: Ship{
             n.angularVelocity = 0
             n.zRotation = atan2(y, x) - .pi/2
             n.landed = true
-        }else if d <= r+2 && n.ship{
+        }else if d <= r+2 && !n.asteroid{
             n.zRotation += angularVelocity
             let t = atan2(x,y) - angularVelocity
             n.velocity = CGVector(dx: sin(t)*sqrt(d)-x, dy: cos(t)*sqrt(d)-y)
@@ -222,7 +236,6 @@ class Planet: Ship{
     }
     override func decode(data: inout Data) {
         body(radius: CGFloat(data.read() as Float), mass: CGFloat(data.read() as Float), texture: SKTexture(imageNamed: data.read()))
-        self.ship = false
         self.position = CGPoint(x: CGFloat(data.read() as Float), y: CGFloat(data.read() as Float))
         self.zRotation = CGFloat(data.read() as Float)
         self.angularVelocity = CGFloat(data.read() as Float)
@@ -247,7 +260,7 @@ class Ray{
         self.position = position
         self.direction = direction
     }
-    func intersects(_ n: Ship) -> Bool{
+    func intersects(_ n: Object) -> Bool{
         let x = n.position.x - self.position.x
         let y = n.position.y - self.position.y
         let ang = atan2(y, x)

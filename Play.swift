@@ -11,17 +11,16 @@ class Play: PlayConvenience{
     var latency = 0.0
     var lastUpdate: TimeInterval? = nil
     var gameFPS = 60.0
-    var ship = Ship(radius: 15, mass: 100, texture: .from(1))
+    var ship = Object(radius: 15, mass: 100, texture: .from(1))
     var planets: [Planet] = []
     var cam = SKCameraNode()
     var particles: [Particle] = []
-    var objects: [Ship] = []
+    var objects: [Object] = []
     let tapToStart =  SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular") // TAP TO START LABEL
     var camOffset = CGPoint(x: 0, y: 0.2)
     var vel = CGFloat()
     var startPressed = false
     var started = false
-    let defaultSprite = SKSpriteNode(imageNamed: "default")
     let thrustButton = SKSpriteNode(imageNamed: "thrustOff")
     let dPad = SKSpriteNode(imageNamed: "Dpad")
     
@@ -70,40 +69,82 @@ class Play: PlayConvenience{
             s.update(collisionNodes: objects.suffix(from: a+1))
             a += 1
         }
-        let vel = (CGFloat(sqrt(ship.velocity.dx*ship.velocity.dx+ship.velocity.dy*ship.velocity.dy))*CGFloat(gameFPS))
+        let vel = CGFloat(sqrt(ship.velocity.dx*ship.velocity.dx + ship.velocity.dy*ship.velocity.dy)) * CGFloat(gameFPS)
         pos.text = "x: \(ship.position.x.rounded() + 0), y: \(ship.position.y.rounded() + 0), v: \(vel.rounded()), b: \(Int(360-(ship.zRotation/(.pi)*180).truncatingRemainder(dividingBy: 360))%360)"
     }
     var send = {(_: Data) -> () in}
+    var ready = false
+    var sector: UInt32 = 0
+    var hbstop = {}
+    func hbstart(){
+        hbstop()
+        hbstop = interval(1, { [self] in
+            send(Data([3]))
+        })
+    }
     override init(size: CGSize) {
+        super.init(size: size)
+        startAnimation()
+        cam.position = CGPoint.zero
+        self.addChild(cam)
+        self.camera = cam
+        cam.setScale(0.4)
         ship.position.y = 160
         ship.alpha = 0
-        ship.run(SKAction.fadeAlpha(by: 1, duration: 1).ease(.easeOut))
-        super.init(size: size)
+        var stopAuth = {}
+        send = connect("192.168.1.64:65152"){ [self](d) in
+            var data = d
+            let code: UInt8 = data.read()
+            if code == 1{
+                stopAuth()
+                ready = true
+                if view != nil{
+                    didMove(to: view!)
+                }
+                sector = data.read()
+                hbstart()
+            }else if code == 127{
+                dmessage = data.read() ?? "Disconnected!"
+                Disconnected.renderTo(skview)
+            }
+        }
+        let hello = try! messages.hello(name: "BlobKat")
+        var tries = 0
+        stopAuth = interval(0.5) { [self] in
+            tries += 1
+            if tries > 6{
+                //failed
+                stopAuth()
+                dmessage = "Could not connect"
+                Disconnected.renderTo(skview)
+                return
+            }
+            send(hello)
+        }
         self.addChild(ship)
+        vibrateCamera(camera: cam)
+        
+        tunnel1.position = pos(mx: -0.12, my: 0)
+        tunnel1.setScale(0.155)
+        self.addChild(tunnel1)
+        
+        tunnel2.position = pos(mx: 0.12, my: 0)
+        tunnel2.setScale(0.155)
+        self.addChild(tunnel2)
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     override func didMove(to view: SKView) {
-        send = connect("192.168.1.64:65152"){ data in
-            if data.count == 0{
-                Disconnected.renderTo(skview)
-            }
-            
-        }
-        try! send(messages.hello(name: "BlobKat"))
+        guard ready else{return}
+        ship.run(SKAction.fadeAlpha(by: 1, duration: 1).ease(.easeOut))
         startAnimation()
-        cam.position = CGPoint.zero
-        self.addChild(cam)
-        self.camera = cam
-        cam.setScale(0.4)
         //setting tapToSrart label relative to camera (static)
         self.label(node: tapToStart, "tap to start", pos: pos(mx: 0, my: -0.4), size: fmed, color: UIColor.white, font: "HalogenbyPixelSurplus-Regular", zPos: 1000, isStatic: true)
         //position indicator
         self.label(node: pos, "x: , y: , v: , b: ", pos: pos(mx: -0.5, my: -0.5, x: 20, y: 20), size: 20, color: UIColor.white, font: "HalogenbyPixelSurplus-Regular", zPos: 1000, isStatic: true)
         pos.horizontalAlignmentMode = .left
-        
         pos.verticalAlignmentMode = .top
         tapToStart.alpha = 0.7
         ship.zPosition = 5
@@ -151,17 +192,7 @@ class Play: PlayConvenience{
                 self.cam.addChild(longTrail)
             }
         }
-        
-        vibrateCamera(camera: cam)
-        
-        tunnel1.position = pos(mx: -0.12, my: 0)
-        tunnel1.setScale(0.155)
-        self.addChild(tunnel1)
         vibrateObject(sprite: tunnel1)
-        
-        tunnel2.position = pos(mx: 0.12, my: 0)
-        tunnel2.setScale(0.155)
-        self.addChild(tunnel2)
         vibrateObject(sprite: tunnel2)
     }
     func moveTrail(trail: SKSpriteNode){
@@ -184,6 +215,7 @@ class Play: PlayConvenience{
         }
     }
     func startGame(){
+        hbstop()
         ship.producesParticles = false
         self.tapToStart.run(SKAction.fadeOut(withDuration: 0.3).ease(.easeOut))
         self.tapToStart.run(SKAction.scale(by: 1.5, duration: 0.2))
@@ -200,7 +232,7 @@ class Play: PlayConvenience{
             planet1.zPosition = -1
             planets.append(planet1)
             self.addChild(planet1)
-            let ast = Asteroid(radius: 40, mass: 300, texture: .from(3))
+            let ast = Object(radius: 40, mass: 300, texture: .from(3), asteroid: true)
             self.addChild(ast)
             objects.append(ast)
             ast.position.x = 600
@@ -218,7 +250,7 @@ class Play: PlayConvenience{
         cam.addChild(dPad)
         
         
-        thrustButton.position = pos(mx: -0.35, my: -0.25 )
+        thrustButton.position = pos(mx: -0.35, my: -0.25)
         thrustButton.alpha = 1
         thrustButton.zPosition = 10
         thrustButton.setScale(0.1)
@@ -286,8 +318,9 @@ class Play: PlayConvenience{
         }else if key == .keyboardB{
             guard d.count >= 45 else{return}
             ship.decode(data: &d)
-        }else if key == .keyboardQ{
-            send(Data([]))
+        }else if key == .keyboardEqualSign{
+            send(Data([127]))
+            dmessage = "Y u diskonnekt??"
             Disconnected.renderTo(skview)
         }
     }
