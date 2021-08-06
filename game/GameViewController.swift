@@ -19,7 +19,7 @@ class GameViewController: UIViewController {
         super.viewDidLoad()
         if let view = self.view as! SKView? {
             skview = view
-            Play.renderTo(view)
+            Disconnected.renderTo(view)
             view.preferredFramesPerSecond = 60
             view.showsNodeCount = true
             view.showsFPS = true
