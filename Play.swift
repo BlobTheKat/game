@@ -75,10 +75,19 @@ class Play: PlayConvenience{
     var send = {(_: Data) -> () in}
     var ready = false
     var sector: UInt32 = 0
-    var hbstop = {}
-    func hbstart(){
-        hbstop()
-        hbstop = interval(1, { [self] in
+    var istop = {}
+    func startPing(){
+        istop()
+        istop = interval(0.1, { [self] in
+            //send playerdata
+            var data = Data([5])
+            ship.encode(data: &data)
+            send(data)
+        })
+    }
+    func startHB(){
+        istop()
+        istop = interval(1, { [self] in
             send(Data([3]))
         })
     }
@@ -102,7 +111,7 @@ class Play: PlayConvenience{
                     didMove(to: view!)
                 }
                 sector = data.read()
-                hbstart()
+                startHB()
             }else if code == 127{
                 dmessage = data.read() ?? "Disconnected!"
                 Disconnected.renderTo(skview)
@@ -215,7 +224,7 @@ class Play: PlayConvenience{
         }
     }
     func startGame(){
-        hbstop()
+        startPing()
         ship.producesParticles = false
         self.tapToStart.run(SKAction.fadeOut(withDuration: 0.3).ease(.easeOut))
         self.tapToStart.run(SKAction.scale(by: 1.5, duration: 0.2))
