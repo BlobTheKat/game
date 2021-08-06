@@ -83,12 +83,11 @@ class Object: SKSpriteNode, DataCodable{
                 velocity.dy += cos(zRotation) * thrustMultiplier / 30
                 producesParticles = true
             }
-            if landed{thrustLeft=false;thrustRight=false}
             if thrustLeft && thrustRight{thrustLeft = false; thrustRight = false}
-            if thrustRight{
+            if thrustRight && !landed{
                 angularVelocity -= 0.002 * angularThrustMultiplier
             }
-            if thrustLeft{
+            if thrustLeft && !landed{
                 angularVelocity += 0.002 * angularThrustMultiplier
             }
         }
@@ -154,19 +153,17 @@ class Object: SKSpriteNode, DataCodable{
     func encode(data: inout Data){
         data.write(Float(self.position.x))
         data.write(Float(self.position.y))
-        data.write(Int8(round(self.zRotation * 40)))
         data.write(Float(self.velocity.dx))
         data.write(Float(self.velocity.dy))
-        
-        data.write(Int8(self.angularVelocity * 768))
+        data.write(Int8(round((self.zRotation.remainder(dividingBy: .pi*2) + .pi*2).remainder(dividingBy: .pi*2) * 40)))
+        data.write(UInt8(Int(self.angularVelocity * 768)&255))
         data.write(UInt8(thrust ? 1 : 0) + UInt8(thrustLeft ? 2 : 0) + UInt8(thrustRight ? 4 : 0) + UInt8(self.level * 8))
         data.write(UInt8(self.type))
     }
     func decode(data: inout Data){
         self.position = CGPoint(x: CGFloat(data.read() as Float), y: CGFloat(data.read() as Float))
-        
-        self.zRotation = CGFloat(data.read() as Int8) / 40
         self.velocity = CGVector(dx: CGFloat(data.read() as Float), dy: CGFloat(data.read() as Float))
+        self.zRotation = CGFloat(data.read() as Int8) / 40
         self.angularVelocity = CGFloat(data.read() as Int8) / 768
         let bits: UInt8 = data.read()
         thrust = bits & 1 != 0
@@ -180,6 +177,8 @@ class Object: SKSpriteNode, DataCodable{
             asteroid = false
         }
         producesParticles = thrust
+        self.level = Int(bits / 8)
+        self.type = Int(data.read() as UInt8)
         self.controls = true
         self.dynamic = true
     }
