@@ -125,7 +125,7 @@ extension SKScene{
         let k = SKScene._k
         SKScene._k += 1
         self.run(action, withKey: "__\(k)")
-        return {() -> () in
+        return {
             self.removeAction(forKey: "__\(k)")
         }
     }
@@ -176,3 +176,23 @@ extension Data{
         return f
     }
 }
+
+extension StringProtocol{
+    subscript(offset: Int) -> Character { self[index(startIndex, offsetBy: offset)] }
+}
+
+/*func timeout(_ after: TimeInterval, _ a: @escaping () -> ()) -> () -> (){
+    let task = DispatchWorkItem(block: a)
+    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + after, execute: task)
+
+    return task.cancel
+}
+
+func interval(_ every: TimeInterval, _ a: @escaping () -> ()) -> () -> (){
+    var f = {}, c = {}
+    f = {a();c = timeout(every, f)}
+    f()
+    return {
+        c()
+    }
+}*/
