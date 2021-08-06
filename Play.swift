@@ -316,7 +316,7 @@ class Play: PlayConvenience{
         if key == .keyboardN{
             ship.encode(data: &d)
         }else if key == .keyboardB{
-            guard d.count >= 45 else{return}
+            guard d.count >= 20 else{return}
             ship.decode(data: &d)
         }else if key == .keyboardEqualSign{
             send(Data([127]))
