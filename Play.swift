@@ -108,6 +108,8 @@ class Play: PlayConvenience{
             return
         }
         objects[i].decode(data: &data)
+        if objects[i].id == 0 && objects[i].parent != nil{objects[i].removeFromParent()}
+        if objects[i].id != 0 && objects[i].parent == nil{self.addChild(objects[i])}
     }
     override init(size: CGSize) {
         super.init(size: size)

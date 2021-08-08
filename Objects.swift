@@ -188,7 +188,7 @@ class Object: SKSpriteNode, DataCodable{
         }
         producesParticles = thrust
         self.id = Int(bits / 8)
-        let ship = ships.data[id]
+        let ship = ships.data[1]
         guard case .string(let t) = ship["texture"] else {fatalError("invalid texture")}
         guard case .number(let radius) = ship["radius"] else {fatalError("invalid radius")}
         guard case .number(let mass) = ship["mass"] else {fatalError("invalid mass")}
