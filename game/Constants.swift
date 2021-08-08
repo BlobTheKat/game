@@ -37,6 +37,9 @@ extension SKTexture{
     func code() -> UInt32{
         return r[self] ?? 0
     }
+    static func named(_ a: String) -> SKTexture{
+        return SKTexture(imageNamed: a)
+    }
 }
 enum JSON{
     init(_ v: Any?){
@@ -78,7 +81,9 @@ struct GameData{
         guard let dat = FileManager.default.contents(atPath: Bundle.main.path(forResource: path, ofType: nil) ?? ""), let s = String(data: dat, encoding: .utf8) else {
             return nil
         }
-        let text = s.split(separator: "\n")
+        let text = s.split(separator: "\n", omittingEmptySubsequences: false).map { a in
+            return String(a.prefix(upTo: a.firstIndex(of: "#") ?? a.endIndex))
+        }
         var i = 0
         header = [:]
         while i < text.count && text[i] != ""{
@@ -100,7 +105,7 @@ struct GameData{
         data = []
         while i < text.count{
             data.append([:])
-            while text[i] != ""{
+            while i < text.count && text[i] != ""{
                 let t = text[i].split(separator: ":")
                 guard t.count > 1 else{data[data.count-1][String(t[0])] = .null;i+=1;continue}
                 let value = t[1].trimmingCharacters(in: CharacterSet([" ", "\u{0009}"]))
@@ -125,4 +130,6 @@ struct GameData{
         return data[a]
     }
 }
-let map = GameData("map")!
+var map = GameData("map")!
+var ships = GameData("ships")!
+var planets = GameData("planets")!

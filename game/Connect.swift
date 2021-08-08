@@ -36,8 +36,10 @@ func connect(_ host: String = "192.168.1.64:65152", _ a: @escaping (Data) -> ())
                 }
                 connection?.receiveMessage(completion: c)
             case .cancelled:
+                dmessage = "Connection Interrupted"
                 DispatchQueue.main.async{Disconnected.renderTo(skview)}
             case .failed(_):
+                dmessage = "Could not connect to serrver"
                 DispatchQueue.main.async{Disconnected.renderTo(skview)}
             default:()
         }

@@ -28,6 +28,7 @@ class Play: PlayConvenience{
         a()
         a = timeout(5, {
             self.send(Data([127]))
+            dmessage = "Lost connection!"
             Disconnected.renderTo(skview)
         })
     }
@@ -103,6 +104,7 @@ class Play: PlayConvenience{
             let object = Object()
             object.decode(data: &data)
             objects.append(object)
+            if object.id != 0{self.addChild(object)}
             return
         }
         objects[i].decode(data: &data)
@@ -116,6 +118,7 @@ class Play: PlayConvenience{
         cam.setScale(0.4)
         ship.position.y = 160
         ship.alpha = 0
+        ship.id = 1
         var stopAuth = {}
         send = connect("192.168.1.64:65152"){ [self](d) in
             var data = d
@@ -135,11 +138,11 @@ class Play: PlayConvenience{
                 ping()
             }else if code == 6{
                 ping()
-                var i = 0
+                var i = 1
                 while data.count > 19{parseShip(&data, i);i += 1}
             }else if code == 7{
                 ping()
-                var i = 1
+                var i = 0
                 while data.count > 19{parseShip(&data, i);i += 1}
             }
         }

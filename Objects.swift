@@ -42,6 +42,18 @@ class Object: SKSpriteNode, DataCodable{
         particle = defParticle
         self.asteroid = asteroid
     }
+    init(id: Int, asteroid: Bool){
+        guard !asteroid else {fatalError("asteroids not yet implemented")}
+        self.asteroid = false
+        self.id = id
+        let ship = ships.data[id]
+        guard case .string(let t) = ship["texture"] else {fatalError("invalid texture")}
+        super.init(texture: .named(t), color: UIColor.clear, size: t.size())
+        guard case .number(let radius) = ship["radius"] else {fatalError("invalid radius")}
+        guard case .number(let mass) = ship["mass"] else {fatalError("invalid mass")}
+        self.body(radius: CGFloat(radius), mass: CGFloat(mass))
+        particle = defParticle
+    }
     func update(collisionNodes: ArraySlice<Object>){
         if !asteroid{
             self.angularVelocity *= 0.95
@@ -176,6 +188,11 @@ class Object: SKSpriteNode, DataCodable{
         }
         producesParticles = thrust
         self.id = Int(bits / 8)
+        let ship = ships.data[id]
+        guard case .string(let t) = ship["texture"] else {fatalError("invalid texture")}
+        guard case .number(let radius) = ship["radius"] else {fatalError("invalid radius")}
+        guard case .number(let mass) = ship["mass"] else {fatalError("invalid mass")}
+        self.body(radius: CGFloat(radius), mass: CGFloat(mass), texture: .named(t))
         self.controls = true
         self.dynamic = true
     }

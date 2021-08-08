@@ -24,7 +24,7 @@ class Disconnected: PlayConvenience{
     override func didMove(to view: SKView) {
         
         label(node: reconnectLabel, dmessage, pos: pos(mx: 0.5, my: 0.3), size: fsmall, color: UIColor.white)
-        
+        dmessage = "Disconnected!"
         label(node: tapToReconnect, "-tap to reconnect-", pos: pos(mx: 0.5, my: 0.3, y: -50), size: fsmall - 3.5, color: UIColor.white)
         
         pulsate(node: tapToReconnect, amount: 0.6, duration: 3)
