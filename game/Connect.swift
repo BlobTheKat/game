@@ -15,6 +15,13 @@ func connect(_ host: String = "192.168.1.64:65152", _ a: @escaping (Data) -> ())
     let host = NWEndpoint.Host(stringLiteral: String(host.split(separator: ":")[0]))
     var queue: [Data] = []
     var ready = false
+    var c = {(_:Data?,_:NWConnection.ContentContext?,_:Bool,_:NWError?)in}
+    c = { (data, _, isComplete, _) in
+        if isComplete && data != nil{
+            a(data!)
+        }
+        connection?.receiveMessage(completion: c)
+    }
     connection = NWConnection(host: host, port: port, using: .udp)
     connection?.stateUpdateHandler = { (newState) in
         switch (newState) {
@@ -27,17 +34,11 @@ func connect(_ host: String = "192.168.1.64:65152", _ a: @escaping (Data) -> ())
                         }
                     })))
                 }
-                connection?.receiveMessage { (data, context, isComplete, error) in
-                    if isComplete {
-                        a(data ?? Data())
-                    }
-                }
+                connection?.receiveMessage(completion: c)
             case .cancelled:
-                print("failed")
-                Disconnected.renderTo(skview)
+                DispatchQueue.main.async{Disconnected.renderTo(skview)}
             case .failed(_):
-                print("failed")
-                Disconnected.renderTo(skview)
+                DispatchQueue.main.async{Disconnected.renderTo(skview)}
             default:()
         }
     }
@@ -73,6 +74,7 @@ enum ProtocolError: Error{
     case valueTooLarge(msg: String)
     case invalidCase(msg: String)
     case serverUnhappy(msg: String)
+    case missingValue(msg: String)
 }
 
 struct M{
@@ -83,6 +85,8 @@ struct M{
     func hello(name: String) throws -> Data{
         if name.count > 64{throw ProtocolError.valueTooLarge(msg: "name cannot be longer than 64 characters")}
         var data = Data([])
+        guard case .number(let v) = map.header["version"] else {throw ProtocolError.missingValue(msg: "version not set")}
+        data.write(UInt16(v))
         data.write(msg.hello)
         data.write(name)
         return data

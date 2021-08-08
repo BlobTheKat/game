@@ -1,0 +1,6 @@
+#ship 0
+mass: 150
+radius: 15
+speed: 1
+spin: 1
+texture: ship0

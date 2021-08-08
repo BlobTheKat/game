@@ -23,7 +23,14 @@ class Play: PlayConvenience{
     var started = false
     let thrustButton = SKSpriteNode(imageNamed: "thrustOff")
     let dPad = SKSpriteNode(imageNamed: "Dpad")
-    
+    var a = {}
+    func ping(){
+        a()
+        a = timeout(5, {
+            self.send(Data([127]))
+            Disconnected.renderTo(skview)
+        })
+    }
     let tunnel1 = SKSpriteNode(imageNamed: "tunnel1")
     let tunnel2 = SKSpriteNode(imageNamed: "tunnel2")
     func cameraUpdate(){
@@ -76,7 +83,7 @@ class Play: PlayConvenience{
     var ready = false
     var sector: UInt32 = 0
     var istop = {}
-    func startPing(){
+    func startData(){
         istop()
         istop = interval(0.1, { [self] in
             //send playerdata
@@ -90,6 +97,15 @@ class Play: PlayConvenience{
         istop = interval(1, { [self] in
             send(Data([3]))
         })
+    }
+    func parseShip(_ data: inout Data, _ i: Int){
+        guard i < objects.count else {
+            let object = Object()
+            object.decode(data: &data)
+            objects.append(object)
+            return
+        }
+        objects[i].decode(data: &data)
     }
     override init(size: CGSize) {
         super.init(size: size)
@@ -114,7 +130,17 @@ class Play: PlayConvenience{
                 startHB()
             }else if code == 127{
                 dmessage = data.read() ?? "Disconnected!"
-                Disconnected.renderTo(skview)
+                DispatchQueue.main.async{Disconnected.renderTo(skview)}
+            }else if code == 4{
+                ping()
+            }else if code == 6{
+                ping()
+                var i = 0
+                while data.count > 19{parseShip(&data, i);i += 1}
+            }else if code == 7{
+                ping()
+                var i = 1
+                while data.count > 19{parseShip(&data, i);i += 1}
             }
         }
         let hello = try! messages.hello(name: "BlobKat")
@@ -125,7 +151,7 @@ class Play: PlayConvenience{
                 //failed
                 stopAuth()
                 dmessage = "Could not connect"
-                Disconnected.renderTo(skview)
+                DispatchQueue.main.async{Disconnected.renderTo(skview)}
                 return
             }
             send(hello)
@@ -140,6 +166,7 @@ class Play: PlayConvenience{
         tunnel2.position = pos(mx: 0.12, my: 0)
         tunnel2.setScale(0.155)
         self.addChild(tunnel2)
+        
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -224,7 +251,7 @@ class Play: PlayConvenience{
         }
     }
     func startGame(){
-        startPing()
+        startData()
         ship.producesParticles = false
         self.tapToStart.run(SKAction.fadeOut(withDuration: 0.3).ease(.easeOut))
         self.tapToStart.run(SKAction.scale(by: 1.5, duration: 0.2))
@@ -282,7 +309,6 @@ class Play: PlayConvenience{
             ship.thrust = true
         }
         if dPad == node{
-            print(point.x, dPad.position.x)
             if point.x > dPad.position.x{
                 ship.thrustRight = true
                 ship.thrustLeft = false

@@ -14,8 +14,7 @@ protocol DataCodable {
 }
 
 class Object: SKSpriteNode, DataCodable{
-    var type = 0
-    var level = 1
+    var id = 0
     var dynamic = false
     var controls = false
     var thrust = false
@@ -157,15 +156,14 @@ class Object: SKSpriteNode, DataCodable{
         data.write(Float(self.velocity.dy))
         data.write(Int8(round((self.zRotation.remainder(dividingBy: .pi*2) + .pi*2).remainder(dividingBy: .pi*2) * 40)))
         data.write(UInt8(Int(self.angularVelocity * 768)&255))
-        data.write(UInt8(thrust ? 1 : 0) + UInt8(thrustLeft ? 2 : 0) + UInt8(thrustRight ? 4 : 0) + UInt8(self.level * 8))
-        data.write(UInt8(self.type))
+        data.write(UInt16(thrust ? 1 : 0) + UInt16(thrustLeft ? 2 : 0) + UInt16(thrustRight ? 4 : 0) + UInt16(self.id * 8))
     }
     func decode(data: inout Data){
         self.position = CGPoint(x: CGFloat(data.read() as Float), y: CGFloat(data.read() as Float))
         self.velocity = CGVector(dx: CGFloat(data.read() as Float), dy: CGFloat(data.read() as Float))
         self.zRotation = CGFloat(data.read() as Int8) / 40
         self.angularVelocity = CGFloat(data.read() as Int8) / 768
-        let bits: UInt8 = data.read()
+        let bits: UInt16 = data.read()
         thrust = bits & 1 != 0
         thrustLeft = bits & 2 != 0
         thrustRight = bits & 4 != 0
@@ -177,8 +175,7 @@ class Object: SKSpriteNode, DataCodable{
             asteroid = false
         }
         producesParticles = thrust
-        self.level = Int(bits / 8)
-        self.type = Int(data.read() as UInt8)
+        self.id = Int(bits / 8)
         self.controls = true
         self.dynamic = true
     }
@@ -315,6 +312,12 @@ class Particle: SKSpriteNode{
         var green = CGFloat()
         var blue = CGFloat()
         self.color.getRed(&red, green: &green, blue: &blue, alpha: nil)
-        self.color = UIColor(red: red + coldelta.r, green: green + coldelta.g, blue: blue + coldelta.b, alpha: 1)
+        self.color = UIColor(red: (red + coldelta.r).clamp(0, 1), green: (green + coldelta.g).clamp(0, 1), blue: (blue + coldelta.b).clamp(0, 1), alpha: 1)
+    }
+}
+
+extension Comparable{
+    @inlinable func clamp(_ a: Self, _ b: Self) -> Self{
+        return min(max(self, a), b)
     }
 }

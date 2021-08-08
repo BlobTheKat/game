@@ -158,8 +158,11 @@ extension Data{
         self.append(a.data(using: encoding)!)
     }
     mutating func read(encoding: String.Encoding = .utf8) -> String?{
-        let count: UInt32 = read()
-        let data = self.dropFirst(Int(count))
+        if self.count < 4{return nil}
+        let count = Int(read() as UInt32)
+        if self.count < count{return nil}
+        let data = self.prefix(count)
+        self.removeFirst(count)
         return String(data: data, encoding: encoding)
     }
     mutating func write<T>(_ a: T){
@@ -168,6 +171,16 @@ extension Data{
     }
     mutating func read<T>() -> T{
         let l = MemoryLayout<T>.size
+        var d = Data(self.prefix(l))
+        let f: T = d.withUnsafeMutableBytes { a in
+            return a.load(as: T.self)
+        }
+        self.removeFirst(l)
+        return f
+    }
+    mutating func readsafe<T>() -> T?{
+        let l = MemoryLayout<T>.size
+        if self.count < l{return nil}
         var d = Data(self.prefix(l))
         let f: T = d.withUnsafeMutableBytes { a in
             return a.load(as: T.self)
