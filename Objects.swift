@@ -200,6 +200,7 @@ class Object: SKSpriteNode, DataCodable{
 
 class Planet: Object{
     override init(radius: CGFloat, mass: CGFloat = -1, texture: SKTexture = SKTexture(), asteroid: Bool = false){
+        print(texture)
         super.init(radius: radius, mass: mass, texture: texture, asteroid: asteroid)
     }
     func update(_ node: SKSpriteNode?){

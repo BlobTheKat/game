@@ -167,7 +167,7 @@ struct GameData{
         }
     }
     static func from(location: String, completion: @escaping (GameData?) -> ()){
-        fetch("https://raw.githubusercontent.com/BlobTheKat/data/main\(location)") { (d: String) in
+        fetch("https://aaa.blobkat.repl.co\(location)") { (d: String) in
             completion(GameData(data: d))
         } _: { s in
             completion(nil)
@@ -179,13 +179,14 @@ struct GameData{
         return data[a]
     }
 }
-var map = GameData("map")!
-var ships = GameData("ships")!
-var planets = GameData("planets")!
-var asteroids = GameData("asteroids")!
+var map = GameData("/map")!
+var ships = GameData("/ships")!
+var planets = GameData("/planets")!
+var asteroids = GameData("/asteroids")!
 
 func sector(_ id: Int, completion: @escaping ([Planet], [Object]) -> ()){
     guard case .string(let path) = map.data[id]["path"] else {return}
+    DispatchQueue.main.async {
     GameData.from(location: path) { data in
         guard let data = data?.data else{return}
         var planetarr: [Planet] = []
@@ -214,5 +215,6 @@ func sector(_ id: Int, completion: @escaping ([Planet], [Object]) -> ()){
             }
         }
         completion(planetarr, asteroidarr)
+    }
     }
 }

@@ -126,7 +126,7 @@ class Play: PlayConvenience{
         ship.alpha = 0
         ship.id = 1
         var stopAuth = {}
-        send = connect("192.168.1.64:65152"){ [self](d) in
+        send = connect("192.168.1.248:65152"){ [self](d) in
             var data = d
             let code: UInt8 = data.read()
             if code == 1{
