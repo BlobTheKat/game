@@ -13,6 +13,7 @@ class Play: PlayConvenience{
     var gameFPS = 60.0
     var ship = Object(radius: 15, mass: 100, texture: .from(1))
     var planets: [Planet] = []
+    var planetindicators: [SKSpriteNode] = []
     var cam = SKCameraNode()
     var particles: [Particle] = []
     var objects: [Object] = []
@@ -66,11 +67,13 @@ class Play: PlayConvenience{
             }
             a += 1
         }
+        a = 0
         for planet in planets{
             for s in objects{
                 planet.gravity(s)
             }
-            planet.update()
+            planet.update(a < planetindicators.count ? planetindicators[a] : nil)
+            a += 1
         }
         a = 0
         for s in objects{
@@ -104,12 +107,13 @@ class Play: PlayConvenience{
             let object = Object()
             object.decode(data: &data)
             objects.append(object)
-            if object.id != 0{self.addChild(object)}
+            if object.id != 0{DispatchQueue.main.async{self.addChild(object)}}
             return
         }
-        objects[i].decode(data: &data)
-        if objects[i].id == 0 && objects[i].parent != nil{objects[i].removeFromParent()}
-        if objects[i].id != 0 && objects[i].parent == nil{self.addChild(objects[i])}
+        let object = objects[i]
+        object.decode(data: &data)
+        if object.id == 0 && object.parent != nil{DispatchQueue.main.async{object.removeFromParent()}}
+        if object.id != 0 && object.parent == nil{DispatchQueue.main.async{self.addChild(object)}}
     }
     override init(size: CGSize) {
         super.init(size: size)
@@ -132,6 +136,21 @@ class Play: PlayConvenience{
                     didMove(to: view!)
                 }
                 sector = data.read()
+                planets.removeAll()
+                objects.removeAll()
+                objects.append(ship)
+                game.sector(Int(sector)) { p, o in
+                    planets.append(contentsOf: p)
+                    objects.append(contentsOf: o)
+                    for p in p{
+                        planetindicators.append(SKSpriteNode(imageNamed: "indicator"))
+                        self.addChild(p)
+                        p.zPosition = -1
+                    }
+                    for o in o{
+                        if o.id != 0{self.addChild(o)}
+                    }
+                }
                 startHB()
             }else if code == 127{
                 dmessage = data.read() ?? "Disconnected!"
@@ -266,17 +285,6 @@ class Play: PlayConvenience{
         let _ = timeout(0.5) { [self] in
             ship.controls = true
             ship.dynamic = true
-            let planet1 = Planet(radius: 150, texture: .from(2))
-            planet1.position.y = 400
-            planet1.position.x = -50
-            planet1.angularVelocity = 0.001
-            planet1.zPosition = -1
-            planets.append(planet1)
-            self.addChild(planet1)
-            let ast = Object(radius: 40, mass: 300, texture: .from(3), asteroid: true)
-            self.addChild(ast)
-            objects.append(ast)
-            ast.position.x = 600
             ship.particle = ship.defParticle
             ship.particleDelay = 5
         }

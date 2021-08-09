@@ -13,6 +13,7 @@
 		347FD84326BEA56400396640 /* ships in Resources */ = {isa = PBXBuildFile; fileRef = 347FD84226BEA56400396640 /* ships */; };
 		347FD84526BEC05500396640 /* map in Resources */ = {isa = PBXBuildFile; fileRef = 347FD84426BEC05500396640 /* map */; };
 		347FD84726BEC42100396640 /* planets in Resources */ = {isa = PBXBuildFile; fileRef = 347FD84626BEC42100396640 /* planets */; };
+		347FD84A26C12EEE00396640 /* asteroids in Resources */ = {isa = PBXBuildFile; fileRef = 347FD84926C12EEE00396640 /* asteroids */; };
 		34844AE026A9955900A3F790 /* Objects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34844ADF26A9955900A3F790 /* Objects.swift */; };
 		34844AE126A9A44B00A3F790 /* Convenience.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34844ADD26A9944500A3F790 /* Convenience.swift */; };
 		34A5547226BBE13D00D43C04 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A5547126BBE13C00D43C04 /* Constants.swift */; };
@@ -32,6 +33,7 @@
 		347FD84226BEA56400396640 /* ships */ = {isa = PBXFileReference; lastKnownFileType = text; path = ships; sourceTree = "<group>"; };
 		347FD84426BEC05500396640 /* map */ = {isa = PBXFileReference; lastKnownFileType = text; path = map; sourceTree = "<group>"; };
 		347FD84626BEC42100396640 /* planets */ = {isa = PBXFileReference; lastKnownFileType = text; path = planets; sourceTree = "<group>"; };
+		347FD84926C12EEE00396640 /* asteroids */ = {isa = PBXFileReference; lastKnownFileType = text; path = asteroids; sourceTree = "<group>"; };
 		34844ADD26A9944500A3F790 /* Convenience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Convenience.swift; sourceTree = "<group>"; };
 		34844ADF26A9955900A3F790 /* Objects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Objects.swift; sourceTree = SOURCE_ROOT; };
 		34A5547126BBE13C00D43C04 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
@@ -93,6 +95,7 @@
 				347FD84226BEA56400396640 /* ships */,
 				347FD84426BEC05500396640 /* map */,
 				347FD84626BEC42100396640 /* planets */,
+				347FD84926C12EEE00396640 /* asteroids */,
 			);
 			path = game;
 			sourceTree = "<group>";
@@ -154,6 +157,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				347FD84A26C12EEE00396640 /* asteroids in Resources */,
 				347FD84726BEC42100396640 /* planets in Resources */,
 				3346242D26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf in Resources */,
 				347FD84326BEA56400396640 /* ships in Resources */,
@@ -319,8 +323,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 4453Y73J83;
+				DEVELOPMENT_TEAM = ZG2N9ZCLB5;
 				INFOPLIST_FILE = game/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -338,8 +343,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 4453Y73J83;
+				DEVELOPMENT_TEAM = ZG2N9ZCLB5;
 				INFOPLIST_FILE = game/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

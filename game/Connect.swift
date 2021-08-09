@@ -69,7 +69,20 @@ func fetch<json: Decodable>(_ url: String, _ done: @escaping (json) -> (), _ err
         }catch{
             err("Invalid Response")
         }
+    }.resume()
+}
+func fetch(_ url: String, _ done: @escaping (String) -> (), _ err: @escaping (String) -> ()){
+    guard let uri = URL(string: url) else{
+        err("Invalid URL")
+        return
     }
+    URLSession.shared.dataTask(with: uri) {(data, response, error) in
+        if error != nil{
+            err(error!.localizedDescription)
+        }else{
+            done(String(data: data ?? Data(), encoding: String.Encoding.utf8) ?? "")
+        }
+    }.resume()
 }
 
 enum ProtocolError: Error{

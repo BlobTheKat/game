@@ -188,7 +188,7 @@ class Object: SKSpriteNode, DataCodable{
         }
         producesParticles = thrust
         self.id = Int(bits / 8)
-        let ship = ships.data[1]
+        let ship = (asteroid ? asteroids : ships).data[id]
         guard case .string(let t) = ship["texture"] else {fatalError("invalid texture")}
         guard case .number(let radius) = ship["radius"] else {fatalError("invalid radius")}
         guard case .number(let mass) = ship["mass"] else {fatalError("invalid mass")}
@@ -202,7 +202,32 @@ class Planet: Object{
     override init(radius: CGFloat, mass: CGFloat = -1, texture: SKTexture = SKTexture(), asteroid: Bool = false){
         super.init(radius: radius, mass: mass, texture: texture, asteroid: asteroid)
     }
-    func update(){
+    func update(_ node: SKSpriteNode?){
+        let a: SKSpriteNode? = nil
+        if let i = a{
+            guard let parent = parent as? Play else{return}
+            guard let cam = parent.camera else {return}
+            let pos1 = self.convert(CGPoint.zero, to: cam)
+            let size = CGSize(width: size.width / cam.xScale, height: size.height / cam.yScale)
+            let frame = CGRect(origin: CGPoint(x: cam.position.x - parent.size.width / 2, y: cam.position.y - parent.size.height / 2), size: parent.size)
+            if pos1.x < frame.minX - size.width / 2 || pos1.x > frame.maxX + size.width / 2 || pos1.y < frame.minY - size.height / 2 || pos1.y > frame.maxY + size.height / 2{
+                let dx = pos1.x
+                let dy = pos1.y
+                let camw = frame.width / 2// - i.size.width
+                let camh = frame.height / 2// - i.size.height
+                if dy / dx > camh / camw{
+                    //anchor top/bottom
+                    i.position.x = (dx * camh / abs(dy))
+                    i.position.y = (dy > 0 ? camh : -camh)
+                }else{
+                    //anchor left/right
+                    i.position.y = (dy * camw / abs(dx))
+                    i.position.x = (dx > 0 ? camw : -camw)
+                }
+                i.zRotation = -atan2(dy, dx)
+                if i.parent == nil{cam.addChild(i)}
+            }else if i.parent != nil{i.removeFromParent()}
+        }
         zRotation += angularVelocity
     }
     func gravity(_ n: Object){

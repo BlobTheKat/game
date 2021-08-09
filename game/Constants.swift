@@ -123,7 +123,56 @@ struct GameData{
             i += 1
         }
     }
-
+    init(data s: String){
+        let text = s.split(separator: "\n", omittingEmptySubsequences: false).map { a in
+            return String(a.prefix(upTo: a.firstIndex(of: "#") ?? a.endIndex))
+        }
+        var i = 0
+        header = [:]
+        while i < text.count && text[i] != ""{
+            let t = text[i].split(separator: ":")
+            guard t.count > 1 else{header[String(t[0])] = .null;i+=1;continue}
+            let value = t[1].trimmingCharacters(in: CharacterSet([" ", "\u{0009}"]))
+            if let a = Double(value){
+                header[String(t[0])] = .number(a)
+            }else if value.lowercased() == "yes" || value.lowercased() == "true"{
+                header[String(t[0])] = .bool(true)
+            }else if value.lowercased() == "no" || value.lowercased() == "false"{
+                header[String(t[0])] = .bool(false)
+            }else{
+                header[String(t[0])] = .string(String(value))
+            }
+            i += 1
+        }
+        i += 1
+        data = []
+        while i < text.count{
+            data.append([:])
+            while i < text.count && text[i] != ""{
+                let t = text[i].split(separator: ":")
+                guard t.count > 1 else{data[data.count-1][String(t[0])] = .null;i+=1;continue}
+                let value = t[1].trimmingCharacters(in: CharacterSet([" ", "\u{0009}"]))
+                if let a = Double(value){
+                    data[data.count-1][String(t[0])] = .number(a)
+                }else if value.lowercased() == "yes" || value.lowercased() == "true"{
+                    data[data.count-1][String(t[0])] = .bool(true)
+                }else if value.lowercased() == "no" || value.lowercased() == "false"{
+                    data[data.count-1][String(t[0])] = .bool(false)
+                }else{
+                    data[data.count-1][String(t[0])] = .string(String(value))
+                }
+                i += 1
+            }
+            i += 1
+        }
+    }
+    static func from(location: String, completion: @escaping (GameData?) -> ()){
+        fetch("https://raw.githubusercontent.com/BlobTheKat/data/main\(location)") { (d: String) in
+            completion(GameData(data: d))
+        } _: { s in
+            completion(nil)
+        }
+    }
     var header: [String: JSON]
     var data: [[String: JSON]]
     @inlinable subscript(_ a: Int) -> [String: JSON]{
@@ -133,3 +182,37 @@ struct GameData{
 var map = GameData("map")!
 var ships = GameData("ships")!
 var planets = GameData("planets")!
+var asteroids = GameData("asteroids")!
+
+func sector(_ id: Int, completion: @escaping ([Planet], [Object]) -> ()){
+    guard case .string(let path) = map.data[id]["path"] else {return}
+    GameData.from(location: path) { data in
+        guard let data = data?.data else{return}
+        var planetarr: [Planet] = []
+        var asteroidarr: [Object] = []
+        for object in data{
+            var a = false
+            if case .bool(let f) = object["asteroid"] {a = f}
+            guard case .number(let id) = object["id"] else {continue}
+            let dat = (a ? asteroids : planets).data[Int(id)]
+            guard case .number(let radius) = dat["radius"] else {continue}
+            guard case .number(let mass) = dat["mass"] else {continue}
+            guard case .number(let x) = object["x"] else {continue}
+            guard case .number(let y) = object["y"] else {continue}
+            guard case .number(let spin) = dat["spin"] else {continue}
+            guard case .string(let texture) = dat["texture"] else {continue}
+            if a{
+                asteroidarr.append(Object(radius: CGFloat(radius), mass: CGFloat(mass), texture: .named(texture), asteroid: true))
+                asteroidarr.last!.angularVelocity = CGFloat(spin)
+                asteroidarr.last!.position.x = CGFloat(x)
+                asteroidarr.last!.position.y = CGFloat(y)
+            }else{
+                planetarr.append(Planet(radius: CGFloat(radius), mass: CGFloat(mass), texture: .named(texture)))
+                planetarr.last!.angularVelocity = CGFloat(spin)
+                planetarr.last!.position.x = CGFloat(x)
+                planetarr.last!.position.y = CGFloat(y)
+            }
+        }
+        completion(planetarr, asteroidarr)
+    }
+}
