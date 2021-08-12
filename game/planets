@@ -4,3 +4,4 @@ radius: 437
 spin: 0.001
 texture: planet0
 superhot: true
+particle: 0

@@ -36,7 +36,7 @@ class Object: SKSpriteNode, DataCodable{
         let start = State(color: (r: 1, g: 1, b: 0), size: CGSize(width: 10, height: 10), zRot: 0, position: ship.position, alpha: 0.9)
         let endpos = CGPoint(x: ship.position.x + ship.velocity.dx * d + sin(zRotation) * d / 2, y: ship.position.y + ship.velocity.dy * d - cos(zRotation) * d / 2)
         let end = State(color: (r: 1, g: 0, b: 0), size: CGSize(width: 20, height: 20), zRot: 5, position: endpos, alpha: 0, delay: TimeInterval(d) / gameFPS)
-        return Particle(states: [start, end])
+        return Particle(states: [start, end])!
     }
     var particleFrequency = 0.2
     init(radius: CGFloat, mass: CGFloat = -1, texture: SKTexture = SKTexture(), asteroid: Bool = false){
@@ -213,8 +213,7 @@ class Object: SKSpriteNode, DataCodable{
 class Planet: Object{
     var superhot = false
     override func defParticle(_ planet: Object) -> Particle{
-        let dir = randDir(radius)
-        return Particle(states: [State(color: (r: 1, g: 1, b: 0), size: CGSize(width: 10, height: 10), zRot: 0, position: CGPoint(x: position.x + dir.dx, y: position.y + dir.dy), alpha: 1), State(color: (r: 1, g: 0, b: 0), size: CGSize(width: 20, height: 20), zRot: 4, position: CGPoint(x: position.x + dir.dx * 1.3, y: position.y + dir.dy * 1.3), alpha: 0)])
+        return Particle()
     }
     override func update(collisionNodes: ArraySlice<Object>) {}
     func update(_ node: SKSpriteNode?){
@@ -242,6 +241,18 @@ class Planet: Object{
                 if i.parent == nil{cam.addChild(i)}
             }else if i.parent != nil{i.removeFromParent()}
         }
+        let parent = self.parent as? Play
+        if producesParticles{
+            
+            particleQueue += particleFrequency
+            while particleQueue >= 1{
+                if parent != nil{
+                    parent!.particles.append(self.particle(self))
+                    parent!.addChild(parent!.particles.last!)
+                }
+                particleQueue -= 1
+            }
+        }else{particleQueue = 1}
         zRotation += angularVelocity
     }
     func gravity(_ n: Object){
@@ -340,19 +351,20 @@ class Ray{
 class Particle: SKSpriteNode{
     var states: [State]
     var delta = State.zero
-    var ended = false
     @inline(__always) static subscript(_ a: State...) -> Particle{
-        return Particle(states: a)
+        return Particle(states: a) ?? Particle()
     }
-    init(states: [State]){
+    init?(states: [State]){
         self.states = states
         super.init(texture: nil, color: UIColor.clear, size: CGSize.zero)
-        ended = nextState()
+        if nextState(){return nil}
+    }
+    init(){
+        self.states = []
+        super.init(texture: nil, color: UIColor.clear, size: CGSize.zero)
     }
     func nextState() -> Bool{
         if states.count < 1{
-            defer{self.removeFromParent()}
-            ended = true
             return true
         }
         let state = states.removeFirst()
@@ -365,7 +377,6 @@ class Particle: SKSpriteNode{
         return false
     }
     func update() -> Bool{
-        if ended{return true}
         delta.add(to: self)
         delta.delay -= 1 / gameFPS
         if delta.delay < 0.5 / gameFPS{

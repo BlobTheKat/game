@@ -60,6 +60,7 @@ class Play: PlayConvenience{
         for particle in particles{
             if particle.update(){
                 particles.remove(at: particles.firstIndex(of: particle)!)
+                particle.removeFromParent()
             }
         }
         a = 0
@@ -167,7 +168,7 @@ class Play: PlayConvenience{
         var tries = 0
         stopAuth = interval(0.5) { [self] in
             tries += 1
-            if tries > 99{
+            if tries > 6{
                 stopAuth()
                 dmessage = "Could not connect"
                 DispatchQueue.main.async{Disconnected.renderTo(skview)}
@@ -207,7 +208,7 @@ class Play: PlayConvenience{
         var step = 0
         ship.particle = { (_ ship: Object) in
             step = (step + 1) % 16
-            let i = ship.alpha * 1.5 - 0.45
+            let i = max(ship.alpha * 1.5 - 0.45, 0)
             return Particle[State(color: (r: 0.1, g: 0.7, b: 0.7), size: CGSize(width: 11, height: 2), zRot: 0, position: ship.position.add(y: -5), alpha: i), State(color: (r: 1, g: 1, b: 1), size: CGSize(width: 5, height: 2), zRot: 0, position: ship.position.add(y: -35), alpha: 0, delay: TimeInterval(i))]
         }
         ship.particleFrequency = 1

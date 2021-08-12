@@ -216,6 +216,10 @@ func sector(_ id: Int, completion: @escaping ([Planet], [Object]) -> ()){
                 i.position.x = CGFloat(x)
                 i.position.y = CGFloat(y)
                 if case .bool(let hot) = object["superhot"]{i.superhot = hot}
+                if case .number(let particle) = dat["particle"]{
+                    i.producesParticles = true
+                    i.particle = particles[Int(particle)]
+                }
                 planetarr.append(i)
             }
         }
