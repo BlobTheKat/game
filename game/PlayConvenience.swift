@@ -8,7 +8,7 @@
 import Foundation
 import SpriteKit
 
-class PlayConvenience: SKScene{
+class PlayConvenience: SKScene{    
     func vibrateObject(sprite: SKSpriteNode){
 
             sprite.run(SKAction.repeatForever(SKAction.sequence([
@@ -38,15 +38,7 @@ class PlayConvenience: SKScene{
                         SKAction.moveBy(x: 0, y: -0.6, duration: 0.1),
                     ])), withKey: "vibratingCameras")
 
-    }
-    func random() -> CGFloat{
-        return CGFloat(Float(arc4random()) / 0x100000000)
-    }
-    func random(min: CGFloat, max: CGFloat) -> CGFloat{
-        return floor(random() * (max - min) + min)
-    }
-    func recieved(data: Data){}
-    
+    }    
     
     func pulsate(node: SKNode, amount: CGFloat, duration: CGFloat){
         
@@ -63,4 +55,16 @@ class PlayConvenience: SKScene{
         
         
     }
+}
+
+func random() -> CGFloat{
+    return CGFloat(Float(arc4random()) / 0x100000000)
+}
+func random(min: CGFloat, max: CGFloat) -> CGFloat{
+    return floor(random() * (max - min) + min)
+}
+
+func randDir(_ radius: CGFloat) -> CGVector{
+    let direction = random() * .pi * 2
+    return CGVector(dx: sin(direction) * radius, dy: cos(direction) * radius)
 }

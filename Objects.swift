@@ -27,45 +27,53 @@ class Object: SKSpriteNode, DataCodable{
     var thrustMultiplier: CGFloat = 1
     var angularThrustMultiplier: CGFloat = 1
     var angularVelocity: CGFloat = 0
-    var particleOffset: Int = -1
+    var particleQueue = 1.0
     var producesParticles: Bool = false
-    var particle = {() -> Particle in fatalError("particle() accessed before super.init call")}
+    var particle = {(_:Object) -> Particle in fatalError("particle() accessed before super.init call")}
     var asteroid: Bool
-    func defParticle() -> Particle{
-        return Particle(type: "fire", position: CGPoint(x: position.x, y: position.y), velocity: CGVector(dx: velocity.dx + sin(zRotation) / 2, dy: velocity.dy - cos(zRotation) / 2), color: UIColor.yellow, size: CGSize(width: 10, height: 10), alpha: 0.9, decayRate: 0.01, spin: 0.05, sizedif: CGVector(dx: 0.1, dy: 0.1), endcolor: UIColor.red)
+    func defParticle(_ ship: Object) -> Particle{
+        let d: CGFloat = CGFloat(1.5 * gameFPS)
+        let start = State(color: (r: 1, g: 1, b: 0), size: CGSize(width: 10, height: 10), zRot: 0, position: ship.position, alpha: 0.9)
+        let endpos = CGPoint(x: ship.position.x + ship.velocity.dx * d + sin(zRotation) * d / 2, y: ship.position.y + ship.velocity.dy * d - cos(zRotation) * d / 2)
+        let end = State(color: (r: 1, g: 0, b: 0), size: CGSize(width: 20, height: 20), zRot: 5, position: endpos, alpha: 0, delay: TimeInterval(d) / gameFPS)
+        return Particle(states: [start, end])
     }
-    var particleDelay = 5
+    var particleFrequency = 0.2
     init(radius: CGFloat, mass: CGFloat = -1, texture: SKTexture = SKTexture(), asteroid: Bool = false){
         self.asteroid = asteroid
-        super.init(texture: texture, color: UIColor.clear, size: texture.size())
-        self.body(radius: radius, mass: mass)
+        super.init(texture: nil, color: UIColor.clear, size: CGSize.zero)
+        self.body(radius: radius, mass: mass, texture: texture)
         particle = defParticle
         self.asteroid = asteroid
     }
-    init(id: Int, asteroid: Bool){
+    /*init(id: Int, asteroid: Bool){
         guard !asteroid else {fatalError("asteroids not yet implemented")}
         self.asteroid = false
         self.id = id
-        let ship = ships.data[id]
+        let ship = (asteroid ? asteroids : ships).data[id]
         guard case .string(let t) = ship["texture"] else {fatalError("invalid texture")}
-        super.init(texture: .named(t), color: UIColor.clear, size: t.size())
+        super.init(texture: nil, color: UIColor.clear, size: CGSize.zero)
         guard case .number(let radius) = ship["radius"] else {fatalError("invalid radius")}
         guard case .number(let mass) = ship["mass"] else {fatalError("invalid mass")}
         self.body(radius: CGFloat(radius), mass: CGFloat(mass))
         particle = defParticle
-    }
+    }*/
     func update(collisionNodes: ArraySlice<Object>){
         if !asteroid{
             self.angularVelocity *= 0.95
         }
         let parent = self.parent as? Play
         if producesParticles{
-            particleOffset = (particleOffset + 1) % particleDelay
-            if particleOffset == 0{
-                parent?.particles.append(self.particle())
-                parent?.addChild(parent?.particles.last! ?? self.particle())
+            
+            particleQueue += particleFrequency
+            while particleQueue >= 1{
+                if parent != nil{
+                    parent!.particles.append(self.particle(self))
+                    parent!.addChild(parent!.particles.last!)
+                }
+                particleQueue -= 1
             }
-        }else{particleOffset = -1}
+        }else{particleQueue = 1}
         if !asteroid{
             if velocity.dx > 10{velocity.dx *= 0.998}
             if velocity.dy > 10{velocity.dy *= 0.998}
@@ -114,14 +122,12 @@ class Object: SKSpriteNode, DataCodable{
         }
         self.mass = m
         self.radius = radius
-        self.setScale(1)
-        if let t = texture{
-            self.texture = t
-            self.size = t.size()
+        if texture != nil{
+            self.texture = texture!
+            self.size = texture!.size()
         }
         self.setScale(0.25)
     }
-    
     convenience init(){
         self.init(radius: 0, mass: 0)
     }
@@ -162,6 +168,12 @@ class Object: SKSpriteNode, DataCodable{
         data.write(UInt8(thrust ? 1 : 0) + UInt8(thrustLeft ? 2 : 0) + UInt8(thrustRight ? 4 : 0) + UInt8(asteroid ? 8 : 0) + UInt8(landed ? 16 : 0) + UInt8(producesParticles ? 32 : 0))
     }*/
     func encode(data: inout Data){
+        if self.id == 0{
+            data.write(Int64(0))
+            data.write(Int64(0))
+            data.write(Int32(0))
+            return
+        }
         data.write(Float(self.position.x))
         data.write(Float(self.position.y))
         data.write(Float(self.velocity.dx))
@@ -199,24 +211,25 @@ class Object: SKSpriteNode, DataCodable{
 }
 
 class Planet: Object{
-    override init(radius: CGFloat, mass: CGFloat = -1, texture: SKTexture = SKTexture(), asteroid: Bool = false){
-        print(texture)
-        super.init(radius: radius, mass: mass, texture: texture, asteroid: asteroid)
+    var superhot = false
+    override func defParticle(_ planet: Object) -> Particle{
+        let dir = randDir(radius)
+        return Particle(states: [State(color: (r: 1, g: 1, b: 0), size: CGSize(width: 10, height: 10), zRot: 0, position: CGPoint(x: position.x + dir.dx, y: position.y + dir.dy), alpha: 1), State(color: (r: 1, g: 0, b: 0), size: CGSize(width: 20, height: 20), zRot: 4, position: CGPoint(x: position.x + dir.dx * 1.3, y: position.y + dir.dy * 1.3), alpha: 0)])
     }
+    override func update(collisionNodes: ArraySlice<Object>) {}
     func update(_ node: SKSpriteNode?){
-        let a: SKSpriteNode? = nil
-        if let i = a{
+        //let node: SKSpriteNode? = nil
+        if let i = node{
             guard let parent = parent as? Play else{return}
             guard let cam = parent.camera else {return}
-            let pos1 = self.convert(CGPoint.zero, to: cam)
             let size = CGSize(width: size.width / cam.xScale, height: size.height / cam.yScale)
-            let frame = CGRect(origin: CGPoint(x: cam.position.x - parent.size.width / 2, y: cam.position.y - parent.size.height / 2), size: parent.size)
-            if pos1.x < frame.minX - size.width / 2 || pos1.x > frame.maxX + size.width / 2 || pos1.y < frame.minY - size.height / 2 || pos1.y > frame.maxY + size.height / 2{
-                let dx = pos1.x
-                let dy = pos1.y
+            let frame = CGRect(origin: CGPoint(x: -parent.size.width / 2, y: -parent.size.height / 2), size: parent.size)
+            let dx = (self.position.x - cam.position.x) / cam.xScale
+            let dy = (self.position.y - cam.position.y) / cam.yScale
+            if dx < frame.minX - size.width / 2 || dx > frame.maxX + size.width / 2 || dy < frame.minY - size.height / 2 || dy > frame.maxY + size.height / 2{
                 let camw = frame.width / 2// - i.size.width
                 let camh = frame.height / 2// - i.size.height
-                if dy / dx > camh / camw{
+                if abs(dy / dx) > camh / camw{
                     //anchor top/bottom
                     i.position.x = (dx * camh / abs(dy))
                     i.position.y = (dy > 0 ? camh : -camh)
@@ -225,7 +238,7 @@ class Planet: Object{
                     i.position.y = (dy * camw / abs(dx))
                     i.position.x = (dx > 0 ? camw : -camw)
                 }
-                i.zRotation = -atan2(dy, dx)
+                i.zRotation = -atan2(dx, dy)
                 if i.parent == nil{cam.addChild(i)}
             }else if i.parent != nil{i.removeFromParent()}
         }
@@ -239,16 +252,21 @@ class Planet: Object{
         let y = n.position.y - self.position.y
         let d = (x * x + y * y)
         var r = self.radius * self.radius - n.radius * n.radius
+        if r < 0{r=0}
         r += (2 * sqrt(r) + n.radius) * n.radius
         if d < r - 1{
-            if n.asteroid{
+            if n.asteroid || mass * G / d > n.thrustMultiplier / 30 || superhot{
                 let parent = n.parent as? Play
                 if parent != nil, let i = parent!.objects.firstIndex(of: n){
                     parent!.objects.remove(at: i)
-                    n.run(SKAction.sequence([SKAction.fadeOut(withDuration: 1),SKAction.run{n.removeFromParent()}]))
-                    n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * CGFloat(parent!.gameFPS), dy: n.velocity.dy * CGFloat(parent!.gameFPS)), duration: 1))
+                    n.run(SKAction.sequence([SKAction.fadeOut(withDuration: 1),SKAction.run{n.removeFromParent()
+                        if n == parent!.ship{
+                            parent!.send(Data([127]))
+                            DispatchQueue.main.async{SKScene.transition = .crossFade(withDuration: 0.5);PlayerDied.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0);}
+                        }
+                    }]))
+                    n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * CGFloat(gameFPS), dy: n.velocity.dy * CGFloat(gameFPS)), duration: 1))
                 }
-                
                 return
             }
             //collided
@@ -260,16 +278,30 @@ class Planet: Object{
             n.angularVelocity = 0
             n.zRotation = atan2(y, x) - .pi/2
             n.landed = true
-        }else if d <= r+2 && !n.asteroid{
+        }else if d <= r+2 && !n.asteroid && mass * G / d > n.thrustMultiplier / 30{
             n.zRotation += angularVelocity
             let t = atan2(x,y) - angularVelocity
             n.velocity = CGVector(dx: sin(t)*sqrt(d)-x, dy: cos(t)*sqrt(d)-y)
             //resting on planet
             n.landed = true
         }else{
+            if mass * G / d > n.thrustMultiplier / 30{
+                let parent = n.parent as? Play
+                if parent != nil, let i = parent!.objects.firstIndex(of: n){
+                    parent!.objects.remove(at: i)
+                    n.run(SKAction.sequence([SKAction.fadeOut(withDuration: 1),SKAction.run{n.removeFromParent()
+                        if n == parent!.ship{
+                            parent!.send(Data([127]))
+                            DispatchQueue.main.async{SKScene.transition = .crossFade(withDuration: 0.5);PlayerDied.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0);}
+                        }
+                    }]))
+                    n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * CGFloat(gameFPS), dy: n.velocity.dy * CGFloat(gameFPS)), duration: 1))
+                }
+                return
+            }
             let m = -(mass*G)/d
-            n.velocity.dx += x * m
-            n.velocity.dy += y * m
+            n.velocity.dx += x / sqrt(d) * m
+            n.velocity.dy += y / sqrt(d) * m
             n.zRotation += angularVelocity * r / d
         }
     }
@@ -287,9 +319,6 @@ class Planet: Object{
         data.write(Float(self.position.y))
         data.write(Float(self.zRotation))
         data.write(Float(self.angularVelocity))
-    }
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
     }
 }
 class Ray{
@@ -309,56 +338,111 @@ class Ray{
     }
 }
 class Particle: SKSpriteNode{
-    private var onupdate = {(_: Particle) -> () in}
-    var velocity: CGVector
-    var type: String
-    var decayRate: CGFloat
-    var spin: CGFloat
-    var sizedif: CGVector
-    var coldelta: (r: CGFloat, g: CGFloat, b: CGFloat)
-    init(type: String, position: CGPoint, velocity: CGVector, color: UIColor, size: CGSize, alpha: CGFloat, decayRate: CGFloat, spin: CGFloat, sizedif: CGVector, endcolor: UIColor){
-        let lifetime = alpha / decayRate
-        self.sizedif = sizedif
-        var red = CGFloat()
-        var green = CGFloat()
-        var blue = CGFloat()
-        color.getRed(&red, green: &green, blue: &blue, alpha: nil)
-        var red2 = CGFloat()
-        var green2 = CGFloat()
-        var blue2 = CGFloat()
-        endcolor.getRed(&red2, green: &green2, blue: &blue2, alpha: nil)
-        self.coldelta = (r: (red2 - red) / lifetime, g: (green2 - green) / lifetime, b: (blue2 - blue) / lifetime)
-        self.type = type
-        self.velocity = velocity
-        self.decayRate = decayRate
-        self.spin = spin
-        super.init(texture: nil, color: color, size: size)
-        self.alpha = alpha
-        self.position = position
+    var states: [State]
+    var delta = State.zero
+    var ended = false
+    @inline(__always) static subscript(_ a: State...) -> Particle{
+        return Particle(states: a)
+    }
+    init(states: [State]){
+        self.states = states
+        super.init(texture: nil, color: UIColor.clear, size: CGSize.zero)
+        ended = nextState()
+    }
+    func nextState() -> Bool{
+        if states.count < 1{
+            defer{self.removeFromParent()}
+            ended = true
+            return true
+        }
+        let state = states.removeFirst()
+        delta = (state - State.of(node: self)) / CGFloat(state.delay * gameFPS)
+        delta.delay = state.delay
+        if delta.delay < 0.5 / gameFPS{
+            state.apply(to: self)
+            return nextState()
+        }
+        return false
+    }
+    func update() -> Bool{
+        if ended{return true}
+        delta.add(to: self)
+        delta.delay -= 1 / gameFPS
+        if delta.delay < 0.5 / gameFPS{
+            return nextState()
+        }
+        return false
     }
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    func updates(a: @escaping (Particle) -> ()) -> Particle{
-        self.onupdate = a
-        return self
+}
+
+struct State{
+    static let zero = State(color: (r: 0, g: 0, b: 0), size: CGSize.zero, zRot: 0, position: CGPoint.zero, alpha: 0)
+    var color: (r: CGFloat, g: CGFloat, b: CGFloat)
+    var size: CGSize
+    var zRot: CGFloat
+    var position: CGPoint
+    var alpha: CGFloat
+    var delay: TimeInterval = 0
+    func delta(to state: State) -> State{
+        return State(color: (r: state.color.r - self.color.r, g: state.color.g - self.color.g, b: state.color.b - self.color.b), size: CGSize(width: state.size.width - self.size.width, height: state.size.height - self.size.height), zRot: state.zRot - self.zRot, position: CGPoint(x: state.position.x - self.position.x, y: state.position.y - self.position.y), alpha: state.alpha - self.alpha)
     }
-    func update(){
-        self.onupdate(self)
-        self.position.x += velocity.dx
-        self.position.y += velocity.dy
-        self.alpha -= decayRate
-        self.zRotation += spin
-        self.size.width += sizedif.dx
-        self.size.height += sizedif.dy
+    static func -(_ state: State, _ this: State) -> State{
+        return State(color: (r: state.color.r - this.color.r, g: state.color.g - this.color.g, b: state.color.b - this.color.b), size: CGSize(width: state.size.width - this.size.width, height: state.size.height - this.size.height), zRot: state.zRot - this.zRot, position: CGPoint(x: state.position.x - this.position.x, y: state.position.y - this.position.y), alpha: state.alpha - this.alpha)
+    }
+    static func /(_ this: State, _ d: CGFloat) -> State{
+        return State(color: (r: this.color.r / d, g: this.color.g / d, b: this.color.b / d), size: CGSize(width: this.size.width / d, height: this.size.height / d), zRot: this.zRot / d, position: CGPoint(x: this.position.x / d, y: this.position.y / d), alpha: this.alpha / d)
+    }
+    static func +(_ a: State, _ b: State) -> State{
+        return State(color: (r: a.color.r + b.color.r, g: a.color.g + b.color.g, b: a.color.b + b.color.b), size: CGSize(width: a.size.width + b.size.width, height: a.size.height + b.size.height), zRot: a.zRot + b.zRot, position: CGPoint(x: a.position.x + b.position.x, y: a.position.y + b.position.y), alpha: a.alpha + b.alpha)
+    }
+    static func +=(_ this: inout State, _ state: State){
+        this.color.r += state.color.r
+        this.color.g += state.color.g
+        this.color.b += state.color.b
+        this.size.width += state.size.width
+        this.size.height += state.size.height
+        this.zRot += state.zRot
+        this.position.x += state.position.x
+        this.position.y += state.position.y
+        this.alpha += state.alpha
+    }
+    var uicolor: UIColor{
+        return UIColor(red: self.color.r, green: self.color.g, blue: self.color.b, alpha: 1)
+    }
+    var debugDescription: String{
+        return "(\(String(format:"%02X", color.r) + String(format:"%02X", color.g) + String(format:"%02X", color.b) + ", " + String(format:"%02X", Int(alpha * 255)))) [\(size.width)x\(size.height)] (x: \(position.x), y: \(position.y), z: \(zRot))"
+    }
+    func apply(to node: SKSpriteNode){
+        node.alpha = alpha
+        node.color = uicolor
+        node.size = size
+        node.zRotation = zRot
+        node.position = position
+    }
+    func add(to node: SKSpriteNode){
+        node.alpha += alpha
         var red = CGFloat()
         var green = CGFloat()
         var blue = CGFloat()
-        self.color.getRed(&red, green: &green, blue: &blue, alpha: nil)
-        self.color = UIColor(red: (red + coldelta.r).clamp(0, 1), green: (green + coldelta.g).clamp(0, 1), blue: (blue + coldelta.b).clamp(0, 1), alpha: 1)
+        node.color.getRed(&red, green: &green, blue: &blue, alpha: nil)
+        node.color = UIColor(red: red + color.r, green: green + color.g, blue: blue + color.b, alpha: 1)
+        node.size.width += size.width
+        node.size.height += size.height
+        node.zRotation += zRot
+        node.position.x += position.x
+        node.position.y += position.y
+    }
+    static func of(node: SKSpriteNode) -> State{
+        var r = CGFloat()
+        var g = CGFloat()
+        var b = CGFloat()
+        node.color.getRed(&r, green: &g, blue: &b, alpha: nil)
+        return State(color: (r: r, g: g, b: b), size: node.size, zRot: node.zRotation, position: node.position, alpha: node.alpha)
     }
 }
-
 extension Comparable{
     @inlinable func clamp(_ a: Self, _ b: Self) -> Self{
         return min(max(self, a), b)

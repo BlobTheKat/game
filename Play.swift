@@ -10,8 +10,7 @@ import SpriteKit
 class Play: PlayConvenience{
     var latency = 0.0
     var lastUpdate: TimeInterval? = nil
-    var gameFPS = 60.0
-    var ship = Object(radius: 15, mass: 100, texture: .from(1))
+    var ship = Object(radius: 15, mass: 100, texture: .named("ship1"))
     var planets: [Planet] = []
     var planetindicators: [SKSpriteNode] = []
     var cam = SKCameraNode()
@@ -46,11 +45,11 @@ class Play: PlayConvenience{
             let stress = xStress*2 + yStress*2
 
             let scale = (cam.xScale + cam.yScale) / 2
-            if stress > 0.6{
-                let ts = min((stress / 0.6 - 1) * scale, 2 - scale)
+            if stress > 0.5{
+                let ts = min((stress / 0.6 - 1) * scale, 8 - scale)
                 cam.setScale(scale + ts / 50)
-            }else if stress < 0.4{
-                let ts = max((stress / 0.4 - 1) * scale, 0.5 - scale)
+            }else if stress < 0.3{
+                let ts = max((stress / 0.4 - 1) * scale, (ship.landed ? 0.5 : 2) - scale)
                 cam.setScale(scale + ts / 50)
             }
         }
@@ -58,14 +57,10 @@ class Play: PlayConvenience{
     let pos = SKLabelNode()
     func spaceUpdate(){
         var a = 0
-        for i in particles{
-            i.update()
-            if i.alpha <= 0{
-                i.removeFromParent()
-                particles.remove(at: a)
-                a -= 1
+        for particle in particles{
+            if particle.update(){
+                particles.remove(at: particles.firstIndex(of: particle)!)
             }
-            a += 1
         }
         a = 0
         for planet in planets{
@@ -126,7 +121,7 @@ class Play: PlayConvenience{
         ship.alpha = 0
         ship.id = 1
         var stopAuth = {}
-        send = connect("192.168.1.248:65152"){ [self](d) in
+        send = connect("192.168.1.64:65152"){ [self](d) in
             var data = d
             let code: UInt8 = data.read()
             if code == 1{
@@ -143,7 +138,7 @@ class Play: PlayConvenience{
                     planets.append(contentsOf: p)
                     objects.append(contentsOf: o)
                     for p in p{
-                        planetindicators.append(SKSpriteNode(imageNamed: "indicator"))
+                        planetindicators.append(SKSpriteNode(imageNamed: "ship1"))
                         self.addChild(p)
                         p.zPosition = -1
                     }
@@ -165,14 +160,14 @@ class Play: PlayConvenience{
                 ping()
                 var i = 0
                 while data.count > 19{parseShip(&data, i);i += 1}
+                objects.removeLast(objects.count - i - 1)
             }
         }
         let hello = try! messages.hello(name: "BlobKat")
         var tries = 0
         stopAuth = interval(0.5) { [self] in
             tries += 1
-            if tries > 6{
-                //failed
+            if tries > 99{
                 stopAuth()
                 dmessage = "Could not connect"
                 DispatchQueue.main.async{Disconnected.renderTo(skview)}
@@ -180,9 +175,6 @@ class Play: PlayConvenience{
             }
             send(hello)
         }
-        self.addChild(ship)
-        vibrateCamera(camera: cam)
-        
         tunnel1.position = pos(mx: -0.12, my: 0)
         tunnel1.setScale(0.155)
         self.addChild(tunnel1)
@@ -190,17 +182,20 @@ class Play: PlayConvenience{
         tunnel2.position = pos(mx: 0.12, my: 0)
         tunnel2.setScale(0.155)
         self.addChild(tunnel2)
-        
+        self.addChild(ship)
+        vibrateCamera(camera: cam)
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    var moved = false
     override func didMove(to view: SKView) {
         guard ready else{return}
+        guard !moved else {return}
+        moved = true
         ship.run(SKAction.fadeAlpha(by: 1, duration: 1).ease(.easeOut))
-        startAnimation()
-        //setting tapToSrart label relative to camera (static)
+        //setting tapToStart label relative to camera (static)
         self.label(node: tapToStart, "tap to start", pos: pos(mx: 0, my: -0.4), size: fmed, color: UIColor.white, font: "HalogenbyPixelSurplus-Regular", zPos: 1000, isStatic: true)
         //position indicator
         self.label(node: pos, "x: , y: , v: , b: ", pos: pos(mx: -0.5, my: -0.5, x: 20, y: 20), size: 20, color: UIColor.white, font: "HalogenbyPixelSurplus-Regular", zPos: 1000, isStatic: true)
@@ -210,15 +205,12 @@ class Play: PlayConvenience{
         ship.zPosition = 5
         ship.producesParticles = true
         var step = 0
-        ship.particle = { [self]() -> Particle in
+        ship.particle = { (_ ship: Object) in
             step = (step + 1) % 16
-            return Particle(type: "", position: CGPoint(x: ship.position.x, y: ship.position.y - 5), velocity: CGVector(dx: 0, dy: -1), color: UIColor.cyan, size: CGSize(width: 11, height: 2), alpha: ship.alpha - 0.3, decayRate: 0.02, spin: 0, sizedif: CGVector(dx: -0.4, dy: 0), endcolor: UIColor.white).updates{ (this: Particle) in
-                this.coldelta.r += 0.001
-                this.decayRate = step < 8 ? 0.02 : 0.03
-                this.sizedif.dx += 0.01
-            }
+            let i = ship.alpha * 1.5 - 0.45
+            return Particle[State(color: (r: 0.1, g: 0.7, b: 0.7), size: CGSize(width: 11, height: 2), zRot: 0, position: ship.position.add(y: -5), alpha: i), State(color: (r: 1, g: 1, b: 1), size: CGSize(width: 5, height: 2), zRot: 0, position: ship.position.add(y: -35), alpha: 0, delay: TimeInterval(i))]
         }
-        ship.particleDelay = 1
+        ship.particleFrequency = 1
         objects.append(ship)
         let _ = interval(3) {
             self.tapToStart.run(SKAction.moveBy(x: 0, y: 10, duration: 2).ease(.easeOut))
@@ -256,37 +248,41 @@ class Play: PlayConvenience{
         vibrateObject(sprite: tunnel2)
     }
     func moveTrail(trail: SKSpriteNode){
-        let randomPosition = random(min: -25, max: 25)
-        trail.position = pos(mx: randomPosition/100 , my: 0.5)
-        trail.zPosition = 2
-        trail.setScale(0.2)
-        trail.run(SKAction.moveBy(x: 0, y: -self.size.height - trail.size.height/2, duration: 0.2))
-        let _ = timeout(0.5){
-            if self.startPressed{
+        var stop = {}
+        var stopped = false
+        stop = interval(0.5){ [self] in
+            if stopped{return}
+            if startPressed{
                 trail.removeFromParent()
-                self.trails.remove(at: self.trails.firstIndex(of: trail)!)
-                
-                if self.trails.count == 0{
-                    self.started = true
+                stop()
+                stopped = true
+                trails.remove(at: trails.firstIndex(of: trail)!)
+                if trails.count == 0{
+                    started = true
                 }
             }else{
-                self.moveTrail(trail: trail)
+                let randomPosition = random(min: -25, max: 25)
+                trail.position = pos(mx: randomPosition/100 , my: 0.5)
+                trail.zPosition = 2
+                trail.setScale(0.2)
+                trail.run(SKAction.moveBy(x: 0, y: -self.size.height - trail.size.height/2, duration: 0.2))
             }
         }
     }
     func startGame(){
+        cam.run(SKAction.scale(to: 2, duration: 0.5).ease(.easeInEaseOut))
         startData()
         ship.producesParticles = false
         self.tapToStart.run(SKAction.fadeOut(withDuration: 0.3).ease(.easeOut))
         self.tapToStart.run(SKAction.scale(by: 1.5, duration: 0.2))
         startPressed = true
         camOffset.y = 0
-        cam.run(SKAction.scale(to: 0.6, duration: 1).ease(.easeInEaseOut))
+        //cam.run(SKAction.scale(to: 0.6, duration: 1).ease(.easeInEaseOut))
         let _ = timeout(0.5) { [self] in
             ship.controls = true
             ship.dynamic = true
             ship.particle = ship.defParticle
-            ship.particleDelay = 5
+            ship.particleFrequency = 0.2
         }
         cam.removeAction(forKey: "vibratingCamera")
         cam.removeAction(forKey: "vibratingCameras")

@@ -3,7 +3,7 @@ mass: 0
 radius: 0
 speed: 1
 spin: 1
-texture: ship0
+texture: ship1
 
 mass: 150
 radius: 15

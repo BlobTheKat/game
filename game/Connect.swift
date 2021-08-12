@@ -39,19 +39,19 @@ func connect(_ host: String = "192.168.1.64:65152", _ a: @escaping (Data) -> ())
                 dmessage = "Connection Interrupted"
                 DispatchQueue.main.async{Disconnected.renderTo(skview)}
             case .failed(_):
-                dmessage = "Could not connect to serrver"
+                dmessage = "Could not connect to server"
                 DispatchQueue.main.async{Disconnected.renderTo(skview)}
-            default:()
+            default:break
         }
     }
-    connection?.start(queue: .global())
+    connection?.start(queue: .global(qos: .background))
     return { (_ data: Data) -> () in
         guard ready else {queue.append(data);return}
-        connection?.send(content: data, completion: NWConnection.SendCompletion.contentProcessed(({ (NWError) in
+        bg{connection?.send(content: data, completion: NWConnection.SendCompletion.contentProcessed(({ (NWError) in
             if NWError != nil {
                 print("ERROR! Error when sending Data:\n \(NWError!)")
             }
-        })))
+        })))}
     }
 }
 func fetch<json: Decodable>(_ url: String, _ done: @escaping (json) -> (), _ err: @escaping (String) -> ()){

@@ -41,11 +41,9 @@ extension SKScene{
         node.fontColor = color
         node.position = pos
         node.zPosition = zPos
-        
         if isStatic{
             camera?.addChild(node)
         }else{
-            
             self.addChild(node)
         }
         return node
@@ -120,21 +118,27 @@ extension SKScene{
             release(at: t.location(in: camera ?? self))
         }
     }
+}
+extension SKNode{
     func interval(_ every: Double, _ a: @escaping () -> ()) -> (() -> ()){
-        let action = SKAction.repeatForever(SKAction.sequence([SKAction.run(a),SKAction.wait(forDuration: every)]))
+        var stopped = false
+        let action = SKAction.repeatForever(SKAction.sequence([SKAction.run{if !stopped{a()}},SKAction.wait(forDuration: every)]))
         let k = SKScene._k
         SKScene._k += 1
         self.run(action, withKey: "__\(k)")
         return {
+            stopped = true
             self.removeAction(forKey: "__\(k)")
         }
     }
     func timeout(_ after: Double, _ a: @escaping () -> ()) -> (() -> ()){
-        let action = SKAction.sequence([SKAction.wait(forDuration: after),SKAction.run(a)])
+        var stopped = false
+        let action = SKAction.sequence([SKAction.wait(forDuration: after),SKAction.run{if !stopped{a()}}])
         let k = SKScene._k
         SKScene._k += 1
         self.run(action, withKey: "__\(k)")
         return {() -> () in
+            stopped = true
             self.removeAction(forKey: "__\(k)")
         }
     }
@@ -194,18 +198,11 @@ extension StringProtocol{
     subscript(offset: Int) -> Character { self[index(startIndex, offsetBy: offset)] }
 }
 
-/*func timeout(_ after: TimeInterval, _ a: @escaping () -> ()) -> () -> (){
-    let task = DispatchWorkItem(block: a)
-    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + after, execute: task)
-
-    return task.cancel
-}
-
-func interval(_ every: TimeInterval, _ a: @escaping () -> ()) -> () -> (){
-    var f = {}, c = {}
-    f = {a();c = timeout(every, f)}
-    f()
-    return {
-        c()
+extension CGPoint{
+    func add(x: CGFloat, y: CGFloat = 0) -> CGPoint{
+        return CGPoint(x: self.x + x, y: self.y + y)
     }
-}*/
+    func add(y: CGFloat) -> CGPoint{
+        return CGPoint(x: self.x, y: self.y + y)
+    }
+}

@@ -1,5 +1,6 @@
-# id0
-mass: 130000
+
+mass: 150000
 radius: 437
 spin: 0.001
 texture: planet0
+superhot: true

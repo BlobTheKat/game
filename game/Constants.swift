@@ -8,10 +8,12 @@
 import Foundation
 import SpriteKit
 
-let G: CGFloat = 0.0001
+let G: CGFloat = 0.05
 let fsmall: CGFloat = 32
 let fmed: CGFloat = 48
 let fbig: CGFloat = 72
+let gameFPS = 60.0
+func bg(_ a: @escaping () -> ()){DispatchQueue.global(qos: .background).async(execute: a)}
 
 struct servers{
     static let uswest = ""
@@ -186,7 +188,6 @@ var asteroids = GameData("/asteroids")!
 
 func sector(_ id: Int, completion: @escaping ([Planet], [Object]) -> ()){
     guard case .string(let path) = map.data[id]["path"] else {return}
-    DispatchQueue.main.async {
     GameData.from(location: path) { data in
         guard let data = data?.data else{return}
         var planetarr: [Planet] = []
@@ -202,19 +203,23 @@ func sector(_ id: Int, completion: @escaping ([Planet], [Object]) -> ()){
             guard case .number(let y) = object["y"] else {continue}
             guard case .number(let spin) = dat["spin"] else {continue}
             guard case .string(let texture) = dat["texture"] else {continue}
+            let t = SKTexture(imageNamed: texture)
             if a{
-                asteroidarr.append(Object(radius: CGFloat(radius), mass: CGFloat(mass), texture: .named(texture), asteroid: true))
-                asteroidarr.last!.angularVelocity = CGFloat(spin)
-                asteroidarr.last!.position.x = CGFloat(x)
-                asteroidarr.last!.position.y = CGFloat(y)
+                let i = Object(radius: CGFloat(radius), mass: CGFloat(mass), texture: t, asteroid: true)
+                i.angularVelocity = CGFloat(spin)
+                i.position.x = CGFloat(x)
+                i.position.y = CGFloat(y)
+                asteroidarr.append(i)
             }else{
-                planetarr.append(Planet(radius: CGFloat(radius), mass: CGFloat(mass), texture: .named(texture)))
-                planetarr.last!.angularVelocity = CGFloat(spin)
-                planetarr.last!.position.x = CGFloat(x)
-                planetarr.last!.position.y = CGFloat(y)
+                let i = Planet(radius: CGFloat(radius), mass: CGFloat(mass), texture: t)
+                i.angularVelocity = CGFloat(spin)
+                i.position.x = CGFloat(x)
+                i.position.y = CGFloat(y)
+                if case .bool(let hot) = object["superhot"]{i.superhot = hot}
+                planetarr.append(i)
             }
         }
         completion(planetarr, asteroidarr)
     }
-    }
+    
 }

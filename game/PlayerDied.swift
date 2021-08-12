@@ -112,7 +112,7 @@ class PlayerDied: PlayConvenience{
        
         self.addChild(rock4)
         
-       shadeRight.position = pos(mx: 0.54, my: 0.5)
+        shadeRight.position = pos(mx: 0.54, my: 0.5)
         shadeRight.setScale(0.35)
         shadeRight.zPosition = 5
         self.addChild(shadeRight)
