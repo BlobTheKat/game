@@ -20,25 +20,8 @@ struct servers{
     static let backup = ""
     static let home = "192.168.1.64"
 }
-let textures: [SKTexture] = ["", "ship1", "planet1", "asteroid1"].map{a in return SKTexture(imageNamed: a)}
-func reverse() -> [SKTexture: UInt32]{
-    var r: [SKTexture: UInt32] = [:]
-    var i: UInt32? = 0
-    for v in textures{
-        r[v] = i
-        i? += 1
-    }
-    return r
-}
-let r = reverse()
 
 extension SKTexture{
-    static func from(_ a: UInt32) -> SKTexture{
-        return textures[Int(a)]
-    }
-    func code() -> UInt32{
-        return r[self] ?? 0
-    }
     static func named(_ a: String) -> SKTexture{
         return SKTexture(imageNamed: a)
     }

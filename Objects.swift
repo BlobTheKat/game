@@ -325,7 +325,7 @@ class Planet: Object{
     override func encode(data: inout Data) {
         data.write(Float(self.radius))
         data.write(Float(self.mass))
-        data.write(self.texture?.code() ?? 0)
+        //data.write(self.texture?.code() ?? 0)
         data.write(Float(self.position.x))
         data.write(Float(self.position.y))
         data.write(Float(self.zRotation))
