@@ -66,47 +66,7 @@ struct GameData{
         guard let dat = FileManager.default.contents(atPath: Bundle.main.path(forResource: path, ofType: nil) ?? ""), let s = String(data: dat, encoding: .utf8) else {
             return nil
         }
-        let text = s.split(separator: "\n", omittingEmptySubsequences: false).map { a in
-            return String(a.prefix(upTo: a.firstIndex(of: "#") ?? a.endIndex))
-        }
-        var i = 0
-        header = [:]
-        while i < text.count && text[i] != ""{
-            let t = text[i].split(separator: ":")
-            guard t.count > 1 else{header[String(t[0])] = .null;i+=1;continue}
-            let value = t[1].trimmingCharacters(in: CharacterSet([" ", "\u{0009}"]))
-            if let a = Double(value){
-                header[String(t[0])] = .number(a)
-            }else if value.lowercased() == "yes" || value.lowercased() == "true"{
-                header[String(t[0])] = .bool(true)
-            }else if value.lowercased() == "no" || value.lowercased() == "false"{
-                header[String(t[0])] = .bool(false)
-            }else{
-                header[String(t[0])] = .string(String(value))
-            }
-            i += 1
-        }
-        i += 1
-        data = []
-        while i < text.count{
-            data.append([:])
-            while i < text.count && text[i] != ""{
-                let t = text[i].split(separator: ":")
-                guard t.count > 1 else{data[data.count-1][String(t[0])] = .null;i+=1;continue}
-                let value = t[1].trimmingCharacters(in: CharacterSet([" ", "\u{0009}"]))
-                if let a = Double(value){
-                    data[data.count-1][String(t[0])] = .number(a)
-                }else if value.lowercased() == "yes" || value.lowercased() == "true"{
-                    data[data.count-1][String(t[0])] = .bool(true)
-                }else if value.lowercased() == "no" || value.lowercased() == "false"{
-                    data[data.count-1][String(t[0])] = .bool(false)
-                }else{
-                    data[data.count-1][String(t[0])] = .string(String(value))
-                }
-                i += 1
-            }
-            i += 1
-        }
+        self.init(data: s)
     }
     init(data s: String){
         let text = s.split(separator: "\n", omittingEmptySubsequences: false).map { a in
@@ -198,7 +158,7 @@ func sector(_ id: Int, completion: @escaping ([Planet], [Object]) -> ()){
                 i.angularVelocity = CGFloat(spin)
                 i.position.x = CGFloat(x)
                 i.position.y = CGFloat(y)
-                if case .bool(let hot) = object["superhot"]{i.superhot = hot}
+                if case .bool(let hot) = dat["superhot"]{i.superhot = hot}
                 if case .number(let particle) = dat["particle"]{
                     i.producesParticles = true
                     i.particle = particles[Int(particle)]

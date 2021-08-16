@@ -13,8 +13,8 @@ class PlayerDied: PlayConvenience{
     
     let charcter = SKSpriteNode(imageNamed: "characterDied")
     let stars = SKSpriteNode(imageNamed: "stars")
-    let planet2 = SKSpriteNode(imageNamed: "planet2")
-    let planet3 = SKSpriteNode(imageNamed: "planet3")
+    let planet2 = SKSpriteNode(imageNamed: "planet2.")
+    let planet3 = SKSpriteNode(imageNamed: "planet3.")
     let rock1 = SKSpriteNode(imageNamed: "rock1")
     let rock2 = SKSpriteNode(imageNamed: "rock2")
     let rock3 = SKSpriteNode(imageNamed: "rock3")

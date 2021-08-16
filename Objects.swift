@@ -126,7 +126,7 @@ class Object: SKSpriteNode, DataCodable{
             self.texture = texture!
             self.size = texture!.size()
         }
-        self.setScale(0.25)
+        self.setScale(0.5)
     }
     convenience init(){
         self.init(radius: 0, mass: 0)

@@ -8,8 +8,8 @@ import Foundation
 import Network
 
 var dmessage = "Disconnected!"
-
-func connect(_ host: String = "192.168.1.248:65152", _ a: @escaping (Data) -> ()) -> (Data) -> (){
+let ADAM = true
+func connect(_ host: String = "192.168.1.\(ADAM ? 248 : 64):65152", _ a: @escaping (Data) -> ()) -> (Data) -> (){
     var connection: NWConnection?
     let port = NWEndpoint.Port(integerLiteral: UInt16(host.split(separator: ":")[1])!)
     let host = NWEndpoint.Host(stringLiteral: String(host.split(separator: ":")[0]))

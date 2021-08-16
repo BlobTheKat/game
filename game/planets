@@ -1,7 +1,22 @@
 
 mass: 150000
-radius: 437
+radius: 800
 spin: 0.001
 texture: planet0
 superhot: true
 particle: 0
+
+mass: 10000
+radius: 400
+spin: 0.001
+texture: planet1
+
+mass: 10000
+radius: 274
+spin: 0.001
+texture: planet2
+
+mass: 10000
+radius: 298
+spin: 0.001
+texture: planet3

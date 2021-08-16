@@ -1,5 +1,5 @@
 //
-//  Play.swift
+//  Deck.swift
 //  game
 //
 //  Created by BlobKat on 06/07/2021.
@@ -122,7 +122,7 @@ class Play: PlayConvenience{
         ship.alpha = 0
         ship.id = 1
         var stopAuth = {}
-        send = connect{ [self](d) in
+        send = connect{[self](d) in
             var data = d
             let code: UInt8 = data.read()
             if code == 1{
