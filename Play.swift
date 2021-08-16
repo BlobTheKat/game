@@ -171,7 +171,7 @@ class Play: PlayConvenience{
             if tries > 6{
                 stopAuth()
                 dmessage = "Could not connect"
-                DispatchQueue.main.async{Disconnected.renderTo(skview)}
+               // DispatchQueue.main.async{Disconnected.renderTo(skview)}
                 return
             }
             send(hello)
@@ -351,6 +351,8 @@ class Play: PlayConvenience{
     }
     var d = Data()
     override func keyDown(_ key: UIKeyboardHIDUsage) {
+        
+        print(planets.last?.particle(planets.last!))
         if key == .keyboardUpArrow || key == .keyboardW{
             ship.thrust = true
         }else if key == .keyboardRightArrow || key == .keyboardD{

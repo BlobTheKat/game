@@ -20,3 +20,5 @@ mass: 10000
 radius: 298
 spin: 0.001
 texture: planet3
+particle: 1
+
