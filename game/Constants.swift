@@ -152,6 +152,13 @@ func sector(_ id: Int, completion: @escaping ([Planet], [Object]) -> ()){
                 i.angularVelocity = CGFloat(spin)
                 i.position.x = CGFloat(x)
                 i.position.y = CGFloat(y)
+                if case .number(let particle) = dat["particle"]{
+                    i.producesParticles = true
+                    i.particle = particles[Int(particle)]
+                }
+                if case .number(let frequency) = dat["fequency"]{
+                  i.particleFrequency = frequency
+                }
                 asteroidarr.append(i)
             }else{
                 let i = Planet(radius: CGFloat(radius), mass: CGFloat(mass), texture: t)
@@ -162,6 +169,9 @@ func sector(_ id: Int, completion: @escaping ([Planet], [Object]) -> ()){
                 if case .number(let particle) = dat["particle"]{
                     i.producesParticles = true
                     i.particle = particles[Int(particle)]
+                }
+                if case .number(let frequency) = dat["fequency"]{
+                  i.particleFrequency = frequency
                 }
                 planetarr.append(i)
             }
