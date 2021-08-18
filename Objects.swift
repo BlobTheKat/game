@@ -289,14 +289,14 @@ class Planet: Object{
             n.angularVelocity = 0
             n.zRotation = atan2(y, x) - .pi/2
             n.landed = true
-        }else if d <= r+2 && !n.asteroid && mass * G / d > n.thrustMultiplier / 30{
+        }else if d <= r+2 && !n.asteroid && mass * G / d <= n.thrustMultiplier / 30{
             n.zRotation += angularVelocity
             let t = atan2(x,y) - angularVelocity
             n.velocity = CGVector(dx: sin(t)*sqrt(d)-x, dy: cos(t)*sqrt(d)-y)
             //resting on planet
             n.landed = true
         }else{
-            if mass * G / d > n.thrustMultiplier / 30{
+            if mass * G / d > n.thrustMultiplier / 30 && !superhot{
                 let parent = n.parent as? Play
                 if parent != nil, let i = parent!.objects.firstIndex(of: n){
                     parent!.objects.remove(at: i)
