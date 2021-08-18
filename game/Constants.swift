@@ -148,10 +148,13 @@ func sector(_ id: Int, completion: @escaping ([Planet], [Object]) -> ()){
             guard case .string(let texture) = dat["texture"] else {continue}
             let t = SKTexture(imageNamed: texture)
             if a{
+                
+            
                 let i = Object(radius: CGFloat(radius), mass: CGFloat(mass), texture: t, asteroid: true)
                 i.angularVelocity = CGFloat(spin)
                 i.position.x = CGFloat(x)
                 i.position.y = CGFloat(y)
+                
                 if case .number(let particle) = dat["particle"]{
                     i.producesParticles = true
                     i.particle = particles[Int(particle)]
@@ -159,9 +162,12 @@ func sector(_ id: Int, completion: @escaping ([Planet], [Object]) -> ()){
                 if case .number(let frequency) = dat["fequency"]{
                   i.particleFrequency = frequency
                 }
+                i.id = Int(id)
                 asteroidarr.append(i)
+                
             }else{
                 let i = Planet(radius: CGFloat(radius), mass: CGFloat(mass), texture: t)
+                
                 i.angularVelocity = CGFloat(spin)
                 i.position.x = CGFloat(x)
                 i.position.y = CGFloat(y)
@@ -173,6 +179,7 @@ func sector(_ id: Int, completion: @escaping ([Planet], [Object]) -> ()){
                 if case .number(let frequency) = dat["fequency"]{
                   i.particleFrequency = frequency
                 }
+                i.id = Int(id)
                 planetarr.append(i)
             }
         }

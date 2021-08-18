@@ -139,7 +139,7 @@ class Play: PlayConvenience{
                     planets.append(contentsOf: p)
                     objects.append(contentsOf: o)
                     for p in p{
-                        planetindicators.append(SKSpriteNode(imageNamed: "ship1"))
+                        planetindicators.append(SKSpriteNode(imageNamed: "arrow"))
                         self.addChild(p)
                         p.zPosition = -1
                     }
@@ -352,7 +352,7 @@ class Play: PlayConvenience{
     var d = Data()
     override func keyDown(_ key: UIKeyboardHIDUsage) {
         
-        print(planets.last?.particle(planets.last!))
+       
         if key == .keyboardUpArrow || key == .keyboardW{
             ship.thrust = true
         }else if key == .keyboardRightArrow || key == .keyboardD{
