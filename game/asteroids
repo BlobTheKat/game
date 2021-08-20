@@ -2,10 +2,10 @@
 radius: 130
 mass: 800
 spin: 0.01
-texture: asteroid1
+texture: asteroid
 
-radius: 130
-mass: 800
+radius: 156
+mass: 30000
 spin: 0.01
 texture: asteroid1
 

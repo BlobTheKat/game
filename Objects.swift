@@ -256,6 +256,7 @@ class Planet: Object{
         zRotation += angularVelocity
     }
     func gravity(_ n: Object){
+    
         guard n.dynamic else{return}
         n.landed = false
         let mass: CGFloat = self.mass
@@ -278,6 +279,7 @@ class Planet: Object{
                     }]))
                     n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * CGFloat(gameFPS), dy: n.velocity.dy * CGFloat(gameFPS)), duration: 1))
                 }
+               
                 return
             }
             //collided
@@ -308,13 +310,16 @@ class Planet: Object{
                     }]))
                     n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * CGFloat(gameFPS), dy: n.velocity.dy * CGFloat(gameFPS)), duration: 1))
                 }
+               
                 return
+                    
             }
             let m = -(mass*G)/d
             n.velocity.dx += x / sqrt(d) * m
             n.velocity.dy += y / sqrt(d) * m
             n.zRotation += angularVelocity * r / d
         }
+       
     }
     override func decode(data: inout Data) {
         body(radius: CGFloat(data.read() as Float), mass: CGFloat(data.read() as Float), texture: SKTexture(imageNamed: data.read()))
@@ -434,6 +439,7 @@ struct State{
         node.position = position
     }
     func add(to node: SKSpriteNode){
+        
         node.alpha += alpha
         var red = CGFloat()
         var green = CGFloat()
@@ -445,6 +451,7 @@ struct State{
         node.zRotation += zRot
         node.position.x += position.x
         node.position.y += position.y
+        
     }
     static func of(node: SKSpriteNode) -> State{
         var r = CGFloat()

@@ -22,14 +22,15 @@ class Play: PlayConvenience{
     var startPressed = false
     var started = false
     let thrustButton = SKSpriteNode(imageNamed: "thrustOff")
-    let dPad = SKSpriteNode(imageNamed: "Dpad")
+    let dPad = SKSpriteNode(imageNamed: "dPad")
+    let avatar = SKSpriteNode(imageNamed: "avatar")
     var a = {}
     func ping(){
         a()
         a = timeout(5, {
             self.send(Data([127]))
             dmessage = "Lost connection!"
-            Disconnected.renderTo(skview)
+           // Disconnected.renderTo(skview)
         })
     }
     let tunnel1 = SKSpriteNode(imageNamed: "tunnel1")
@@ -145,7 +146,11 @@ class Play: PlayConvenience{
                     }
                     for o in o{
                         if o.id != 0{self.addChild(o)}
+                        
+                        
                     }
+                    
+                    // place anything after its loaded 
                 }
                 startHB()
             }else if code == 127{
@@ -289,17 +294,23 @@ class Play: PlayConvenience{
         cam.removeAction(forKey: "vibratingCameras")
         
         
-        dPad.position = pos(mx: 0.35, my: -0.3)
-        dPad.alpha = 0.1
+        dPad.position = pos(mx: 0.35, my: -0.25)
+        dPad.alpha = 1
         dPad.zPosition = 10
-        dPad.setScale(0.45)
+        dPad.setScale(0.2)
         cam.addChild(dPad)
         
+        avatar.position = pos(mx: -0.385, my: 0.35)
+        avatar.alpha = 1
+        avatar.zPosition = 10
+        avatar.setScale(0.085)
+        cam.addChild(avatar)
         
-        thrustButton.position = pos(mx: -0.35, my: -0.25)
+        
+        thrustButton.position = pos(mx: -0.35, my: -0.2)
         thrustButton.alpha = 1
         thrustButton.zPosition = 10
-        thrustButton.setScale(0.1)
+        thrustButton.setScale(0.16)
         cam.addChild(thrustButton)
         
         
@@ -341,18 +352,24 @@ class Play: PlayConvenience{
     }
     override func nodeUp(_ node: SKNode, at _: CGPoint) {
         if thrustButton == node{
-            thrustButton.texture = SKTexture(imageNamed: "thrustOff")
+            thrustButton.texture = SKTexture(imageNamed: "thrustOn")
             ship.thrust = false
+        }else{
+            
+            thrustButton.texture = SKTexture(imageNamed: "thrustOff")
         }
         if dPad == node{
             ship.thrustLeft = false
             ship.thrustRight = false
+            
         }
     }
     var d = Data()
     override func keyDown(_ key: UIKeyboardHIDUsage) {
         
-       
+        print(objects.map({ a in
+            return a.size.width
+        }))
         if key == .keyboardUpArrow || key == .keyboardW{
             ship.thrust = true
         }else if key == .keyboardRightArrow || key == .keyboardD{
