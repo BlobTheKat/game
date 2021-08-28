@@ -75,8 +75,8 @@ class Object: SKSpriteNode, DataCodable{
             }
         }else{particleQueue = 1}
         if !asteroid{
-            if velocity.dx > 10{velocity.dx *= 0.998}
-            if velocity.dy > 10{velocity.dy *= 0.998}
+            if velocity.dx > 10{velocity.dx *= 0.99}
+            if velocity.dy > 10{velocity.dy *= 0.99}
         }
         for node in collisionNodes{
             let x = self.position.x - node.position.x
@@ -297,7 +297,41 @@ class Planet: Object{
             n.velocity = CGVector(dx: sin(t)*sqrt(d)-x, dy: cos(t)*sqrt(d)-y)
             //resting on planet
             n.landed = true
+            
+            
+            let parents = parent as? Play
+            if parents != nil && n == parents!.ship{
+                let circle = parents!.planetsMP[parents!.planets.firstIndex(of: self)!]
+                circle.fillColor = UIColor.green
+                
+                
+                
+                parents?.playerArrow.removeFromParent()
+                
+                //GANGE MAP HERE
+                
+                
+                
+            }
         }else{
+            let parents = parent as? Play
+            if parents != nil && n == parents!.ship{
+                let circle = parents!.planetsMP[parents!.planets.firstIndex(of: self)!]
+                circle.fillColor = UIColor.white
+                
+                
+                
+                //GANGE MAP HERE
+                
+                if parents?.playerArrow.parent == nil{
+                    
+                    parents!.FakemapBG.addChild(parents!.playerArrow)
+                }
+                
+                
+            }
+            
+            
             if mass * G / d > n.thrustMultiplier / 30 && !superhot{
                 let parent = n.parent as? Play
                 if parent != nil, let i = parent!.objects.firstIndex(of: n){

@@ -12,7 +12,7 @@ class PlayerDied: PlayConvenience{
     
     
     let charcter = SKSpriteNode(imageNamed: "characterDied")
-    let stars = SKSpriteNode(imageNamed: "stars")
+    let stars = SKSpriteNode(imageNamed: "stars11")
     let planet2 = SKSpriteNode(imageNamed: "planet2.")
     let planet3 = SKSpriteNode(imageNamed: "planet3.")
     let rock1 = SKSpriteNode(imageNamed: "rock1")
@@ -34,7 +34,7 @@ class PlayerDied: PlayConvenience{
         
         
         
-        charcter.position = pos(mx: 0.3, my: 0.6)
+        charcter.position = pos(mx: -0.1, my: 0.6)
         charcter.setScale(0.2)
         charcter.zPosition = 4
         self.addChild(charcter)
@@ -43,10 +43,10 @@ class PlayerDied: PlayConvenience{
         
             SKAction.moveBy(x: 400, y: 0, duration: 5).ease{a in return 2*a - a*a},
             
-            SKAction.moveBy(x: 300, y: 0, duration: 20).ease(.easeInEaseOut)
+            SKAction.moveBy(x: 625, y: 0, duration: 30).ease(.easeInEaseOut)
         
         ]))
-        charcter.run(SKAction.scale(by: 0.5, duration: 15))
+        charcter.run(SKAction.scale(by: 0.1, duration: 40))
         charcter.run(SKAction.rotate(byAngle: -4, duration: 40))
         let _ = interval(4) {
             self.charcter.run(SKAction.moveBy(x: 0, y: 7, duration: 2).ease(.easeInEaseOut))
@@ -57,7 +57,7 @@ class PlayerDied: PlayConvenience{
         }
         let text = "You died!"
         var i = 0
-        let _ = timeout(2){var a = {};a = self.interval(0.2){
+        let _ = timeout(0.2){var a = {};a = self.interval(0.1){
             if i == text.count{
                 a()
                 return
@@ -65,6 +65,8 @@ class PlayerDied: PlayConvenience{
             self.reconnectLabel.text? += "\(text[i])"
             i += 1
         }}
+        
+        
         
         
         

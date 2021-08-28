@@ -1,11 +1,12 @@
 {
   "images" : [
     {
-      "filename" : "Asset 49.png",
+      "filename" : "avatar.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
+      "filename" : "Asset 196.png",
       "idiom" : "universal",
       "scale" : "2x"
     },

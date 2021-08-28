@@ -14,8 +14,8 @@
             filePath = "Play.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "153"
-            endingLineNumber = "153"
+            startingLineNumber = "206"
+            endingLineNumber = "206"
             landmarkName = "init(size:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -32,6 +32,86 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "259"
             endingLineNumber = "259"
+            landmarkName = "gravity(_:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "0AD466C6-01CD-44FF-A3AE-3D7297452890"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Play.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "433"
+            endingLineNumber = "433"
+            landmarkName = "startGame()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "7C588E12-BA4C-4CAF-8F6F-E35687971836"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Objects.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "274"
+            endingLineNumber = "274"
+            landmarkName = "gravity(_:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "7C588E12-BA4C-4CAF-8F6F-E35687971836 - ead360ca17b7cb9a"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "game.Planet.gravity(game.Object) -&gt; ()"
+                  moduleName = "game"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/adamreiner/Desktop/spaceship/Objects.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "274"
+                  endingLineNumber = "274"
+                  offsetFromSymbolStart = "2064">
+               </Location>
+               <Location
+                  uuid = "7C588E12-BA4C-4CAF-8F6F-E35687971836 - e42fe1748d717516"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 () -&gt; () in game.Planet.gravity(game.Object) -&gt; ()"
+                  moduleName = "game"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/adamreiner/Desktop/spaceship/Objects.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "274"
+                  endingLineNumber = "274"
+                  offsetFromSymbolStart = "184">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "4A17F9D4-5070-49E3-B4BD-711CB9C78C4B"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Objects.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "276"
+            endingLineNumber = "276"
             landmarkName = "gravity(_:)"
             landmarkType = "7">
          </BreakpointContent>
