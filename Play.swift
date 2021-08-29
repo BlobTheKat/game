@@ -28,14 +28,13 @@ class Play: PlayConvenience{
     var coolingDown = false
     var heatLevel = 0
     var usingConstantLazer = false
-    
+    var showNav = false
     let thrustButton = SKSpriteNode(imageNamed: "thrustOff")
     let heatingLaser = SKSpriteNode(imageNamed: "heating0")
     let dPad = SKSpriteNode(imageNamed: "dPad")
-    let navArrow = SKSpriteNode(imageNamed: "navArrow")
-    let nav = SKSpriteNode(imageNamed: "nav")
+    
     let speedBG = SKSpriteNode(imageNamed: "speedBG")
-    let mapIcon = SKSpriteNode(imageNamed: "map")
+    
     let shipDirection = SKSpriteNode(imageNamed: "direction")
     let mapBG = SKSpriteNode(imageNamed: "mapBG")
     let FakemapBG = SKSpriteNode(imageNamed: "fakeMapBG")
@@ -45,6 +44,23 @@ class Play: PlayConvenience{
     let star3 = SKSpriteNode(imageNamed: "stars")
     let star4 = SKSpriteNode(imageNamed: "stars")
     let avatar = SKSpriteNode(imageNamed: "avatar")
+    
+    
+    
+    
+    //NAVIGATION
+    let navArrow = SKSpriteNode(imageNamed: "navArrow")
+    let navBG = SKSpriteNode(imageNamed: "nav")
+    let mapIcon = SKSpriteNode(imageNamed: "map")
+    let repairIcon = SKSpriteNode(imageNamed: "repairOff")
+    let lightSpeedIcon = SKSpriteNode(imageNamed: "lightSpeedOff")
+    
+    
+    
+    //WARNINGS
+    var isWarning = false
+    let warning = SKSpriteNode(imageNamed: "warning")
+
     
     let speedUI = SKSpriteNode(imageNamed: "speed29")
     
@@ -385,7 +401,7 @@ class Play: PlayConvenience{
         cam.removeAction(forKey: "vibratingCameras")
         
             speedLabel.text = "320"
-            speedLabel.zPosition = 10
+            speedLabel.zPosition = 9
             speedLabel.fontSize = 70
             speedLabel.color = UIColor.white
             speedLabel.zRotation = 0.165
@@ -397,19 +413,17 @@ class Play: PlayConvenience{
             dPad.position = pos(mx: 0.35, my: -0.25)
             dPad.alpha = 1
             dPad.zPosition = 10
-            dPad.setScale(1)
+            dPad.setScale(1.5)
             cam.addChild(dPad)
             
-            navArrow.position = pos(mx: 0.43, my: 0.5)
-        navArrow.alpha = 1
-        navArrow.zPosition = 10
-            navArrow.setScale(0.3)
-        cam.addChild(navArrow)
+       
+            
+            
         
         avatar.position = pos(mx: -0.385, my: 0.35)
         avatar.alpha = 1
         avatar.zPosition = 10
-        avatar.setScale(0.5)
+        avatar.setScale(0.7)
         cam.addChild(avatar)
             
             self.addChild(star1)
@@ -425,11 +439,49 @@ class Play: PlayConvenience{
             star4.zPosition = -10
             star4.setScale(2)
         
-            mapIcon.position = CGPoint(x: 0,y: -100)
+            
+            //NAVIGATION
+       
+        navArrow.position = pos(mx: 0.43, my: 0.5)
+        navArrow.alpha = 1
+        navArrow.zPosition = 11
+        navArrow.setScale(0.3)
+        cam.addChild(navArrow)
+            
+        navBG.position = CGPoint(x: navArrow.position.x,y: navArrow.position.y + navArrow.size.height)
+        navBG.alpha = 1
+        navBG.anchorPoint = CGPoint(x: 0.5 ,y: 0)
+        navBG.zPosition = 11
+        navBG.setScale(0.4)
+        cam.addChild(navBG)
+            
+        mapIcon.position = CGPoint(x: -navBG.size.width/1.2 ,y: navBG.size.height/6 )
         mapIcon.alpha = 1
-        mapIcon.zPosition = 10
-        mapIcon.setScale(1.5)
-        avatar.addChild(mapIcon)
+        mapIcon.zPosition = 11
+        mapIcon.setScale(0.3)
+        navBG.addChild(mapIcon)
+            
+        repairIcon.position = CGPoint(x: -navBG.size.width/1.2 ,y: mapIcon.position.y + (mapIcon.size.height * 1.2) )
+        repairIcon.alpha = 1
+        repairIcon.zPosition = 11
+        repairIcon.setScale(1.1)
+        navBG.addChild(repairIcon)
+            
+        lightSpeedIcon.position = CGPoint(x: -navBG.size.width/1.2 ,y: repairIcon.position.y + (repairIcon.size.height * 1.2) )
+        lightSpeedIcon.alpha = 1
+        lightSpeedIcon.zPosition = 11
+        lightSpeedIcon.setScale(1.1)
+        navBG.addChild(lightSpeedIcon)
+        
+       //WARNINGS
+            
+        warning.position = CGPoint(x: 0 ,y: -speedUI.size.height   )
+        warning.alpha = 0
+        warning.zPosition = 10
+        warning.setScale(2)
+        speedUI.addChild(warning)
+            
+            
             
         mapBG.position = pos(mx: 0, my: 0)
         mapBG.alpha = 0
@@ -459,14 +511,15 @@ class Play: PlayConvenience{
             thrustButton.position = pos(mx: -0.35, my: -0.2)
             thrustButton.alpha = 1
             thrustButton.zPosition = 10
-            
+            thrustButton.setScale(1.4)
             cam.addChild(thrustButton)
             
-            heatingLaser.position = CGPoint(x: 0, y: 0)
+            heatingLaser.position = CGPoint(x: 0, y: thrustButton.size.width/2.2)
             heatingLaser.alpha = 0
             heatingLaser.anchorPoint = CGPoint(x: 0.5, y: 0.5)
             heatingLaser.zPosition = 10
-            //thrustButton.addChild(heatingLaser)
+            heatingLaser.setScale(0.12)
+            thrustButton.addChild(heatingLaser)
             
         speedUI.position = pos(mx: 0, my: 0.47)
         speedUI.alpha = 1
@@ -493,9 +546,46 @@ class Play: PlayConvenience{
         
         
     }
+    
+    func DisplayWARNING(){
+        
+        warning.run(SKAction.repeatForever(SKAction.sequence([
+        
+            SKAction.fadeAlpha(to: 1, duration: 0.8).ease(.easeInEaseOut),
+            SKAction.fadeAlpha(to: 0.15, duration: 0.8).ease(.easeInEaseOut)
+        ])), withKey: "warningAlpha")
+        
+        
+    }
     override func nodeDown(_ node: SKNode, at point: CGPoint) {
         if !startPressed{
             startGame()
+        }
+        if repairIcon == node{
+           
+            if isWarning == true{
+                self.removeAction(forKey: "warningAlpha")
+                warning.alpha = 0
+                isWarning = false
+            }else if isWarning == false{
+                DisplayWARNING()
+                isWarning = true
+            }
+        }
+        if navArrow == node{
+            if showNav == false{
+            navArrow.run(SKAction.move(to: pos(mx: 0.43, my: 0 ), duration: 0.35).ease(.easeOut))
+            navArrow.run(SKAction.rotate(toAngle: 3.18, duration: 0.35).ease(.easeOut))
+                navBG.run(SKAction.move(to: pos(mx: 0.43, my: 0 ), duration: 0.35).ease(.easeOut))
+                showNav = true
+            }else if showNav == true{
+                
+                navArrow.run(SKAction.move(to: pos(mx: 0.43, my: 0.5 ), duration: 0.35).ease(.easeOut))
+                navArrow.run(SKAction.rotate(toAngle: 0, duration: 0.35).ease(.easeOut))
+                navBG.run(SKAction.move(to: pos(mx: 0.43, my: 0.5  ), duration: 0.35).ease(.easeOut))
+                showNav = false
+            }
+            
         }
         if thrustButton == node{
             if point.y > thrustButton.position.y + 50{

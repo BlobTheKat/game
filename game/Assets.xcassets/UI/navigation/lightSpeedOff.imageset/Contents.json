@@ -5,12 +5,11 @@
       "scale" : "1x"
     },
     {
-      "filename" : "Asset 182.png",
+      "filename" : "Asset 219.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Asset 205.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
@@ -18,8 +17,5 @@
   "info" : {
     "author" : "xcode",
     "version" : 1
-  },
-  "properties" : {
-    "auto-scaling" : "auto"
   }
 }
