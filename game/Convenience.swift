@@ -70,12 +70,13 @@ extension SKScene{
     func touch(at _: CGPoint){
     }
     @objc
-    func swipe(at _: CGPoint){
+    func swipe(from _: CGPoint, to _: CGPoint){
     }
     @objc
     func release(at _: CGPoint){
     }
     open override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        
         for t in touches {
             for node in self.nodes(at: t.location(in: self)){
                 self.nodeDown(node, at: t.location(in: node.parent ?? self))
@@ -97,7 +98,7 @@ extension SKScene{
             for node in oldNodes{
                 self.nodeUp(node, at: t.location(in: node.parent ?? self))
             }
-            swipe(at: t.location(in: camera ?? self))
+            swipe(from: t.previousLocation(in: camera ?? self), to: t.location(in: camera ?? self))
         }
     }
     

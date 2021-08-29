@@ -28,6 +28,7 @@ class Play: PlayConvenience{
     var coolingDown = false
     var heatLevel = 0
     var usingConstantLazer = false
+    
     let thrustButton = SKSpriteNode(imageNamed: "thrustOff")
     let heatingLaser = SKSpriteNode(imageNamed: "heating0")
     let dPad = SKSpriteNode(imageNamed: "dPad")
@@ -93,14 +94,9 @@ class Play: PlayConvenience{
     }
     let pos = SKLabelNode()
     func spaceUpdate(){
-        
-        
         if coolingDown{
-            
             self.removeAction(forKey: "constantLazer1")
-            
         }
-        
         playerArrow.position = CGPoint(x: (self.ship.position.x/10), y: (self.ship.position.y/10))
         playerArrow.zRotation = ship.zRotation
         
@@ -398,11 +394,11 @@ class Play: PlayConvenience{
             speedLabel.xScale = 1.3
             speedBG.addChild(speedLabel)
             
-        dPad.position = pos(mx: 0.35, my: -0.25)
-        dPad.alpha = 1
-        dPad.zPosition = 10
-        dPad.setScale(1)
-        cam.addChild(dPad)
+            dPad.position = pos(mx: 0.35, my: -0.25)
+            dPad.alpha = 1
+            dPad.zPosition = 10
+            dPad.setScale(1)
+            cam.addChild(dPad)
             
             navArrow.position = pos(mx: 0.43, my: 0.5)
         navArrow.alpha = 1
@@ -428,8 +424,8 @@ class Play: PlayConvenience{
             self.addChild(star4)
             star4.zPosition = -10
             star4.setScale(2)
-            
-            mapIcon.position = CGPoint(x: -self.size.width + 400,y: -self.size.height*2.5 )
+        
+            mapIcon.position = CGPoint(x: 0,y: -100)
         mapIcon.alpha = 1
         mapIcon.zPosition = 10
         mapIcon.setScale(1.5)
@@ -444,7 +440,7 @@ class Play: PlayConvenience{
         FakemapBG.position = pos(mx: 0, my: 0)
         FakemapBG.alpha = 1
         FakemapBG.zPosition = 9
-        FakemapBG.setScale(0.12)
+        FakemapBG.setScale(0.1)
         cam.addChild(FakemapBG)
             
         
@@ -460,18 +456,17 @@ class Play: PlayConvenience{
         dPad.addChild(shipDirection)
         
         
-        thrustButton.position = pos(mx: -0.35, my: -0.2)
-        thrustButton.alpha = 1
-        thrustButton.zPosition = 10
-        thrustButton.setScale(1)
-        cam.addChild(thrustButton)
+            thrustButton.position = pos(mx: -0.35, my: -0.2)
+            thrustButton.alpha = 1
+            thrustButton.zPosition = 10
             
-            heatingLaser.position = CGPoint(x: 0, y: self.size.height * 1.1)
+            cam.addChild(thrustButton)
+            
+            heatingLaser.position = CGPoint(x: 0, y: 0)
             heatingLaser.alpha = 0
             heatingLaser.anchorPoint = CGPoint(x: 0.5, y: 0.5)
             heatingLaser.zPosition = 10
-            heatingLaser.setScale(1)
-            thrustButton.addChild(heatingLaser)
+            //thrustButton.addChild(heatingLaser)
             
         speedUI.position = pos(mx: 0, my: 0.47)
         speedUI.alpha = 1
@@ -620,8 +615,11 @@ class Play: PlayConvenience{
         
         ]), withKey: "constantLaser")
     }
-    
+    func isIn(_ frame: CGRect, _ point: CGPoint) -> Bool{
+        return point.x < frame.maxX && point.x > frame.minX && point.y < frame.maxY && point.y > frame.minY
+    }
     func shootLazer(){
+        
             let bullet1 = SKSpriteNode(imageNamed: "bullet")
             let bullet2 = SKSpriteNode(imageNamed: "bullet")
             
@@ -727,10 +725,6 @@ class Play: PlayConvenience{
     }
     var d = Data()
     override func keyDown(_ key: UIKeyboardHIDUsage) {
-        
-        print(objects.map({ a in
-            return a.size.width
-        }))
         if key == .keyboardUpArrow || key == .keyboardW{
             ship.thrust = true
         }else if key == .keyboardRightArrow || key == .keyboardD{
@@ -777,24 +771,11 @@ class Play: PlayConvenience{
         cameraUpdate()
         spaceUpdate()
     }
-
-    /*
-    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        
-       
-        for touch in touches{
-            if !thrustButton.contains(touch.location(in: self)) || !dPad.contains(touch.location(in: self)){
-            let pointOfTouch = touch.location(in: self)
-            let previousPointOfTouch = touch.previousLocation(in: self)
-            let amountDraggedUPDown = pointOfTouch.y - previousPointOfTouch.y
-            let amountDraggedRightLeft = pointOfTouch.x - previousPointOfTouch.x
-            
-            let MoveMapTo = CGPoint(x: (FakemapBG.position.x + amountDraggedRightLeft) - FakemapBG.position.x + FakemapBG.position.x, y: (FakemapBG.position.y + amountDraggedUPDown) - FakemapBG.position.y + FakemapBG.position.y )
-            FakemapBG.position = MoveMapTo
-            }
-        }
-        
+    override func swipe(from a: CGPoint, to b: CGPoint) {
+        guard showMap else {return}
+        if dPad.contains(b) || thrustButton.contains(b){return}
+        FakemapBG.position.x += b.x - a.x
+        FakemapBG.position.y += b.y - a.y
     }
- */
 
 }
