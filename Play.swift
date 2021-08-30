@@ -567,11 +567,11 @@ class Play: PlayConvenience{
         }
         if repairIcon == node{
            
-            if isWarning == true{
-                self.removeAction(forKey: "warningAlpha")
+            if isWarning{
+                warning.removeAction(forKey: "warningAlpha")
                 warning.alpha = 0
                 isWarning = false
-            }else if isWarning == false{
+            }else{
                 DisplayWARNING()
                 isWarning = true
             }

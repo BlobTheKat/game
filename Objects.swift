@@ -292,7 +292,7 @@ class Planet: Object{
             n.angularVelocity = 0
             n.zRotation = atan2(y, x) - .pi/2
             n.landed = true
-        }else if d <= r + radius && !n.asteroid && !deathzone{
+        }else if d <= r + radius && !n.asteroid && !deathzone && !superhot{
             if n.landed{
                 n.zRotation += angularVelocity
             }else{
