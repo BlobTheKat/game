@@ -8,7 +8,7 @@
 import Foundation
 import SpriteKit
 
-let G: CGFloat = 0.05
+let G: CGFloat = 0.0001
 let fsmall: CGFloat = 32
 let fmed: CGFloat = 48
 let fbig: CGFloat = 72

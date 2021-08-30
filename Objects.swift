@@ -266,8 +266,9 @@ class Planet: Object{
         var r = self.radius * self.radius - n.radius * n.radius
         if r < 0{r=0}
         r += (2 * sqrt(r) + n.radius) * n.radius
-        if d < r - 1{
-            if n.asteroid || mass * G / d > n.thrustMultiplier / 30 || superhot{
+        let deathzone = mass * mass * G * G / d > n.thrustMultiplier * n.thrustMultiplier / 900
+        if d < r - radius{
+            if n.asteroid || deathzone || superhot{
                 let parent = n.parent as? Play
                 if parent != nil, let i = parent!.objects.firstIndex(of: n){
                     parent!.objects.remove(at: i)
@@ -291,48 +292,34 @@ class Planet: Object{
             n.angularVelocity = 0
             n.zRotation = atan2(y, x) - .pi/2
             n.landed = true
-        }else if d <= r+2 && !n.asteroid && mass * G / d <= n.thrustMultiplier / 30{
-            n.zRotation += angularVelocity
+        }else if d <= r + radius && !n.asteroid && !deathzone{
+            if n.landed{
+                n.zRotation += angularVelocity
+            }else{
+                n.zRotation = atan2(y, x) - .pi/2
+            }
             let t = atan2(x,y) - angularVelocity
             n.velocity = CGVector(dx: sin(t)*sqrt(d)-x, dy: cos(t)*sqrt(d)-y)
             //resting on planet
             n.landed = true
-            
-            
             let parents = parent as? Play
             if parents != nil && n == parents!.ship{
                 let circle = parents!.planetsMP[parents!.planets.firstIndex(of: self)!]
                 circle.fillColor = UIColor.green
-                
-                
-                
                 parents?.playerArrow.removeFromParent()
-                
                 //GANGE MAP HERE
-                
-                
-                
             }
         }else{
             let parents = parent as? Play
             if parents != nil && n == parents!.ship{
                 let circle = parents!.planetsMP[parents!.planets.firstIndex(of: self)!]
                 circle.fillColor = UIColor.white
-                
-                
-                
                 //GANGE MAP HERE
-                
                 if parents?.playerArrow.parent == nil{
-                    
                     parents!.FakemapBG.addChild(parents!.playerArrow)
                 }
-                
-                
             }
-            
-            
-            if mass * G / d > n.thrustMultiplier / 30 && !superhot{
+            if deathzone && !superhot{
                 let parent = n.parent as? Play
                 if parent != nil, let i = parent!.objects.firstIndex(of: n){
                     parent!.objects.remove(at: i)
@@ -344,16 +331,16 @@ class Planet: Object{
                     }]))
                     n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * CGFloat(gameFPS), dy: n.velocity.dy * CGFloat(gameFPS)), duration: 1))
                 }
-               
                 return
-                    
             }
-            let m = -(mass*G)/d
-            n.velocity.dx += x / sqrt(d) * m
-            n.velocity.dy += y / sqrt(d) * m
+            let M = mass * G
+            let m = min(M / (16 * r) - M / d, 0)
+            //let m = -(mass*G)/d
+            //if self.position.x == 0{print(m)}
+            n.velocity.dx += x * m
+            n.velocity.dy += y * m
             n.zRotation += angularVelocity * r / d
         }
-       
     }
     override func decode(data: inout Data) {
         body(radius: CGFloat(data.read() as Float), mass: CGFloat(data.read() as Float), texture: SKTexture(imageNamed: data.read()))

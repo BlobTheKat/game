@@ -1,5 +1,5 @@
 
-mass: 300000
+mass: 200000
 radius: 800
 spin: 0.001
 texture: planet0
@@ -22,9 +22,9 @@ spin: 0.001
 texture: planet3
 particle: 1
 
-mass: 70000
+mass: 150000
 radius: 291
-spin: -0.0007
+spin: -0.002
 texture: destroyer1
 superhot: true
 particle: 2

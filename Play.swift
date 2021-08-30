@@ -90,7 +90,7 @@ class Play: PlayConvenience{
                 let ts = min((stress / 0.6 - 1) * scale, 8 - scale)
                 cam.setScale(scale + ts / 50)
             }else if stress < 0.3{
-                let ts = max((stress / 0.4 - 1) * scale, (ship.landed ? 0.5 : 2) - scale)
+                let ts = max((stress / 0.4 - 1) * scale, (ship.landed ? 1 : 2) - scale)
                 cam.setScale(scale + ts / 50)
             }
         }
@@ -117,15 +117,19 @@ class Play: PlayConvenience{
         playerArrow.zRotation = ship.zRotation
         
         var a = 0
-        for particle in particles{
-            if particle.update(){
-                particles.remove(at: particles.firstIndex(of: particle)!)
-                particle.removeFromParent()
+        defer{
+            for particle in particles{
+                if particle.update(){
+                    particles.remove(at: particles.firstIndex(of: particle)!)
+                    particle.removeFromParent()
+                }
             }
         }
         a = 0
+        for s in objects{s.landed = false}
         for planet in planets{
             for s in objects{
+                if s.landed{continue}
                 planet.gravity(s)
             }
             planet.update(a < planetindicators.count ? planetindicators[a] : nil)
