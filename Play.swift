@@ -106,7 +106,10 @@ class Play: PlayConvenience{
         star3.position = CGPoint(x: shipX * 2440 ,y: shipY * 2440 + 2440 )
         star4.position = CGPoint(x: shipX * 2440 + 2440 ,y: shipY * 2440 + 2440)
         
-
+        star1.texture!.filteringMode = .nearest
+        star2.texture!.filteringMode = .nearest
+        star3.texture!.filteringMode = .nearest
+        star4.texture!.filteringMode = .nearest
     }
     let pos = SKLabelNode()
     func spaceUpdate(){

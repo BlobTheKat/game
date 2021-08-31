@@ -124,6 +124,7 @@ class Object: SKSpriteNode, DataCodable{
         self.radius = radius
         if texture != nil{
             self.texture = texture!
+            self.texture!.filteringMode = .nearest
             self.size = texture!.size()
         }
         self.setScale(0.5)
@@ -191,6 +192,7 @@ class Object: SKSpriteNode, DataCodable{
         thrust = bits & 1 != 0
         thrustLeft = bits & 2 != 0
         thrustRight = bits & 4 != 0
+        let oa = asteroid
         if thrustLeft && thrustRight{
             thrustLeft = false
             thrustRight = false
@@ -199,12 +201,15 @@ class Object: SKSpriteNode, DataCodable{
             asteroid = false
         }
         producesParticles = thrust
-        self.id = Int(bits / 8)
-        let ship = (asteroid ? asteroids : ships).data[id]
-        guard case .string(let t) = ship["texture"] else {fatalError("invalid texture")}
-        guard case .number(let radius) = ship["radius"] else {fatalError("invalid radius")}
-        guard case .number(let mass) = ship["mass"] else {fatalError("invalid mass")}
-        self.body(radius: CGFloat(radius), mass: CGFloat(mass), texture: .named(t))
+        let id = Int(bits / 8)
+        if id != self.id || oa != asteroid{
+            self.id = id
+            let ship = (asteroid ? asteroids : ships).data[id]
+            guard case .string(let t) = ship["texture"] else {fatalError("invalid texture")}
+            guard case .number(let radius) = ship["radius"] else {fatalError("invalid radius")}
+            guard case .number(let mass) = ship["mass"] else {fatalError("invalid mass")}
+            self.body(radius: CGFloat(radius), mass: CGFloat(mass), texture: SKTexture(imageNamed: t))
+        }
         self.controls = true
         self.dynamic = true
     }
