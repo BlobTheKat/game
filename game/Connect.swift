@@ -108,3 +108,10 @@ struct M{
     }
 }
 let messages = M()
+
+
+struct api{
+    static func sector(completion: @escaping (UInt32) -> ()){
+        completion(0)
+    }
+}

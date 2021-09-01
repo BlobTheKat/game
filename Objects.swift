@@ -58,7 +58,7 @@ class Object: SKSpriteNode, DataCodable{
         self.body(radius: CGFloat(radius), mass: CGFloat(mass))
         particle = defParticle
     }*/
-    func update(collisionNodes: ArraySlice<Object>){
+    func update(){
         if !asteroid{
             self.angularVelocity *= 0.95
         }
@@ -77,23 +77,6 @@ class Object: SKSpriteNode, DataCodable{
         if !asteroid{
             if velocity.dx > 10{velocity.dx *= 0.99}
             if velocity.dy > 10{velocity.dy *= 0.99}
-        }
-        for node in collisionNodes{
-            let x = self.position.x - node.position.x
-            let y = self.position.y - node.position.y
-            let d = (x * x + y * y)
-            if d < (self.radius + node.radius) * (self.radius + node.radius){
-                //self and node collided
-                //simplified elastic collision
-                let sum = mass + node.mass
-                let diff = mass - node.mass
-                let newvelx = (velocity.dx * diff + (2 * node.mass * node.velocity.dx)) / sum
-                let newvely = (velocity.dy * diff + (2 * node.mass * node.velocity.dy)) / sum
-                node.velocity.dx = ((2 * mass * velocity.dx) - node.velocity.dx * diff) / sum
-                node.velocity.dy = ((2 * mass * velocity.dy) - node.velocity.dy * diff) / sum
-                velocity.dx = newvelx
-                velocity.dy = newvely
-            }
         }
         if controls{
             producesParticles = false
@@ -220,7 +203,7 @@ class Planet: Object{
     override func defParticle(_ planet: Object) -> Particle{
         return Particle()
     }
-    override func update(collisionNodes: ArraySlice<Object>) {}
+    override func update() {}
     func update(_ node: SKSpriteNode?){
         //let node: SKSpriteNode? = nil
         if let i = node{

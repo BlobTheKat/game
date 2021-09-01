@@ -111,7 +111,7 @@ class Play: PlayConvenience{
         star3.texture!.filteringMode = .nearest
         star4.texture!.filteringMode = .nearest
     }
-    let pos = SKLabelNode()
+    var hits: [UInt32] = []
     func spaceUpdate(){
         if coolingDown{
             self.removeAction(forKey: "constantLazer1")
@@ -138,14 +138,32 @@ class Play: PlayConvenience{
             planet.update(a < planetindicators.count ? planetindicators[a] : nil)
             a += 1
         }
+        hits = []
         a = 0
         for s in objects{
-            s.update(collisionNodes: objects.suffix(from: a+1))
+            s.update()
+            if s != ship{
+                let x = ship.position.x - s.position.x
+                let y = ship.position.y - s.position.y
+                let d = (x * x + y * y)
+                if d < (ship.radius + s.radius) * (ship.radius + s.radius){
+                    //self and node collided
+                    //simplified elastic collision
+                    let sum = ship.mass + s.mass
+                    let diff = ship.mass - s.mass
+                    let newvelx = (ship.velocity.dx * diff + (2 * s.mass * s.velocity.dx)) / sum
+                    let newvely = (ship.velocity.dy * diff + (2 * s.mass * s.velocity.dy)) / sum
+                    //s.velocity.dx = ((2 * ship.mass * ship.velocity.dx) - s.velocity.dx * diff) / sum
+                    //s.velocity.dy = ((2 * ship.mass * ship.velocity.dy) - s.velocity.dy * diff) / sum
+                    ship.velocity.dx = newvelx
+                    ship.velocity.dy = newvely
+                    hits.append(UInt32(a))
+                }
+            }
             a += 1
         }
         let vel = CGFloat(sqrt(ship.velocity.dx*ship.velocity.dx + ship.velocity.dy*ship.velocity.dy)) * CGFloat(gameFPS)
         speedLabel.text = "\(Int(vel/2)).00"
-        pos.text = " v: \(vel.rounded()), b: \(Int(360-(ship.zRotation/(.pi)*180).truncatingRemainder(dividingBy: 360))%360)"
     }
     var send = {(_: Data) -> () in}
     var ready = false
@@ -165,8 +183,6 @@ class Play: PlayConvenience{
         istop = interval(1, { [self] in
             send(Data([3]))
         })
-    
-      
     }
     func parseShip(_ data: inout Data, _ i: Int){
         guard i < objects.count else {
@@ -178,11 +194,45 @@ class Play: PlayConvenience{
         }
         let object = objects[i]
         object.decode(data: &data)
-        if object.id == 0 && object.parent != nil{DispatchQueue.main.async{object.removeFromParent()}}
-        if object.id != 0 && object.parent == nil{DispatchQueue.main.async{self.addChild(object)}}
+        DispatchQueue.main.async{if object.id == 0 && object.parent != nil{object.removeFromParent()}}
+        DispatchQueue.main.async{if object.id != 0 && object.parent == nil{self.addChild(object)}}
+    }
+    var loaded = 2
+    var loadstack: (p: [Planet]?, o: [Object]?) = (p: nil, o: nil)
+    func sectorid(_ s: UInt32){
+        sector = s
+        planets.removeAll()
+        objects.removeAll()
+        objects.append(ship)
+        game.sector(Int(sector)) { [self] p, o in
+            loadstack.p = p
+            loadstack.o = o
+            loaded -= 1
+            if loaded == 0{didLoad()}
+        }
+    }
+    func didLoad(){
+        planets.append(contentsOf: loadstack.p!)
+        objects.append(contentsOf: loadstack.o!)
+        for p in loadstack.p!{
+            planetindicators.append(SKSpriteNode(imageNamed: "arrow"))
+            self.addChild(p)
+            p.zPosition = -1
+        }
+        for p in planetindicators{
+            p.alpha = 0
+        }
+        for o in loadstack.o!{
+            if o.id != 0{self.addChild(o)}
+        }
+        ready = true
+        if view != nil{
+            didMove(to: view!)
+        }
     }
     override init(size: CGSize) {
         super.init(size: size)
+        api.sector(completion: sectorid)
         startAnimation()
         cam.position = CGPoint.zero
         self.addChild(cam)
@@ -192,38 +242,16 @@ class Play: PlayConvenience{
         ship.alpha = 0
         ship.id = 1
         var stopAuth = {}
+        var authed = false
         send = connect{[self](d) in
             var data = d
             let code: UInt8 = data.read()
             if code == 1{
+                if authed{return}
+                authed = true
                 stopAuth()
-                ready = true
-                if view != nil{
-                    didMove(to: view!)
-                }
-                sector = data.read()
-                planets.removeAll()
-                objects.removeAll()
-                objects.append(ship)
-                game.sector(Int(sector)) { p, o in
-                    planets.append(contentsOf: p)
-                    objects.append(contentsOf: o)
-                    for p in p{
-                        planetindicators.append(SKSpriteNode(imageNamed: "arrow"))
-                        self.addChild(p)
-                        p.zPosition = -1
-                    }
-                    for p in planetindicators{
-                        p.alpha = 0
-                    }
-                    for o in o{
-                        if o.id != 0{self.addChild(o)}
-                        
-                        
-                    }
-                    
-                    // place anything after its loaded 
-                }
+                loaded -= 1
+                if loaded == 0{didLoad()}
                 startHB()
             }else if code == 127{
                 dmessage = data.read() ?? "Disconnected!"
@@ -284,7 +312,7 @@ class Play: PlayConvenience{
         self.label(node: tapToStart, "tap to start", pos: pos(mx: 0, my: -0.4), size: fmed, color: UIColor.white, font: "HalogenbyPixelSurplus-Regular", zPos: 1000, isStatic: true)
         self.run(SKAction.repeat(SKAction.sequence([
             SKAction.run{
-                if self.children.count < 200{
+                if self.children.count < 150{
                     self.tapToStart.text = "loading..."
                 }else{
                     self.tapToStart.text = "tap to start"
@@ -293,9 +321,6 @@ class Play: PlayConvenience{
             SKAction.wait(forDuration: 0.2)
         ]), count: 100), withKey: "loading")
         //position indicator
-        self.label(node: pos, "x: , y: , v: , b: ", pos: pos(mx: -0.5, my: -0.5, x: 20, y: 20), size: 20, color: UIColor.white, font: "HalogenbyPixelSurplus-Regular", zPos: 1000, isStatic: true)
-        pos.horizontalAlignmentMode = .left
-        pos.verticalAlignmentMode = .top
         tapToStart.alpha = 0.7
         ship.zPosition = 5
         ship.producesParticles = true
@@ -306,7 +331,6 @@ class Play: PlayConvenience{
             return Particle[State(color: (r: 0.1, g: 0.7, b: 0.7), size: CGSize(width: 11, height: 2), zRot: 0, position: ship.position.add(y: -5), alpha: i), State(color: (r: 1, g: 1, b: 1), size: CGSize(width: 5, height: 2), zRot: 0, position: ship.position.add(y: -35), alpha: 0, delay: TimeInterval(i))]
         }
         ship.particleFrequency = 1
-        objects.append(ship)
         let _ = interval(3) {
             self.tapToStart.run(SKAction.moveBy(x: 0, y: 10, duration: 2).ease(.easeOut))
         }
@@ -367,8 +391,8 @@ class Play: PlayConvenience{
     var planetsMP = [SKShapeNode]()
     var amountOfPlanets = 0
     func startGame(){
-        if children.count > 200{
-            
+        if children.count > 150{
+            self.removeAction(forKey: "loading")
             for planets in planets{
                 
                 
