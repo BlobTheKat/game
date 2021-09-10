@@ -1,5 +1,5 @@
 //
-//  Deck.swift
+//  Play.swift
 //  game
 //
 //  Created by BlobKat on 06/07/2021.
@@ -70,7 +70,7 @@ class Play: PlayConvenience{
         a = timeout(5, {
             self.send(Data([127]))
             dmessage = "Lost connection!"
-           // Disconnected.renderTo(skview)
+            Disconnected.renderTo(skview)
         })
     }
     let tunnel1 = SKSpriteNode(imageNamed: "tunnel1")
@@ -138,7 +138,6 @@ class Play: PlayConvenience{
             planet.update(a < planetindicators.count ? planetindicators[a] : nil)
             a += 1
         }
-        hits = []
         a = 0
         for s in objects{
             s.update()
@@ -146,7 +145,11 @@ class Play: PlayConvenience{
                 let x = ship.position.x - s.position.x
                 let y = ship.position.y - s.position.y
                 let d = (x * x + y * y)
-                if d < (ship.radius + s.radius) * (ship.radius + s.radius){
+                let r = (ship.radius + s.radius) * (ship.radius + s.radius)
+                if d < r{
+                    let q = sqrt(r / d)
+                    ship.position.x = s.position.x + x * q
+                    ship.position.y = s.position.y + y * q
                     //self and node collided
                     //simplified elastic collision
                     let sum = ship.mass + s.mass
@@ -157,7 +160,7 @@ class Play: PlayConvenience{
                     //s.velocity.dy = ((2 * ship.mass * ship.velocity.dy) - s.velocity.dy * diff) / sum
                     ship.velocity.dx = newvelx
                     ship.velocity.dy = newvely
-                    hits.append(UInt32(a))
+                    hits.append(UInt32(a - 1))
                 }
             }
             a += 1
@@ -175,6 +178,14 @@ class Play: PlayConvenience{
             //send playerdata
             var data = Data([5])
             ship.encode(data: &data)
+            if hits.count > 10{
+                hits.removeLast(hits.count - 10)
+            }
+            data.write(UInt8(hits.count))
+            for hit in hits{
+                data.write(hit)
+            }
+            hits = []
             send(data)
         })
     }
@@ -184,6 +195,7 @@ class Play: PlayConvenience{
             send(Data([3]))
         })
     }
+    let physics = DispatchQueue.main
     func parseShip(_ data: inout Data, _ i: Int){
         guard i < objects.count else {
             let object = Object()
@@ -247,12 +259,13 @@ class Play: PlayConvenience{
             var data = d
             let code: UInt8 = data.read()
             if code == 1{
-                if authed{return}
-                authed = true
-                stopAuth()
-                loaded -= 1
-                if loaded == 0{didLoad()}
-                startHB()
+                if !authed{
+                    authed = true
+                    stopAuth()
+                    loaded -= 1
+                    if loaded == 0{didLoad()}
+                    startHB()
+                }
             }else if code == 127{
                 dmessage = data.read() ?? "Disconnected!"
                 DispatchQueue.main.async{Disconnected.renderTo(skview)}
@@ -260,13 +273,17 @@ class Play: PlayConvenience{
                 ping()
             }else if code == 6{
                 ping()
-                var i = 1
-                while data.count > 19{parseShip(&data, i);i += 1}
+                physics.async{ [self] in
+                    var i = 1
+                    while data.count > 19{parseShip(&data, i);i += 1}
+                }
             }else if code == 7{
                 ping()
-                var i = 0
-                while data.count > 19{parseShip(&data, i);i += 1}
-                objects.removeLast(objects.count - i - 1)
+                physics.async { [self] in
+                    var i = 0
+                    while data.count > 19{parseShip(&data, i);i += 1}
+                    objects.removeLast(objects.count - i - 1)
+                }
             }
         }
         let hello = try! messages.hello(name: "BlobKat")
@@ -276,7 +293,7 @@ class Play: PlayConvenience{
             if tries > 6{
                 stopAuth()
                 dmessage = "Could not connect"
-               // DispatchQueue.main.async{Disconnected.renderTo(skview)}
+                DispatchQueue.main.async{Disconnected.renderTo(skview)}
                 return
             }
             send(hello)
@@ -312,7 +329,7 @@ class Play: PlayConvenience{
         self.label(node: tapToStart, "tap to start", pos: pos(mx: 0, my: -0.4), size: fmed, color: UIColor.white, font: "HalogenbyPixelSurplus-Regular", zPos: 1000, isStatic: true)
         self.run(SKAction.repeat(SKAction.sequence([
             SKAction.run{
-                if self.children.count < 150{
+                if self.children.count < 120{
                     self.tapToStart.text = "loading..."
                 }else{
                     self.tapToStart.text = "tap to start"
@@ -391,7 +408,7 @@ class Play: PlayConvenience{
     var planetsMP = [SKShapeNode]()
     var amountOfPlanets = 0
     func startGame(){
-        if children.count > 150{
+        if children.count > 120{
             self.removeAction(forKey: "loading")
             for planets in planets{
                 
@@ -692,7 +709,6 @@ class Play: PlayConvenience{
                     if !self.actionStopped{
                     self.coolingDown = true
                     self.heatLevel += 1
-                    print("running")
                     switch self.heatLevel{
                     case 5: self.heatingLaser.texture = SKTexture(imageNamed: "heating4")
                         break
@@ -735,9 +751,6 @@ class Play: PlayConvenience{
         
         
         ]), withKey: "constantLaser")
-    }
-    func isIn(_ frame: CGRect, _ point: CGPoint) -> Bool{
-        return point.x < frame.maxX && point.x > frame.minX && point.y < frame.maxY && point.y > frame.minY
     }
     func shootLazer(){
         
@@ -889,8 +902,10 @@ class Play: PlayConvenience{
             latency += ti
             return
         }
-        cameraUpdate()
-        spaceUpdate()
+        physics.async{
+            self.cameraUpdate()
+            self.spaceUpdate()
+        }
     }
     override func swipe(from a: CGPoint, to b: CGPoint) {
         guard showMap else {return}

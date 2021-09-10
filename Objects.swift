@@ -12,8 +12,9 @@ protocol DataCodable {
     func encode(data: inout Data)
     func decode(data: inout Data)
 }
-
+var d: [Int: Int] = [:]
 class Object: SKSpriteNode, DataCodable{
+    var state: UInt8 = 0
     var id = 0
     var dynamic = false
     var controls = false
@@ -85,7 +86,7 @@ class Object: SKSpriteNode, DataCodable{
                 velocity.dy += cos(zRotation) * thrustMultiplier / 30
                 producesParticles = true
             }
-            if thrustLeft && thrustRight{thrustLeft = false; thrustRight = false}
+            if thrustLeft && thrustRight{thrustLeft = false; thrustRight = false;print("correction", asteroid)}
             if thrustRight && !landed{
                 angularVelocity -= 0.002 * angularThrustMultiplier
             }
@@ -105,6 +106,7 @@ class Object: SKSpriteNode, DataCodable{
         }
         self.mass = m
         self.radius = radius
+        self.setScale(1)
         if texture != nil{
             self.texture = texture!
             self.texture!.filteringMode = .nearest
@@ -172,15 +174,15 @@ class Object: SKSpriteNode, DataCodable{
         self.zRotation = CGFloat(data.read() as Int8) / 40
         self.angularVelocity = CGFloat(data.read() as Int8) / 768
         let bits: UInt16 = data.read()
+        let oa = asteroid
         thrust = bits & 1 != 0
         thrustLeft = bits & 2 != 0
         thrustRight = bits & 4 != 0
-        let oa = asteroid
-        if thrustLeft && thrustRight{
+        if !asteroid && thrustLeft && thrustRight{
             thrustLeft = false
             thrustRight = false
             asteroid = true
-        }else if asteroid && (thrustLeft || thrustRight){
+        }else if asteroid && !(thrustLeft && thrustRight){
             asteroid = false
         }
         producesParticles = thrust
@@ -193,7 +195,7 @@ class Object: SKSpriteNode, DataCodable{
             guard case .number(let mass) = ship["mass"] else {fatalError("invalid mass")}
             self.body(radius: CGFloat(radius), mass: CGFloat(mass), texture: SKTexture(imageNamed: t))
         }
-        self.controls = true
+        self.controls = !asteroid
         self.dynamic = true
     }
 }
@@ -250,7 +252,7 @@ class Planet: Object{
         let mass: CGFloat = self.mass
         let x = n.position.x - self.position.x
         let y = n.position.y - self.position.y
-        let d = (x * x + y * y)
+        let d = x * x + y * y
         var r = self.radius * self.radius - n.radius * n.radius
         if r < 0{r=0}
         r += (2 * sqrt(r) + n.radius) * n.radius
@@ -258,15 +260,15 @@ class Planet: Object{
         if d < r - radius{
             if n.asteroid || deathzone || superhot{
                 let parent = n.parent as? Play
-                if parent != nil, let i = parent!.objects.firstIndex(of: n){
-                    parent!.objects.remove(at: i)
+                if parent != nil{
+                    n.dynamic = false
+                    n.controls = false
                     n.run(SKAction.sequence([SKAction.fadeOut(withDuration: 1),SKAction.run{n.removeFromParent()
                         if n == parent!.ship{
                             parent!.send(Data([127]))
                             DispatchQueue.main.async{SKScene.transition = .crossFade(withDuration: 0.5);PlayerDied.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0);}
                         }
                     }]))
-                    n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * CGFloat(gameFPS), dy: n.velocity.dy * CGFloat(gameFPS)), duration: 1))
                 }
                
                 return
@@ -309,15 +311,15 @@ class Planet: Object{
             }
             if deathzone && !superhot{
                 let parent = n.parent as? Play
-                if parent != nil, let i = parent!.objects.firstIndex(of: n){
-                    parent!.objects.remove(at: i)
+                if parent != nil{
+                    n.dynamic = false
+                    n.controls = false
                     n.run(SKAction.sequence([SKAction.fadeOut(withDuration: 1),SKAction.run{n.removeFromParent()
                         if n == parent!.ship{
                             parent!.send(Data([127]))
                             DispatchQueue.main.async{SKScene.transition = .crossFade(withDuration: 0.5);PlayerDied.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0);}
                         }
                     }]))
-                    n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * CGFloat(gameFPS), dy: n.velocity.dy * CGFloat(gameFPS)), duration: 1))
                 }
                 return
             }
