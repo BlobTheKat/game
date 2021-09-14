@@ -13,6 +13,7 @@ let fsmall: CGFloat = 32
 let fmed: CGFloat = 48
 let fbig: CGFloat = 72
 let gameFPS = 60.0
+
 func bg(_ a: @escaping () -> ()){DispatchQueue.global(qos: .background).async(execute: a)}
 
 struct servers{
@@ -148,8 +149,7 @@ func sector(_ id: Int, completion: @escaping ([Planet], [Object]) -> ()){
             guard case .string(let texture) = dat["texture"] else {continue}
             let t = SKTexture(imageNamed: texture)
             if a{
-                
-            
+                continue
                 let i = Object(radius: CGFloat(radius), mass: CGFloat(mass), texture: t, asteroid: true)
                 i.angularVelocity = CGFloat(spin)
                 i.position.x = CGFloat(x)

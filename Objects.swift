@@ -64,17 +64,22 @@ class Object: SKSpriteNode, DataCodable{
             self.angularVelocity *= 0.95
         }
         let parent = self.parent as? Play
-        if producesParticles{
-            
-            particleQueue += particleFrequency
-            while particleQueue >= 1{
-                if parent != nil{
-                    parent!.particles.append(self.particle(self))
-                    parent!.addChild(parent!.particles.last!)
+        if let cam = parent?.camera{
+            let cw = parent!.size.width * cam.xScale / 2
+            let ch = parent!.size.height * cam.yScale / 2
+            let cpos = cam.position
+            let r = 1.25 * radius
+            if producesParticles && (position.x + r > cpos.x - cw && position.x - r < cpos.x + cw) && (position.y + r > cpos.y - ch && position.y - r < cpos.y + ch){
+                particleQueue += particleFrequency
+                while particleQueue >= 1{
+                    if parent != nil{
+                        parent!.particles.append(self.particle(self))
+                        parent!.addChild(parent!.particles.last!)
+                    }
+                    particleQueue -= 1
                 }
-                particleQueue -= 1
-            }
-        }else{particleQueue = 1}
+            }else{particleQueue = 1}
+        }
         if !asteroid{
             if velocity.dx > 10{velocity.dx *= 0.99}
             if velocity.dy > 10{velocity.dy *= 0.99}
@@ -232,17 +237,22 @@ class Planet: Object{
             }else if i.parent != nil{i.removeFromParent()}
         }
         let parent = self.parent as? Play
-        if producesParticles{
-            
-            particleQueue += particleFrequency
-            while particleQueue >= 1{
-                if parent != nil{
-                    parent!.particles.append(self.particle(self))
-                    parent!.addChild(parent!.particles.last!)
+        if let cam = parent?.camera{
+            let cw = parent!.size.width * cam.xScale / 2
+            let ch = parent!.size.height * cam.yScale / 2
+            let cpos = cam.position
+            let r = 1.25 * radius
+            if producesParticles && (position.x + r > cpos.x - cw && position.x - r < cpos.x + cw) && (position.y + r > cpos.y - ch && position.y - r < cpos.y + ch){
+                particleQueue += particleFrequency
+                while particleQueue >= 1{
+                    if parent != nil{
+                        parent!.particles.append(self.particle(self))
+                        parent!.addChild(parent!.particles.last!)
+                    }
+                    particleQueue -= 1
                 }
-                particleQueue -= 1
-            }
-        }else{particleQueue = 1}
+            }else{particleQueue = 1}
+        }
         zRotation += angularVelocity
     }
     func gravity(_ n: Object){
@@ -263,12 +273,16 @@ class Planet: Object{
                 if parent != nil{
                     n.dynamic = false
                     n.controls = false
+                    if let parent = (n.parent as? Play), let i = parent.objects.firstIndex(of: n){
+                        parent.objects[i] = Object()
+                    }
                     n.run(SKAction.sequence([SKAction.fadeOut(withDuration: 1),SKAction.run{n.removeFromParent()
                         if n == parent!.ship{
                             parent!.send(Data([127]))
                             DispatchQueue.main.async{SKScene.transition = .crossFade(withDuration: 0.5);PlayerDied.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0);}
                         }
                     }]))
+                    n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * CGFloat(gameFPS), dy: CGFloat(n.velocity.dy) * CGFloat(gameFPS)), duration: 1))
                 }
                
                 return
@@ -314,12 +328,16 @@ class Planet: Object{
                 if parent != nil{
                     n.dynamic = false
                     n.controls = false
+                    if let parent = (n.parent as? Play), let i = parent.objects.firstIndex(of: n){
+                        parent.objects[i] = Object()
+                    }
                     n.run(SKAction.sequence([SKAction.fadeOut(withDuration: 1),SKAction.run{n.removeFromParent()
                         if n == parent!.ship{
                             parent!.send(Data([127]))
                             DispatchQueue.main.async{SKScene.transition = .crossFade(withDuration: 0.5);PlayerDied.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0);}
                         }
                     }]))
+                    n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * CGFloat(gameFPS), dy: CGFloat(n.velocity.dy) * CGFloat(gameFPS)), duration: 1))
                 }
                 return
             }

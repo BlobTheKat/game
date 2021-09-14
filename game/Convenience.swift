@@ -60,9 +60,11 @@ extension SKScene{
     @objc
     func nodeMoved(_: SKNode, at _: CGPoint){
     }
+    @available(iOS 13.4, *)
     @objc
     func keyDown(_: UIKeyboardHIDUsage){
     }
+    @available(iOS 13.4, *)
     @objc
     func keyUp(_: UIKeyboardHIDUsage){
     }

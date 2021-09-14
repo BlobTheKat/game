@@ -242,6 +242,7 @@ class Play: PlayConvenience{
             didMove(to: view!)
         }
     }
+    var delay: UInt8 = 0
     override init(size: CGSize) {
         super.init(size: size)
         api.sector(completion: sectorid)
@@ -273,12 +274,14 @@ class Play: PlayConvenience{
                 ping()
             }else if code == 6{
                 ping()
+                delay = data.read()
                 physics.async{ [self] in
                     var i = 1
                     while data.count > 19{parseShip(&data, i);i += 1}
                 }
             }else if code == 7{
                 ping()
+                delay = data.read()
                 physics.async { [self] in
                     var i = 0
                     while data.count > 19{parseShip(&data, i);i += 1}
@@ -290,7 +293,7 @@ class Play: PlayConvenience{
         var tries = 0
         stopAuth = interval(0.5) { [self] in
             tries += 1
-            if tries > 6{
+            if tries > 10{
                 stopAuth()
                 dmessage = "Could not connect"
                 DispatchQueue.main.async{Disconnected.renderTo(skview)}
@@ -329,7 +332,7 @@ class Play: PlayConvenience{
         self.label(node: tapToStart, "tap to start", pos: pos(mx: 0, my: -0.4), size: fmed, color: UIColor.white, font: "HalogenbyPixelSurplus-Regular", zPos: 1000, isStatic: true)
         self.run(SKAction.repeat(SKAction.sequence([
             SKAction.run{
-                if self.children.count < 120{
+                if self.children.count < 70{
                     self.tapToStart.text = "loading..."
                 }else{
                     self.tapToStart.text = "tap to start"
@@ -408,7 +411,7 @@ class Play: PlayConvenience{
     var planetsMP = [SKShapeNode]()
     var amountOfPlanets = 0
     func startGame(){
-        if children.count > 120{
+        if children.count > 70{
             self.removeAction(forKey: "loading")
             for planets in planets{
                 
