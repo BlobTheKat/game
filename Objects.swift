@@ -194,7 +194,7 @@ class Object: SKSpriteNode, DataCodable{
         let id = Int(bits / 8)
         if id != self.id || oa != asteroid{
             self.id = id
-            let ship = (asteroid ? asteroids : ships).data[id]
+            let ship = (asteroid ? asteroids : ships)[id]
             guard case .string(let t) = ship["texture"] else {fatalError("invalid texture")}
             guard case .number(let radius) = ship["radius"] else {fatalError("invalid radius")}
             guard case .number(let mass) = ship["mass"] else {fatalError("invalid mass")}

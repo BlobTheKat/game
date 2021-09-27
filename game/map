@@ -1,6 +1,13 @@
-version: 0
-
-name: Spawn
+name: Sector ZERO
 x: 0
 y: 0
+w: 20000
+h: 20000
 path: /sectors/sector0
+
+name: Home
+x: 30000
+y: 0
+w: 40000
+h: 40000
+path: /sectors/home

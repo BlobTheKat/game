@@ -210,15 +210,16 @@ class Play: PlayConvenience{
         DispatchQueue.main.async{if object.id != 0 && object.parent == nil{self.addChild(object)}}
     }
     var loaded = 2
-    var loadstack: (p: [Planet]?, o: [Object]?) = (p: nil, o: nil)
+    var loadstack: (p: [Planet]?, o: [Object]?, size: CGSize?) = (p: nil, o: nil, size: nil)
     func sectorid(_ s: UInt32){
         sector = s
         planets.removeAll()
         objects.removeAll()
         objects.append(ship)
-        game.sector(Int(sector)) { [self] p, o in
+        game.sector(Int(sector)) { [self] p, o, size in
             loadstack.p = p
             loadstack.o = o
+            loadstack.size = size
             loaded -= 1
             if loaded == 0{didLoad()}
         }
@@ -315,12 +316,7 @@ class Play: PlayConvenience{
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    
-    
     var moved = false
-
-    
     override func didMove(to view: SKView) {
         
         
@@ -388,13 +384,13 @@ class Play: PlayConvenience{
     }
     func moveTrail(trail: SKSpriteNode){
         var stop = {}
-        var stopped = false
+        //var stopped = false // to be removed in final built once debugged is true
         stop = interval(0.5){ [self] in
-            if stopped{return}
+            //if stopped{return} // to be removed in final built once debugged is true
             if startPressed{
                 trail.removeFromParent()
                 stop()
-                stopped = true
+                //stopped = true // to be removed in final built once debugged is true
                 trails.remove(at: trails.firstIndex(of: trail)!)
                 if trails.count == 0{
                     started = true
@@ -410,12 +406,11 @@ class Play: PlayConvenience{
     }
     var planetsMP = [SKShapeNode]()
     var amountOfPlanets = 0
+    var box = SKShapeNode()
     func startGame(){
         if children.count > 70{
             self.removeAction(forKey: "loading")
             for planets in planets{
-                
-                
                 planetsMP.append(SKShapeNode(circleOfRadius: planets.radius/10))
                 planetsMP[amountOfPlanets].position = CGPoint(x: planets.position.x/10, y: planets.position.y/10)
                 planetsMP[amountOfPlanets].alpha = 0
@@ -425,8 +420,11 @@ class Play: PlayConvenience{
                 amountOfPlanets += 1
             }
             
-            
-            
+            box = SKShapeNode(rectOf: CGSize(width: loadstack.size!.width/10, height: loadstack.size!.height/10))
+                FakemapBG.addChild(box)
+            box.strokeColor = .white
+            box.lineWidth = 5
+            box.alpha = 0
             
             for p in self.planetindicators{
                 
@@ -672,6 +670,7 @@ class Play: PlayConvenience{
                     map.alpha = 1
                 }
                 playerArrow.alpha = 1
+                box.alpha = 1
                 showMap = true
                 
                 FakemapBG.position = CGPoint(x: -playerArrow.position.x/10 ,y: -playerArrow.position.y/10)
@@ -681,6 +680,7 @@ class Play: PlayConvenience{
                     map.alpha = 0
                 }
                 playerArrow.alpha = 0
+                box.alpha = 0
                 showMap = false
             }
         }

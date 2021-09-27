@@ -62,7 +62,8 @@ enum JSON{
     case bool(Bool)
     case null
 }
-struct GameData{
+typealias GameData = [[String: JSON]]
+extension GameData{
     init?(_ path: String){
         guard let dat = FileManager.default.contents(atPath: Bundle.main.path(forResource: path, ofType: nil) ?? ""), let s = String(data: dat, encoding: .utf8) else {
             return nil
@@ -74,38 +75,21 @@ struct GameData{
             return String(a.prefix(upTo: a.firstIndex(of: "#") ?? a.endIndex))
         }
         var i = 0
-        header = [:]
-        while i < text.count && text[i] != ""{
-            let t = text[i].split(separator: ":")
-            guard t.count > 1 else{header[String(t[0])] = .null;i+=1;continue}
-            let value = t[1].trimmingCharacters(in: CharacterSet([" ", "\u{0009}"]))
-            if let a = Double(value){
-                header[String(t[0])] = .number(a)
-            }else if value.lowercased() == "yes" || value.lowercased() == "true"{
-                header[String(t[0])] = .bool(true)
-            }else if value.lowercased() == "no" || value.lowercased() == "false"{
-                header[String(t[0])] = .bool(false)
-            }else{
-                header[String(t[0])] = .string(String(value))
-            }
-            i += 1
-        }
-        i += 1
-        data = []
+        self = []
         while i < text.count{
-            data.append([:])
+            self.append([:])
             while i < text.count && text[i] != ""{
                 let t = text[i].split(separator: ":")
-                guard t.count > 1 else{data[data.count-1][String(t[0])] = .null;i+=1;continue}
+                guard t.count > 1 else{self[self.count-1][String(t[0])] = .null;i+=1;continue}
                 let value = t[1].trimmingCharacters(in: CharacterSet([" ", "\u{0009}"]))
                 if let a = Double(value){
-                    data[data.count-1][String(t[0])] = .number(a)
+                    self[self.count-1][String(t[0])] = .number(a)
                 }else if value.lowercased() == "yes" || value.lowercased() == "true"{
-                    data[data.count-1][String(t[0])] = .bool(true)
+                    self[self.count-1][String(t[0])] = .bool(true)
                 }else if value.lowercased() == "no" || value.lowercased() == "false"{
-                    data[data.count-1][String(t[0])] = .bool(false)
+                    self[self.count-1][String(t[0])] = .bool(false)
                 }else{
-                    data[data.count-1][String(t[0])] = .string(String(value))
+                    self[self.count-1][String(t[0])] = .string(String(value))
                 }
                 i += 1
             }
@@ -119,28 +103,30 @@ struct GameData{
             completion(nil)
         }
     }
-    var header: [String: JSON]
-    var data: [[String: JSON]]
-    @inlinable subscript(_ a: Int) -> [String: JSON]{
-        return data[a]
-    }
 }
 var map = GameData("/map")!
 var ships = GameData("/ships")!
 var planets = GameData("/planets")!
 var asteroids = GameData("/asteroids")!
+let VERSION = 1
 
-func sector(_ id: Int, completion: @escaping ([Planet], [Object]) -> ()){
-    guard case .string(let path) = map.data[id]["path"] else {return}
+func sector(_ id: Int, completion: @escaping ([Planet], [Object], CGSize) -> ()){
+    guard case .string(let path) = map[id]["path"] else {return}
     GameData.from(location: path) { data in
-        guard let data = data?.data else{return}
+        guard let data = data else{return}
         var planetarr: [Planet] = []
-        var asteroidarr: [Object] = []
+        let asteroidarr: [Object] = []
+        
+//read from server and initiate variable for width and height of sectors
+        guard case .number(let sectorWidth) = map[id]["w"] else {return}
+        guard case .number(let sectorHeight) = map[id]["h"] else {return}
+        
+        
         for object in data{
             var a = false
             if case .bool(let f) = object["asteroid"] {a = f}
             guard case .number(let id) = object["id"] else {continue}
-            let dat = (a ? asteroids : planets).data[Int(id)]
+            let dat = (a ? asteroids : planets)[Int(id)]
             guard case .number(let radius) = dat["radius"] else {continue}
             guard case .number(let mass) = dat["mass"] else {continue}
             guard case .number(let x) = object["x"] else {continue}
@@ -149,7 +135,7 @@ func sector(_ id: Int, completion: @escaping ([Planet], [Object]) -> ()){
             guard case .string(let texture) = dat["texture"] else {continue}
             let t = SKTexture(imageNamed: texture)
             if a{
-                continue
+                /*
                 let i = Object(radius: CGFloat(radius), mass: CGFloat(mass), texture: t, asteroid: true)
                 i.angularVelocity = CGFloat(spin)
                 i.position.x = CGFloat(x)
@@ -163,7 +149,7 @@ func sector(_ id: Int, completion: @escaping ([Planet], [Object]) -> ()){
                   i.particleFrequency = frequency
                 }
                 i.id = Int(id)
-                asteroidarr.append(i)
+                asteroidarr.append(i)*/
                 
             }else{
                 let i = Planet(radius: CGFloat(radius), mass: CGFloat(mass), texture: t)
@@ -183,7 +169,7 @@ func sector(_ id: Int, completion: @escaping ([Planet], [Object]) -> ()){
                 planetarr.append(i)
             }
         }
-        completion(planetarr, asteroidarr)
+        completion(planetarr, asteroidarr, CGSize(width: sectorWidth, height: sectorHeight))
     }
     
 }

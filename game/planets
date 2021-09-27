@@ -1,64 +1,63 @@
-
-mass: 200000
+mass: 200000 #Sun id=0
 radius: 800
 spin: 0.001
 texture: planet0
 superhot: true
 particle: 0
 
-mass: 10000
+mass: 10000 #Home planet id=1
 radius: 400
 spin: 0.001
 texture: planet1
 
-mass: 10000
+mass: 10000 #Red planet id=2
 radius: 274
 spin: 0.001
 texture: planet2
 
-mass: 10000
+mass: 10000 #Ice planet id=3
 radius: 298
 spin: 0.001
 texture: planet3
 particle: 1
 
-mass: 150000
+mass: 150000 #Black hole id=4
 radius: 291
 spin: -0.002
 texture: destroyer1
 superhot: true
 particle: 2
 
-mass: 50000
+mass: 50000 #purple Sun id=5
 radius: 621
 spin: 0.0007
 texture: destroyer2
 superhot: true
 particle: 3
 
-mass: 40000
+mass: 40000 #orange Sun id=6
 radius: 476
 spin: -0.0007
 texture: destroyer3
 superhot: true
 particle: 0
 
-mass: 10000
+mass: 10000 #Ocean Planet id=7
 radius: 226
 spin: -0.001
 texture: planet4
 
-mass: 15000
+mass: 15000 #Mercury Planet id=8
 radius: 213
 spin: -0.0006
 texture: planet5
 
-mass: 5000
+mass: 5000 #Gas Planet id=9
 radius: 278
 spin: 0.0004
 texture: planet6
 
-mass: 20000
+mass: 20000 #Unknown id=10
 radius: 237
 spin: 0
 texture: planet7
