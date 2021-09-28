@@ -100,8 +100,9 @@ struct M{
     func hello(name: String) throws -> Data{
         if name.count > 64{throw ProtocolError.valueTooLarge(msg: "name cannot be longer than 64 characters")}
         var data = Data([])
-        data.write(UInt16(VERSION))
+        
         data.write(msg.hello)
+        data.write(UInt16(VERSION))
         data.write(name)
         return data
     }

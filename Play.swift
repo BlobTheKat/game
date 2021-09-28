@@ -268,7 +268,10 @@ class Play: PlayConvenience{
                     if loaded == 0{didLoad()}
                     startHB()
                 }
-            }else if code == 127{
+                return
+            }
+            guard ship.controls else {return}
+            if code == 127{
                 dmessage = data.read() ?? "Disconnected!"
                 DispatchQueue.main.async{Disconnected.renderTo(skview)}
             }else if code == 4{
