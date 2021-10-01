@@ -100,7 +100,6 @@ struct M{
     func hello(name: String) throws -> Data{
         if name.count > 64{throw ProtocolError.valueTooLarge(msg: "name cannot be longer than 64 characters")}
         var data = Data([])
-        
         data.write(msg.hello)
         data.write(UInt16(VERSION))
         data.write(name)
@@ -112,6 +111,6 @@ let messages = M()
 
 struct api{
     static func sector(completion: @escaping (UInt32) -> ()){
-        completion(0)
+        completion(sect)
     }
 }

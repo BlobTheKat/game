@@ -34,6 +34,7 @@ async function readfile(path){
         arr.push({})
         while(text[i]){
             let t = text[i].split(':',2)
+            if(!t[1])continue
             t[1] = t[1].trim()
             if(t[1] == "true" || t[1] == "yes")t[1] = true
             else if(t[1] == "false" || t[1] == "no")t[1] = false
@@ -46,12 +47,10 @@ async function readfile(path){
     return arr
 }
 let map = null
-let planets = null
 let ships = null
 let sector = {objects:[],planets:[],time:0,w:0,h:0}
 Promise.all([
     readfile('map').then(a=>map=a),
-    readfile('planets').then(a=>planets=a),
     readfile('asteroids').then(a=>asteroids=a),
     readfile('ships').then(a=>ships=a)
 ]).then(async function(){
@@ -59,7 +58,7 @@ Promise.all([
     await new Promise(r=>
     readfile(map[process.argv[2]].path).then(function(data){
         data.forEach(function(item){
-            if(item.asteroid)sector.objects.push(new Asteroid(item))
+            if(item.id)sector.objects.push(new Asteroid(item))
             else sector.planets.push(new Planet(item))
         })
         sector.w = map[process.argv[2]].w
@@ -80,6 +79,7 @@ function tick(sector){
         for(var p of sector.planets){
             o.updatep(p)
         }
+        if(o.u && performance.nodeTiming.duration - o.u._idleStart > 500)continue
         o.x += o.dx
         o.y += o.dy
         o.z += o.dz
@@ -91,12 +91,11 @@ class Planet{
     constructor(dict){
         this.x = +dict.x
         this.y = +dict.y
-        this.id = +dict.id
-        this.radius = planets[this.id].radius
-        this.mass = planets[this.id].mass
+        this.radius = dict.radius
+        this.mass = dict.mass
         this.z = 0
-        this.dz = planets[this.id].spin
-        this.superhot = planets[this.id].superhot
+        this.dz = dict.spin
+        this.superhot = dict.superhot
     }
 }
 class Asteroid{
@@ -369,6 +368,14 @@ function msg(data, reply, address){
     }
     if(data[0] == 127){
         clients.get(address).wasDestroyed()
+    }
+    if(data[0] | 3 == 11){
+        let dir = data[0] & 3
+        let pos = data.readFloatLE(1)
+        let x = dir & 1 ? (dir & 2 ? -1 : 1) * sector.w2 : pos
+        let y = dir & 1 ? pos : (dir & 2 ? -1 : 1) * sector.h2
+        //magic
+        let newSector = 1
     }
 }
 try{require('basic-repl')('$',_=>eval(_))}catch(e){

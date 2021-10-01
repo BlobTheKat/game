@@ -14,6 +14,8 @@ let fmed: CGFloat = 48
 let fbig: CGFloat = 72
 let gameFPS = 60.0
 
+var sect = 0
+
 func bg(_ a: @escaping () -> ()){DispatchQueue.global(qos: .background).async(execute: a)}
 
 struct servers{
@@ -106,14 +108,13 @@ extension GameData{
 }
 var map = GameData("/map")!
 var ships = GameData("/ships")!
-var planets = GameData("/planets")!
 var asteroids = GameData("/asteroids")!
 let VERSION = 1
 
-func sector(_ id: Int, completion: @escaping ([Planet], [Object], CGSize) -> ()){
+func sector(_ id: Int, completion: @escaping ([Planet], [Object], CGSize) -> (), err: @escaping (String) -> ()){
     guard case .string(let path) = map[id]["path"] else {return}
     GameData.from(location: path) { data in
-        guard let data = data else{return}
+        guard let data = data else{return err("Could not load sector")}
         var planetarr: [Planet] = []
         let asteroidarr: [Object] = []
         
@@ -123,10 +124,9 @@ func sector(_ id: Int, completion: @escaping ([Planet], [Object], CGSize) -> ())
         
         
         for object in data{
-            var a = false
-            if case .bool(let f) = object["asteroid"] {a = f}
-            guard case .number(let id) = object["id"] else {continue}
-            let dat = (a ? asteroids : planets)[Int(id)]
+            var id: Int? = nil
+            if case .number(let i) = object["id"] {id=Int(i)}
+            let dat = id == nil ? object : asteroids[id!]
             guard case .number(let radius) = dat["radius"] else {continue}
             guard case .number(let mass) = dat["mass"] else {continue}
             guard case .number(let x) = object["x"] else {continue}
@@ -134,7 +134,7 @@ func sector(_ id: Int, completion: @escaping ([Planet], [Object], CGSize) -> ())
             guard case .number(let spin) = dat["spin"] else {continue}
             guard case .string(let texture) = dat["texture"] else {continue}
             let t = SKTexture(imageNamed: texture)
-            if a{
+            if id != nil{
                 /*
                 let i = Object(radius: CGFloat(radius), mass: CGFloat(mass), texture: t, asteroid: true)
                 i.angularVelocity = CGFloat(spin)
@@ -149,11 +149,10 @@ func sector(_ id: Int, completion: @escaping ([Planet], [Object], CGSize) -> ())
                   i.particleFrequency = frequency
                 }
                 i.id = Int(id)
-                asteroidarr.append(i)*/
-                
+                asteroidarr.append(i)
+                */
             }else{
                 let i = Planet(radius: CGFloat(radius), mass: CGFloat(mass), texture: t)
-                
                 i.angularVelocity = CGFloat(spin)
                 i.position.x = CGFloat(x)
                 i.position.y = CGFloat(y)
@@ -165,7 +164,6 @@ func sector(_ id: Int, completion: @escaping ([Planet], [Object], CGSize) -> ())
                 if case .number(let frequency) = dat["fequency"]{
                   i.particleFrequency = frequency
                 }
-                i.id = Int(id)
                 planetarr.append(i)
             }
         }

@@ -7,15 +7,9 @@
 
 import SpriteKit
 
-class Play: PlayConvenience{
+class Play: PlayNetwork{
     var latency = 0.0
     var lastUpdate: TimeInterval? = nil
-    var ship = Object(radius: 15, mass: 100, texture: .named("ship1"))
-    var planets: [Planet] = []
-    var planetindicators: [SKSpriteNode] = []
-    var cam = SKCameraNode()
-    var particles: [Particle] = []
-    var objects: [Object] = []
     let tapToStart =  SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
     let speedLabel =  SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
     var camOffset = CGPoint(x: 0, y: 0.2)
@@ -44,6 +38,8 @@ class Play: PlayConvenience{
     let star3 = SKSpriteNode(imageNamed: "stars")
     let star4 = SKSpriteNode(imageNamed: "stars")
     let avatar = SKSpriteNode(imageNamed: "avatar")
+    let border1 = SKSpriteNode(imageNamed: "tunnel1")
+    let border2 = SKSpriteNode(imageNamed: "tunnel1")
     
     
     
@@ -61,23 +57,19 @@ class Play: PlayConvenience{
     var isWarning = false
     let warning = SKSpriteNode(imageNamed: "warning")
 
-    
     let speedUI = SKSpriteNode(imageNamed: "speed29")
     
-    var a = {}
-    func ping(){
-        a()
-        a = timeout(5, {
-            self.send(Data([127]))
-            dmessage = "Lost connection!"
-            Disconnected.renderTo(skview)
-        })
-    }
     let tunnel1 = SKSpriteNode(imageNamed: "tunnel1")
     let tunnel2 = SKSpriteNode(imageNamed: "tunnel2")
+    
     func cameraUpdate(){
-        let x = ship.position.x - cam.position.x - camOffset.x * self.size.width * cam.xScale
-        let y = ship.position.y - cam.position.y - camOffset.y * self.size.height * cam.yScale
+        let cx = cam.xScale * self.size.width / 2
+        let cy = cam.yScale * self.size.height / 2
+        let bx = ((loadstack.size?.width ?? CGFloat.infinity) + border2.size.width) / 2 - 100
+        let by = ((loadstack.size?.height ?? CGFloat.infinity) + border1.size.width) / 2 - 100
+        
+        let x = min(max(ship.position.x, cx - bx), bx - cx) - cam.position.x - camOffset.x * cx * 2
+        let y = min(max(ship.position.y, cy - by), by - cy) - cam.position.y - camOffset.y * cy * 2
         cam.position.x += x / 30
         cam.position.y += y / 30
         if started{
@@ -87,7 +79,7 @@ class Play: PlayConvenience{
 
             let scale = (cam.xScale + cam.yScale) / 2
             if stress > 0.5{
-                let ts = min((stress / 0.6 - 1) * scale, 8 - scale)
+                let ts = min((stress / 0.6 - 1) * scale, 5 - scale)
                 cam.setScale(scale + ts / 50)
             }else if stress < 0.3{
                 let ts = max((stress / 0.4 - 1) * scale, (ship.landed ? 1 : 2) - scale)
@@ -97,21 +89,27 @@ class Play: PlayConvenience{
         
         
         shipDirection.zRotation = -atan2(ship.velocity.dx, ship.velocity.dy)
-        let shipX = floor((ship.position.x )/2440)
-        let shipY = floor((ship.position.y )/2440)
         
+        
+        let shipX = floor((ship.position.x)/2440)
+        let shipY = floor((ship.position.y)/2440)
         
         star1.position = CGPoint(x: shipX * 2440 ,y: shipY * 2440 )
         star2.position = CGPoint(x: shipX * 2440 + 2440 ,y: shipY * 2440 )
         star3.position = CGPoint(x: shipX * 2440 ,y: shipY * 2440 + 2440 )
         star4.position = CGPoint(x: shipX * 2440 + 2440 ,y: shipY * 2440 + 2440)
         
-        star1.texture!.filteringMode = .nearest
-        star2.texture!.filteringMode = .nearest
-        star3.texture!.filteringMode = .nearest
-        star4.texture!.filteringMode = .nearest
+        if (cam.position.y < 0) != (border1.position.y < 0){
+            border1.position.y *= -1
+            border1.xScale *= -1
+        }
+        if (cam.position.x < 0) != (border2.position.x < 0){
+            border2.position.x *= -1
+            border2.xScale *= -1
+        }
+        border1.position.x = cam.position.x
+        border2.position.y = cam.position.y
     }
-    var hits: [UInt32] = []
     func spaceUpdate(){
         if coolingDown{
             self.removeAction(forKey: "constantLazer1")
@@ -165,88 +163,25 @@ class Play: PlayConvenience{
             }
             a += 1
         }
+        if abs(ship.position.x) > (loadstack.size?.width ?? CGFloat.infinity) / 2 || abs(ship.position.y) > (loadstack.size?.height ?? CGFloat.infinity) / 2{
+            //move
+            objects[0] = Object()
+            ship.run(SKAction.sequence([
+                SKAction.fadeOut(withDuration: 1),
+                SKAction.run{ [self] in
+                    ship.removeFromParent()
+                    sect = 1 - sect
+                    //send(Data([]))
+                    DispatchQueue.main.async{SKScene.transition = .crossFade(withDuration: 0.5);Play.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0)}
+                }
+            ]))
+            ship.run(SKAction.move(by: CGVector(dx: ship.velocity.dx * CGFloat(gameFPS), dy: CGFloat(ship.velocity.dy) * CGFloat(gameFPS)), duration: 1))
+        }
         let vel = CGFloat(sqrt(ship.velocity.dx*ship.velocity.dx + ship.velocity.dy*ship.velocity.dy)) * CGFloat(gameFPS)
         speedLabel.text = "\(Int(vel/2)).00"
     }
-    var send = {(_: Data) -> () in}
-    var ready = false
-    var sector: UInt32 = 0
-    var istop = {}
-    func startData(){
-        istop()
-        istop = interval(0.1, { [self] in
-            //send playerdata
-            var data = Data([5])
-            ship.encode(data: &data)
-            if hits.count > 10{
-                hits.removeLast(hits.count - 10)
-            }
-            data.write(UInt8(hits.count))
-            for hit in hits{
-                data.write(hit)
-            }
-            hits = []
-            send(data)
-        })
-    }
-    func startHB(){
-        istop()
-        istop = interval(1, { [self] in
-            send(Data([3]))
-        })
-    }
-    let physics = DispatchQueue.main
-    func parseShip(_ data: inout Data, _ i: Int){
-        guard i < objects.count else {
-            let object = Object()
-            object.decode(data: &data)
-            objects.append(object)
-            if object.id != 0{DispatchQueue.main.async{self.addChild(object)}}
-            return
-        }
-        let object = objects[i]
-        object.decode(data: &data)
-        DispatchQueue.main.async{if object.id == 0 && object.parent != nil{object.removeFromParent()}}
-        DispatchQueue.main.async{if object.id != 0 && object.parent == nil{self.addChild(object)}}
-    }
-    var loaded = 2
-    var loadstack: (p: [Planet]?, o: [Object]?, size: CGSize?) = (p: nil, o: nil, size: nil)
-    func sectorid(_ s: UInt32){
-        sector = s
-        planets.removeAll()
-        objects.removeAll()
-        objects.append(ship)
-        game.sector(Int(sector)) { [self] p, o, size in
-            loadstack.p = p
-            loadstack.o = o
-            loadstack.size = size
-            loaded -= 1
-            if loaded == 0{didLoad()}
-        }
-    }
-    func didLoad(){
-        planets.append(contentsOf: loadstack.p!)
-        objects.append(contentsOf: loadstack.o!)
-        for p in loadstack.p!{
-            planetindicators.append(SKSpriteNode(imageNamed: "arrow"))
-            self.addChild(p)
-            p.zPosition = -1
-        }
-        for p in planetindicators{
-            p.alpha = 0
-        }
-        for o in loadstack.o!{
-            if o.id != 0{self.addChild(o)}
-        }
-        ready = true
-        if view != nil{
-            didMove(to: view!)
-        }
-    }
-    var delay: UInt8 = 0
     override init(size: CGSize) {
         super.init(size: size)
-        api.sector(completion: sectorid)
         startAnimation()
         cam.position = CGPoint.zero
         self.addChild(cam)
@@ -255,65 +190,15 @@ class Play: PlayConvenience{
         ship.position.y = 160
         ship.alpha = 0
         ship.id = 1
-        var stopAuth = {}
-        var authed = false
-        send = connect{[self](d) in
-            var data = d
-            let code: UInt8 = data.read()
-            if code == 1{
-                if !authed{
-                    authed = true
-                    stopAuth()
-                    loaded -= 1
-                    if loaded == 0{didLoad()}
-                    startHB()
-                }
-                return
-            }
-            guard ship.controls else {return}
-            if code == 127{
-                dmessage = data.read() ?? "Disconnected!"
-                DispatchQueue.main.async{Disconnected.renderTo(skview)}
-            }else if code == 4{
-                ping()
-            }else if code == 6{
-                ping()
-                delay = data.read()
-                physics.async{ [self] in
-                    var i = 1
-                    while data.count > 19{parseShip(&data, i);i += 1}
-                }
-            }else if code == 7{
-                ping()
-                delay = data.read()
-                physics.async { [self] in
-                    var i = 0
-                    while data.count > 19{parseShip(&data, i);i += 1}
-                    objects.removeLast(objects.count - i - 1)
-                }
-            }
-        }
-        let hello = try! messages.hello(name: "BlobKat")
-        var tries = 0
-        stopAuth = interval(0.5) { [self] in
-            tries += 1
-            if tries > 10{
-                stopAuth()
-                dmessage = "Could not connect"
-                DispatchQueue.main.async{Disconnected.renderTo(skview)}
-                return
-            }
-            send(hello)
-        }
         tunnel1.position = pos(mx: -0.125, my: 0)
         tunnel1.setScale(0.155)
         self.addChild(tunnel1)
-        
         tunnel2.position = pos(mx: 0.125, my: 0)
         tunnel2.setScale(0.155)
         self.addChild(tunnel2)
         self.addChild(ship)
         vibrateCamera(camera: cam)
+        didInit()
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -321,10 +206,17 @@ class Play: PlayConvenience{
     }
     var moved = false
     override func didMove(to view: SKView) {
-        
-        
         guard ready else{return}
         guard !moved else {return}
+        border1.zRotation = .pi / 2
+        border1.position.y = (cam.position.y < 0 ? -0.5 : 0.5) * loadstack.size!.width
+        border2.position.x = (cam.position.x < 0 ? -0.5 : 0.5) * loadstack.size!.height
+        border1.xScale = cam.position.y < 0 ? 1 : -1
+        border2.xScale = cam.position.x < 0 ? 1 : -1
+        border1.setScale(2)
+        border2.setScale(2)
+        self.addChild(border1)
+        self.addChild(border2)
         moved = true
         ship.run(SKAction.fadeAlpha(by: 1, duration: 1).ease(.easeOut))
         //setting tapToStart label relative to camera (static)
@@ -358,6 +250,10 @@ class Play: PlayConvenience{
                 self.tapToStart.run(SKAction.moveBy(x: 0, y: -10, duration: 2).ease(.easeOut))
             }
         }
+        star1.texture!.filteringMode = .nearest
+        star2.texture!.filteringMode = .nearest
+        star3.texture!.filteringMode = .nearest
+        star4.texture!.filteringMode = .nearest
     }
     var trails: [SKSpriteNode] = []
     func startAnimation(){
@@ -384,6 +280,8 @@ class Play: PlayConvenience{
         }
         vibrateObject(sprite: tunnel1)
         vibrateObject(sprite: tunnel2)
+        vibrateObject(sprite: border1)
+        vibrateObject(sprite: border2)
     }
     func moveTrail(trail: SKSpriteNode){
         var stop = {}
@@ -828,6 +726,7 @@ class Play: PlayConvenience{
             
         }
     }
+    
     override func nodeUp(_ node: SKNode, at _: CGPoint) {
         if thrustButton == node{
             thrustButton.texture = SKTexture(imageNamed: "thrustOn")
@@ -901,6 +800,8 @@ class Play: PlayConvenience{
         }
         latency += currentTime - lastUpdate! - ti
         lastUpdate = currentTime
+        
+        
         if latency > ti{
             latency -= ti
             update(currentTime)
@@ -919,5 +820,4 @@ class Play: PlayConvenience{
         FakemapBG.position.x += b.x - a.x
         FakemapBG.position.y += b.y - a.y
     }
-
 }
