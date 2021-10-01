@@ -14,7 +14,7 @@ let fmed: CGFloat = 48
 let fbig: CGFloat = 72
 let gameFPS = 60.0
 
-var sect = 0
+var sect: UInt32 = 0
 
 func bg(_ a: @escaping () -> ()){DispatchQueue.global(qos: .background).async(execute: a)}
 

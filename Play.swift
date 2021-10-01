@@ -139,7 +139,7 @@ class Play: PlayNetwork{
         a = 0
         for s in objects{
             s.update()
-            if s != ship{
+            if s != ship && s.id > 0{
                 let x = ship.position.x - s.position.x
                 let y = ship.position.y - s.position.y
                 let d = (x * x + y * y)
@@ -163,19 +163,22 @@ class Play: PlayNetwork{
             }
             a += 1
         }
-        if abs(ship.position.x) > (loadstack.size?.width ?? CGFloat.infinity) / 2 || abs(ship.position.y) > (loadstack.size?.height ?? CGFloat.infinity) / 2{
+        if abs(ship.position.x) > (loadstack.size?.width ?? CGFloat.infinity) / 2 || abs(ship.position.y) > (loadstack.size?.height ?? CGFloat.infinity) / 2 && ship.controls{
             //move
+            ship.controls = false
+            ship.dynamic = false
             objects[0] = Object()
             ship.run(SKAction.sequence([
                 SKAction.fadeOut(withDuration: 1),
                 SKAction.run{ [self] in
                     ship.removeFromParent()
                     sect = 1 - sect
-                    //send(Data([]))
+                    send(Data([8, 0, 0, 0, 0]))
                     DispatchQueue.main.async{SKScene.transition = .crossFade(withDuration: 0.5);Play.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0)}
                 }
             ]))
-            ship.run(SKAction.move(by: CGVector(dx: ship.velocity.dx * CGFloat(gameFPS), dy: CGFloat(ship.velocity.dy) * CGFloat(gameFPS)), duration: 1))
+            ship.run(SKAction.move(by: CGVector(dx: ship.velocity.dx * CGFloat(gameFPS), dy: ship.velocity.dy * CGFloat(gameFPS)), duration: 1))
+            
         }
         let vel = CGFloat(sqrt(ship.velocity.dx*ship.velocity.dx + ship.velocity.dy*ship.velocity.dy)) * CGFloat(gameFPS)
         speedLabel.text = "\(Int(vel/2)).00"
@@ -211,10 +214,10 @@ class Play: PlayNetwork{
         border1.zRotation = .pi / 2
         border1.position.y = (cam.position.y < 0 ? -0.5 : 0.5) * loadstack.size!.width
         border2.position.x = (cam.position.x < 0 ? -0.5 : 0.5) * loadstack.size!.height
-        border1.xScale = cam.position.y < 0 ? 1 : -1
-        border2.xScale = cam.position.x < 0 ? 1 : -1
-        border1.setScale(2)
-        border2.setScale(2)
+        border1.xScale = cam.position.y < 0 ? 2 : -2
+        border2.xScale = cam.position.x < 0 ? 2 : -2
+        border1.yScale = 2
+        border2.yScale = 2
         self.addChild(border1)
         self.addChild(border2)
         moved = true
