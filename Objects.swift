@@ -14,6 +14,10 @@ protocol DataCodable {
 }
 var d: [Int: Int] = [:]
 class Object: SKSpriteNode, DataCodable{
+    var shootPoints: [CGPoint] = []
+    var shootVectors = {(_:CGFloat) -> [CGVector] in return []}
+    var shootQueue: CGFloat = 0
+    var shootFrequency: CGFloat = 0
     var state: UInt8 = 0
     var id = 0
     var dynamic = false
@@ -30,6 +34,7 @@ class Object: SKSpriteNode, DataCodable{
     var angularVelocity: CGFloat = 0
     var particleQueue = 1.0
     var producesParticles: Bool = false
+    var zr: CGFloat? = nil
     var particle = {(_:Object) -> Particle in fatalError("particle() accessed before super.init call")}
     var asteroid: Bool
     func defParticle(_ ship: Object) -> Particle{
@@ -91,7 +96,7 @@ class Object: SKSpriteNode, DataCodable{
                 velocity.dy += cos(zRotation) * thrustMultiplier / 30
                 producesParticles = true
             }
-            if thrustLeft && thrustRight{thrustLeft = false; thrustRight = false;print("correction", asteroid)}
+            if thrustLeft && thrustRight{thrustLeft = false; thrustRight = false}
             if thrustRight && !landed{
                 angularVelocity -= 0.002 * angularThrustMultiplier
             }
@@ -102,6 +107,31 @@ class Object: SKSpriteNode, DataCodable{
         position.x += velocity.dx
         position.y += velocity.dy
         zRotation += angularVelocity
+        var i = 0
+        guard let parent = parent else{return}
+        shootQueue += shootFrequency
+        let shootVectors = shootVectors(self.zr ?? self.zRotation)
+        while shootQueue > 1{
+            for p in shootPoints{
+                var v = CGVector.zero
+                if i < shootVectors.count{v = shootVectors[i]}
+                let bullet = SKSpriteNode(imageNamed: "bullet")
+                bullet.position = CGPoint(x: self.position.x,y: self.position.y)
+                bullet.zPosition = 4
+                bullet.anchorPoint = CGPoint(x: -p.x, y: -p.y)
+                bullet.setScale(0.2)
+                bullet.zRotation = self.zRotation
+                parent.addChild(bullet)
+                bullet.run(SKAction.moveBy(x: self.velocity.dx * CGFloat(gameFPS) + v.dx , y: self.velocity.dy * CGFloat(gameFPS) + v.dy, duration: 1).ease(.easeOut))
+                bullet.run(SKAction.sequence([
+                    SKAction.wait(forDuration: 0.8),
+                    SKAction.fadeAlpha(to: 0, duration: 0.2),
+                    SKAction.run{bullet.removeFromParent()}
+                ]))
+                i += 1
+            }
+            shootQueue -= 1
+        }
     }
     func body(radius: CGFloat, mass: CGFloat, texture: SKTexture? = nil){
         zPosition = 1
@@ -111,13 +141,13 @@ class Object: SKSpriteNode, DataCodable{
         }
         self.mass = m
         self.radius = radius
-        self.setScale(1)
+        setScale(1)
         if texture != nil{
             self.texture = texture!
             self.texture!.filteringMode = .nearest
             self.size = texture!.size()
         }
-        self.setScale(0.5)
+        setScale(0.5)
     }
     convenience init(){
         self.init(radius: 0, mass: 0)
@@ -171,18 +201,19 @@ class Object: SKSpriteNode, DataCodable{
         data.write(Float(self.velocity.dy))
         data.write(Int8(round((self.zRotation.remainder(dividingBy: .pi*2) + .pi*2).remainder(dividingBy: .pi*2) * 40)))
         data.write(UInt8(Int(self.angularVelocity * 768)&255))
-        data.write(UInt16(thrust ? 1 : 0) + UInt16(thrustLeft ? 2 : 0) + UInt16(thrustRight ? 4 : 0) + UInt16(self.id * 8))
+        data.write(UInt16(thrust ? 1 : 0) + UInt16(thrustLeft ? 2 : 0) + UInt16(thrustRight ? 4 : 0) + UInt16(shootFrequency != 0 ? 8 : 0) + UInt16(self.id * 32))
     }
     func decode(data: inout Data){
-        self.position = CGPoint(x: CGFloat(data.read() as Float), y: CGFloat(data.read() as Float))
-        self.velocity = CGVector(dx: CGFloat(data.read() as Float), dy: CGFloat(data.read() as Float))
-        self.zRotation = CGFloat(data.read() as Int8) / 40
-        self.angularVelocity = CGFloat(data.read() as Int8) / 768
-        let bits: UInt16 = data.read()
+        self.position = CGPoint(x: CGFloat(data.readunsafe() as Float), y: CGFloat(data.readunsafe() as Float))
+        self.velocity = CGVector(dx: CGFloat(data.readunsafe() as Float), dy: CGFloat(data.readunsafe() as Float))
+        self.zRotation = CGFloat(data.readunsafe() as Int8) / 40
+        self.angularVelocity = CGFloat(data.readunsafe() as Int8) / 768
+        let bits: UInt16 = data.readunsafe()
         let oa = asteroid
         thrust = bits & 1 != 0
         thrustLeft = bits & 2 != 0
         thrustRight = bits & 4 != 0
+        let shoot = bits & 8 != 0
         if !asteroid && thrustLeft && thrustRight{
             thrustLeft = false
             thrustRight = false
@@ -191,7 +222,7 @@ class Object: SKSpriteNode, DataCodable{
             asteroid = false
         }
         producesParticles = thrust
-        let id = Int(bits / 8)
+        let id = Int(bits / 32)
         if id != self.id || oa != asteroid{
             self.id = id
             let ship = (asteroid ? asteroids : ships)[id]
@@ -199,6 +230,10 @@ class Object: SKSpriteNode, DataCodable{
             guard case .number(let radius) = ship["radius"] else {fatalError("invalid radius")}
             guard case .number(let mass) = ship["mass"] else {fatalError("invalid mass")}
             self.body(radius: CGFloat(radius), mass: CGFloat(mass), texture: SKTexture(imageNamed: t))
+            
+            self.shootPoints = shoot ? SHOOTPOINTS[id] : []
+            self.shootFrequency = shoot ? SHOOTFREQUENCIES[id] : 0
+            self.shootVectors = shoot ? SHOOTVECTORS[id] : {(_:CGFloat)->[CGVector]in return []}
         }
         self.controls = !asteroid
         self.dynamic = true
@@ -206,6 +241,20 @@ class Object: SKSpriteNode, DataCodable{
 }
 
 class Planet: Object{
+    override func body(radius: CGFloat, mass: CGFloat, texture: SKTexture? = nil){
+        zPosition = 1
+        var m = mass
+        if m == -1{
+            m = radius * radius
+        }
+        self.mass = m
+        self.radius = radius
+        if texture != nil{
+            self.texture = texture!
+            self.texture!.filteringMode = .nearest
+            self.size = texture!.size()
+        }
+    }
     var superhot = false
     override func defParticle(_ planet: Object) -> Particle{
         return Particle()
@@ -320,7 +369,7 @@ class Planet: Object{
                 circle.fillColor = UIColor.white
                 //GANGE MAP HERE
                 if parents?.playerArrow.parent == nil{
-                    parents!.FakemapBG.addChild(parents!.playerArrow)
+                    parents!.mainMap.addChild(parents!.playerArrow)
                 }
             }
             if deathzone && !superhot{
@@ -343,18 +392,16 @@ class Planet: Object{
             }
             let M = mass * G
             let m = min(M / (16 * r) - M / d, 0)
-            //let m = -(mass*G)/d
-            //if self.position.x == 0{print(m)}
             n.velocity.dx += x * m
             n.velocity.dy += y * m
             n.zRotation += angularVelocity * r / d
         }
     }
     override func decode(data: inout Data) {
-        body(radius: CGFloat(data.read() as Float), mass: CGFloat(data.read() as Float), texture: SKTexture(imageNamed: data.read()))
-        self.position = CGPoint(x: CGFloat(data.read() as Float), y: CGFloat(data.read() as Float))
-        self.zRotation = CGFloat(data.read() as Float)
-        self.angularVelocity = CGFloat(data.read() as Float)
+        body(radius: CGFloat(data.readunsafe() as Float), mass: CGFloat(data.readunsafe() as Float), texture: SKTexture(imageNamed: data.readunsafe()))
+        self.position = CGPoint(x: CGFloat(data.readunsafe() as Float), y: CGFloat(data.readunsafe() as Float))
+        self.zRotation = CGFloat(data.readunsafe() as Float)
+        self.angularVelocity = CGFloat(data.readunsafe() as Float)
     }
     override func encode(data: inout Data) {
         data.write(Float(self.radius))

@@ -36,3 +36,17 @@ let particles: [(Object) -> Particle] = [
         return Particle[State(color: (r: 1, g: 1, b: 0), size: CGSize(width: 10, height: 10), zRot: 0, position: CGPoint(x: planet.position.x + dir.dx, y: planet.position.y + dir.dy * 0.7), alpha: 1), State(color: (r: 1, g: 0, b: 0), size: CGSize(width: 20, height: 20), zRot: 4, position: CGPoint(x: planet.position.x + dir.dx, y: planet.position.y + dir.dy * 3), alpha: 0, delay: 1)]
     }
 ]
+
+
+
+let SHOOTPOINTS: [[CGPoint]] = [
+    [CGPoint(x: -6, y: 0), CGPoint(x: 6, y: 0)]
+]
+let SHOOTVECTORS: [(CGFloat) -> [CGVector]] = [
+    { rot in
+        return [CGVector(dx: -sin(rot) * 1500, dy: cos(rot) * 1500), CGVector(dx: -sin(rot) * 1500, dy: cos(rot) * 1500)]
+    }
+]
+let SHOOTFREQUENCIES: [CGFloat] = [
+    0.05
+]

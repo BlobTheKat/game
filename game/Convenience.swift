@@ -157,26 +157,82 @@ extension SKAction{
         return self
     }
 }
+enum NumberType{
+    case int8
+    case uint8
+    case int16
+    case uint16
+    case int32
+    case uint32
+    case int64
+    case uint64
+    case int
+    case uint
+}
 
 extension Data{
-    mutating func write(_ a: String, encoding: String.Encoding = .utf8){
-        guard a.count < 4294967296 else{fatalError("Buffer overload when writing string (smh how much ram do you have??)")}
-        write(UInt32(a.count))
+    mutating func write<LenType: FixedWidthInteger>(_ a: String, encoding: String.Encoding = .utf8, lentype: LenType.Type){
+        guard a.count <= lentype.max else{fatalError("Buffer overload when writing string (smh how much ram do you have??)")}
+        write(lentype.init(a.count))
         self.append(a.data(using: encoding)!)
     }
-    mutating func read(encoding: String.Encoding = .utf8) -> String?{
-        if self.count < 4{return nil}
-        let count = Int(read() as UInt32)
+    @inline(__always) mutating func write(_ a: String, encoding: String.Encoding = .utf8){
+        write(a, encoding: encoding, lentype: UInt32.self)
+    }
+    mutating func write<SequenceType, LenType: FixedWidthInteger>(_ a: [SequenceType], lentype: LenType.Type){
+        guard a.count <= lentype.max else{fatalError("Buffer overload when writing string (smh how much ram do you have??)")}
+        write(LenType(a.count))
+        for item in a{
+            self.write(item)
+        }
+    }
+    @inline(__always) mutating func write<S>(_ a: [S]){
+        write(a, lentype: UInt32.self)
+    }
+    mutating func read<LenType: FixedWidthInteger>(encoding: String.Encoding = .utf8, lentype: LenType.Type) -> String?{
+        if self.count < MemoryLayout<LenType>.size{return nil}
+        guard let count = read() as LenType? else {return nil}
         if self.count < count{return nil}
-        let data = self.prefix(count)
-        self.removeFirst(count)
+        let data = self.prefix(Int(count))
+        self.removeFirst(Int(count))
         return String(data: data, encoding: encoding)
+    }
+    @inline(__always) mutating func read(encoding: String.Encoding = .utf8) -> String?{
+        return read(encoding: encoding, lentype: UInt32.self)
+    }
+    mutating func read<SequenceType, LenType: FixedWidthInteger>(lentype: LenType.Type) -> [SequenceType]?{
+        if self.count < MemoryLayout<LenType>.size{return nil}
+        guard let count = read() as LenType? else {return nil}
+        if self.count < Int(count) * MemoryLayout<SequenceType>.size{return nil}
+        var arr: [SequenceType] = []
+        for _ in 1...count{
+            arr.append(self.readunsafe() as SequenceType)
+        }
+        return arr
+    }
+    mutating func read<SequenceType>(count: Int) -> [SequenceType]{
+        var arr: [SequenceType] = []
+        if count <= 0{return arr}
+        for _ in 1...count{
+            arr.append(self.readunsafe() as SequenceType)
+        }
+        return arr
+    }
+    mutating func write<SequenceType>(_ arr: [SequenceType], count: Int){
+        if count > 0{
+            for i in 1...count{
+                write(arr[i])
+            }
+        }
+    }
+    @inline(__always) mutating func read<S>() -> [S]?{
+        return read(lentype: UInt32.self)
     }
     mutating func write<T>(_ a: T){
         var f = a
         self.append(Data.init(bytes: &f, count: MemoryLayout.size(ofValue: a)))
     }
-    mutating func read<T>() -> T{
+    mutating func readunsafe<T>() -> T{
         let l = MemoryLayout<T>.size
         var d = Data(self.prefix(l))
         let f: T = d.withUnsafeMutableBytes { a in
@@ -185,7 +241,7 @@ extension Data{
         self.removeFirst(l)
         return f
     }
-    mutating func readsafe<T>() -> T?{
+    mutating func read<T>() -> T?{
         let l = MemoryLayout<T>.size
         if self.count < l{return nil}
         var d = Data(self.prefix(l))
@@ -208,4 +264,8 @@ extension CGPoint{
     func add(y: CGFloat) -> CGPoint{
         return CGPoint(x: self.x, y: self.y + y)
     }
+}
+
+@inline(__always) func fdiv(_ x: Int, _ y: Int) -> Int{
+    return (abs(x) / y) * (x < 0 ? -1 : 1)
 }

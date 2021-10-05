@@ -11,7 +11,9 @@ var dmessage = "Disconnected!"
 let ADAM = false
 func connect(_ host: String = "192.168.1.\(ADAM ? 248 : 64):65152", _ a: @escaping (Data) -> ()) -> (Data) -> (){
     var connection: NWConnection?
-    let port = NWEndpoint.Port(integerLiteral: UInt16(host.split(separator: ":")[1])!)
+    var r = host.split(separator: ":")
+    if r.count == 1{r.append("65152")}
+    let port = NWEndpoint.Port(integerLiteral: UInt16(r[1]) ?? 65152)
     let host = NWEndpoint.Host(stringLiteral: String(host.split(separator: ":")[0]))
     var queue: [Data] = []
     var ready = false
@@ -84,6 +86,19 @@ func fetch(_ url: String, _ done: @escaping (String) -> (), _ err: @escaping (St
         }
     }.resume()
 }
+func fetch(_ url: String, _ done: @escaping (Data) -> (), _ err: @escaping (String) -> ()){
+    guard let uri = URL(string: url) else{
+        err("Invalid URL")
+        return
+    }
+    URLSession.shared.dataTask(with: uri) {(data, response, error) in
+        if error != nil{
+            err(error!.localizedDescription)
+        }else{
+            done(data ?? Data())
+        }
+    }.resume()
+}
 
 enum ProtocolError: Error{
     case valueTooLarge(msg: String)
@@ -108,9 +123,11 @@ struct M{
 }
 let messages = M()
 
+var secx = 0
+var secy = 0
 
 struct api{
-    static func sector(completion: @escaping (UInt32) -> ()){
-        completion(sect)
+    static func sector(completion: @escaping (_ x: Int, _ y: Int) -> ()){
+        completion(secx, secy)
     }
 }

@@ -324,7 +324,6 @@ server.on('message', function(message, remote) {
 });
 
 function msg(data, reply, address){
-    console.log("ping "+~~(Date.now() / 1000)%60)
     let ship = clients.get(address)
     ship.ping()
     let delay = Math.min(Math.round(performance.nodeTiming.duration / 10 - ship.u._idleStart / 10), 255)
@@ -368,11 +367,9 @@ function msg(data, reply, address){
     if(data[0] == 127){
         clients.get(address).wasDestroyed()
     }
-    if((data[0] | 3) == 11){
-        let dir = data[0] & 3
-        let pos = data.readFloatLE(1)
-        let x = dir & 1 ? (dir & 2 ? -1 : 1) * sector.w2 : pos
-        let y = dir & 1 ? pos : (dir & 2 ? -1 : 1) * sector.h2
+    if(data[0] == 7){
+        let x = data.readFloatLE(1)
+        let y = data.readFloatLE(5)
         //magic
         let newSector = 1
         console.log("destroyed >:D")
