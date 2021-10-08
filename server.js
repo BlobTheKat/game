@@ -1,8 +1,10 @@
+process.stdout.write('\x1bc')
 var PORT = 65152;
 const VERSION = 1;
 //client states: 0 (authed) 1 (idle) 2 (live) 3 (hidden)
 var dgram = require('dgram');
 var server = dgram.createSocket('udp4');
+var fs = require('fs');
 var fetch
 exit = process.exit
 try{fetch = require('node-fetch')}catch(e){
@@ -12,6 +14,7 @@ try{fetch = require('node-fetch')}catch(e){
 let clients = new Map()
 let FPS = 60
 let G = 0.0001
+let REGIONSIZE = 500000
 function strbuf(str){
     let b = Buffer.from("    "+str)
     b.writeUint32LE(b.length-4)
@@ -22,11 +25,12 @@ let lidle = performance.eventLoopUtilization().idle
 let lactive = performance.eventLoopUtilization().active
 let load = () => {
     let usage = performance.eventLoopUtilization()
-    return (lactive - (lactive = usage.active)) / (lidle - (lidle = usage.idle))
+    let ac = (lactive - (lactive = usage.active))
+    return ac / (lidle - (lidle = usage.idle) + ac)
 }
-async function readfile(path){
-    let text = await fetch('https://aaa.blobkat.repl.co' + (path[0]=='/'?'':'/') + path).then(a=>a.text())
-    if(text == "404 Not Found")return {error:"404"}
+function readfile(path){
+    let text
+    try{text = fs.readFileSync(path)+''}catch(e){return null}
     text = text.split('\n').map(a=>a.replace(/#.*/,''))
     let i = 0
     let arr = []
@@ -34,6 +38,7 @@ async function readfile(path){
         arr.push({})
         while(text[i]){
             let t = text[i].split(':',2)
+            if(!t[1])continue
             t[1] = t[1].trim()
             if(t[1] == "true" || t[1] == "yes")t[1] = true
             else if(t[1] == "false" || t[1] == "no")t[1] = false
@@ -45,34 +50,123 @@ async function readfile(path){
     }
     return arr
 }
-let map = null
-let planets = null
-let ships = null
-let sector = {objects:[],planets:[],time:0,w:0,h:0}
-Promise.all([
-    readfile('map').then(a=>map=a),
-    readfile('planets').then(a=>planets=a),
-    readfile('asteroids').then(a=>asteroids=a),
-    readfile('ships').then(a=>ships=a)
-]).then(async function(){
-    if(!map[process.argv[2]])console.error('\x1b[31;1mInvalid sector'),process.exit(0)
-    await new Promise(r=>
-    readfile(map[process.argv[2]].path).then(function(data){
+try{RESPONSE = null;require('basic-repl')('$',_=>([RESPONSE,RESPONSE=null][0]||eval)(_))}catch(e){
+    console.log("\x1b[33m[Warning]\x1b[37m If you would like to manage this server from the console, you need to install basic-repl. Type this in the bash shell: \x1b[m\x1b[34mnpm i basic-repl")
+}
+var ships = readfile('ships')
+var asteroids = readfile('asteroids')
+var sector = {objects:[],planets:[],time:0,w:0,h:0}
+var meta = (readfile('meta')||[null])[0]
+
+if(!meta){
+    if(typeof RESPONSE == "undefined")console.log("\x1b[31m[Error]\x1b[37m To set up this server, you need to install basic-repl. Type this in the bash shell: \x1b[m\x1b[34mnpm i basic-repl"),process.exit(0)
+    console.log("Enter sector \x1b[34mX\x1b[m:")
+    let x;
+    function _w(X){
+        if(+X != +X)console.log("Enter sector \x1b[34mX\x1b[m:"),RESPONSE=_w
+        x = X
+        console.log("Enter sector \x1b[34mY\x1b[m:")
+        RESPONSE = _v
+        return '\x1b[1A'
+    }
+    function _v(y){
+        if(+y != +y)console.log("Enter sector \x1b[34mY\x1b[m:"),RESPONSE=_v
+        //x, y
+        let rx = Math.floor(x / REGIONSIZE)
+        let ry = Math.floor(y / REGIONSIZE)
+        console.log('Downloading region file...')
+        fetch('https://region-'+rx+'-'+ry+'.ksh3.tk').then(a=>a.buffer()).then(dat => {
+            console.log('Parsing region')
+            let i = dat.readUint32LE() + 4
+            let sx, sy, w, h
+            while(true){
+                sx = dat.readInt16LE(i) * 1000 + rx * REGIONSIZE;i+=2
+                sy = dat.readInt16LE(i) * 1000 + ry * REGIONSIZE;i+=2
+                w = dat.readUint16LE(i) * 1000;i+=2
+                h = dat.readUint16LE(i) * 1000;i+=2
+                if(x >= sx && x < sx + w && y >= sy && y < sy + h)break
+                let len = dat.readUint32LE(i + 4)
+                i += dat.readUint16LE(i) + dat.readUint16LE(i + 2) + 8
+                while(len--){
+                    let id = dat.readUint16LE(i)
+                    let a = id & 2 ? 1 : 0
+                    let b = id & 4 ? 1 : 0
+                    let c = id & 8 ? 1 : 0
+                    if(id & 1){
+                        i += 10 + (a + b) * 4 + c * 2
+                    }else{
+                        i += b * 4 + c * 2 + 14
+                        i += dat[i] + 1
+                    }
+                }
+            }
+            sector.x = sx + w / 2
+            sector.y = sy + h / 2
+            sector.w = w
+            sector.h = h
+            sector.w2 = w / 2
+            sector.h2 = h / 2
+            let len = dat.readUint32LE(i + 4)
+            i += dat.readUint16LE(i) + dat.readUint16LE(i + 2) + 8
+            let arr = []
+            while(len--){
+                let id = dat.readUint16LE(i);i+=2
+                let a = id & 2 ? 1 : 0
+                let b = id & 4 ? 1 : 0
+                let c = id & 8 ? 1 : 0
+                let o
+                if(id & 1){
+                    let x = dat.readInt32LE(i);i += 4
+                    let y = dat.readInt32LE(i);i += 4
+                    let dx = 0
+                    let dy = 0
+                    if(a)i += 2
+                    if(b)dx = dat.readFloatLE(i),i += 4
+                    if(c)dy = dat.readFloatLE(i),i += 4
+                    id >>= 4
+                    sector.objects.push(new Asteroid(o={id,x,y,dx,dy}))
+                }else{
+                    let x = dat.readInt32LE(i);i += 4
+                    let y = dat.readInt32LE(i);i += 4
+                    let mass = dat.readInt32LE(i);i += 4
+                    let spin = 0
+                    if(a)i += 2
+                    if(b)spin = dat.readFloatLE(i),i += 4
+                    i += dat[i] + 1
+                    id >>= 4
+                    sector.planets.push(new Planet(o={radius:id,x,y,mass,spin,superhot:c}))
+                }
+                arr.push(o)
+            }
+            
+            fs.writeFileSync('sector', arr.map(a=>Object.entries(a).map(a=>a.join(': ')).join('\n')).join('\n\n'))
+            fs.writeFileSync('meta', 'x: '+sx+'\ny: '+sy+'\nw: '+w+'\nh: '+h)
+            console.log('Done! Starting server...')
+            setInterval(tick.bind(undefined, sector), 1000 / FPS)
+            server.bind(process.argv[2] || PORT)
+        })
+        return '\x1b[1A'
+    }
+    RESPONSE = _w
+}else{
+    setImmediate(function(){
+        let data = readfile('sector')
         data.forEach(function(item){
-            if(item.asteroid)sector.objects.push(new Asteroid(item))
+            if(item.id)sector.objects.push(new Asteroid(item))
             else sector.planets.push(new Planet(item))
         })
-        sector.w = map[process.argv[2]].w
-        sector.h = map[process.argv[2]].h
+        sector.w = meta.w
+        sector.h = meta.h
+        sector.x = meta.x
+        sector.y = meta.y
         sector.w2 = sector.w / 2
         sector.h2 = sector.h / 2
         setInterval(tick.bind(undefined, sector), 1000 / FPS)
-        r()
-    }))
-    server.bind(PORT)
-})
+        server.bind(process.argv[2] || PORT)
+    })
+}
 server.on('listening', function() {
-    console.log('\x1b[32mUDP Server listening on port 65152\x1b[m');
+    console.log('\x1b[32mUDP Server listening on port '+(process.argv[2] || PORT)+'\x1b[m');
 });
 function tick(sector){
     for(var o of sector.objects){
@@ -80,6 +174,7 @@ function tick(sector){
         for(var p of sector.planets){
             o.updatep(p)
         }
+        if(o.u && performance.nodeTiming.duration - o.u._idleStart > 500)continue
         o.x += o.dx
         o.y += o.dy
         o.z += o.dz
@@ -91,12 +186,11 @@ class Planet{
     constructor(dict){
         this.x = +dict.x
         this.y = +dict.y
-        this.id = +dict.id
-        this.radius = planets[this.id].radius
-        this.mass = planets[this.id].mass
+        this.radius = dict.radius
+        this.mass = dict.mass
         this.z = 0
-        this.dz = planets[this.id].spin
-        this.superhot = planets[this.id].superhot
+        this.dz = dict.spin
+        this.superhot = dict.superhot
     }
 }
 class Asteroid{
@@ -325,11 +419,9 @@ server.on('message', function(message, remote) {
 });
 
 function msg(data, reply, address){
-    console.log("ping "+~~(Date.now() / 1000)%60)
     let ship = clients.get(address)
     ship.ping()
     let delay = Math.min(Math.round(performance.nodeTiming.duration / 10 - ship.u._idleStart / 10), 255)
-    console.log(delay)
     if(data[0] == 3){
         reply(Buffer.of(4))
     }
@@ -370,7 +462,12 @@ function msg(data, reply, address){
     if(data[0] == 127){
         clients.get(address).wasDestroyed()
     }
-}
-try{require('basic-repl')('$',_=>eval(_))}catch(e){
-    console.log("\x1b[33m[Warning]\x1b[37m If you would like to manage this server from the console, you need to install basic-repl. Type this in the bash shell: \x1b[m\x1b[34mnpm i basic-repl")
+    if(data[0] == 7){
+        let x = data.readFloatLE(1)
+        let y = data.readFloatLE(5)
+        //magic
+        let newSector = 1
+        console.log("destroyed >:D")
+        ship.wasDestroyed()
+    }
 }

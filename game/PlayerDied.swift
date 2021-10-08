@@ -126,7 +126,7 @@ class PlayerDied: PlayConvenience{
     }
     
     
-    override func nodeDown(_: SKNode, at _: CGPoint) {
+    override func touch(at _: CGPoint) {
         SKScene.transition = SKTransition.crossFade(withDuration: 1.5)
         Play.renderTo(skview)
         SKScene.transition = SKTransition.crossFade(withDuration: 0)

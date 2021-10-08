@@ -13,11 +13,12 @@
 		341B34FE26C557F6006115F1 /* Particles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 341B34FD26C557F6006115F1 /* Particles.swift */; };
 		347FD84326BEA56400396640 /* ships in Resources */ = {isa = PBXBuildFile; fileRef = 347FD84226BEA56400396640 /* ships */; };
 		347FD84526BEC05500396640 /* map in Resources */ = {isa = PBXBuildFile; fileRef = 347FD84426BEC05500396640 /* map */; };
-		347FD84726BEC42100396640 /* planets in Resources */ = {isa = PBXBuildFile; fileRef = 347FD84626BEC42100396640 /* planets */; };
 		347FD84A26C12EEE00396640 /* asteroids in Resources */ = {isa = PBXBuildFile; fileRef = 347FD84926C12EEE00396640 /* asteroids */; };
 		34844AE026A9955900A3F790 /* Objects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34844ADF26A9955900A3F790 /* Objects.swift */; };
 		34844AE126A9A44B00A3F790 /* Convenience.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34844ADD26A9944500A3F790 /* Convenience.swift */; };
 		3484BFB227031E6500C06FFC /* Play.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3484BFB127031E6500C06FFC /* Play.swift */; };
+		3484BFD6270754DD00C06FFC /* PlayNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3484BFD5270754DD00C06FFC /* PlayNetwork.swift */; };
+		3484BFD82709C6C600C06FFC /* PlayCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3484BFD72709C6C600C06FFC /* PlayCore.swift */; };
 		34A5547226BBE13D00D43C04 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A5547126BBE13C00D43C04 /* Constants.swift */; };
 		34A5547426BC201800D43C04 /* Disconnected.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A5547326BC201800D43C04 /* Disconnected.swift */; };
 		DC78185E26945B9200A19FE9 /* Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC78185D26945B9200A19FE9 /* Connect.swift */; };
@@ -32,14 +33,15 @@
 		33E378B626BD57780034B14E /* PlayerDied.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerDied.swift; sourceTree = "<group>"; };
 		33FC9DB726B45A1400216BC7 /* PlayConvenience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayConvenience.swift; sourceTree = "<group>"; };
 		341B34FD26C557F6006115F1 /* Particles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Particles.swift; sourceTree = "<group>"; };
-		347FD84226BEA56400396640 /* ships */ = {isa = PBXFileReference; lastKnownFileType = text; path = ships; sourceTree = "<group>"; };
+		347FD84226BEA56400396640 /* ships */ = {isa = PBXFileReference; lastKnownFileType = text; path = ships; sourceTree = SOURCE_ROOT; };
 		347FD84426BEC05500396640 /* map */ = {isa = PBXFileReference; lastKnownFileType = text; path = map; sourceTree = "<group>"; };
-		347FD84626BEC42100396640 /* planets */ = {isa = PBXFileReference; lastKnownFileType = text; path = planets; sourceTree = "<group>"; };
-		347FD84926C12EEE00396640 /* asteroids */ = {isa = PBXFileReference; lastKnownFileType = text; path = asteroids; sourceTree = "<group>"; };
+		347FD84926C12EEE00396640 /* asteroids */ = {isa = PBXFileReference; lastKnownFileType = text; path = asteroids; sourceTree = SOURCE_ROOT; };
 		34844ADD26A9944500A3F790 /* Convenience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Convenience.swift; sourceTree = "<group>"; };
 		34844ADF26A9955900A3F790 /* Objects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Objects.swift; path = ../Objects.swift; sourceTree = "<group>"; };
-		3484BFAC27031DF700C06FFC /* server.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = server.js; sourceTree = "<group>"; };
+		3484BFAC27031DF700C06FFC /* server.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = server.js; sourceTree = "<group>"; };
 		3484BFB127031E6500C06FFC /* Play.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Play.swift; sourceTree = SOURCE_ROOT; };
+		3484BFD5270754DD00C06FFC /* PlayNetwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayNetwork.swift; sourceTree = "<group>"; };
+		3484BFD72709C6C600C06FFC /* PlayCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayCore.swift; sourceTree = "<group>"; };
 		34A5547126BBE13C00D43C04 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		34A5547326BC201800D43C04 /* Disconnected.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Disconnected.swift; sourceTree = "<group>"; };
 		DC78185D26945B9200A19FE9 /* Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connect.swift; sourceTree = "<group>"; };
@@ -91,6 +93,8 @@
 				34A5547126BBE13C00D43C04 /* Constants.swift */,
 				34844ADD26A9944500A3F790 /* Convenience.swift */,
 				33FC9DB726B45A1400216BC7 /* PlayConvenience.swift */,
+				3484BFD5270754DD00C06FFC /* PlayNetwork.swift */,
+				3484BFD72709C6C600C06FFC /* PlayCore.swift */,
 				3484BFB127031E6500C06FFC /* Play.swift */,
 				DC78185D26945B9200A19FE9 /* Connect.swift */,
 				34A5547326BC201800D43C04 /* Disconnected.swift */,
@@ -99,7 +103,6 @@
 				DC9F5289269249AC00DDF0AF /* Info.plist */,
 				347FD84226BEA56400396640 /* ships */,
 				347FD84426BEC05500396640 /* map */,
-				347FD84626BEC42100396640 /* planets */,
 				347FD84926C12EEE00396640 /* asteroids */,
 			);
 			path = game;
@@ -163,7 +166,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				347FD84A26C12EEE00396640 /* asteroids in Resources */,
-				347FD84726BEC42100396640 /* planets in Resources */,
 				3346242D26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf in Resources */,
 				347FD84326BEA56400396640 /* ships in Resources */,
 				DC9F5286269249AB00DDF0AF /* Main.storyboard in Resources */,
@@ -187,6 +189,8 @@
 				DC78185E26945B9200A19FE9 /* Connect.swift in Sources */,
 				DC9F527B269249AB00DDF0AF /* AppDelegate.swift in Sources */,
 				34A5547226BBE13D00D43C04 /* Constants.swift in Sources */,
+				3484BFD82709C6C600C06FFC /* PlayCore.swift in Sources */,
+				3484BFD6270754DD00C06FFC /* PlayNetwork.swift in Sources */,
 				341B34FE26C557F6006115F1 /* Particles.swift in Sources */,
 				34A5547426BC201800D43C04 /* Disconnected.swift in Sources */,
 				3484BFB227031E6500C06FFC /* Play.swift in Sources */,
@@ -340,7 +344,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = teamA.locus;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -361,7 +365,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = teamA.locus;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
