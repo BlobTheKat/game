@@ -9,6 +9,7 @@ import Foundation
 import SpriteKit
 
 class PlayNetwork: PlayConvenience{
+    var DEBUG_TXT = SKLabelNode(fontNamed: "Menlo")
     var MIN_NODES = 70
     var ship = Object(radius: 15, mass: 100, texture: .named("ship1"))
     var hits: [UInt32] = []
@@ -54,9 +55,7 @@ class PlayNetwork: PlayConvenience{
         } err: { a in
             dmessage = a
             Disconnected.renderTo(skview)
-        } ipget: { ip in
-            self.gotIp(ip)
-        }
+        } ipget: {ip in self.gotIp(ip)}
     }
     func didLoad(){
         planets.append(contentsOf: loadstack.p!)
@@ -107,6 +106,14 @@ class PlayNetwork: PlayConvenience{
         })
     }
     func didInit(){
+        DEBUG_TXT.fontSize = 15
+        DEBUG_TXT.position = pos(mx: -0.5, my: 0.5, x: 20, y: -20)
+        DEBUG_TXT.color = UIColor(red: 0, green: 0, blue: 0, alpha: 0.5)
+        DEBUG_TXT.fontColor = UIColor.white
+        DEBUG_TXT.horizontalAlignmentMode = .left
+        DEBUG_TXT.verticalAlignmentMode = .top
+        DEBUG_TXT.numberOfLines = 10
+        cam.addChild(DEBUG_TXT)
         api.sector(completion: sectorpos)
     }
     func gotIp(_ ip: String){

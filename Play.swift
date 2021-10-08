@@ -9,7 +9,6 @@ import SpriteKit
 
 class Play: PlayCore{
     let tapToStart =  SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
-    var vel = CGFloat()
     var currentSpeed = Int()
     var startPressed = false
     var showMap = false
@@ -47,7 +46,16 @@ class Play: PlayCore{
     
     let tunnel1 = SKSpriteNode(imageNamed: "tunnel1")
     let tunnel2 = SKSpriteNode(imageNamed: "tunnel2")
-    
+    func suit(_ id: Int){
+        ship.id = id
+        let sh = ships[id]
+        guard case .string(let t) = sh["texture"] else {fatalError("invalid texture")}
+        guard case .number(let radius) = sh["radius"] else {fatalError("invalid radius")}
+        guard case .number(let mass) = sh["mass"] else {fatalError("invalid mass")}
+        ship.body(radius: CGFloat(radius), mass: CGFloat(mass), texture: SKTexture(imageNamed: t))
+        ship.shootPoints = SHOOTPOINTS[id-1]
+        ship.shootVectors = SHOOTVECTORS[id-1]
+    }
     override init(size: CGSize) {
         super.init(size: size)
         startAnimation()
@@ -57,11 +65,11 @@ class Play: PlayCore{
         cam.setScale(0.4)
         ship.position.y = 160
         ship.alpha = 0
-        ship.id = 1
-        tunnel1.position = pos(mx: -0.125, my: 0)
+        suit(1)
+        tunnel1.position = pos(mx: -0.13, my: 0.05)
         tunnel1.setScale(0.155)
         self.addChild(tunnel1)
-        tunnel2.position = pos(mx: 0.125, my: 0)
+        tunnel2.position = pos(mx: 0.13, my: 0.05)
         tunnel2.setScale(0.155)
         self.addChild(tunnel2)
         self.addChild(ship)
@@ -180,12 +188,20 @@ class Play: PlayCore{
         if let node = mapnodes[pos]{
             node.removeFromParent()
             FakemapBG.addChild(node)
-            if x{planetsMP.append(contentsOf: (node.children.filter({e in
-                return (e as? SKShapeNode)?.fillColor == UIColor.white
-            })) as! [SKShapeNode]);amountOfPlanets += planetsMP.count - 1
+            var box: SKShapeNode? = nil
+            for n in node.children{
+                if n.name != "planet"{
+                    n.removeFromParent()
+                    if n.name == "box"{
+                        box = n as? SKShapeNode
+                    }
+                }
+            }
+            if x{planetsMP.append(contentsOf: node.children as! [SKShapeNode]);amountOfPlanets += planetsMP.count - 1
                 mainMap = node
                 node.addChild(playerArrow)
             }
+            node.addChild(box ?? SKShapeNode())
             return
         }
         let sector = SKNode()
@@ -195,12 +211,14 @@ class Play: PlayCore{
             a.zPosition = 8
             a.fillColor = UIColor.white
             sector.addChild(a)
+            a.name = "planet"
             if x{planetsMP.append(a);amountOfPlanets += 1}
         }
         if x{mainMap=sector;sector.addChild(playerArrow)}
         let box = SKShapeNode(rectOf: CGSize(width: size.width/10, height: size.height/10))
         box.strokeColor = .white
         box.lineWidth = 5
+        box.name = "box"
         sector.addChild(box)
         sector.position = pos
         FakemapBG.addChild(sector)
@@ -259,10 +277,11 @@ class Play: PlayCore{
             
         
         avatar.position = pos(mx: -0.385, my: 0.35)
-        avatar.alpha = 1
+        avatar.alpha = 0.1
         avatar.zPosition = 10
         avatar.setScale(0.7)
         cam.addChild(avatar)
+        
             
             self.addChild(star1)
             star1.setScale(2)
@@ -476,6 +495,7 @@ class Play: PlayCore{
     
     func constantLazer(){
         usingConstantLazer = true
+        ship.shootFrequency = SHOOTFREQUENCIES[ship.id-1]
         self.run(SKAction.sequence([
 
             SKAction.repeat(SKAction.sequence([
@@ -496,22 +516,21 @@ class Play: PlayCore{
                     self.coolingDown = true
                     self.heatLevel += 1
                     switch self.heatLevel{
-                    case 5: self.heatingLaser.texture = SKTexture(imageNamed: "heating4")
-                        break
-                    case 6:  self.heatingLaser.alpha = 0
-                        break
-                    case 7:  self.heatingLaser.alpha = 1
-                        break
-                    case 8:   self.heatingLaser.alpha = 0
-                        break
-                    case 9:  self.heatingLaser.alpha = 1
-                        break
-                    case 10:   self.heatingLaser.alpha = 0
-                        break
-                    case 11:  self.heatingLaser.alpha = 1
-                        break
-                    default:
-                        print("error")
+                        case 5: self.heatingLaser.texture = SKTexture(imageNamed: "heating4")
+                            break
+                        case 6:  self.heatingLaser.alpha = 0
+                            break
+                        case 7:  self.heatingLaser.alpha = 1
+                            break
+                        case 8:   self.heatingLaser.alpha = 0
+                            break
+                        case 9:  self.heatingLaser.alpha = 1
+                            break
+                        case 10:   self.heatingLaser.alpha = 0
+                            break
+                        case 11:  self.heatingLaser.alpha = 1
+                            break
+                        default:break
                     }
                     }
                 },

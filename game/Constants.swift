@@ -195,6 +195,7 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
             let a = sectors[CGPoint(x: regionx, y: regiony)]
             sectors[CGPoint(x: regionx, y: regiony)] = nil
             sector(x: Int(x), y: Int(y), completion: completion, err: err, ipget: ipget, a ?? [])
+            return
         }
         err("Spacetime continuum ends here...")
         return
@@ -203,13 +204,16 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
     fetch("https://region-\(regionx)-\(regiony).ksh3.tk") { (d: Data) in
         var data = d
         guard let bucketname = data.read() else {return}
+        var found = false
         while data.count > 0{
             let xx = regionx * REGIONSIZE
             let yy = regiony * REGIONSIZE
-            let px = Int(data.readunsafe() as Int16) * 1000 + xx
-            let py = Int(data.readunsafe() as Int16) * 1000 + yy
+            var px = Int(data.readunsafe() as Int16) * 1000 + xx
+            var py = Int(data.readunsafe() as Int16) * 1000 + yy
             let w = Int(data.readunsafe() as UInt16) * 1000
             let h = Int(data.readunsafe() as UInt16) * 1000
+            px += w / 2
+            py += h / 2
             let exists = exists(px: px, py: py)
             let nl = data.readunsafe() as Int16
             let ipl = data.readunsafe() as Int16
@@ -219,6 +223,7 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
             var planets = [Planet]()
             var s = (planets, (pos: CGPoint(x: px, y: py), size: CGSize(width: w, height: h)),(name:name,ip:ip))
             let current = x > px - w/2 && x < px + w/2 && y > py - h/2 && y < py + h/2
+            found = found || current
             if current{ipget(ip)}
             var DONE = 0
             while(len > 0){
@@ -282,6 +287,7 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                 }else{sectors[CGPoint(x: regionx, y: regiony)]!.append(s)}
             }
         }
+        if !found{err("Spacetime continuum ends here...")}
         loaded.insert(CGPoint(x: regionx, y: regiony))
     } _: { e in
         err(e)

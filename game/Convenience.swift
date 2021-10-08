@@ -8,6 +8,21 @@
 import Foundation
 import SpriteKit
 
+func second() -> String{
+    let s = Int64(NSDate().timeIntervalSince1970) % 60
+    return s < 10 ? "0\(s)" : "\(s)"
+}
+
+var logs = ["[\(second())] Game started!"]
+
+func print(_ items: Any...){
+    let str = items.map({a in return "\(a)"}).joined(separator: " ")
+    Swift.print(str)
+    logs.insert("[\(second())] \(str)", at: 0)
+    if logs.count > 10{logs.removeLast()}
+}
+
+
 extension SKScene{
     static var font = "Arial"
     static var transition = SKTransition.crossFade(withDuration: 0)
@@ -157,18 +172,6 @@ extension SKAction{
         return self
     }
 }
-enum NumberType{
-    case int8
-    case uint8
-    case int16
-    case uint16
-    case int32
-    case uint32
-    case int64
-    case uint64
-    case int
-    case uint
-}
 
 extension Data{
     mutating func write<LenType: FixedWidthInteger>(_ a: String, encoding: String.Encoding = .utf8, lentype: LenType.Type){
@@ -263,6 +266,45 @@ extension CGPoint{
     }
     func add(y: CGFloat) -> CGPoint{
         return CGPoint(x: self.x, y: self.y + y)
+    }
+}
+
+prefix operator %
+extension CGFloat{
+    static prefix func %(_ num: CGFloat) -> String{
+        if num.isNaN{
+            return "NaN     "
+        }
+        let neg = num < 0 ? "-" : " "
+        let num = abs(num)
+        if num >= 1e100{
+            return neg + "infinity"
+        }
+        if num < 1e-99{
+            return neg + "0.000000"
+        }
+        let pw = floor(log10(num))
+        if num > 999999 || num < 0.0001{
+            return "\(neg)\(String(format: "%.\(abs(pw)>9 ? "3" : "4")f", num/pow(10,pw)))\(pw<0 ? "R" : "E")\(Int(abs(pw)))"
+        }
+        return neg + String(format:"%.\(Int(6-Swift.max(pw,0)))f",num)
+    }
+}
+extension Bool{
+    static prefix func %(_ a: Bool) -> String{
+        return a ? " TRUE" : "FALSE"
+    }
+}
+extension Comparable{
+    @inlinable func clamp(_ a: Self, _ b: Self) -> Self{
+        return min(max(self, a), b)
+    }
+}
+extension FixedWidthInteger{
+    static prefix func %(_ a: Self) -> String{
+        let digits = floor(log10(CGFloat(Self.max)))+1
+        let i = "\(a)"
+        return String(repeating: "0", count: Int(digits) - i.count) + i
     }
 }
 

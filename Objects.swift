@@ -34,7 +34,7 @@ class Object: SKSpriteNode, DataCodable{
     var angularVelocity: CGFloat = 0
     var particleQueue = 1.0
     var producesParticles: Bool = false
-    var zr: CGFloat? = nil
+    var shlock: Int = 0
     var particle = {(_:Object) -> Particle in fatalError("particle() accessed before super.init call")}
     var asteroid: Bool
     func defParticle(_ ship: Object) -> Particle{
@@ -52,18 +52,6 @@ class Object: SKSpriteNode, DataCodable{
         particle = defParticle
         self.asteroid = asteroid
     }
-    /*init(id: Int, asteroid: Bool){
-        guard !asteroid else {fatalError("asteroids not yet implemented")}
-        self.asteroid = false
-        self.id = id
-        let ship = (asteroid ? asteroids : ships).data[id]
-        guard case .string(let t) = ship["texture"] else {fatalError("invalid texture")}
-        super.init(texture: nil, color: UIColor.clear, size: CGSize.zero)
-        guard case .number(let radius) = ship["radius"] else {fatalError("invalid radius")}
-        guard case .number(let mass) = ship["mass"] else {fatalError("invalid mass")}
-        self.body(radius: CGFloat(radius), mass: CGFloat(mass))
-        particle = defParticle
-    }*/
     func update(){
         if !asteroid{
             self.angularVelocity *= 0.95
@@ -86,8 +74,8 @@ class Object: SKSpriteNode, DataCodable{
             }else{particleQueue = 1}
         }
         if !asteroid{
-            if velocity.dx > 10{velocity.dx *= 0.99}
-            if velocity.dy > 10{velocity.dy *= 0.99}
+            if abs(velocity.dx) > 10{velocity.dx *= 0.99}
+            if abs(velocity.dy) > 10{velocity.dy *= 0.99}
         }
         if controls{
             producesParticles = false
@@ -110,13 +98,16 @@ class Object: SKSpriteNode, DataCodable{
         var i = 0
         guard let parent = parent else{return}
         shootQueue += shootFrequency
-        let shootVectors = shootVectors(self.zr ?? self.zRotation)
+        if shlock != 0{
+            zRotation = -atan2(parent.ship.position.x - position.x, parent.ship.position.y - position.y)
+        }
+        let shootVectors = shootVectors(self.zRotation)
         while shootQueue > 1{
             for p in shootPoints{
                 var v = CGVector.zero
                 if i < shootVectors.count{v = shootVectors[i]}
                 let bullet = SKSpriteNode(imageNamed: "bullet")
-                bullet.position = CGPoint(x: self.position.x,y: self.position.y)
+                bullet.position = CGPoint(x: self.position.x, y: self.position.y)
                 bullet.zPosition = 4
                 bullet.anchorPoint = CGPoint(x: -p.x, y: -p.y)
                 bullet.setScale(0.2)
@@ -156,38 +147,6 @@ class Object: SKSpriteNode, DataCodable{
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    /*func decode(data: inout Data){
-        self.body(radius: CGFloat(data.read() as Float), mass: CGFloat(data.read() as Float), texture: .from(data.read()))
-        self.position = CGPoint(x: CGFloat(data.read() as Float), y: CGFloat(data.read() as Float))
-        self.zRotation = CGFloat(data.read() as Float)
-        self.velocity = CGVector(dx: CGFloat(data.read() as Float), dy: CGFloat(data.read() as Float))
-        self.angularVelocity = CGFloat(data.read() as Float)
-        self.thrustMultiplier = CGFloat(data.read() as Float)
-        self.angularThrustMultiplier = CGFloat(data.read() as Float)
-        let bits: UInt8 = data.read()
-        thrust = bits & 1 != 0
-        thrustLeft = bits & 2 != 0
-        thrustRight = bits & 4 != 0
-        asteroid = bits & 8 != 0
-        landed = bits & 16 != 0
-        producesParticles = bits & 32 != 0
-        self.controls = true
-        self.dynamic = true
-    }
-    func encode(data: inout Data){
-        data.write(Float(self.radius))
-        data.write(Float(self.mass))
-        data.write(self.texture?.code() ?? 0)
-        data.write(Float(self.position.x))
-        data.write(Float(self.position.y))
-        data.write(Float(self.zRotation))
-        data.write(Float(self.velocity.dx))
-        data.write(Float(self.velocity.dy))
-        data.write(Float(self.angularVelocity))
-        data.write(Float(self.thrustMultiplier))
-        data.write(Float(self.angularThrustMultiplier))
-        data.write(UInt8(thrust ? 1 : 0) + UInt8(thrustLeft ? 2 : 0) + UInt8(thrustRight ? 4 : 0) + UInt8(asteroid ? 8 : 0) + UInt8(landed ? 16 : 0) + UInt8(producesParticles ? 32 : 0))
-    }*/
     func encode(data: inout Data){
         if self.id == 0{
             data.write(Int64(0))
@@ -214,6 +173,7 @@ class Object: SKSpriteNode, DataCodable{
         thrustLeft = bits & 2 != 0
         thrustRight = bits & 4 != 0
         let shoot = bits & 8 != 0
+        self.shlock += Int((bits & 16) / 16)
         if !asteroid && thrustLeft && thrustRight{
             thrustLeft = false
             thrustRight = false
@@ -222,6 +182,9 @@ class Object: SKSpriteNode, DataCodable{
             asteroid = false
         }
         producesParticles = thrust
+        if !asteroid && id > 0{
+            self.shootFrequency = shoot ? SHOOTFREQUENCIES[id-1] : 0
+        }
         let id = Int(bits / 32)
         if id != self.id || oa != asteroid{
             self.id = id
@@ -230,10 +193,10 @@ class Object: SKSpriteNode, DataCodable{
             guard case .number(let radius) = ship["radius"] else {fatalError("invalid radius")}
             guard case .number(let mass) = ship["mass"] else {fatalError("invalid mass")}
             self.body(radius: CGFloat(radius), mass: CGFloat(mass), texture: SKTexture(imageNamed: t))
-            
-            self.shootPoints = shoot ? SHOOTPOINTS[id] : []
-            self.shootFrequency = shoot ? SHOOTFREQUENCIES[id] : 0
-            self.shootVectors = shoot ? SHOOTVECTORS[id] : {(_:CGFloat)->[CGVector]in return []}
+            if !asteroid && id > 0{
+                self.shootPoints = SHOOTPOINTS[id-1]
+                self.shootVectors = SHOOTVECTORS[id-1]
+            }
         }
         self.controls = !asteroid
         self.dynamic = true
@@ -535,10 +498,5 @@ struct State{
         var b = CGFloat()
         node.color.getRed(&r, green: &g, blue: &b, alpha: nil)
         return State(color: (r: r, g: g, b: b), size: node.size, zRot: node.zRotation, position: node.position, alpha: node.alpha)
-    }
-}
-extension Comparable{
-    @inlinable func clamp(_ a: Self, _ b: Self) -> Self{
-        return min(max(self, a), b)
     }
 }

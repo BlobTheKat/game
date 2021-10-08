@@ -15,7 +15,7 @@ class PlayCore: PlayNetwork{
     let border2 = SKSpriteNode(imageNamed: "tunnel1")
     var started = false
     var camOffset = CGPoint(x: 0, y: 0.2)
-    
+    var vel: CGFloat = 0
     
     let shipDirection = SKSpriteNode(imageNamed: "direction")
     let star1 = SKSpriteNode(imageNamed: "stars")
@@ -95,6 +95,7 @@ class PlayCore: PlayNetwork{
         }
         border1.position.x = cam.position.x
         border2.position.y = cam.position.y
+        drawDebug()
     }
     var _a = 0
     func spaceUpdate(){
@@ -168,10 +169,10 @@ class PlayCore: PlayNetwork{
             var sx = ship.position.x
             var sy = ship.position.y
             if isX{
-                sx = (sx < 0 ? -1 : 1) * loadstack.size!.width / 2 + 10
+                sx = (sx < 0 ? -1 : 1) * (loadstack.size!.width / 2 + 10) + loadstack.pos!.x
             }
             if isY{
-                sy = (sy < 0 ? -1 : 1) * loadstack.size!.height / 2 + 10
+                sy = (sy < 0 ? -1 : 1) * (loadstack.size!.height / 2 + 10) + loadstack.pos!.y
             }
             secx = Int(sx)
             secy = Int(sy)
@@ -181,24 +182,57 @@ class PlayCore: PlayNetwork{
             var sx = ship.position.x
             var sy = ship.position.y
             if isX{
-                sx = (sx < 0 ? -1 : 1) * loadstack.size!.width / 2 + 10
+                sx = (sx < 0 ? -1 : 1) * (loadstack.size!.width / 2 + 10)
             }
             if isY{
-                sy = (sy < 0 ? -1 : 1) * loadstack.size!.height / 2 + 10
+                sy = (sy < 0 ? -1 : 1) * (loadstack.size!.height / 2 + 10)
             }
             let x = loadstack.pos!.x + sx, y = loadstack.pos!.y + sy
             let regionx = fdiv(Int(x), REGIONSIZE), regiony = fdiv(Int(y), REGIONSIZE)
+            var d = false
             for sector in sectors[CGPoint(x: regionx, y: regiony)]!{
                 let (_, (pos: pos, size: size), (name: name, ip: _)) = sector
                 let w2 = size.width / 2
                 let h2 = size.height / 2
-                if x > pos.x - w2 && x < pos.x + w2 && y > pos.y - h2 && y < pos.y + h2{
-                    name //this is what to display
+                if x > pos.x - w2 && x < pos.x + w2 && y > pos.y - h2 && y < pos.y + h2 && !d{
+                    d = true
+                    //THIS IS WHERE YOU SHOW THE LABEL
+                    name //this is the label's text
                 }
+            }
+            if !d{
+                //THIS IS WHERE YOU HIDE THE LABEL
             }
         }
         _a = (_a + 1) % 20
-        let vel = CGFloat(sqrt(ship.velocity.dx*ship.velocity.dx + ship.velocity.dy*ship.velocity.dy)) * CGFloat(gameFPS)
-        speedLabel.text = "\(Int(vel/2)).00"
+        vel = CGFloat(sqrt(ship.velocity.dx*ship.velocity.dx + ship.velocity.dy*ship.velocity.dy)) * CGFloat(gameFPS)
+        speedLabel.text = "\(Int(vel/3)).00"
+    }
+    func report_memory() -> UInt16{
+        var taskInfo = mach_task_basic_info()
+        var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size)/4
+        let kerr: kern_return_t = withUnsafeMutablePointer(to: &taskInfo) {
+            $0.withMemoryRebound(to: integer_t.self, capacity: 1) {
+                task_info(mach_task_self_, task_flavor_t(MACH_TASK_BASIC_INFO), $0, &count)
+            }
+        }
+
+        if kerr == KERN_SUCCESS {
+            return UInt16(taskInfo.resident_size / 1048576)
+        }
+        else {
+            return 0
+        }
+    }
+    var lastComplete: UInt64 = SystemDataUsage.complete
+    var lastU: UInt64 = 0
+    var lastMem: UInt16 = 0
+    func drawDebug(){
+        if _a == 0{
+            lastU = SystemDataUsage.complete - lastComplete
+            lastComplete += lastU
+            lastMem = report_memory()
+        }
+        DEBUG_TXT.text = "X: \(%ship.position.x) / Y: \(%ship.position.y)\nDX: \(%ship.velocity.dx) / DY: \(%ship.velocity.dy)\nA: \(%ship.zRotation), AV: \(%ship.angularVelocity)\nVEL: \(%vel)\nMEM: \(lastMem)MB NET: \(UInt32(Double(lastU) * gameFPS / 20480.0))KB/s\n\(logs.joined(separator: "\n"))"
     }
 }
