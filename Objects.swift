@@ -160,6 +160,7 @@ class Object: SKSpriteNode, DataCodable{
         data.write(Float(self.velocity.dy))
         data.write(Int8(round((self.zRotation.remainder(dividingBy: .pi*2) + .pi*2).remainder(dividingBy: .pi*2) * 40)))
         data.write(UInt8(Int(self.angularVelocity * 768)&255))
+        
         data.write(UInt16(thrust ? 1 : 0) + UInt16(thrustLeft ? 2 : 0) + UInt16(thrustRight ? 4 : 0) + UInt16(shootFrequency != 0 ? 8 : 0) + UInt16(self.id * 32))
     }
     func decode(data: inout Data){

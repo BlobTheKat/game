@@ -50,7 +50,10 @@ function readfile(path){
     }
     return arr
 }
-try{RESPONSE = null;require('basic-repl')('$',_=>([RESPONSE,RESPONSE=null][0]||eval)(_))}catch(e){
+function _(_){
+    return eval(_)
+}
+try{RESPONSE = null;require('basic-repl')('$',v=>([RESPONSE,RESPONSE=null][0]||_)(v))}catch(e){
     console.log("\x1b[33m[Warning]\x1b[37m If you would like to manage this server from the console, you need to install basic-repl. Type this in the bash shell: \x1b[m\x1b[34mnpm i basic-repl")
 }
 var ships = readfile('ships')
@@ -212,8 +215,8 @@ class Asteroid{
         buf.writeFloatLE(this.dx,offset+8)
         buf.writeFloatLE(this.dy,offset+12)
         let PI2 = Math.PI * 2
-        buf[offset+16] = Math.round((this.z + PI2) % PI2 * 40)
-        buf[offset+17] = this.angularVelocity * 768
+        buf[offset+16] = Math.round(((this.z % PI2) + PI2) % PI2 * 40)
+        buf.writeUInt8((this.dz * 768)&255, offset+17)
         buf.writeUint16LE(6 + (this.id << 3), offset + 18)
         return buf
     }
@@ -374,8 +377,8 @@ class ClientData{
         buf.writeFloatLE(this.dx,offset+8)
         buf.writeFloatLE(this.dy,offset+12)
         let PI2 = Math.PI * 2
-        buf[offset+16] = Math.round((this.z + PI2) % PI2 * 40)
-        buf[offset+17] = this.angularVelocity * 768
+        buf[offset+16] = Math.round(((this.z % PI2) + PI2) % PI2 * 40)
+        buf.writeUInt8((this.dz * 768)&255, offset+17)
         buf.writeUint16LE((this.thrust & 7) + (this.id << 3), offset + 18)
         return buf
     }
