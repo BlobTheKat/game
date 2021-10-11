@@ -1,0 +1,93 @@
+radius: 800
+x: 0
+y: -1000
+mass: 200000
+spin: 0.0010000000474974513
+superhot: 1
+
+radius: 274
+x: 1500
+y: 1600
+mass: 10000
+spin: 0.0010000000474974513
+superhot: 0
+
+radius: 298
+x: 3000
+y: -3000
+mass: 10000
+spin: 0.0010000000474974513
+superhot: 0
+
+id: 1
+x: 2000
+y: -500
+dx: 0
+dy: 0
+
+id: 2
+x: -2000
+y: 500
+dx: 0
+dy: 0
+
+id: 3
+x: -1300
+y: -2000
+dx: 0
+dy: 0
+
+id: 4
+x: 0
+y: 2000
+dx: 0
+dy: 0
+
+radius: 291
+x: -2000
+y: 2500
+mass: 150000
+spin: -0.0020000000949949026
+superhot: 1
+
+radius: 621
+x: -700
+y: -4500
+mass: 50000
+spin: 0.000699999975040555
+superhot: 1
+
+radius: 476
+x: 6000
+y: -1700
+mass: 40000
+spin: -0.000699999975040555
+superhot: 1
+
+radius: 226
+x: -4500
+y: -2500
+mass: 10000
+spin: -0.0010000000474974513
+superhot: 0
+
+radius: 213
+x: -6000
+y: 300
+mass: 15000
+spin: -0.0006000000284984708
+superhot: 0
+
+radius: 278
+x: -4700
+y: 3300
+mass: 5000
+spin: 0.00039999998989515007
+superhot: 0
+
+radius: 237
+x: 4700
+y: 3300
+mass: 20000
+spin: 0
+superhot: 0

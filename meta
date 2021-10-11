@@ -2,3 +2,5 @@ x: 0
 y: 0
 w: 50000
 h: 50000
+path: sector0
+port: 65152
