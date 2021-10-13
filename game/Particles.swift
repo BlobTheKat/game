@@ -40,12 +40,10 @@ let particles: [(Object) -> Particle] = [
 
 
 let SHOOTPOINTS: [[CGPoint]] = [
-    [CGPoint(x: -6, y: 0), CGPoint(x: 6, y: 0)]
+    [CGPoint(x: -10, y: 0), CGPoint(x: 10, y: 0)]
 ]
-let SHOOTVECTORS: [(CGFloat) -> [CGVector]] = [
-    { rot in
-        return [CGVector(dx: -sin(rot) * 1500, dy: cos(rot) * 1500), CGVector(dx: -sin(rot) * 1500, dy: cos(rot) * 1500)]
-    }
+let SHOOTVECTORS: [[CGFloat]] = [
+    [0, 0]
 ]
 let SHOOTFREQUENCIES: [CGFloat] = [
     0.05

@@ -8,7 +8,6 @@ import Foundation
 import Network
 
 var dmessage = "Disconnected!"
-let ADAM = false
 
 extension SystemDataUsage {
 
@@ -88,7 +87,7 @@ class SystemDataUsage {
 }
 
 
-func connect(_ host: String = "192.168.1.\(ADAM ? 248 : 64):65152", _ a: @escaping (Data) -> ()) -> (Data) -> (){
+func connect(_ host: String, _ a: @escaping (Data) -> ()) -> (Data) -> (){
     var connection: NWConnection?
     var r = host.split(separator: ":")
     if r.count == 1{r.append("65152")}
@@ -105,6 +104,7 @@ func connect(_ host: String = "192.168.1.\(ADAM ? 248 : 64):65152", _ a: @escapi
     }
     connection = NWConnection(host: host, port: port, using: .udp)
     connection?.stateUpdateHandler = { (newState) in
+        let p = skview.scene as? Play
         switch (newState) {
             case .ready:
                 ready = true
@@ -116,10 +116,13 @@ func connect(_ host: String = "192.168.1.\(ADAM ? 248 : 64):65152", _ a: @escapi
                     })))
                 }
                 connection?.receiveMessage(completion: c)
+            print("connection ready")
             case .cancelled:
+            p?.end()
                 dmessage = "Connection Interrupted"
                 DispatchQueue.main.async{Disconnected.renderTo(skview)}
             case .failed(_):
+            p?.end()
                 dmessage = "Could not connect to server"
                 DispatchQueue.main.async{Disconnected.renderTo(skview)}
             default:break

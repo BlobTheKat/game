@@ -9,6 +9,12 @@ import Foundation
 import SpriteKit
 import Network
 
+
+let MAX_DELAY = 300 //in milliseconds, the maximum amount of time a packet can be delayed for smoothness
+
+//more = smoother, more delayed
+//less = faster, rougher
+
 let G: CGFloat = 0.0001
 let fsmall: CGFloat = 32
 let fmed: CGFloat = 48
