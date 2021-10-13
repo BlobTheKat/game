@@ -25,7 +25,7 @@ class PlayNetwork: PlayConvenience{
     var istop = {}
     var loaded = 2
     var loadstack: (p: [Planet]?, size: CGSize?, pos: CGPoint?) = (p: nil, size: nil, pos: nil)
-    var delay: UInt8 = 0
+    var delay: Double = 0
     func parseShip(_ data: inout Data, _ i: Int){
         guard i < objects.count else {
             let object = Object()
@@ -54,7 +54,8 @@ class PlayNetwork: PlayConvenience{
             if loaded == 0{didLoad()}
         } err: { a in
             dmessage = a
-            Disconnected.renderTo(skview)
+            self.end()
+            DispatchQueue.main.async{Disconnected.renderTo(skview)}
         } ipget: {ip in self.gotIp(ip)}
     }
     func didLoad(){
@@ -63,7 +64,6 @@ class PlayNetwork: PlayConvenience{
             planetindicators.append(SKSpriteNode(imageNamed: "arrow"))
             p.removeFromParent()
             self.addChild(p)
-            p.zPosition = -1
         }
         for p in planetindicators{
             p.alpha = 0
@@ -102,6 +102,7 @@ class PlayNetwork: PlayConvenience{
         a = timeout(5, {
             self.send(Data([127]))
             dmessage = "Lost connection!"
+            self.end()
             Disconnected.renderTo(skview)
         })
     }
@@ -116,10 +117,15 @@ class PlayNetwork: PlayConvenience{
         cam.addChild(DEBUG_TXT)
         api.sector(completion: sectorpos)
     }
+    func end(){
+        send = {(_:Data) in}
+    }
+    var last: DispatchTime = .now()
     func gotIp(_ ip: String){
         var stopAuth = {}
         var authed = false
         send = connect(ip){[self](d) in
+            guard view == skview else{return}
             var data = d
             let code: UInt8 = data.readunsafe()
             if code == 1{
@@ -135,23 +141,32 @@ class PlayNetwork: PlayConvenience{
             guard ship.controls else {return}
             if code == 127{
                 dmessage = data.read() ?? "Disconnected!"
+                end()
                 DispatchQueue.main.async{Disconnected.renderTo(skview)}
             }else if code == 4{
                 ping()
+                last = .now()
             }else if code == 6{
                 ping()
-                delay = data.readunsafe()
-                physics.async{ [self] in
+                delay = Double(data.readunsafe() as UInt8) / 100
+                last = (last + delay).clamp(.now(), .now().advanced(by: DispatchTimeInterval.milliseconds(MAX_DELAY)))
+                //if .now().advanced(by: DispatchTimeInterval.milliseconds(MAX_DELAY)) < last || .now() > last{last = .now()}
+                
+                physics.asyncAfter(deadline: last){ [self] in
                     var i = 1
                     while data.count > 19{parseShip(&data, i);i += 1}
+                    objects.removeLast(objects.count - i + 1)
                 }
+                
             }else if code == 7{
                 ping()
                 delay = data.readunsafe()
-                physics.async { [self] in
+                last = last + delay
+                if .now().advanced(by: DispatchTimeInterval.milliseconds(MAX_DELAY)) < last || .now() > last{last = .now()}
+                physics.asyncAfter(deadline: last){ [self] in
                     var i = 0
                     while data.count > 19{parseShip(&data, i);i += 1}
-                    objects.removeLast(objects.count - i - 1)
+                    objects.removeLast(objects.count - i + 1)
                 }
             }
         }
@@ -162,6 +177,7 @@ class PlayNetwork: PlayConvenience{
             if tries > 10{
                 stopAuth()
                 dmessage = "Could not connect"
+                end()
                 DispatchQueue.main.async{Disconnected.renderTo(skview)}
                 return
             }

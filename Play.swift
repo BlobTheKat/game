@@ -85,8 +85,8 @@ class Play: PlayCore{
         guard ready else{return}
         guard !moved else {return}
         border1.zRotation = .pi / 2
-        border1.position.y = (cam.position.y < 0 ? -0.5 : 0.5) * loadstack.size!.width
-        border2.position.x = (cam.position.x < 0 ? -0.5 : 0.5) * loadstack.size!.height
+        border1.position.y = (cam.position.y < 0 ? -0.5 : 0.5) * loadstack.size!.height
+        border2.position.x = (cam.position.x < 0 ? -0.5 : 0.5) * loadstack.size!.width
         border1.xScale = cam.position.y < 0 ? 2 : -2
         border2.xScale = cam.position.x < 0 ? 2 : -2
         border1.yScale = 2
@@ -571,8 +571,8 @@ class Play: PlayCore{
         
         if thrustButton == node{
             if point.y > thrustButton.position.y + 50{
-                thrustButton.texture = SKTexture(imageNamed: "shooting1")
                 if !usingConstantLazer{
+                    thrustButton.texture = SKTexture(imageNamed: "shooting1")
                     self.actionStopped = false
                     constantLazer()
                 }
@@ -645,6 +645,7 @@ class Play: PlayCore{
         }else if key == .keyboardEqualSign{
             send(Data([127]))
             dmessage = "Y u diskonnekt??"
+            end()
             Disconnected.renderTo(skview)
         }
     }

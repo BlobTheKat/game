@@ -163,6 +163,7 @@ class PlayCore: PlayNetwork{
                 SKAction.run{ [self] in
                     ship.removeFromParent()
                     send(Data([8, 0, 0, 0, 0]))
+                    end()
                     DispatchQueue.main.async{SKScene.transition = .crossFade(withDuration: 0.5);Play.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0)}
                 }
             ]))
@@ -211,16 +212,15 @@ class PlayCore: PlayNetwork{
     func report_memory() -> UInt16{
         var taskInfo = mach_task_basic_info()
         var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size)/4
-        let kerr: kern_return_t = withUnsafeMutablePointer(to: &taskInfo) {
-            $0.withMemoryRebound(to: integer_t.self, capacity: 1) {
+        let kerr: kern_return_t = withUnsafeMutablePointer(to: &taskInfo){
+            $0.withMemoryRebound(to: integer_t.self, capacity: 1){
                 task_info(mach_task_self_, task_flavor_t(MACH_TASK_BASIC_INFO), $0, &count)
             }
         }
 
-        if kerr == KERN_SUCCESS {
+        if kerr == KERN_SUCCESS{
             return UInt16(taskInfo.resident_size / 1048576)
-        }
-        else {
+        }else{
             return 0
         }
     }

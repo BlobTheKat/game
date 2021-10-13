@@ -15,7 +15,7 @@ protocol DataCodable {
 var d: [Int: Int] = [:]
 class Object: SKSpriteNode, DataCodable{
     var shootPoints: [CGPoint] = []
-    var shootVectors = {(_:CGFloat) -> [CGVector] in return []}
+    var shootVectors: [CGFloat] = []
     var shootQueue: CGFloat = 0
     var shootFrequency: CGFloat = 0
     var state: UInt8 = 0
@@ -101,22 +101,28 @@ class Object: SKSpriteNode, DataCodable{
         if shlock != 0{
             zRotation = -atan2(parent.ship.position.x - position.x, parent.ship.position.y - position.y)
         }
-        let shootVectors = shootVectors(self.zRotation)
         while shootQueue > 1{
             for p in shootPoints{
-                var v = CGVector.zero
+                var v: CGFloat = 0
                 if i < shootVectors.count{v = shootVectors[i]}
                 let bullet = SKSpriteNode(imageNamed: "bullet")
-                bullet.position = CGPoint(x: self.position.x, y: self.position.y)
-                bullet.zPosition = 4
-                bullet.anchorPoint = CGPoint(x: -p.x, y: -p.y)
+                let d = sqrt(p.x * p.x + p.y * p.y)
+                let r = atan2(p.x, p.y) + self.zRotation
+                bullet.position = CGPoint(x: self.position.x + sin(r) * d, y: self.position.y - cos(r) * d)
+                bullet.zPosition = 1
                 bullet.setScale(0.2)
-                bullet.zRotation = self.zRotation
+                bullet.zRotation = self.zRotation + v
                 parent.addChild(bullet)
-                bullet.run(SKAction.moveBy(x: self.velocity.dx * CGFloat(gameFPS) + v.dx , y: self.velocity.dy * CGFloat(gameFPS) + v.dy, duration: 1).ease(.easeOut))
-                bullet.run(SKAction.sequence([
-                    SKAction.wait(forDuration: 0.8),
-                    SKAction.fadeAlpha(to: 0, duration: 0.2),
+                let dx = self.velocity.dx * CGFloat(gameFPS) / 1500 - sin(bullet.zRotation)
+                let dy = self.velocity.dy * CGFloat(gameFPS) / 1500 + cos(bullet.zRotation)
+                let (obj: obj, len: len, planet: planet) = raylen(objs: parent.planets, objs2: parent.objects, rayorigin: bullet.position, raydir: CGVector(dx: dx, dy: dy), this: position)
+                if let obj = obj{
+                    obj//was hit
+                }
+                if let planet = planet{
+                    planet//was hit
+                }
+                bullet.run(SKAction.sequence([SKAction.moveBy(x: dx * len - 40, y: dy * len - 40, duration: (len - 40) / 1500.0),
                     SKAction.run{bullet.removeFromParent()}
                 ]))
                 i += 1
@@ -125,7 +131,7 @@ class Object: SKSpriteNode, DataCodable{
         }
     }
     func body(radius: CGFloat, mass: CGFloat, texture: SKTexture? = nil){
-        zPosition = 1
+        zPosition = 2
         var m = mass
         if m == -1{
             m = radius * radius
@@ -160,6 +166,7 @@ class Object: SKSpriteNode, DataCodable{
         data.write(Float(self.velocity.dy))
         data.write(Int8(round((self.zRotation.remainder(dividingBy: .pi*2) + .pi*2).remainder(dividingBy: .pi*2) * 40)))
         data.write(UInt8(Int(self.angularVelocity * 768)&255))
+        
         data.write(UInt16(thrust ? 1 : 0) + UInt16(thrustLeft ? 2 : 0) + UInt16(thrustRight ? 4 : 0) + UInt16(shootFrequency != 0 ? 8 : 0) + UInt16(self.id * 32))
     }
     func decode(data: inout Data){
@@ -203,9 +210,47 @@ class Object: SKSpriteNode, DataCodable{
     }
 }
 
+func raylen(objs: [Planet], objs2: [Object], rayorigin: CGPoint, raydir: CGVector, this: CGPoint) -> (obj: Object?, len: CGFloat, planet: Planet?){
+    var len = 3000.0
+    var o: Object? = nil
+    let p: Planet? = nil
+    for obj in objs{
+        if obj.position == this{continue}
+        let l = collision(planetpos: obj.position, planetr: obj.radius, rayorigin: rayorigin, raydir: raydir)
+        if l < len{
+            len = l
+            p = obj
+            o = nil
+        }
+    }
+    for obj in objs2{
+        if obj.position == this{continue}
+        let l = collision(planetpos: obj.position, planetr: obj.radius, rayorigin: rayorigin, raydir: raydir)
+        if l < len{
+            len = l
+            o = obj
+            p = nil
+        }
+    }
+    return (obj: o, len: len, planet: p)
+}
+
+func collision(planetpos: CGPoint, planetr: CGFloat, rayorigin: CGPoint, raydir: CGVector) -> CGFloat{
+    let px = planetpos.x - rayorigin.x
+    let py = planetpos.y - rayorigin.y
+    let a = raydir.dx / raydir.dy
+    if a == 0{return raydir.dy * py > 0 && abs(px) < planetr ? abs(raydir.dy) : .infinity}
+    if !a.isFinite{return raydir.dx * px > 0 && abs(py) < planetr ? abs(raydir.dx) : .infinity}
+    let a2 = a * a + 1
+    let x = (px * a + py) / a2
+    let x2 = x * x * a2
+    let touches = x * raydir.dy >= 0 && x2 - 2 * py * x - 2 * px * x * a + px * px + py * py < planetr * planetr
+    return touches ? sqrt(x2) : .infinity
+}
+
 class Planet: Object{
     override func body(radius: CGFloat, mass: CGFloat, texture: SKTexture? = nil){
-        zPosition = 1
+        zPosition = 2
         var m = mass
         if m == -1{
             m = radius * radius
@@ -224,7 +269,6 @@ class Planet: Object{
     }
     override func update() {}
     func update(_ node: SKSpriteNode?){
-        //let node: SKSpriteNode? = nil
         if let i = node{
             guard let parent = parent as? Play else{return}
             guard let cam = parent.camera else {return}
@@ -291,6 +335,7 @@ class Planet: Object{
                     n.run(SKAction.sequence([SKAction.fadeOut(withDuration: 1),SKAction.run{n.removeFromParent()
                         if n == parent!.ship{
                             parent!.send(Data([127]))
+                            parent!.end()
                             DispatchQueue.main.async{SKScene.transition = .crossFade(withDuration: 0.5);PlayerDied.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0);}
                         }
                     }]))
@@ -346,6 +391,7 @@ class Planet: Object{
                     n.run(SKAction.sequence([SKAction.fadeOut(withDuration: 1),SKAction.run{n.removeFromParent()
                         if n == parent!.ship{
                             parent!.send(Data([127]))
+                            parent!.end()
                             DispatchQueue.main.async{SKScene.transition = .crossFade(withDuration: 0.5);PlayerDied.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0);}
                         }
                     }]))

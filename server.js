@@ -8,7 +8,7 @@ var fs = require('fs');
 var fetch
 exit = process.exit
 try{fetch = require('node-fetch')}catch(e){
-    console.log("\x1b[31m[Error]\x1b[37m To run this server, you need to install node-fetch. Type this in the bash shell: \x1b[m\x1b[34mnpm i node-fetch@2.6.2")
+    console.log("\x1b[31m[Error]\x1b[37m To run this server, you need to install node-fetch. Type this in the bash shell: \x1b[m\x1b[34mnpm i node-fetch@2.6.2\x1b[m")
     process.exit(1);
 }
 let clients = new Map()
@@ -50,32 +50,46 @@ function readfile(path){
     }
     return arr
 }
-try{RESPONSE = null;require('basic-repl')('$',_=>([RESPONSE,RESPONSE=null][0]||eval)(_))}catch(e){
-    console.log("\x1b[33m[Warning]\x1b[37m If you would like to manage this server from the console, you need to install basic-repl. Type this in the bash shell: \x1b[m\x1b[34mnpm i basic-repl")
+function _(_){
+    return eval(_)
+}
+try{RESPONSE = null;require('basic-repl')('$',v=>([RESPONSE,RESPONSE=null][0]||_)(v))}catch(e){
+    console.log("\x1b[33m[Warning]\x1b[37m If you would like to manage this server from the console, you need to install basic-repl. Type this in the bash shell: \x1b[m\x1b[34mnpm i basic-repl\x1b[m")
 }
 var ships = readfile('ships')
 var asteroids = readfile('asteroids')
 var sector = {objects:[],planets:[],time:0,w:0,h:0}
-var meta = (readfile('meta')||[null])[0]
+var meta = (readfile('meta')||[]).find(a=>a.port==process.argv[2]) || null
+let xy = (process.argv[3]||"_NaN_NaN").slice(1).split("_").map(a=>+a)
+if(xy[0] != xy[0] || xy[1] != xy[1])xy=null
 
-if(!meta){
-    if(typeof RESPONSE == "undefined")console.log("\x1b[31m[Error]\x1b[37m To set up this server, you need to install basic-repl. Type this in the bash shell: \x1b[m\x1b[34mnpm i basic-repl"),process.exit(0)
-    console.log("Enter sector \x1b[34mX\x1b[m:")
+if(!meta || xy){
+    if(typeof RESPONSE == "undefined")console.log("\x1b[31m[Error]\x1b[37m To set up this server, you need to install basic-repl. Type this in the bash shell: \x1b[m\x1b[34mnpm i basic-repl\x1b[m"),process.exit(0)
+    console.log("Enter sector \x1b[33mX\x1b[m:")
     let x;
     function _w(X){
-        if(+X != +X)console.log("Enter sector \x1b[34mX\x1b[m:"),RESPONSE=_w
+        if(+X != +X)return console.log("Enter sector \x1b[33mX\x1b[m:"),RESPONSE=_w
         x = X
-        console.log("Enter sector \x1b[34mY\x1b[m:")
+        console.log("Enter sector \x1b[33mY\x1b[m:")
         RESPONSE = _v
         return '\x1b[1A'
     }
     function _v(y){
-        if(+y != +y)console.log("Enter sector \x1b[34mY\x1b[m:"),RESPONSE=_v
+        if(+y != +y)return console.log("Enter sector \x1b[33mY\x1b[m:"),RESPONSE=_v
         //x, y
         let rx = Math.floor(x / REGIONSIZE)
         let ry = Math.floor(y / REGIONSIZE)
         console.log('Downloading region file...')
-        fetch('https://region-'+rx+'-'+ry+'.ksh3.tk').then(a=>a.buffer()).then(dat => {
+        let a = null
+        try{
+            a = fs.readFileSync('region_'+rx+'_'+ry+'.region')
+        }catch(e){
+        fetch('https://region-'+rx+'-'+ry+'.ksh3.tk').then(a=>a.buffer()).then(a=>{
+            fs.writeFileSync('region_'+rx+'_'+ry+'.region', a)
+            done(a)
+        })}
+        if(a)done(a)
+        function done(dat){
             console.log('Parsing region')
             let i = dat.readUint32LE() + 4
             let sx, sy, w, h
@@ -138,35 +152,45 @@ if(!meta){
                 }
                 arr.push(o)
             }
+            console.log("Done! Enter \x1b[33mPORT\x1b[m:")
+            let _u = function(p){
+                if(+p != +p || p > 65535 || p < 0)return console.log("Enter \x1b[33mPORT\x1b[m:"), RESPONSE = _u
+                let name = (meta && meta.path) || 'sector_'+sx+'_'+sy
+                fs.writeFileSync(name, arr.map(a=>Object.entries(a).map(a=>a.join(': ')).join('\n')).join('\n\n'))
+                if(xy)return process.exit(0)
+                fs.writeFileSync('meta', 'x: '+sx+'\ny: '+sy+'\nw: '+w+'\nh: '+h+'\nport: '+p+'\npath: '+name)
+                setInterval(tick.bind(undefined, sector), 1000 / FPS)
+                server.bind(PORT)
+            }
+            let p = process.argv[2]
+            if(xy && +p == +p && p <= 65535 && p >= 0)_u(p);
+            else if(xy)throw new Error('Invalid port')
+            else RESPONSE = _u
             
-            fs.writeFileSync('sector', arr.map(a=>Object.entries(a).map(a=>a.join(': ')).join('\n')).join('\n\n'))
-            fs.writeFileSync('meta', 'x: '+sx+'\ny: '+sy+'\nw: '+w+'\nh: '+h)
-            console.log('Done! Starting server...')
-            setInterval(tick.bind(undefined, sector), 1000 / FPS)
-            server.bind(process.argv[2] || PORT)
-        })
+        }
         return '\x1b[1A'
     }
     RESPONSE = _w
+    if(xy)setImmediate(a=>(RESPONSE(xy[0]),RESPONSE(xy[1])))
 }else{
     setImmediate(function(){
-        let data = readfile('sector')
+        let data = readfile(meta.path)
         data.forEach(function(item){
             if(item.id)sector.objects.push(new Asteroid(item))
             else sector.planets.push(new Planet(item))
         })
         sector.w = meta.w
         sector.h = meta.h
-        sector.x = meta.x
-        sector.y = meta.y
+        sector.x = meta.x + meta.w / 2
+        sector.y = meta.y + meta.h / 2
         sector.w2 = sector.w / 2
         sector.h2 = sector.h / 2
         setInterval(tick.bind(undefined, sector), 1000 / FPS)
-        server.bind(process.argv[2] || PORT)
+        server.bind(meta.port || PORT)
     })
 }
 server.on('listening', function() {
-    console.log('\x1b[32mUDP Server listening on port '+(process.argv[2] || PORT)+'\x1b[m');
+    console.log('\x1b[32mUDP Server listening on port '+(server.address().port)+'\x1b[m');
 });
 function tick(sector){
     for(var o of sector.objects){
@@ -212,8 +236,8 @@ class Asteroid{
         buf.writeFloatLE(this.dx,offset+8)
         buf.writeFloatLE(this.dy,offset+12)
         let PI2 = Math.PI * 2
-        buf[offset+16] = Math.round((this.z + PI2) % PI2 * 40)
-        buf[offset+17] = this.angularVelocity * 768
+        buf[offset+16] = Math.round(((this.z % PI2) + PI2) % PI2 * 40)
+        buf.writeUInt8((this.dz * 768)&255, offset+17)
         buf.writeUint16LE(6 + (this.id << 3), offset + 18)
         return buf
     }
@@ -374,8 +398,8 @@ class ClientData{
         buf.writeFloatLE(this.dx,offset+8)
         buf.writeFloatLE(this.dy,offset+12)
         let PI2 = Math.PI * 2
-        buf[offset+16] = Math.round((this.z + PI2) % PI2 * 40)
-        buf[offset+17] = this.angularVelocity * 768
+        buf[offset+16] = Math.round(((this.z % PI2) + PI2) % PI2 * 40)
+        buf.writeUInt8((this.dz * 768)&255, offset+17)
         buf.writeUint16LE((this.thrust & 7) + (this.id << 3), offset + 18)
         return buf
     }
