@@ -473,8 +473,9 @@ function msg(data, reply, address){
         if(cc & 8){
             let x = data.readUint32LE(i)
             let obj = sector.objects[x]
-            if(!obj)continue
-            ship.shoots = obj
+            if(obj){
+                ship.shoots = obj
+            }
             i += 4
         }else ship.shoots = null
         
