@@ -595,7 +595,6 @@ class Play: PlayCore{
     
     override func nodeUp(_ node: SKNode, at _: CGPoint) {
         if thrustButton == node{
-            thrustButton.texture = SKTexture(imageNamed: "thrustOn")
             self.removeAction(forKey: "constantLazer")
             ship.shootFrequency = 0
             self.heatLevel = 0
@@ -605,17 +604,7 @@ class Play: PlayCore{
             self.heatingLaser.texture = SKTexture(imageNamed: "heating0")
             usingConstantLazer = false
             ship.thrust = false
-        }else{
-            
             thrustButton.texture = SKTexture(imageNamed: "thrustOff")
-            usingConstantLazer = false
-            ship.shootFrequency = 0
-            self.removeAction(forKey: "constantLazer")
-            self.heatLevel = 0
-            self.actionStopped = true
-            self.heatingLaser.alpha = 0
-            self.coolingDown = false
-            self.heatingLaser.texture = SKTexture(imageNamed: "heating0")
         }
         if dPad == node{
             dPad.texture = SKTexture(imageNamed: "dPad")

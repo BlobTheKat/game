@@ -40,7 +40,7 @@ let particles: [(Object) -> Particle] = [
 
 
 let SHOOTPOINTS: [[CGPoint]] = [
-    [CGPoint(x: -10, y: 0), CGPoint(x: 10, y: 0)]
+    [CGPoint(x: -10, y: 40), CGPoint(x: 10, y: 40)]
 ]
 let SHOOTVECTORS: [[CGFloat]] = [
     [0, 0]
