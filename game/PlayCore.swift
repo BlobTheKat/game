@@ -233,6 +233,6 @@ class PlayCore: PlayNetwork{
             lastComplete += lastU
             lastMem = report_memory()
         }
-        DEBUG_TXT.text = "X: \(%ship.position.x) / Y: \(%ship.position.y)\nDX: \(%ship.velocity.dx) / DY: \(%ship.velocity.dy)\nA: \(%ship.zRotation), AV: \(%ship.angularVelocity)\nVEL: \(%vel)\nMEM: \(lastMem)MB NET: \(UInt32(Double(lastU) * gameFPS / 20480.0))KB/s\n\(logs.joined(separator: "\n"))"
+        DEBUG_TXT.text = "X: \(%ship.position.x) / Y: \(%ship.position.y)\nDX: \(%ship.velocity.dx) / DY: \(%ship.velocity.dy)\nA: \(%ship.zRotation), AV: \(%ship.angularVelocity)\nVEL: \(%vel) VER: \(build)\nMEM: \(lastMem)MB NET: \(UInt32(Double(lastU) * gameFPS / 20480.0))KB/s\n\(logs.joined(separator: "\n"))"
     }
 }

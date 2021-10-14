@@ -150,12 +150,10 @@ class PlayNetwork: PlayConvenience{
                 ping()
                 delay = Double(data.readunsafe() as UInt8) / 100
                 last = (last + delay).clamp(.now(), .now().advanced(by: DispatchTimeInterval.milliseconds(MAX_DELAY)))
-                //if .now().advanced(by: DispatchTimeInterval.milliseconds(MAX_DELAY)) < last || .now() > last{last = .now()}
-                
                 physics.asyncAfter(deadline: last){ [self] in
                     var i = 1
                     while data.count > 19{parseShip(&data, i);i += 1}
-                    objects.removeLast(objects.count - i + 1)
+                    objects.removeLast(max(objects.count - i - 1, 0))
                 }
                 
             }else if code == 7{
@@ -166,7 +164,7 @@ class PlayNetwork: PlayConvenience{
                 physics.asyncAfter(deadline: last){ [self] in
                     var i = 0
                     while data.count > 19{parseShip(&data, i);i += 1}
-                    objects.removeLast(objects.count - i + 1)
+                    objects.removeLast(max(objects.count - i - 1, 0))
                 }
             }
         }

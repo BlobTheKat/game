@@ -50,6 +50,14 @@ function readfile(path){
     }
     return arr
 }
+let PI256 = 128 / Math.PI
+let sin = Array.from({length: 256}, (_, i) => Math.sin(i / PI256))
+sin.push()
+//usage: sin[angle * PI256 & 255]
+//or cos: sin[angle * PI256 + 64 & 255]
+
+
+
 function _(_){
     return eval(_)
 }
@@ -238,7 +246,7 @@ class Asteroid{
         let PI2 = Math.PI * 2
         buf[offset+16] = Math.round(((this.z % PI2) + PI2) % PI2 * 40)
         buf.writeUInt8((this.dz * 768)&255, offset+17)
-        buf.writeUint16LE(6 + (this.id << 3), offset + 18)
+        buf.writeUint16LE(6 + (this.id << 5), offset + 18)
         return buf
     }
     update(thing){
@@ -291,6 +299,7 @@ class ClientData{
         this.thrust = 0
         this.id = 0
         this.u = null
+        this.shoots = null
     }
     update(thing){
         let d = this.x - thing.x
@@ -352,8 +361,7 @@ class ClientData{
         let dy = buffer.readFloatLE(12)
         let z = buffer.readInt8(16) / 40
         let dz = buffer.readInt8(17) / 768
-        let thrust = buffer[18]
-        let id = thrust >> 3 + buffer[19] * 32
+        let thrust = buffer.readUint16LE(18)
         /*if(true){
             this.ship = (ship << 8) + level
         }
@@ -388,11 +396,12 @@ class ClientData{
         this.dx = dx
         this.dy = dy
         this.dz = dz
-        this.thrust = thrust & 7
-        this.id = id
+        this.thrust = thrust & 15
+        this.id = id >> 5
         return Buffer.alloc(0)
     }
-    toBuf(buf = Buffer.alloc(20), offset = 0){
+    toBuf(buf = Buffer.alloc(20), offset = 0, ref){
+        if(performance.nodeTiming.duration - this.u._idleStart > 1000){return}
         buf.writeFloatLE(this.x,offset)
         buf.writeFloatLE(this.y,offset+4)
         buf.writeFloatLE(this.dx,offset+8)
@@ -400,7 +409,7 @@ class ClientData{
         let PI2 = Math.PI * 2
         buf[offset+16] = Math.round(((this.z % PI2) + PI2) % PI2 * 40)
         buf.writeUInt8((this.dz * 768)&255, offset+17)
-        buf.writeUint16LE((this.thrust & 7) + (this.id << 3), offset + 18)
+        buf.writeUint16LE((this.thrust & 15) + (this.id << 5) + this.shoots == ref ? 16 : 0, offset + 18)
         return buf
     }
     ping(){
@@ -444,24 +453,31 @@ server.on('message', function(message, remote) {
 
 function msg(data, reply, address){
     let ship = clients.get(address)
-    ship.ping()
     let delay = Math.min(Math.round(performance.nodeTiming.duration / 10 - ship.u._idleStart / 10), 255)
+    ship.ping()
     if(data[0] == 3){
         reply(Buffer.of(4))
     }
     if(data[0] == 5){
-        let hitc = data[21]
-        if(hitc <= 10 && hitc > 0){
-            let i = 22
-            while(hitc--){
-                let x = data.readUint32LE(i)
-                let obj = sector.objects[x]
-                if(!obj)continue
-                if(obj instanceof ClientData && x <= sector.objects.indexOf(ship))continue
-                ship.update(obj)
-                i += 4
-            }
+        let cc = data[21]
+        let hitc = cc & 7
+        let i = 22
+        while(hitc--){
+            let x = data.readUint32LE(i)
+            let obj = sector.objects[x]
+            if(!obj)continue
+            if(obj instanceof ClientData && x <= sector.objects.indexOf(ship))continue
+            ship.update(obj)
+            i += 4
         }
+        if(cc & 8){
+            let x = data.readUint32LE(i)
+            let obj = sector.objects[x]
+            if(!obj)continue
+            ship.shoots = obj
+            i += 4
+        }else ship.shoots = null
+        
         let a = ship.validate(data.slice(1,21))
         let buf = Buffer.alloc(a.length ? 22 : 2)
         buf[0] = 6

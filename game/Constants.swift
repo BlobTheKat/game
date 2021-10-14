@@ -20,6 +20,8 @@ let fsmall: CGFloat = 32
 let fmed: CGFloat = 48
 let fbig: CGFloat = 72
 let gameFPS = 60.0
+let build = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "null"
+
 
 func bg(_ a: @escaping () -> ()){DispatchQueue.global(qos: .background).async(execute: a)}
 
@@ -258,12 +260,17 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                     fetch(img) { (data: Data) in
                         if data[0] == 123{
                             err("Broken Image")
+                            loaded.remove(CGPoint(x: regionx, y: regiony))
                             return
                         }
                         if let a = UIImage(data: data){
                             p.texture = SKTexture(image: a)
                             p.size = p.texture!.size()
-                        }else{err("Broken Image")}
+                        }else{
+                            err("Broken Image")
+                            loaded.remove(CGPoint(x: regionx, y: regiony))
+                            return
+                        }
                         DONE -= 1
                         if DONE == 0{
                             s.0 = planets
@@ -293,7 +300,7 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                 }else{sectors[CGPoint(x: regionx, y: regiony)]!.append(s)}
             }
         }
-        if !found{err("Spacetime continuum ends here...")}
+        if !found{err("Spacetime continuum ends here...");return}
         loaded.insert(CGPoint(x: regionx, y: regiony))
     } _: { e in
         err(e)

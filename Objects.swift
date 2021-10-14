@@ -98,10 +98,11 @@ class Object: SKSpriteNode, DataCodable{
         var i = 0
         guard let parent = parent else{return}
         shootQueue += shootFrequency
-        if shlock != 0{
-            zRotation = -atan2(parent.ship.position.x - position.x, parent.ship.position.y - position.y)
-        }
         while shootQueue > 1{
+            if shlock > 0{
+                zRotation = -atan2(parent.ship.position.x - position.x, parent.ship.position.y - position.y)
+                shlock -= 1
+            }
             for p in shootPoints{
                 var v: CGFloat = 0
                 if i < shootVectors.count{v = shootVectors[i]}
@@ -113,8 +114,11 @@ class Object: SKSpriteNode, DataCodable{
                 bullet.setScale(0.2)
                 bullet.zRotation = self.zRotation + v
                 parent.addChild(bullet)
-                let dx = self.velocity.dx * CGFloat(gameFPS) / 1500 - sin(bullet.zRotation)
-                let dy = self.velocity.dy * CGFloat(gameFPS) / 1500 + cos(bullet.zRotation)
+                var dx = self.velocity.dx / 25 - sin(bullet.zRotation)
+                var dy = self.velocity.dy / 25 + cos(bullet.zRotation)
+                let div = sqrt(dx * dx + dy * dy)
+                dx /= div
+                dy /= div
                 let (obj: obj, len: len, planet: planet) = raylen(objs: parent.planets, objs2: parent.objects, rayorigin: bullet.position, raydir: CGVector(dx: dx, dy: dy), this: position)
                 if let obj = obj{
                     obj//was hit
@@ -122,9 +126,17 @@ class Object: SKSpriteNode, DataCodable{
                 if let planet = planet{
                     planet//was hit
                 }
-                bullet.run(SKAction.sequence([SKAction.moveBy(x: dx * len - 40, y: dy * len - 40, duration: (len - 40) / 1500.0),
-                    SKAction.run{bullet.removeFromParent()}
-                ]))
+                let count = (len / 2 - 20) * gameFPS / 1500
+                
+                let o = obj ?? self
+                var offsetx = bullet.position.x - o.position.x
+                var offsety = bullet.position.y - o.position.y
+                bullet.run(.sequence([SKAction.repeat(SKAction.sequence([SKAction.wait(forDuration: 2 / gameFPS), SKAction.run{
+                    offsetx += dx * (len - 40) / count
+                    offsety += dy * (len - 40) / count
+                    bullet.position.x = offsetx + o.position.x
+                    bullet.position.y = offsety + o.position.y
+                }]), count: Int(count)), SKAction.run{bullet.removeFromParent()}]))
                 i += 1
             }
             shootQueue -= 1
@@ -213,7 +225,7 @@ class Object: SKSpriteNode, DataCodable{
 func raylen(objs: [Planet], objs2: [Object], rayorigin: CGPoint, raydir: CGVector, this: CGPoint) -> (obj: Object?, len: CGFloat, planet: Planet?){
     var len = 3000.0
     var o: Object? = nil
-    let p: Planet? = nil
+    var p: Planet? = nil
     for obj in objs{
         if obj.position == this{continue}
         let l = collision(planetpos: obj.position, planetr: obj.radius, rayorigin: rayorigin, raydir: raydir)
@@ -276,7 +288,7 @@ class Planet: Object{
             let frame = CGRect(origin: CGPoint(x: -parent.size.width / 2, y: -parent.size.height / 2), size: parent.size)
             let dx = (self.position.x - cam.position.x) / cam.xScale
             let dy = (self.position.y - cam.position.y) / cam.yScale
-            if dx < frame.minX - size.width / 2 || dx > frame.maxX + size.width / 2 || dy < frame.minY - size.height / 2 || dy > frame.maxY + size.height / 2{
+            if dx * dx + dy * dy < 16000000 && dx < frame.minX - size.width / 2 || dx > frame.maxX + size.width / 2 || dy < frame.minY - size.height / 2 || dy > frame.maxY + size.height / 2{
                 let camw = frame.width / 2// - i.size.width
                 let camh = frame.height / 2// - i.size.height
                 if abs(dy / dx) > camh / camw{
@@ -322,7 +334,9 @@ class Planet: Object{
         var r = self.radius * self.radius - n.radius * n.radius
         if r < 0{r=0}
         r += (2 * sqrt(r) + n.radius) * n.radius
-        let deathzone = mass * mass * G * G / d > n.thrustMultiplier * n.thrustMultiplier / 900
+        let M = mass * G
+        let m = min(M / (16 * r) - M / d, 0)
+        let deathzone = m * m * d > n.thrustMultiplier * n.thrustMultiplier / 900
         if d < r - radius{
             if n.asteroid || deathzone || superhot{
                 let parent = n.parent as? Play
@@ -399,8 +413,6 @@ class Planet: Object{
                 }
                 return
             }
-            let M = mass * G
-            let m = min(M / (16 * r) - M / d, 0)
             n.velocity.dx += x * m
             n.velocity.dy += y * m
             n.zRotation += angularVelocity * r / d
