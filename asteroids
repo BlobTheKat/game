@@ -21,4 +21,4 @@ texture: asteroid3
 radius: 76 # id=4
 mass: 800
 spin: -0.01
-texture: asteroid4
+texture: asteroid

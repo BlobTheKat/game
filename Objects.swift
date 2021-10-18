@@ -108,7 +108,7 @@ class Object: SKSpriteNode, DataCodable{
                 if i < shootVectors.count{v = shootVectors[i]}
                 let bullet = SKSpriteNode(imageNamed: "bullet")
                 let d = sqrt(p.x * p.x + p.y * p.y)
-                let r = atan2(p.x, p.y) + self.zRotation
+                let r = atan2(p.x, -p.y) + self.zRotation
                 bullet.position = CGPoint(x: self.position.x + sin(r) * d, y: self.position.y - cos(r) * d)
                 bullet.zPosition = 1
                 bullet.setScale(0.2)
@@ -288,7 +288,7 @@ class Planet: Object{
             let frame = CGRect(origin: CGPoint(x: -parent.size.width / 2, y: -parent.size.height / 2), size: parent.size)
             let dx = (self.position.x - cam.position.x) / cam.xScale
             let dy = (self.position.y - cam.position.y) / cam.yScale
-            if dx * dx + dy * dy < 16000000 && dx < frame.minX - size.width / 2 || dx > frame.maxX + size.width / 2 || dy < frame.minY - size.height / 2 || dy > frame.maxY + size.height / 2{
+            if (dx * dx + dy * dy < 9000000) && (dx < frame.minX - size.width / 2 || dx > frame.maxX + size.width / 2 || dy < frame.minY - size.height / 2 || dy > frame.maxY + size.height / 2){
                 let camw = frame.width / 2// - i.size.width
                 let camh = frame.height / 2// - i.size.height
                 if abs(dy / dx) > camh / camw{
