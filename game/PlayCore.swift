@@ -17,6 +17,9 @@ class PlayCore: PlayNetwork{
     var camOffset = CGPoint(x: 0, y: 0.2)
     var vel: CGFloat = 0
     
+    let tracked: [Object] = []
+    let trackArrows: [SKSpriteNode] = []
+    
     let shipDirection = SKSpriteNode(imageNamed: "direction")
     let star1 = SKSpriteNode(imageNamed: "stars")
     let star2 = SKSpriteNode(imageNamed: "stars")
@@ -122,6 +125,30 @@ class PlayCore: PlayNetwork{
                 planet.gravity(s)
             }
             planet.update(a < planetindicators.count ? planetindicators[a] : nil)
+            a += 1
+        }
+        a = 0
+        for t in tracked{
+            let i = trackArrows[a]
+            let size = CGSize(width: size.width / cam.xScale, height: size.height / cam.yScale)
+            let frame = CGRect(origin: CGPoint(x: -size.width / 2, y: -size.height / 2), size: size)
+            let dx = (self.position.x - cam.position.x) / cam.xScale
+            let dy = (self.position.y - cam.position.y) / cam.yScale
+            if (dx * dx + dy * dy < 9000000) && (dx < frame.minX - size.width / 2 || dx > frame.maxX + size.width / 2 || dy < frame.minY - size.height / 2 || dy > frame.maxY + size.height / 2){
+                let camw = frame.width / 2// - i.size.width
+                let camh = frame.height / 2// - i.size.height
+                if abs(dy / dx) > camh / camw{
+                    //anchor top/bottom
+                    i.position.x = (dx * camh / abs(dy))
+                    i.position.y = (dy > 0 ? camh : -camh)
+                }else{
+                    //anchor left/right
+                    i.position.y = (dy * camw / abs(dx))
+                    i.position.x = (dx > 0 ? camw : -camw)
+                }
+                i.zRotation = -atan2(dx, dy)
+                if i.parent == nil{cam.addChild(i)}
+            }else if i.parent != nil{i.removeFromParent()}
             a += 1
         }
         a = 0

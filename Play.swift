@@ -21,12 +21,9 @@ class Play: PlayCore{
     let dPad = SKSpriteNode(imageNamed: "dPad")
     
     let speedBG = SKSpriteNode(imageNamed: "speedBG")
-    
     let mapBG = SKSpriteNode(imageNamed: "mapBG")
     let FakemapBG = SKSpriteNode(imageNamed: "fakeMapBG")
     let avatar = SKSpriteNode(imageNamed: "avatar")
-    
-    
     
     
     //NAVIGATION
@@ -36,8 +33,6 @@ class Play: PlayCore{
     let repairIcon = SKSpriteNode(imageNamed: "repairOff")
     let lightSpeedIcon = SKSpriteNode(imageNamed: "lightSpeedOff")
     
-    
-    
     //WARNINGS
     var isWarning = false
     let warning = SKSpriteNode(imageNamed: "warning")
@@ -46,6 +41,7 @@ class Play: PlayCore{
     
     let tunnel1 = SKSpriteNode(imageNamed: "tunnel1")
     let tunnel2 = SKSpriteNode(imageNamed: "tunnel2")
+    
     func suit(_ id: Int){
         ship.id = id
         let sh = ships[id]
