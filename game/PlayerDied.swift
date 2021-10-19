@@ -51,13 +51,13 @@ class PlayerDied: PlayConvenience{
         let _ = interval(4) {
             self.charcter.run(SKAction.moveBy(x: 0, y: 7, duration: 2).ease(.easeInEaseOut))
             
-            let _ = self.timeout(2) {
+            let _ = timeout(2) {
                 self.charcter.run(SKAction.moveBy(x: 0, y: -7, duration: 2).ease(.easeInEaseOut))
             }
         }
         let text = "You died!"
         var i = 0
-        let _ = timeout(0.2){var a = {};a = self.interval(0.1){
+        let _ = timeout(0.2){var a = {};a = interval(0.1){
             if i == text.count{
                 a()
                 return

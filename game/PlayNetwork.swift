@@ -99,18 +99,18 @@ class PlayNetwork: PlayConvenience{
     let physics = DispatchQueue.main
     func ping(){
         a()
-        a = timeout(5, {
+        a = timeout(5){
             self.send(Data([127]))
             dmessage = "Lost connection!"
             self.end()
             Disconnected.renderTo(skview)
-        })
+        }
     }
     func didInit(){
         DEBUG_TXT.fontSize = 15
         DEBUG_TXT.position = pos(mx: -0.5, my: 0.5, x: 20, y: -20)
         DEBUG_TXT.color = UIColor(red: 0, green: 0, blue: 0, alpha: 0.5)
-        DEBUG_TXT.fontColor = UIColor.white
+        DEBUG_TXT.fontColor = .white
         DEBUG_TXT.horizontalAlignmentMode = .left
         DEBUG_TXT.verticalAlignmentMode = .top
         DEBUG_TXT.numberOfLines = 10
@@ -119,6 +119,8 @@ class PlayNetwork: PlayConvenience{
     }
     func end(){
         send = {(_:Data) in}
+        a()
+        istop()
     }
     var last: DispatchTime = .now()
     func gotIp(_ ip: String){

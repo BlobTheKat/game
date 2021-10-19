@@ -229,7 +229,7 @@ class PlayCore: PlayNetwork{
     var lastMem: UInt16 = 0
     func drawDebug(){
         if _a == 0{
-            lastU = SystemDataUsage.complete - lastComplete
+            lastU = SystemDataUsage.complete &- lastComplete
             lastComplete += lastU
             lastMem = report_memory()
         }

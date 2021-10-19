@@ -23,9 +23,9 @@ class Disconnected: PlayConvenience{
     
     override func didMove(to view: SKView) {
         
-        label(node: reconnectLabel, dmessage, pos: pos(mx: 0.5, my: 0.3), size: fsmall, color: UIColor.white)
+        label(node: reconnectLabel, dmessage, pos: pos(mx: 0.5, my: 0.3), size: fsmall, color: .white)
         dmessage = "Disconnected!"
-        label(node: tapToReconnect, "-tap to reconnect-", pos: pos(mx: 0.5, my: 0.3, y: -50), size: fsmall - 3.5, color: UIColor.white)
+        label(node: tapToReconnect, "-tap to reconnect-", pos: pos(mx: 0.5, my: 0.3, y: -50), size: fsmall - 3.5, color: .white)
         
         pulsate(node: tapToReconnect, amount: 0.6, duration: 3)
         
@@ -39,7 +39,7 @@ class Disconnected: PlayConvenience{
         let _ = interval(4) {
             self.charcter.run(SKAction.moveBy(x: 0, y: 7, duration: 2).ease(.easeInEaseOut))
             
-            let _ = self.timeout(2) {
+            let _ = timeout(2) {
                 self.charcter.run(SKAction.moveBy(x: 0, y: -7, duration: 2).ease(.easeInEaseOut))
             }
         }

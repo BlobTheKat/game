@@ -29,11 +29,12 @@ extension SKScene{
     static var _k = 0
     static func renderTo(_ view: SKView){
         let scene = self.init(size: view.frame.size)
+        SKScene.transition.pausesIncomingScene = false
         scene.scaleMode = .aspectFill
         scene.backgroundColor = .black
         view.presentScene(scene, transition: SKScene.transition)
     }
-    func label(node: SKLabelNode, _ txt: String, pos: CGPoint, size: CGFloat = 32, color: UIColor = UIColor.white, font: String = SKScene.font, zPos: CGFloat = 10, isStatic: Bool = false){
+    func label(node: SKLabelNode, _ txt: String, pos: CGPoint, size: CGFloat = 32, color: UIColor = .white, font: String = SKScene.font, zPos: CGFloat = 10, isStatic: Bool = false){
         node.fontName = font
         node.text = txt
         node.fontSize = size
@@ -48,7 +49,7 @@ extension SKScene{
         }
         
     }
-    func label(_ txt: String, pos: CGPoint, size: CGFloat = 32, color: UIColor = UIColor.white, font: String = SKScene.font, zPos: CGFloat = 10, isStatic: Bool = false) -> SKLabelNode{
+    func label(_ txt: String, pos: CGPoint, size: CGFloat = 32, color: UIColor = .white, font: String = SKScene.font, zPos: CGFloat = 10, isStatic: Bool = false) -> SKLabelNode{
         let node = SKLabelNode()
         node.fontName = font
         node.text = txt
@@ -137,30 +138,25 @@ extension SKScene{
         }
     }
 }
-extension SKNode{
-    func interval(_ every: Double, _ a: @escaping () -> ()) -> (() -> ()){
-        var stopped = false
-        let action = SKAction.repeatForever(SKAction.sequence([SKAction.run{if !stopped{a()}},SKAction.wait(forDuration: every)]))
-        let k = SKScene._k
-        SKScene._k += 1
-        self.run(action, withKey: "__\(k)")
-        return {
-            stopped = true
-            self.removeAction(forKey: "__\(k)")
-        }
+func fromNow(_ time: Double) -> DispatchTime{
+    return .now() + .microseconds(Int(time * 1000000))
+}
+
+func interval(_ every: Double, _ a: @escaping () -> ()) -> () -> (){
+    let c = DispatchQueue.main.schedule(after: .init(.now()), interval: .init(.milliseconds(Int(every * 1000))), tolerance: .init(.milliseconds(1)), options: nil, a)
+    return {c.cancel()}
+}
+
+func timeout(_ after: Double, _ a: @escaping () -> ()) -> () -> (){
+    var cancelled = false
+    DispatchQueue.main.asyncAfter(deadline: fromNow(after)){
+        if !cancelled{a()}
     }
-    func timeout(_ after: Double, _ a: @escaping () -> ()) -> (() -> ()){
-        var stopped = false
-        let action = SKAction.sequence([SKAction.wait(forDuration: after),SKAction.run{if !stopped{a()}}])
-        let k = SKScene._k
-        SKScene._k += 1
-        self.run(action, withKey: "__\(k)")
-        return {() -> () in
-            stopped = true
-            self.removeAction(forKey: "__\(k)")
-        }
+    return {
+        cancelled = true
     }
 }
+
 
 extension SKAction{
     func ease(_ a: SKActionTimingMode) -> SKAction{
@@ -236,15 +232,18 @@ extension Data{
         self.append(Data.init(bytes: &f, count: MemoryLayout.size(ofValue: a)))
     }
     mutating func readunsafe<T>() -> T{
+        //print("read1")
         let l = MemoryLayout<T>.size
         var d = Data(self.prefix(l))
-        let f: T = d.withUnsafeMutableBytes { a in
-            return a.load(as: T.self)
-        }
+            let f: T = d.withUnsafeMutableBytes { a in
+                return a.load(as: T.self)
+            }
         self.removeFirst(l)
+        //print("read2")
         return f
     }
     mutating func read<T>() -> T?{
+        //print("read1")
         let l = MemoryLayout<T>.size
         if self.count < l{return nil}
         var d = Data(self.prefix(l))
@@ -252,6 +251,7 @@ extension Data{
             return a.load(as: T.self)
         }
         self.removeFirst(l)
+        //print("read2")
         return f
     }
 }

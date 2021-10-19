@@ -388,7 +388,7 @@ class Planet: Object{
             let parents = parent as? Play
             if parents != nil && n == parents!.ship{
                 let circle = parents!.planetsMP[parents!.planets.firstIndex(of: self)!]
-                circle.fillColor = UIColor.white
+                circle.fillColor = superhot ? .orange : .white
                 //GANGE MAP HERE
                 if parents?.playerArrow.parent == nil{
                     parents!.mainMap.addChild(parents!.playerArrow)

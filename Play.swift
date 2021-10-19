@@ -58,7 +58,6 @@ class Play: PlayCore{
     }
     override init(size: CGSize) {
         super.init(size: size)
-        startAnimation()
         cam.position = CGPoint.zero
         self.addChild(cam)
         self.camera = cam
@@ -82,8 +81,10 @@ class Play: PlayCore{
     }
     var moved = false
     override func didMove(to view: SKView) {
-        guard ready else{return}
+        startAnimation()
         guard !moved else {return}
+        guard ready else{return}
+        moved = true
         border1.zRotation = .pi / 2
         border1.position.y = (cam.position.y < 0 ? -0.5 : 0.5) * loadstack.size!.height
         border2.position.x = (cam.position.x < 0 ? -0.5 : 0.5) * loadstack.size!.width
@@ -93,10 +94,9 @@ class Play: PlayCore{
         border2.yScale = 2
         self.addChild(border1)
         self.addChild(border2)
-        moved = true
         ship.run(SKAction.fadeAlpha(by: 1, duration: 1).ease(.easeOut))
         //setting tapToStart label relative to camera (static)
-        self.label(node: tapToStart, "tap to start", pos: pos(mx: 0, my: -0.4), size: fmed, color: UIColor.white, font: "HalogenbyPixelSurplus-Regular", zPos: 1000, isStatic: true)
+        self.label(node: tapToStart, "tap to start", pos: pos(mx: 0, my: -0.4), size: fmed, color: .white, font: "HalogenbyPixelSurplus-Regular", zPos: 1000, isStatic: true)
         self.run(SKAction.repeat(SKAction.sequence([
             SKAction.run{
                 if self.children.count < self.MIN_NODES{
@@ -122,7 +122,7 @@ class Play: PlayCore{
             self.tapToStart.run(SKAction.moveBy(x: 0, y: 10, duration: 2).ease(.easeOut))
         }
         let _ = timeout(1.5) {
-            let _ = self.interval(3){
+            let _ = interval(3){
                 self.tapToStart.run(SKAction.moveBy(x: 0, y: -10, duration: 2).ease(.easeOut))
             }
         }
@@ -132,7 +132,10 @@ class Play: PlayCore{
         star4.texture!.filteringMode = .nearest
     }
     var trails: [SKSpriteNode] = []
+    var animated = false
     func startAnimation(){
+        if animated{return}
+        animated = true
         var delay = 0.0
         for i in 1...15{
             let trail = SKSpriteNode(imageNamed: "trail\((i%5)+1)")
@@ -205,11 +208,11 @@ class Play: PlayCore{
             return
         }
         let sector = SKNode()
-        for planets in planets{
-            let a = SKShapeNode(circleOfRadius: planets.radius/10)
-            a.position = CGPoint(x: planets.position.x/10, y: planets.position.y/10)
+        for planet in planets{
+            let a = SKShapeNode(circleOfRadius: planet.radius/10)
+            a.position = CGPoint(x: planet.position.x/10, y: planet.position.y/10)
             a.zPosition = 8
-            a.fillColor = UIColor.white
+            //a.fillColor = planet.superhot ? .orange : .white
             sector.addChild(a)
             a.name = "planet"
             if x{planetsMP.append(a);amountOfPlanets += 1}
@@ -259,7 +262,7 @@ class Play: PlayCore{
             speedLabel.text = "320"
             speedLabel.zPosition = 9
             speedLabel.fontSize = 70
-            speedLabel.color = UIColor.white
+            speedLabel.color = .white
             speedLabel.zRotation = 0.165
             speedLabel.horizontalAlignmentMode = .left
             speedLabel.position = CGPoint(x: -self.size.width/5.5 ,y: -self.size.height/6.9)

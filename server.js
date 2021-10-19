@@ -349,8 +349,7 @@ class ClientData{
         this.spin = dat.spin
         this.thrust = thrust >>> 0
         this.state = id != 3 ? (dx || dy ? 2 : 1) : 3
-        clearTimeout(this.u)
-        this.u = setTimeout(this.destroy.bind(this),5000)
+        this.ping()
     }
     validate(buffer = Buffer()){
         //let delay = -0.001 * FPS * (this.u - (this.u=Date.now()))
@@ -418,9 +417,7 @@ class ClientData{
     }
     destroy(){
         server.send(Buffer.concat([Buffer.of(127), strbuf('Disconnected for inactivity')]), this.remote.split(' ')[1], this.remote.split(' ')[0], e => e && console.log(e))
-        clients.delete(this.remote)
-        sector.objects[sector.objects.indexOf(this)]=A
-        while(sector.objects[sector.objects.length]==A)sector.objects.pop()
+        this.wasDestroyed()
     }
     wasDestroyed(){
         clearTimeout(this.u)
