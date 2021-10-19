@@ -23,9 +23,7 @@ class PlayerDied: PlayConvenience{
     let shadeLeft = SKSpriteNode(imageNamed: "shadeLeft")
     let reconnectLabel = SKLabelNode()
     let tapToReconnect = SKLabelNode()
-    
     override func didMove(to view: SKView) {
-        
         label(node: reconnectLabel, "", pos: pos(mx: 0.5, my: 0.6), size: fsmall, color: UIColor.white)
         
         label(node: tapToReconnect, "-tap to respawn-", pos: pos(mx: 0.5, my: 0.3, y: -50), size: fsmall - 3.5, color: UIColor.white)

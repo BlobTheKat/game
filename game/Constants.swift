@@ -23,6 +23,8 @@ let gameFPS = 60.0
 let build = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "null"
 
 
+
+
 func bg(_ a: @escaping () -> ()){DispatchQueue.global(qos: .background).async(execute: a)}
 
 struct servers{

@@ -8,6 +8,7 @@
 import UIKit
 import SpriteKit
 import GameplayKit
+import GameKit
 
 var skview: SKView = SKView()
 var server = servers.uswest
@@ -15,6 +16,14 @@ var server = servers.uswest
 class GameViewController: UIViewController {
 
     override func viewDidLoad() {
+        GKLocalPlayer.local.authenticateHandler = { viewController, error in
+            if let viewController = viewController{
+                viewController.present(self, animated: true) {
+                    print("authed")
+                }
+                return
+            }
+        }
         SKScene.font = "HalogenbyPixelSurplus-Regular"
         super.viewDidLoad()
         if let view = self.view as! SKView? {

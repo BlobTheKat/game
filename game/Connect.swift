@@ -7,6 +7,9 @@
 import Foundation
 import Network
 
+import GameKit
+
+
 var dmessage = "Disconnected!"
 
 extension SystemDataUsage {
