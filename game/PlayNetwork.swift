@@ -155,7 +155,6 @@ class PlayNetwork: PlayConvenience{
                 physics.asyncAfter(deadline: last){ [self] in
                     var i = 1
                     while data.count > 19{parseShip(&data, i);i += 1}
-                    objects.removeLast(max(objects.count - i - 1, 0))
                 }
                 
             }else if code == 7{
@@ -166,7 +165,7 @@ class PlayNetwork: PlayConvenience{
                 physics.asyncAfter(deadline: last){ [self] in
                     var i = 0
                     while data.count > 19{parseShip(&data, i);i += 1}
-                    objects.removeLast(max(objects.count - i - 1, 0))
+                    objects.removeLast(max(objects.count - i, 0))
                 }
             }
         }

@@ -408,7 +408,7 @@ class ClientData{
         let PI2 = Math.PI * 2
         buf[offset+16] = Math.round(((this.z % PI2) + PI2) % PI2 * 40)
         buf.writeUInt8((this.dz * 768)&255, offset+17)
-        buf.writeUint16LE((this.thrust & 15) + (this.id << 5) + this.shoots == ref ? 16 : 0, offset + 18)
+        buf.writeUint16LE((this.thrust & 15) + (this.id << 5) + (this.shoots == ref ? 16 : 0), offset + 18)
         return buf
     }
     ping(){
