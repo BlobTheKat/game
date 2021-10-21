@@ -179,7 +179,7 @@ if(!meta || xy){
         return '\x1b[1A'
     }
     RESPONSE = _w
-    if(xy)RESPONSE=null,setImmediate(a=>(RESPONSE(xy[0]),RESPONSE(xy[1])))
+    if(xy)setImmediate(a=>(RESPONSE(xy[0]),RESPONSE(xy[1]),RESPONSE=null))
 }else{
     setImmediate(function(){
         let data = readfile(meta.path)
