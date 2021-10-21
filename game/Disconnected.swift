@@ -86,7 +86,7 @@ class Disconnected: PlayConvenience{
         self.addChild(rock4)
         
         shaders.position = pos(mx: 0.54, my: 0.5)
-        shaders.setScale(0.35)
+        shaders.fitTo(self)
         shaders.zPosition = 5
         self.addChild(shaders)
     }

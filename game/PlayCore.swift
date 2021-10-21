@@ -17,8 +17,8 @@ class PlayCore: PlayNetwork{
     var camOffset = CGPoint(x: 0, y: 0.2)
     var vel: CGFloat = 0
     
-    let tracked: [Object] = []
-    let trackArrows: [SKSpriteNode] = []
+    var tracked: [Object] = []
+    var trackArrows: [SKSpriteNode] = []
     
     let shipDirection = SKSpriteNode(imageNamed: "direction")
     let star1 = SKSpriteNode(imageNamed: "stars")
@@ -130,10 +130,10 @@ class PlayCore: PlayNetwork{
         a = 0
         for t in tracked{
             let i = trackArrows[a]
-            let size = CGSize(width: size.width / cam.xScale, height: size.height / cam.yScale)
-            let frame = CGRect(origin: CGPoint(x: -size.width / 2, y: -size.height / 2), size: size)
-            let dx = (self.position.x - cam.position.x) / cam.xScale
-            let dy = (self.position.y - cam.position.y) / cam.yScale
+            let size = CGSize(width: t.size.width / cam.xScale, height: t.size.height / cam.yScale)
+            let frame = CGRect(origin: CGPoint(x: -self.size.width / 2, y: -self.size.height / 2), size: self.size)
+            let dx = (t.position.x - cam.position.x) / cam.xScale
+            let dy = (t.position.y - cam.position.y) / cam.yScale
             if (dx * dx + dy * dy < 9000000) && (dx < frame.minX - size.width / 2 || dx > frame.maxX + size.width / 2 || dy < frame.minY - size.height / 2 || dy > frame.maxY + size.height / 2){
                 let camw = frame.width / 2// - i.size.width
                 let camh = frame.height / 2// - i.size.height

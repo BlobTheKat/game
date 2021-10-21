@@ -109,16 +109,15 @@ class PlayerDied: PlayConvenience{
         rock4.zPosition = 3
         rock4.run(SKAction.moveBy(x: -90, y: 120, duration: 40).ease(.easeOut))
         rock4.run(SKAction.rotate(byAngle: -4, duration: 40))
-       
-        self.addChild(rock4)
         
+        self.addChild(rock4)
         shadeRight.position = pos(mx: 0.54, my: 0.5)
-        shadeRight.setScale(0.35)
+        shadeRight.fitTo(self)
         shadeRight.zPosition = 5
         self.addChild(shadeRight)
         
         shadeLeft.position = pos(mx: 0.54, my: 0.5)
-        shadeLeft.setScale(0.35)
+        shadeLeft.fitTo(self)
         shadeLeft.zPosition = 5
          self.addChild(shadeLeft)
     }

@@ -61,12 +61,14 @@ class Play: PlayCore{
         ship.position.y = 160
         ship.alpha = 0
         suit(1)
-        tunnel1.position = pos(mx: -0.13, my: 0.05)
-        tunnel1.setScale(0.155)
-        self.addChild(tunnel1)
-        tunnel2.position = pos(mx: 0.13, my: 0.05)
-        tunnel2.setScale(0.155)
-        self.addChild(tunnel2)
+        tunnel1.anchorPoint = CGPoint(x: 0, y: 0.5)
+        tunnel1.position = pos(mx: -0.5, my: 0, x: -5)
+        tunnel1.setScale(0.4)
+        cam.addChild(tunnel1)
+        tunnel2.anchorPoint = CGPoint(x: 1, y: 0.5)
+        tunnel2.position = pos(mx: 0.5, my: 0, x: 5)
+        tunnel2.setScale(0.4)
+        cam.addChild(tunnel2)
         self.addChild(ship)
         vibrateCamera(camera: cam)
         didInit()
@@ -412,6 +414,16 @@ class Play: PlayCore{
         
     }
     override func nodeDown(_ node: SKNode, at point: CGPoint) {
+        if let n = node as? Object{
+            guard n as? Planet == nil else{return}
+            if let i = tracked.firstIndex(of: n){
+                tracked.remove(at: i)
+                trackArrows.remove(at: i)
+            }else{
+                tracked.append(n)
+                trackArrows.append(SKSpriteNode(imageNamed: "arrow"))
+            }
+        }
         if !startPressed{
             startGame()
         }

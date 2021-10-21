@@ -255,7 +255,18 @@ extension Data{
         return f
     }
 }
-
+extension SKSpriteNode{
+    func fitTo(_ scene: SKSpriteNode){
+        let scale = max(scene.size.width / self.size.width, scene.size.height / self.size.height)
+        self.setScale(scale)
+        self.position = CGPoint(x: scene.size.width / 2, y: scene.size.height / 2)
+    }
+    func fitTo(_ scene: SKScene){
+        let scale = max(scene.size.width / self.size.width, scene.size.height / self.size.height)
+        self.setScale(scale)
+        self.position = CGPoint(x: scene.size.width / 2, y: scene.size.height / 2)
+    }
+}
 extension StringProtocol{
     subscript(offset: Int) -> Character { self[index(startIndex, offsetBy: offset)] }
 }

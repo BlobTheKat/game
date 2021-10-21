@@ -10,20 +10,20 @@ import SpriteKit
 
 class PlayConvenience: SKScene{    
     func vibrateObject(sprite: SKSpriteNode){
-
+        sprite.position.x += 5
+        sprite.position.y += 5
             sprite.run(SKAction.repeatForever(SKAction.sequence([
                     
-                        SKAction.moveBy(x: -5, y: 0, duration: 0.05),
-                        SKAction.moveBy(x: 5, y: 0, duration: 0.05),
+                        SKAction.moveBy(x: -10, y: 0, duration: 0.05),
+                        SKAction.moveBy(x: 10, y: 0, duration: 0.05),
                     ])), withKey: "vibratingObject")
                     sprite.run(SKAction.repeatForever(SKAction.sequence([
-                        SKAction.moveBy(x: 0, y: -5, duration: 0.05),
-                        SKAction.moveBy(x: 0, y: 5, duration: 0.05),
+                        SKAction.moveBy(x: 0, y: -10, duration: 0.05),
+                        SKAction.moveBy(x: 0, y: 10, duration: 0.05),
                     ])), withKey: "vibratingObjects")
 
     }
     func vibrateCamera(camera: SKCameraNode){
-
         camera.run(SKAction.repeatForever(SKAction.sequence([
                     
                         SKAction.moveBy(x: 0.5, y: 0, duration: 0.1),
