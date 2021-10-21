@@ -48,6 +48,10 @@ class Play: PlayCore{
         guard case .string(let t) = sh["texture"] else {fatalError("invalid texture")}
         guard case .number(let radius) = sh["radius"] else {fatalError("invalid radius")}
         guard case .number(let mass) = sh["mass"] else {fatalError("invalid mass")}
+        guard case .number(let speed) = sh["speed"] else {fatalError("invalid speed")}
+        guard case .number(let spin) = sh["spin"] else {fatalError("invalid spin")}
+        ship.thrustMultiplier = speed
+        ship.angularThrustMultiplier = spin
         ship.body(radius: CGFloat(radius), mass: CGFloat(mass), texture: SKTexture(imageNamed: t))
         ship.shootPoints = SHOOTPOINTS[id-1]
         ship.shootVectors = SHOOTVECTORS[id-1]

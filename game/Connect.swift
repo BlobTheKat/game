@@ -111,7 +111,7 @@ func connect(_ host: String, _ a: @escaping (Data) -> ()) -> (Data) -> (){
         switch (newState) {
             case .ready:
                 ready = true
-            DispatchQueue.main.async{for data in queue{
+                DispatchQueue.main.async{for data in queue{
                     connection?.send(content: data, completion: NWConnection.SendCompletion.contentProcessed(({ (NWError) in
                         if NWError != nil {
                             print("ERROR! Error when sending Data:\n \(NWError!)")

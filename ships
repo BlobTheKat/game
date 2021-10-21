@@ -1,6 +1,6 @@
 mass: 0
 radius: 0
-speed: 1
+speed: 1.5
 spin: 1
 texture: ship1
 shoot: 0

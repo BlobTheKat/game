@@ -179,7 +179,7 @@ if(!meta || xy){
         return '\x1b[1A'
     }
     RESPONSE = _w
-    if(xy)setImmediate(a=>(RESPONSE(xy[0]),RESPONSE(xy[1])))
+    if(xy)RESPONSE=null,setImmediate(a=>(RESPONSE(xy[0]),RESPONSE(xy[1])))
 }else{
     setImmediate(function(){
         let data = readfile(meta.path)
@@ -396,7 +396,7 @@ class ClientData{
         this.dy = dy
         this.dz = dz
         this.thrust = thrust & 15
-        this.id = id >> 5
+        this.id = thrust >> 5
         return Buffer.alloc(0)
     }
     toBuf(buf = Buffer.alloc(20), offset = 0, ref){
@@ -430,6 +430,7 @@ server.on('message', function(message, remote) {
     let send = a=>server.send(a,remote.port,remote.address,e => e && console.log(e))
     let address = remote.address + ' ' + remote.port
     if(message[0] === 0){
+        if(clients.get(address))return send(Buffer.of(1))
         try{
             let version = message.readUint16LE(1)
             if(version < VERSION)return send(Buffer.of(120))
