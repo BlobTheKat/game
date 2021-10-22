@@ -9,6 +9,18 @@ import SpriteKit
 import GameKit
 
 class Play: PlayCore{
+    
+    //SOUND EFFECT
+    var lightSpeedOut = SKAction.playSoundFileNamed("LightSpeedOut.wav", waitForCompletion: false)
+    var lazer = SKAction.playSoundFileNamed("Lazer.wav", waitForCompletion: false)
+    var inlightSpeed = SKAction.playSoundFileNamed("InLightSpeed.wav", waitForCompletion: false)
+    
+    
+    
+    
+    
+    
+    
     let tapToStart =  SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
     var currentSpeed = Int()
     var startPressed = false
@@ -92,6 +104,13 @@ class Play: PlayCore{
     }
     var moved = false
     override func didMove(to view: SKView) {
+        
+        self.run(SKAction.repeatForever(
+                
+            SKAction.run {
+                self.run(self.inlightSpeed)
+            }
+                                       ))
         startAnimation()
         guard !moved else {return}
         guard ready else{return}
@@ -709,6 +728,7 @@ class Play: PlayCore{
     }
     override func touch(at _: CGPoint) {
         if !startPressed && !pressed{
+            self.run(lightSpeedOut)
             startGame()
             accountIcon.removeFromParent()
         }

@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3340582727234ACC0068C811 /* LightSpeedOut.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3340582627234ACC0068C811 /* LightSpeedOut.wav */; };
+		3340582927234AD30068C811 /* Lazer.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3340582827234AD30068C811 /* Lazer.wav */; };
+		3340582B27234E6C0068C811 /* InLightSpeed.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3340582A27234E6C0068C811 /* InLightSpeed.wav */; };
 		3346242D26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 3346242C26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf */; };
 		33CF26192722C46500D25508 /* DPlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33CF26182722C46500D25508 /* DPlay.swift */; };
 		33E378B726BD57780034B14E /* PlayerDied.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33E378B626BD57780034B14E /* PlayerDied.swift */; };
@@ -31,6 +34,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		3340582627234ACC0068C811 /* LightSpeedOut.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = LightSpeedOut.wav; sourceTree = "<group>"; };
+		3340582827234AD30068C811 /* Lazer.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Lazer.wav; sourceTree = "<group>"; };
+		3340582A27234E6C0068C811 /* InLightSpeed.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = InLightSpeed.wav; sourceTree = "<group>"; };
 		3346242C26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "HalogenbyPixelSurplus-Regular.otf"; sourceTree = SOURCE_ROOT; };
 		33CF26182722C46500D25508 /* DPlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DPlay.swift; sourceTree = "<group>"; };
 		33E378B626BD57780034B14E /* PlayerDied.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerDied.swift; sourceTree = "<group>"; };
@@ -70,6 +76,24 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3340582427234A910068C811 /* sound */ = {
+			isa = PBXGroup;
+			children = (
+				3340582527234A9C0068C811 /* soundEffect  */,
+			);
+			path = sound;
+			sourceTree = "<group>";
+		};
+		3340582527234A9C0068C811 /* soundEffect  */ = {
+			isa = PBXGroup;
+			children = (
+				3340582827234AD30068C811 /* Lazer.wav */,
+				3340582627234ACC0068C811 /* LightSpeedOut.wav */,
+				3340582A27234E6C0068C811 /* InLightSpeed.wav */,
+			);
+			path = "soundEffect ";
+			sourceTree = "<group>";
+		};
 		34C5BC2E271ED7F200997B1D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -100,6 +124,7 @@
 			isa = PBXGroup;
 			children = (
 				34C5BC2D271ED52400997B1D /* game.entitlements */,
+				3340582427234A910068C811 /* sound */,
 				3346242C26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf */,
 				DC9F527A269249AB00DDF0AF /* AppDelegate.swift */,
 				DC9F5282269249AB00DDF0AF /* GameViewController.swift */,
@@ -184,6 +209,9 @@
 			files = (
 				347FD84A26C12EEE00396640 /* asteroids in Resources */,
 				3346242D26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf in Resources */,
+				3340582727234ACC0068C811 /* LightSpeedOut.wav in Resources */,
+				3340582927234AD30068C811 /* Lazer.wav in Resources */,
+				3340582B27234E6C0068C811 /* InLightSpeed.wav in Resources */,
 				347FD84326BEA56400396640 /* ships in Resources */,
 				DC9F5286269249AB00DDF0AF /* Main.storyboard in Resources */,
 				DC9F5288269249AC00DDF0AF /* Assets.xcassets in Resources */,
