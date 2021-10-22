@@ -6,6 +6,7 @@
 //
 
 import SpriteKit
+import GameKit
 
 class Play: PlayCore{
     let tapToStart =  SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
@@ -19,7 +20,7 @@ class Play: PlayCore{
     let thrustButton = SKSpriteNode(imageNamed: "thrustOff")
     let heatingLaser = SKSpriteNode(imageNamed: "heating0")
     let dPad = SKSpriteNode(imageNamed: "dPad")
-    
+    let accountIcon = SKSpriteNode(imageNamed: "accountIcon")
     let speedBG = SKSpriteNode(imageNamed: "speedBG")
     let mapBG = SKSpriteNode(imageNamed: "mapBG")
     let FakemapBG = SKSpriteNode(imageNamed: "fakeMapBG")
@@ -75,6 +76,12 @@ class Play: PlayCore{
         cam.addChild(tunnel2)
         self.addChild(ship)
         vibrateCamera(camera: cam)
+        //ACCOUNT
+        accountIcon.position = pos(mx: 0.5, my: 0.5, x: -50, y: -10)
+        accountIcon.anchorPoint = CGPoint(x: 1, y: 1)
+        accountIcon.setScale(0.18)
+        accountIcon.alpha = 100
+        cam.addChild(accountIcon)
         didInit()
     }
     
@@ -418,6 +425,21 @@ class Play: PlayCore{
         
     }
     override func nodeDown(_ node: SKNode, at point: CGPoint) {
+        if accountIcon == node{
+            GKLocalPlayer.local.authenticateHandler = { viewController, error in
+                if let viewController = viewController{
+                    viewController.present(controller, animated: true) {
+                        print("authed")
+                    }
+                    return
+                }
+            }
+            return
+        }
+        if !startPressed{
+            startGame()
+            accountIcon.removeFromParent()
+        }
         if let n = node as? Object{
             guard n as? Planet == nil else{return}
             if let i = tracked.firstIndex(of: n){
@@ -425,11 +447,11 @@ class Play: PlayCore{
                 trackArrows.remove(at: i)
             }else{
                 tracked.append(n)
-                trackArrows.append(SKSpriteNode(imageNamed: "arrow"))
+                let a = SKSpriteNode(imageNamed: "arrow")
+                a.anchorPoint = CGPoint(x: 0.5, y: 1)
+                a.setScale(0.25)
+                trackArrows.append(a)
             }
-        }
-        if !startPressed{
-            startGame()
         }
         if repairIcon == node{
            
@@ -479,7 +501,7 @@ class Play: PlayCore{
             }
             
         }
-        if dPad == node{
+        if shipDirection == node{
             if point.x > dPad.position.x{
                 ship.thrustRight = true
                 dPad.texture = SKTexture(imageNamed: "dPadRight")
@@ -572,7 +594,7 @@ class Play: PlayCore{
         ]), withKey: "constantLaser")
     }
     override func nodeMoved(_ node: SKNode, at point: CGPoint) {
-        if dPad == node{
+        if shipDirection == node{
             if point.x > dPad.position.x{
                 ship.thrustRight = true
                 dPad.texture = SKTexture(imageNamed: "dPadRight")
@@ -621,7 +643,7 @@ class Play: PlayCore{
             ship.thrust = false
             thrustButton.texture = SKTexture(imageNamed: "thrustOff")
         }
-        if dPad == node{
+        if shipDirection == node{
             dPad.texture = SKTexture(imageNamed: "dPad")
             ship.thrustLeft = false
             ship.thrustRight = false

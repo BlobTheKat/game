@@ -61,7 +61,10 @@ class PlayNetwork: PlayConvenience{
     func didLoad(){
         planets.append(contentsOf: loadstack.p!)
         for p in loadstack.p!{
-            planetindicators.append(SKSpriteNode(imageNamed: "arrow"))
+            let a = SKSpriteNode(imageNamed: "arrow")
+            planetindicators.append(a)
+            a.anchorPoint = CGPoint(x: 0.5, y: 1)
+            a.setScale(0.25)
             p.removeFromParent()
             self.addChild(p)
         }

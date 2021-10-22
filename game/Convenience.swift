@@ -21,8 +21,6 @@ func print(_ items: Any...){
     logs.insert("[\(second())] \(str)", at: 0)
     if logs.count > 10{logs.removeLast()}
 }
-
-
 extension SKScene{
     static var font = "Arial"
     static var transition = SKTransition.crossFade(withDuration: 0)
@@ -96,7 +94,7 @@ extension SKScene{
     open override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         
         for t in touches {
-            for node in self.nodes(at: t.location(in: self)){
+            if let node = self.nodes(at: t.location(in: self)).first{
                 self.nodeDown(node, at: t.location(in: node.parent ?? self))
             }
             touch(at: t.location(in: camera ?? self))
@@ -105,15 +103,17 @@ extension SKScene{
     
     open override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         for t in touches {
-            var oldNodes = Set(self.nodes(at: t.previousLocation(in: self)))
-            for node in self.nodes(at: t.location(in: self)){
-                if oldNodes.remove(node) == nil{
+            var oldNode = self.nodes(at: t.previousLocation(in: self)).first
+            if let node = self.nodes(at: t.location(in: self)).first{
+                if oldNode != node{
                     self.nodeDown(node, at: t.location(in: node.parent ?? self))
+                    //if let oldNode = oldNode{self.nodeUp(oldNode, at: t.location(in: node.parent ?? self))}
                 }else{
+                    oldNode = nil
                     self.nodeMoved(node, at: t.location(in: node.parent ?? self))
                 }
             }
-            for node in oldNodes{
+            if let node = oldNode{
                 self.nodeUp(node, at: t.location(in: node.parent ?? self))
             }
             swipe(from: t.previousLocation(in: camera ?? self), to: t.location(in: camera ?? self))
@@ -122,7 +122,7 @@ extension SKScene{
     
     open override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         for t in touches {
-            for node in self.nodes(at: t.location(in: self)){
+            if let node = self.nodes(at: t.location(in: self)).first{
                 self.nodeUp(node, at: t.location(in: node.parent ?? self))
             }
             release(at: t.location(in: camera ?? self))
@@ -131,7 +131,7 @@ extension SKScene{
     
     open override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         for t in touches {
-            for node in self.nodes(at: t.location(in: self)){
+            if let node = self.nodes(at: t.location(in: self)).first{
                 self.nodeUp(node, at: t.location(in: node.parent ?? self))
             }
             release(at: t.location(in: camera ?? self))

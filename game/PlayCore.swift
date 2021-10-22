@@ -129,6 +129,11 @@ class PlayCore: PlayNetwork{
         }
         a = 0
         for t in tracked{
+            if t.parent == nil{
+                tracked.remove(at: a)
+                trackArrows.remove(at: a)
+                continue
+            }
             let i = trackArrows[a]
             let size = CGSize(width: t.size.width / cam.xScale, height: t.size.height / cam.yScale)
             let frame = CGRect(origin: CGPoint(x: -self.size.width / 2, y: -self.size.height / 2), size: self.size)
