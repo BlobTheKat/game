@@ -20,6 +20,7 @@ class Play: PlayCore{
     let thrustButton = SKSpriteNode(imageNamed: "thrustOff")
     let heatingLaser = SKSpriteNode(imageNamed: "heating0")
     let dPad = SKSpriteNode(imageNamed: "dPad")
+    //CCOUNT
     let accountIcon = SKSpriteNode(imageNamed: "accountIcon")
     let speedBG = SKSpriteNode(imageNamed: "speedBG")
     let mapBG = SKSpriteNode(imageNamed: "mapBG")
@@ -33,6 +34,7 @@ class Play: PlayCore{
     let mapIcon = SKSpriteNode(imageNamed: "map")
     let repairIcon = SKSpriteNode(imageNamed: "repairOff")
     let lightSpeedIcon = SKSpriteNode(imageNamed: "lightSpeedOff")
+    let cockpitIcon = SKSpriteNode(imageNamed: "cockpitOff")
     
     //WARNINGS
     var isWarning = false
@@ -77,10 +79,10 @@ class Play: PlayCore{
         self.addChild(ship)
         vibrateCamera(camera: cam)
         //ACCOUNT
-        accountIcon.position = pos(mx: 0.5, my: 0.5, x: -50, y: -10)
+        accountIcon.position = pos(mx: 0.5, my: 0.5, x: -50, y: 20)
         accountIcon.anchorPoint = CGPoint(x: 1, y: 1)
-        accountIcon.setScale(0.18)
-        accountIcon.alpha = 100
+        accountIcon.setScale(0.6)
+        accountIcon.alpha = 10000
         cam.addChild(accountIcon)
         didInit()
     }
@@ -278,8 +280,7 @@ class Play: PlayCore{
             speedLabel.xScale = 1.3
             speedBG.addChild(speedLabel)
             
-            dPad.position = pos(mx: 0.35, my: -0.25)
-            dPad.alpha = 1
+            dPad.position = pos(mx: 0.4, my: -0.4, x: -50, y: 50)
             dPad.zPosition = 10
             dPad.setScale(1.5)
             cam.addChild(dPad)
@@ -342,6 +343,12 @@ class Play: PlayCore{
         lightSpeedIcon.setScale(1.1)
         navBG.addChild(lightSpeedIcon)
         
+            cockpitIcon.position = CGPoint(x: -navBG.size.width/1.2 ,y: lightSpeedIcon.position.y + (lightSpeedIcon.size.height * 1.2) )
+            cockpitIcon.alpha = 1
+            cockpitIcon.anchorPoint = CGPoint(x: 0.1, y: 0)
+            cockpitIcon.zPosition = 11
+            cockpitIcon.setScale(0.9)
+            navBG.addChild(cockpitIcon)
        //WARNINGS
             
         warning.position = CGPoint(x: 0 ,y: -speedUI.size.height   )
@@ -368,11 +375,10 @@ class Play: PlayCore{
         playerArrow.zPosition = 9
         playerArrow.setScale(2)
             
-        shipDirection.position = pos(mx: 0, my: 0)
-        shipDirection.alpha = 1
-        shipDirection.zPosition = 9
-        shipDirection.setScale(1)
-        dPad.addChild(shipDirection)
+        shipDirection.position = pos(mx: 0.4, my: -0.4, x: -50, y: 50)
+        shipDirection.zPosition = 10
+        shipDirection.setScale(1.5)
+        cam.addChild(shipDirection)
         
         
             thrustButton.position = pos(mx: -0.35, my: -0.2)
@@ -413,7 +419,7 @@ class Play: PlayCore{
         
         
     }
-    
+     
     func DisplayWARNING(){
         
         warning.run(SKAction.repeatForever(SKAction.sequence([
@@ -424,8 +430,11 @@ class Play: PlayCore{
         
         
     }
+    
+    var pressed = false
     override func nodeDown(_ node: SKNode, at point: CGPoint) {
         if accountIcon == node{
+            pressed = true
             GKLocalPlayer.local.authenticateHandler = { viewController, error in
                 if let viewController = viewController{
                     viewController.present(controller, animated: true) {
@@ -434,11 +443,10 @@ class Play: PlayCore{
                     return
                 }
             }
-            return
+        
         }
-        if !startPressed{
-            startGame()
-            accountIcon.removeFromParent()
+        if cockpitIcon == node{
+            cockpitIcon.texture = SKTexture(imageNamed: "cockpitOn")
         }
         if let n = node as? Object{
             guard n as? Planet == nil else{return}
@@ -501,7 +509,7 @@ class Play: PlayCore{
             }
             
         }
-        if shipDirection == node{
+        if dPad == node{
             if point.x > dPad.position.x{
                 ship.thrustRight = true
                 dPad.texture = SKTexture(imageNamed: "dPadRight")
@@ -594,7 +602,7 @@ class Play: PlayCore{
         ]), withKey: "constantLaser")
     }
     override func nodeMoved(_ node: SKNode, at point: CGPoint) {
-        if shipDirection == node{
+        if dPad == node{
             if point.x > dPad.position.x{
                 ship.thrustRight = true
                 dPad.texture = SKTexture(imageNamed: "dPadRight")
@@ -643,7 +651,7 @@ class Play: PlayCore{
             ship.thrust = false
             thrustButton.texture = SKTexture(imageNamed: "thrustOff")
         }
-        if shipDirection == node{
+        if dPad == node{
             dPad.texture = SKTexture(imageNamed: "dPad")
             ship.thrustLeft = false
             ship.thrustRight = false
@@ -652,6 +660,15 @@ class Play: PlayCore{
         
         if mapIcon == node{
             mapIcon.texture = SKTexture(imageNamed: "map")
+        }
+        
+        if cockpitIcon == node{
+            cockpitIcon.texture = SKTexture(imageNamed: "cockpitOff")
+            self.end()
+            SKScene.transition = SKTransition.crossFade(withDuration: 1.5)
+            DPlay.renderTo(skview)
+            SKScene.transition = SKTransition.crossFade(withDuration: 0)
+            
         }
     }
     var d = Data()
@@ -689,5 +706,12 @@ class Play: PlayCore{
         if dPad.contains(b) || thrustButton.contains(b){return}
         FakemapBG.position.x += b.x - a.x
         FakemapBG.position.y += b.y - a.y
+    }
+    override func touch(at _: CGPoint) {
+        if !startPressed && !pressed{
+            startGame()
+            accountIcon.removeFromParent()
+        }
+        pressed = false
     }
 }

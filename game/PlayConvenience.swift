@@ -23,19 +23,19 @@ class PlayConvenience: SKScene{
                     ])), withKey: "vibratingObjects")
 
     }
-    func vibrateCamera(camera: SKCameraNode){
+    func vibrateCamera(camera: SKCameraNode, amount: CGFloat = 0.5){
         camera.run(SKAction.repeatForever(SKAction.sequence([
                     
-                        SKAction.moveBy(x: 0.5, y: 0, duration: 0.1),
-                        SKAction.moveBy(x: -0.5, y: 0, duration: 0.1),
-                        SKAction.moveBy(x: -0.5, y: 0, duration: 0.1),
-                        SKAction.moveBy(x: 0.5, y: 0, duration: 0.1),
+                        SKAction.moveBy(x: amount, y: 0, duration: 0.1),
+                        SKAction.moveBy(x: -amount, y: 0, duration: 0.1),
+                        SKAction.moveBy(x: -amount, y: 0, duration: 0.1),
+                        SKAction.moveBy(x: amount, y: 0, duration: 0.1),
                     ])), withKey: "vibratingCamera")
         camera.run(SKAction.repeatForever(SKAction.sequence([
-                        SKAction.moveBy(x: 0, y: 0.5, duration: 0.1),
-                        SKAction.moveBy(x: 0, y: -0.5, duration: 0.1),
-                        SKAction.moveBy(x: 0, y: 0.6, duration: 0.1),
-                        SKAction.moveBy(x: 0, y: -0.6, duration: 0.1),
+                        SKAction.moveBy(x: 0, y: amount, duration: 0.1),
+                        SKAction.moveBy(x: 0, y: -amount, duration: 0.1),
+                        SKAction.moveBy(x: 0, y: amount, duration: 0.1),
+                        SKAction.moveBy(x: 0, y: -amount, duration: 0.1),
                     ])), withKey: "vibratingCameras")
 
     }    

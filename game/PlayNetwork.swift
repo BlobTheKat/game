@@ -120,16 +120,19 @@ class PlayNetwork: PlayConvenience{
         cam.addChild(DEBUG_TXT)
         api.sector(completion: sectorpos)
     }
+    var ended = false
     func end(){
         send = {(_:Data) in}
         a()
         istop()
+        ended = true
     }
     var last: DispatchTime = .now()
     func gotIp(_ ip: String){
         var stopAuth = {}
         var authed = false
         send = connect(ip){[self](d) in
+            if ended{return}
             guard view == skview else{return}
             var data = d
             let code: UInt8 = data.readunsafe()
