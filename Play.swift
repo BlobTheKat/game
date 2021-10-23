@@ -77,7 +77,7 @@ class Play: PlayCore{
         self.addChild(cam)
         self.camera = cam
         cam.setScale(0.4)
-        ship.position.y = 160
+        ship.position.y = 1000
         ship.alpha = 0
         suit(1)
         tunnel1.anchorPoint = CGPoint(x: 0, y: 0.5)
@@ -105,12 +105,14 @@ class Play: PlayCore{
     var moved = false
     override func didMove(to view: SKView) {
         
-        self.run(SKAction.repeatForever(
-                
+        self.run(SKAction.repeatForever(SKAction.sequence([
+        
+            SKAction.wait(forDuration: 0.001),
             SKAction.run {
-                self.run(self.inlightSpeed)
+                //self.run(self.inlightSpeed)
             }
-                                       ))
+        
+        ])))
         startAnimation()
         guard !moved else {return}
         guard ready else{return}
@@ -242,7 +244,8 @@ class Play: PlayCore{
             let a = SKShapeNode(circleOfRadius: planet.radius/10)
             a.position = CGPoint(x: planet.position.x/10, y: planet.position.y/10)
             a.zPosition = 8
-            //a.fillColor = planet.superhot ? .orange : .white
+            a.fillColor = planet.superhot ? .orange : .white
+            a.lineWidth = 0
             sector.addChild(a)
             a.name = "planet"
             if x{planetsMP.append(a);amountOfPlanets += 1}
@@ -728,9 +731,10 @@ class Play: PlayCore{
     }
     override func touch(at _: CGPoint) {
         if !startPressed && !pressed{
-            self.run(lightSpeedOut)
+            
             startGame()
             accountIcon.removeFromParent()
+            self.run(lightSpeedOut)
         }
         pressed = false
     }

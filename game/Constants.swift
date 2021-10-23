@@ -119,7 +119,7 @@ var smap = GameData("/map")!
 var ships = GameData("/ships")!
 var asteroids = GameData("/asteroids")!
 let VERSION = 1
-typealias SectorData = ([Planet], (pos: CGPoint, size: CGSize), (name:String,ip:String))
+typealias SectorData = ([Planet], (pos: CGPoint, size: CGSize), (name:String,ip:String,bucket:String))
 extension CGPoint: Hashable{
     public func hash(into hasher: inout Hasher) {
         hasher.combine(self.x)
@@ -172,7 +172,7 @@ func sectori(_ id: Int, completion: @escaping ([Planet], CGSize) -> (), err: @es
 
 let REGIONSIZE = 500000
 func exists(px: Int, py: Int) -> Bool{
-    let delegated = CGPoint(x: fdiv(px, REGIONSIZE), y: fdiv(py, REGIONSIZE))
+    let delegated = CGPoint(x: 0, y: 0)//fdiv(px, REGIONSIZE), y: fdiv(py, REGIONSIZE))
     if let a = sectors[delegated]{
         if loaded.contains(delegated){
             return true
@@ -186,18 +186,45 @@ func exists(px: Int, py: Int) -> Bool{
     return false
 }
 func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @escaping (String) -> (), ipget: @escaping (String) -> (), _ a: [SectorData] = []){
-    let regionx = fdiv(x, REGIONSIZE)
-    let regiony = fdiv(y, REGIONSIZE)
+    let regionx = 0//fdiv(x, REGIONSIZE)
+    let regiony = 0//fdiv(y, REGIONSIZE)
     guard sectors[CGPoint(x: regionx, y: regiony)] == nil else {
         let x = CGFloat(x)
         let y = CGFloat(y)
-        for sector in sectors[CGPoint(x: regionx, y: regiony)]!{
-            let (_, (pos: pos, size: size), (name: _, ip: ip)) = sector
+        for var sector in sectors[CGPoint(x: regionx, y: regiony)]!{
+            let (_, (pos: pos, size: size), (name: _, ip: ip, bucket: _)) = sector
             let w2 = size.width / 2
             let h2 = size.height / 2
             if x > pos.x - w2 && x < pos.x + w2 && y > pos.y - h2 && y < pos.y + h2{
                 ipget(ip)
-                completion(sector)
+                if(sector.2.bucket != ""){
+                    //BOTHER TO LOAD
+                    var DONE = 0
+                    for p in sector.0{
+                        DONE += 1
+                        fetch(p.name!) { (data: Data) in
+                            if data[0] == 123{
+                                err("Broken Image")
+                                loaded.remove(CGPoint(x: regionx, y: regiony))
+                                return
+                            }
+                            if let a = UIImage(data: data){
+                                p.texture = SKTexture(image: a)
+                                p.size = p.texture!.size()
+                            }else{
+                                err("Broken Image")
+                                loaded.remove(CGPoint(x: regionx, y: regiony))
+                                return
+                            }
+                            DONE -= 1
+                            if DONE == 0{
+                                //DONE :O POG
+                                completion(sector)
+                            }
+                        } _: { e in err(e) }
+                    }
+                    sector.2.bucket = ""
+                }else{completion(sector)}
                 return
             }
         }
@@ -231,7 +258,7 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
             let name = String(bytes: data.read(count: Int(nl)) as [UInt8], encoding: .utf8)!
             let ip = String(bytes: data.read(count: Int(ipl)) as [UInt8], encoding: .utf8)!
             var planets = [Planet]()
-            var s = (planets, (pos: CGPoint(x: px, y: py), size: CGSize(width: w, height: h)),(name:name,ip:ip))
+            var s = (planets, (pos: CGPoint(x: px, y: py), size: CGSize(width: w, height: h)),(name:name,ip:ip,bucket:bucketname))
             let current = x > px - w/2 && x < px + w/2 && y > py - h/2 && y < py + h/2
             found = found || current
             if current{ipget(ip)}
@@ -257,6 +284,7 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                 p.superhot = id & 8 != 0
                 if !exists{planets.append(p)}
                 let img = "https://firebasestorage.googleapis.com/v0/b/\(bucketname).appspot.com/o/\(data.read(lentype: Int8.self) ?? "default").png?alt=media"
+                
                 if current && !exists{
                     DONE += 1
                     fetch(img) { (data: Data) in
@@ -289,9 +317,12 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                     } _: {e in
                         err(e)
                     }
+                }else{
+                    p.name = img
                 }
             }
             if !current && !exists{
+                s.0 = planets
                 if px < xx || px > xx + REGIONSIZE || py < yy || py > yy + REGIONSIZE{
                     let delegated = CGPoint(x: fdiv(px, REGIONSIZE), y: fdiv(py, REGIONSIZE))
                     if sectors[delegated] != nil{
