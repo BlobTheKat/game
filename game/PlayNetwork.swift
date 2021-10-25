@@ -122,6 +122,10 @@ class PlayNetwork: PlayConvenience{
     }
     var ended = false
     func end(){
+        //release texture objects
+        for p in loadstack.p ?? []{
+            p.texture = nil
+        }
         send = {(_:Data) in}
         a()
         istop()

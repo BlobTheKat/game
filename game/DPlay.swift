@@ -19,7 +19,6 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
     let boxes = SKSpriteNode(imageNamed: "boxes")
     let boxOutline = SKSpriteNode(imageNamed: "boxOutline")
     let outline = SKSpriteNode(imageNamed: "outline")
-    let shadow = SKSpriteNode(imageNamed: "shadow")
     let toEnter = SKSpriteNode(imageNamed: "toEnter")
     let inCockpit = SKSpriteNode(imageNamed: "inCockpitOff")
     let star1 = SKSpriteNode(imageNamed: "stars")
@@ -96,7 +95,6 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
         inCockpit.position = pos(mx: 0.5, my: 0.5, x: -100, y: -40)
         inCockpit.zPosition = 4
         inCockpit.alpha = 1
-        
         
         outline.setScale(0.3)
         outline.position = pos(mx: 0, my: 0, y: -40)

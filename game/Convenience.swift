@@ -23,7 +23,7 @@ func print(_ items: Any...){
 }
 let nd = SKNode()
 func filtern(_ nods: [SKNode]) -> Set<SKNode>{
-    var nodes = Set(nods)
+    let nodes = Set(nods)
     /*for n in nods{
         nodes.remove(n.parent ?? nd)
     }*/

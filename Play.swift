@@ -271,7 +271,6 @@ class Play: PlayCore{
         self.tapToStart.run(SKAction.scale(by: 1.5, duration: 0.2))
     }
     func startGame(){
-        if children.count > MIN_NODES{
             self.removeAction(forKey: "loading")
             map(planets: planets, size: loadstack.size!, pos: loadstack.pos!, x: true)
             for (_, v) in sectors{
@@ -410,7 +409,7 @@ class Play: PlayCore{
         cam.addChild(shipDirection)
         
         
-            thrustButton.position = pos(mx: -0.4, my: -0.4, x: 50, y: 50)
+            thrustButton.position = pos(mx: -0.4, my: -0.4, x: 50, y: 70)
             thrustButton.alpha = 1
             thrustButton.zPosition = 10
             thrustButton.setScale(1.4)
@@ -444,8 +443,6 @@ class Play: PlayCore{
         tunnel2.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeOut))
     
         tunnel2.removeFromParent()
-        }
-        
         
     }
      
@@ -456,10 +453,7 @@ class Play: PlayCore{
             SKAction.fadeAlpha(to: 1, duration: 0.8).ease(.easeInEaseOut),
             SKAction.fadeAlpha(to: 0.15, duration: 0.8).ease(.easeInEaseOut)
         ])), withKey: "warningAlpha")
-        
-        
     }
-    
     var pressed = false
     override func nodeDown(_ node: SKNode, at point: CGPoint) {
         if accountIcon == node{
@@ -472,7 +466,6 @@ class Play: PlayCore{
                     return
                 }
             }
-        
         }
         if cockpitIcon == node{
             cockpitIcon.texture = SKTexture(imageNamed: "cockpitOn")
@@ -491,7 +484,6 @@ class Play: PlayCore{
             }
         }
         if repairIcon == node{
-           
             if isWarning{
                 warning.removeAction(forKey: "warningAlpha")
                 warning.alpha = 0
@@ -508,13 +500,11 @@ class Play: PlayCore{
                 navBG.run(SKAction.move(to: pos(mx: 0.43, my: 0 ), duration: 0.35).ease(.easeOut))
                 showNav = true
             }else if showNav == true{
-                
                 navArrow.run(SKAction.move(to: pos(mx: 0.43, my: 0.5 ), duration: 0.35).ease(.easeOut))
                 navArrow.run(SKAction.rotate(toAngle: 0, duration: 0.35).ease(.easeOut))
                 navBG.run(SKAction.move(to: pos(mx: 0.43, my: 0.5  ), duration: 0.35).ease(.easeOut))
                 showNav = false
             }
-            
         }
         if thrustButton == node{
             if point.y > thrustButton.position.y + 50{
@@ -570,6 +560,7 @@ class Play: PlayCore{
     func constantLazer(){
         usingConstantLazer = true
         ship.shootFrequency = SHOOTFREQUENCIES[ship.id-1]
+        ship.shootQueue = 1 - ship.shootFrequency
         self.run(SKAction.sequence([
 
             SKAction.repeat(SKAction.sequence([
@@ -738,26 +729,36 @@ class Play: PlayCore{
         FakemapBG.position.x += b.x - a.x
         FakemapBG.position.y += b.y - a.y
     }
-    
-    
-    
     override func touch(at _: CGPoint) {
-        if !startPressed && !pressed{
-            
+        if !startPressed && !pressed && children.count > MIN_NODES{
             accountIcon.removeFromParent()
             removeTapToStart()
             self.run(lightSpeedOut)
+            //anim
+            //*
+            var mov = 0.1
+            var up = 0.07
+            let _ = timeout(2){
+                up = -0.5
+            }
+            var stop = {}
+            let stop1 = interval(0.05){
+                mov = -sign(mov) * max(0, abs(mov) + up)
+                if(abs(mov) < 0.01){
+                    return stop()
+                }
+                self.cam.run(SKAction.moveBy(x: mov, y: 0, duration: 0.05).ease(.easeOut))
+            }
+            let stop2 = interval(0.06){
+                self.cam.run(SKAction.moveBy(x: 0, y: mov, duration: 0.06).ease(.easeOut))
+            }
+            stop = {stop1();stop2()}
+            let _ = "*///" //this line is useless but its for the comment switch so dont delete it
             let _ = timeout(2) {
                 self.startGame()
                 self.removeAction(forKey: "inLightSpeed")
                 self.inlightSpeed.run(stopSound)
             }
-            
-            
-            
-            
-            
-            
         }
         pressed = false
     }

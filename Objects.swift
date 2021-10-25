@@ -74,8 +74,8 @@ class Object: SKSpriteNode, DataCodable{
             }else{particleQueue = 1}
         }
         if !asteroid{
-            if abs(velocity.dx) > 10{velocity.dx *= 0.99}
-            if abs(velocity.dy) > 10{velocity.dy *= 0.99}
+            if abs(velocity.dx) > 10{velocity.dx *= 0.997}
+            if abs(velocity.dy) > 10{velocity.dy *= 0.997}
         }
         if controls{
             producesParticles = false
@@ -125,7 +125,7 @@ class Object: SKSpriteNode, DataCodable{
                     obj//was hit
                 }
                 if let planet = planet{
-                    planet//was hit
+                    //planet was hit
                 }
                 let count = (len / 2 - 20) * gameFPS / 1500
                 

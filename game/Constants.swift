@@ -129,11 +129,24 @@ extension CGPoint: Hashable{
 var sectors: [CGPoint: [SectorData]] = [:]
 var mapnodes: [CGPoint: SKNode] = [:]
 var loaded: Set<CGPoint> = []
-var images: [String: SKTexture] = [:]
+var images: [String: Data] = [:]
+var textures: [String: SKTexture] = [:]
+
+func emptytextures(s: SectorData){
+    textures.removeAll()
+    for p in s.0{
+        p.texture = nil
+    }
+}
 
 func image(_ url: String, completion: @escaping (SKTexture) -> (), err: @escaping (String) -> ()){
-    if let i = images[url]{
+    if let i = textures[url]{
         completion(i)
+        return
+    }
+    if let i = images[url]{
+        textures[url] = SKTexture(image: UIImage(data: i)!)
+        completion(textures[url]!)
         return
     }
     fetch(url) { (data: Data) in
@@ -142,8 +155,9 @@ func image(_ url: String, completion: @escaping (SKTexture) -> (), err: @escapin
             return
         }
         if let a = UIImage(data: data){
-            images[url] = SKTexture(image: a)
-            completion(images[url]!)
+            images[url] = data
+            textures[url] = SKTexture(image: a)
+            completion(textures[url]!)
         }else{
             err("Broken Image")
             return
@@ -170,6 +184,7 @@ func exists(px: Int, py: Int) -> Bool{
     return false
 }
 func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @escaping (String) -> (), ipget: @escaping (String) -> (), _ a: [SectorData] = []){
+    
     let regionx = 0//fdiv(x, REGIONSIZE)
     let regiony = 0//fdiv(y, REGIONSIZE)
     guard sectors[CGPoint(x: regionx, y: regiony)] == nil else {
@@ -192,6 +207,7 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                             DONE -= 1
                             if DONE == 0{
                                 //DONE :O POG
+                                
                                 completion(sector)
                             }
                         } err: { e in err(e); loaded.remove(CGPoint(x: regionx, y: regiony)) }
