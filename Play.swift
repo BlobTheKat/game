@@ -8,12 +8,19 @@
 import SpriteKit
 import GameKit
 
+var shootSound = SKAction.playSoundFileNamed("Lazer.wav", waitForCompletion: false)
+
+let stopSound = SKAction.stop()
+let playSound = SKAction.play()
+
+
 class Play: PlayCore{
     
     //SOUND EFFECT
     var lightSpeedOut = SKAction.playSoundFileNamed("LightSpeedOut.wav", waitForCompletion: false)
-    var lazer = SKAction.playSoundFileNamed("Lazer.wav", waitForCompletion: false)
-    var inlightSpeed = SKAction.playSoundFileNamed("InLightSpeed.wav", waitForCompletion: false)
+    
+    let inlightSpeed = SKAudioNode(fileNamed: "InLightSpeed.wav")
+   
     
     
     
@@ -57,6 +64,8 @@ class Play: PlayCore{
     let tunnel1 = SKSpriteNode(imageNamed: "tunnel1")
     let tunnel2 = SKSpriteNode(imageNamed: "tunnel2")
     
+    
+    
     func suit(_ id: Int){
         ship.id = id
         let sh = ships[id]
@@ -94,8 +103,10 @@ class Play: PlayCore{
         accountIcon.position = pos(mx: 0.5, my: 0.5, x: -50, y: 20)
         accountIcon.anchorPoint = CGPoint(x: 1, y: 1)
         accountIcon.setScale(0.6)
-        accountIcon.alpha = 10000
         cam.addChild(accountIcon)
+        inlightSpeed.run(playSound)
+        
+        self.addChild(inlightSpeed)
         didInit()
     }
     
@@ -104,18 +115,11 @@ class Play: PlayCore{
     }
     var moved = false
     override func didMove(to view: SKView) {
-        
-        self.run(SKAction.repeatForever(SKAction.sequence([
-        
-            SKAction.wait(forDuration: 0.001),
-            SKAction.run {
-                //self.run(self.inlightSpeed)
-            }
-        
-        ])))
         startAnimation()
         guard !moved else {return}
         guard ready else{return}
+        
+        
         moved = true
         border1.zRotation = .pi / 2
         border1.position.y = (cam.position.y < 0 ? -0.5 : 0.5) * loadstack.size!.height
@@ -261,6 +265,11 @@ class Play: PlayCore{
         mapnodes[pos] = sector
         sector.position = CGPoint(x: pos.x / 10, y: pos.y / 10)
     }
+    func removeTapToStart(){
+        
+        self.tapToStart.run(SKAction.fadeOut(withDuration: 0.3).ease(.easeOut))
+        self.tapToStart.run(SKAction.scale(by: 1.5, duration: 0.2))
+    }
     func startGame(){
         if children.count > MIN_NODES{
             self.removeAction(forKey: "loading")
@@ -278,8 +287,6 @@ class Play: PlayCore{
         cam.run(SKAction.scale(to: 2, duration: 0.5).ease(.easeInEaseOut))
         startData()
         ship.producesParticles = false
-        self.tapToStart.run(SKAction.fadeOut(withDuration: 0.3).ease(.easeOut))
-        self.tapToStart.run(SKAction.scale(by: 1.5, duration: 0.2))
         startPressed = true
         camOffset.y = 0
         //cam.run(SKAction.scale(to: 0.6, duration: 1).ease(.easeInEaseOut))
@@ -403,7 +410,7 @@ class Play: PlayCore{
         cam.addChild(shipDirection)
         
         
-            thrustButton.position = pos(mx: -0.35, my: -0.2)
+            thrustButton.position = pos(mx: -0.4, my: -0.4, x: 50, y: 50)
             thrustButton.alpha = 1
             thrustButton.zPosition = 10
             thrustButton.setScale(1.4)
@@ -621,7 +628,7 @@ class Play: PlayCore{
                     self.constantLazer()
                 }
             }
-        ]), withKey: "constantLaser")
+        ]), withKey: "constantLazer")
     }
     override func nodeMoved(_ node: SKNode, at point: CGPoint) {
         if dPad == node{
@@ -672,6 +679,8 @@ class Play: PlayCore{
             usingConstantLazer = false
             ship.thrust = false
             thrustButton.texture = SKTexture(imageNamed: "thrustOff")
+            self.heatingLaser.texture = SKTexture(imageNamed: "heating0")
+            usingConstantLazer = false
         }
         if dPad == node{
             dPad.texture = SKTexture(imageNamed: "dPad")
@@ -729,12 +738,26 @@ class Play: PlayCore{
         FakemapBG.position.x += b.x - a.x
         FakemapBG.position.y += b.y - a.y
     }
+    
+    
+    
     override func touch(at _: CGPoint) {
         if !startPressed && !pressed{
             
-            startGame()
             accountIcon.removeFromParent()
+            removeTapToStart()
             self.run(lightSpeedOut)
+            let _ = timeout(2) {
+                self.startGame()
+                self.removeAction(forKey: "inLightSpeed")
+                self.inlightSpeed.run(stopSound)
+            }
+            
+            
+            
+            
+            
+            
         }
         pressed = false
     }

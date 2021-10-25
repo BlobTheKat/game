@@ -221,7 +221,7 @@ class PlayCore: PlayNetwork{
                 sy = (sy < 0 ? -1 : 1) * (loadstack.size!.height / 2 + 10)
             }
             let x = loadstack.pos!.x + sx, y = loadstack.pos!.y + sy
-            let regionx = fdiv(Int(x), REGIONSIZE), regiony = fdiv(Int(y), REGIONSIZE)
+            let regionx = 0, regiony = 0//fdiv(Int(x), REGIONSIZE), regiony = fdiv(Int(y), REGIONSIZE)
             var d = false
             for sector in sectors[CGPoint(x: regionx, y: regiony)]!{
                 let (_, (pos: pos, size: size), (name: name, ip: _, bucket: _)) = sector

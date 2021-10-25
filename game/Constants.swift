@@ -129,45 +129,29 @@ extension CGPoint: Hashable{
 var sectors: [CGPoint: [SectorData]] = [:]
 var mapnodes: [CGPoint: SKNode] = [:]
 var loaded: Set<CGPoint> = []
-func sectori(_ id: Int, completion: @escaping ([Planet], CGSize) -> (), err: @escaping (String) -> ()){
-    guard case .string(let path) = smap[id]["path"] else {return}
-    GameData.from(location: path) { data in
-        guard let data = data else{return err("Could not load sector")}
-        var planetarr: [Planet] = []
-        
-//read from server and initiate variable for width and height of sectors
-        guard case .number(let sectorWidth) = smap[id]["w"] else {return}
-        guard case .number(let sectorHeight) = smap[id]["h"] else {return}
-        
-        for object in data{
-            var id: Int? = nil
-            if case .number(let i) = object["id"] {id=Int(i)}
-            let dat = id == nil ? object : asteroids[id!]
-            guard case .number(let radius) = dat["radius"] else {continue}
-            guard case .number(let mass) = dat["mass"] else {continue}
-            guard case .number(let x) = object["x"] else {continue}
-            guard case .number(let y) = object["y"] else {continue}
-            guard case .number(let spin) = dat["spin"] else {continue}
-            guard case .string(let texture) = dat["texture"] else {continue}
-            let t = SKTexture(imageNamed: texture)
-            if id == nil{
-                let i = Planet(radius: CGFloat(radius), mass: CGFloat(mass), texture: t)
-                i.angularVelocity = CGFloat(spin)
-                i.position.x = CGFloat(x)
-                i.position.y = CGFloat(y)
-                if case .bool(let hot) = dat["superhot"]{i.superhot = hot}
-                if case .number(let particle) = dat["particle"]{
-                    i.producesParticles = true
-                    i.particle = particles[Int(particle)]
-                }
-                if case .number(let frequency) = dat["fequency"]{
-                  i.particleFrequency = frequency
-                }
-                planetarr.append(i)
-            }
-        }
-        completion(planetarr, CGSize(width: sectorWidth, height: sectorHeight))
+var images: [String: SKTexture] = [:]
+
+func image(_ url: String, completion: @escaping (SKTexture) -> (), err: @escaping (String) -> ()){
+    if let i = images[url]{
+        completion(i)
+        return
     }
+    fetch(url) { (data: Data) in
+        if data[0] == 123{
+            err("Broken Image")
+            return
+        }
+        if let a = UIImage(data: data){
+            images[url] = SKTexture(image: a)
+            completion(images[url]!)
+        }else{
+            err("Broken Image")
+            return
+        }
+    } _: {e in
+        err(e)
+    }
+
 }
 
 let REGIONSIZE = 500000
@@ -202,26 +186,15 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                     var DONE = 0
                     for p in sector.0{
                         DONE += 1
-                        fetch(p.name!) { (data: Data) in
-                            if data[0] == 123{
-                                err("Broken Image")
-                                loaded.remove(CGPoint(x: regionx, y: regiony))
-                                return
-                            }
-                            if let a = UIImage(data: data){
-                                p.texture = SKTexture(image: a)
-                                p.size = p.texture!.size()
-                            }else{
-                                err("Broken Image")
-                                loaded.remove(CGPoint(x: regionx, y: regiony))
-                                return
-                            }
+                        image(p.name!) { (i: SKTexture) in
+                            p.texture = i
+                            p.size = i.size()
                             DONE -= 1
                             if DONE == 0{
                                 //DONE :O POG
                                 completion(sector)
                             }
-                        } _: { e in err(e) }
+                        } err: { e in err(e); loaded.remove(CGPoint(x: regionx, y: regiony)) }
                     }
                     sector.2.bucket = ""
                 }else{completion(sector)}
@@ -287,25 +260,15 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                 
                 if current && !exists{
                     DONE += 1
-                    fetch(img) { (data: Data) in
-                        if data[0] == 123{
-                            err("Broken Image")
-                            loaded.remove(CGPoint(x: regionx, y: regiony))
-                            return
-                        }
-                        if let a = UIImage(data: data){
-                            p.texture = SKTexture(image: a)
-                            p.size = p.texture!.size()
-                        }else{
-                            err("Broken Image")
-                            loaded.remove(CGPoint(x: regionx, y: regiony))
-                            return
-                        }
+                    image(img) { (i: SKTexture) in
+                        p.texture = i
+                        p.size = i.size()
                         DONE -= 1
                         if DONE == 0{
                             s.0 = planets
+                            s.2.bucket = ""
                             if px < xx || px > xx + REGIONSIZE || py < yy || py > yy + REGIONSIZE{
-                                let delegated = CGPoint(x: fdiv(px, REGIONSIZE), y: fdiv(py, REGIONSIZE))
+                                let delegated = CGPoint(x: 0, y: 0)//fdiv(px, REGIONSIZE), y: fdiv(py, REGIONSIZE))
                                 if sectors[delegated] != nil{
                                     sectors[delegated]!.append(s)
                                 }else{
@@ -314,7 +277,8 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                             }else{sectors[CGPoint(x: regionx, y: regiony)]!.append(s)}
                             completion(s)
                         }
-                    } _: {e in
+                    } err: {e in
+                        loaded.remove(CGPoint(x: regionx, y: regiony))
                         err(e)
                     }
                 }else{
@@ -324,7 +288,7 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
             if !current && !exists{
                 s.0 = planets
                 if px < xx || px > xx + REGIONSIZE || py < yy || py > yy + REGIONSIZE{
-                    let delegated = CGPoint(x: fdiv(px, REGIONSIZE), y: fdiv(py, REGIONSIZE))
+                    let delegated = CGPoint(x: 0, y: 0)//fdiv(px, REGIONSIZE), y: fdiv(py, REGIONSIZE))
                     if sectors[delegated] != nil{
                         sectors[delegated]!.append(s)
                     }else{

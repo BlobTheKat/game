@@ -22,7 +22,7 @@ class GameViewController: UIViewController {
             controller = self
             skview = view
             SKScene.transition = SKTransition.crossFade(withDuration: 1.5)
-            Play.renderTo(skview)
+            DPlay.renderTo(skview)
             SKScene.transition = SKTransition.crossFade(withDuration: 0)
             view.preferredFramesPerSecond = 60
             view.showsNodeCount = true

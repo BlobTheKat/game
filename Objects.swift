@@ -99,6 +99,7 @@ class Object: SKSpriteNode, DataCodable{
         guard let parent = parent else{return}
         shootQueue += shootFrequency
         while shootQueue > 1{
+            self.run(shootSound)
             if shlock > 0{
                 zRotation = -atan2(parent.ship.position.x - position.x, parent.ship.position.y - position.y)
                 shlock -= 1

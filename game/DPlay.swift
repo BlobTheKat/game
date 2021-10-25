@@ -8,6 +8,9 @@
 import Foundation
 import SpriteKit
 
+let doorOpen = [SKTexture(imageNamed: "door7"), SKTexture(imageNamed: "door6"), SKTexture(imageNamed: "door5"), SKTexture(imageNamed: "door4"), SKTexture(imageNamed: "door3"), SKTexture(imageNamed: "door2"), SKTexture(imageNamed: "door1")]
+let doorClose: [SKTexture] = doorOpen.reversed()
+
 class DPlay:PlayConvenience, SKPhysicsContactDelegate{
     
     
@@ -22,7 +25,12 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
     let star1 = SKSpriteNode(imageNamed: "stars")
     let star2 = SKSpriteNode(imageNamed: "stars")
     let cam = SKCameraNode()
+    let door = SKSpriteNode(imageNamed: "door7")
     
+    //Sound
+    
+    let inShipSound = SKAudioNode(fileNamed: "inshipSound.wav")
+    let playerWalking = SKAudioNode(fileNamed: "playerWalking.wav")
     
     struct physicscategory{
         
@@ -54,36 +62,44 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
     }
     override func didMove(to view: SKView) {
 
+        self.addChild(inShipSound)
+        self.addChild(playerWalking)
+        playerWalking.run(stopSound)
+        
+        self.run(SKAction.repeatForever(SKAction.sequence([
+            SKAction.run{ self.inShipSound.run(playSound)},
+            SKAction.wait(forDuration: 49)
+        ])))
         vibrateCamera(camera: cam, amount: 1)
         //SCENE
         self.addChild(cam)
         self.camera = cam
         Dship.setScale(0.3)
         Dship.position = pos(mx: 0, my: 0)
-        Dship.zPosition = 1
+        Dship.zPosition = -10000
         self.addChild(Dship)
         
         cam.addChild(star1)
         star1.setScale(2)
-        star1.zPosition = -10
+        star1.zPosition = -10001
         cam.addChild(star2)
         star2.setScale(2)
-        star2.zPosition = -10
+        star2.zPosition = -10001
         star2.position.y = 2440
         
         boxes.setScale(0.3)
-        boxes.position = pos(mx: 0, my: -0.5, x: 40, y: 100)
-        boxes.zPosition = 4
+        boxes.position.y = -150
+        boxes.zPosition = 150
         self.addChild(boxes)
         
         inCockpit.setScale(0.5)
-        inCockpit.position = pos(mx: 0.35, my: 0.38)
+        inCockpit.position = pos(mx: 0.5, my: 0.5, x: -100, y: -40)
         inCockpit.zPosition = 4
         inCockpit.alpha = 1
-        cam.addChild(inCockpit)
+        
         
         outline.setScale(0.3)
-        outline.position = pos(mx: 0, my: 0, y: -100)
+        outline.position = pos(mx: 0, my: 0, y: -40)
         outline.zPosition = 5
         outline.alpha = 0
         
@@ -98,7 +114,7 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
         
         
         boxOutline.setScale(0.3)
-        boxOutline.position = pos(mx: 0, my: -0.53, x: 40, y: 100)
+        boxOutline.position.y = -170
         boxOutline.zPosition = 5
         boxOutline.alpha = 0
         
@@ -134,14 +150,14 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
         player.position = pos(mx: 0, my: 0, y: 150)
         player.zPosition = 3
         
-        player.physicsBody = SKPhysicsBody(texture: SKTexture(imageNamed: "player0"), size: player.size)
+        player.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: 35, height: 10))//SKPhysicsBody(texture: SKTexture(imageNamed: "player0"), size: player.size)
         player.physicsBody!.categoryBitMask = physicscategory.player
         player.physicsBody!.collisionBitMask = physicscategory.outline
         player.physicsBody!.contactTestBitMask = physicscategory.player | physicscategory.hitBox
         player.physicsBody!.affectedByGravity = false
         player.physicsBody!.allowsRotation = false
         player.physicsBody!.isDynamic = true
-        
+        player.anchorPoint = CGPoint(x: 0.5, y: 0)
         self.addChild(player)
         
         cam.addChild(dPad)
@@ -149,8 +165,10 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
         dPad.zPosition = 10
         dPad.setScale(1.5)
         
-        
-        
+        self.addChild(door)
+        door.position.y = 262
+        door.zPosition = -262
+        door.setScale(0.3)
     }
     var latency = 0.0
     var lastUpdate: TimeInterval? = nil
@@ -226,6 +244,8 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
         }
     }
     override func nodeUp(_ node: SKNode, at point: CGPoint) {
+        
+        
         if dPad == node{
             movingRight = false
             movingLeft = false
@@ -235,12 +255,25 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
             
         }
     }
-  
+    var isOpen: Bool = false
+    
+    var playingWalkingSound = false
     override func update(_ currentTime: TimeInterval){
         
+        if (movingRight || movingLeft || movingUp || movingDown) && !playingWalkingSound{
+            
+            playingWalkingSound = true
+            self.playerWalking.run(playSound)
+        }
+        if !movingRight && !movingLeft && !movingUp && !movingDown{
+            
+            self.playerWalking.run(stopSound)
+            playingWalkingSound = false
+        }
         
         
-     
+        
+        
         if view == nil{return}
         let ti = 1/gameFPS
         if lastUpdate == nil{
@@ -290,7 +323,21 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
         if star2.frame.maxY < -self.size.height / 2{
             star2.position.y += 4880
         }
-        
+        let inRange = player.position.y > 170 && abs(player.position.x) < 80
+        if inRange && !isOpen{
+            isOpen = true
+            //open
+            door.removeAction(forKey: "anim")
+            door.run(.animate(with: [SKTexture](doorOpen.dropFirst(doorOpen.firstIndex(of: door.texture!) ?? 0)), timePerFrame: 0.05), withKey: "anim")
+            cam.addChild(inCockpit)
+        }else if isOpen && !inRange{
+            isOpen = false
+            //close
+            door.removeAction(forKey: "anim")
+            door.run(.animate(with: [SKTexture](doorClose.dropFirst(doorClose.firstIndex(of: door.texture!) ?? 0)), timePerFrame: 0.05), withKey: "anim")
+            inCockpit.removeFromParent()
+        }
+        player.zPosition = -player.position.y
     }
     
     override func keyDown(_ key: UIKeyboardHIDUsage) {
@@ -312,6 +359,9 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
     }
     
     override func keyUp(_ key: UIKeyboardHIDUsage) {
+        
+        
+        
         if key == .keyboardUpArrow || key == .keyboardW{
           movingUp = false
            
