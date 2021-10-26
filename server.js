@@ -71,6 +71,7 @@ var meta = (readfile('meta')||[]).find(a=>(a.port||a.ip.split(":")[1])==process.
 let xy = (process.argv[3]||"_NaN_NaN").slice(1).split("_").map(a=>+a)
 if(xy[0] != xy[0] || xy[1] != xy[1])xy=null
 
+if(process.argv[2] && !xy && !meta){process.exit(0)}
 if(!meta || xy){
     if(typeof RESPONSE == "undefined")console.log("\x1b[31m[Error]\x1b[37m To set up this server, you need to install basic-repl. Type this in the bash shell: \x1b[m\x1b[34mnpm i basic-repl\x1b[m"),process.exit(0)
     console.log("Enter sector \x1b[33mX\x1b[m:")
