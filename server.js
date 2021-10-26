@@ -37,7 +37,8 @@ function readfile(path){
     while(i < text.length){
         arr.push({})
         while(text[i]){
-            let t = text[i].split(':',2)
+            let t = text[i].indexOf(':')
+            t = [text[i].slice(0,t), text[i].slice(t+1)]
             if(!t[1])continue
             t[1] = t[1].trim()
             if(t[1] == "true" || t[1] == "yes")t[1] = true
