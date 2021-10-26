@@ -55,6 +55,13 @@ class PlayConvenience: SKScene{
         
         
     }
+    func closest(_ test: CGPoint, _ a: CGPoint, _ b: CGPoint) -> Bool{
+        //a = true
+        //b = false
+        let q1 = abs(a.x - test.x) + abs(a.y - test.y)
+        let q2 = abs(b.x - test.x) + abs(b.y - test.y)
+        return q1 < q2 //if a is closer
+    }
 }
 
 func random() -> CGFloat{

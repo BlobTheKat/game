@@ -67,7 +67,7 @@ try{RESPONSE = null;require('basic-repl')('$',v=>([RESPONSE,RESPONSE=null][0]||_
 var ships = readfile('ships')
 var asteroids = readfile('asteroids')
 var sector = {objects:[],planets:[],time:0,w:0,h:0}
-var meta = (readfile('meta')||[]).find(a=>a.port==process.argv[2]) || null
+var meta = (readfile('meta')||[]).find(a=>(a.port||a.ip.split(":")[1])==process.argv[2]) || null
 let xy = (process.argv[3]||"_NaN_NaN").slice(1).split("_").map(a=>+a)
 if(xy[0] != xy[0] || xy[1] != xy[1])xy=null
 
@@ -85,8 +85,8 @@ if(!meta || xy){
     function _v(y){
         if(+y != +y)return console.log("Enter sector \x1b[33mY\x1b[m:"),RESPONSE=_v
         //x, y
-        let rx = Math.floor(x / REGIONSIZE)
-        let ry = Math.floor(y / REGIONSIZE)
+        let rx = 0//Math.floor(x / REGIONSIZE)
+        let ry = 0//Math.floor(y / REGIONSIZE)
         console.log('Downloading region file...')
         let a = null
         try{
@@ -194,7 +194,7 @@ if(!meta || xy){
         sector.w2 = sector.w / 2
         sector.h2 = sector.h / 2
         setInterval(tick.bind(undefined, sector), 1000 / FPS)
-        server.bind(meta.port || PORT)
+        server.bind(meta.port || meta.ip.split(":")[1] || PORT)
     })
 }
 server.on('listening', function() {

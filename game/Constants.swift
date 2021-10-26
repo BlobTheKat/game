@@ -190,30 +190,28 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
     guard sectors[CGPoint(x: regionx, y: regiony)] == nil else {
         let x = CGFloat(x)
         let y = CGFloat(y)
-        for var sector in sectors[CGPoint(x: regionx, y: regiony)]!{
+        for sector in sectors[CGPoint(x: regionx, y: regiony)]!{
             let (_, (pos: pos, size: size), (name: _, ip: ip, bucket: _)) = sector
             let w2 = size.width / 2
             let h2 = size.height / 2
             if x > pos.x - w2 && x < pos.x + w2 && y > pos.y - h2 && y < pos.y + h2{
                 ipget(ip)
-                if(sector.2.bucket != ""){
-                    //BOTHER TO LOAD
-                    var DONE = 0
-                    for p in sector.0{
-                        DONE += 1
-                        image(p.name!) { (i: SKTexture) in
-                            p.texture = i
-                            p.size = i.size()
-                            DONE -= 1
-                            if DONE == 0{
-                                //DONE :O POG
-                                
-                                completion(sector)
-                            }
-                        } err: { e in err(e); loaded.remove(CGPoint(x: regionx, y: regiony)) }
-                    }
-                    sector.2.bucket = ""
-                }else{completion(sector)}
+                
+                //Load
+                var DONE = 0
+                for p in sector.0{
+                    DONE += 1
+                    image(p.name!) { (i: SKTexture) in
+                        p.texture = i
+                        p.size = i.size()
+                        DONE -= 1
+                        if DONE == 0{
+                            //DONE :O POG
+                            
+                            completion(sector)
+                        }
+                    } err: { e in err(e); loaded.remove(CGPoint(x: regionx, y: regiony)) }
+                }
                 return
             }
         }
@@ -297,9 +295,8 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                         loaded.remove(CGPoint(x: regionx, y: regiony))
                         err(e)
                     }
-                }else{
-                    p.name = img
                 }
+                p.name = img
             }
             if !current && !exists{
                 s.0 = planets

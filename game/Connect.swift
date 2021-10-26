@@ -207,8 +207,8 @@ struct M{
 }
 let messages = M()
 
-var secx = 1
-var secy = 1
+var secx = 2000
+var secy = 2000
 
 struct api{
     static func sector(completion: @escaping (_ x: Int, _ y: Int) -> ()){

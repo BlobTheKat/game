@@ -86,7 +86,6 @@ class Play: PlayCore{
         self.addChild(cam)
         self.camera = cam
         cam.setScale(0.4)
-        ship.position.y = 1000
         ship.alpha = 0
         suit(1)
         tunnel1.anchorPoint = CGPoint(x: 0, y: 0.5)
@@ -118,7 +117,8 @@ class Play: PlayCore{
         startAnimation()
         guard !moved else {return}
         guard ready else{return}
-        
+        ship.position = CGPoint(x: CGFloat(secx) - loadstack.pos!.x, y: CGFloat(secy) - loadstack.pos!.y)
+        cam.position = CGPoint(x: ship.position.x, y: ship.position.y)
         
         moved = true
         border1.zRotation = .pi / 2
@@ -257,7 +257,7 @@ class Play: PlayCore{
         if x{mainMap=sector;sector.addChild(playerArrow)}
         let box = SKShapeNode(rectOf: CGSize(width: size.width/10, height: size.height/10))
         box.strokeColor = .white
-        box.lineWidth = 5
+        box.lineWidth = 30
         box.name = "box"
         sector.addChild(box)
         sector.position = pos
@@ -723,13 +723,43 @@ class Play: PlayCore{
             ship.thrustLeft = false
         }
     }
+    var mapPress1: CGPoint? = nil
+    var mapPress2: CGPoint? = nil
     override func swipe(from a: CGPoint, to b: CGPoint) {
         guard showMap else {return}
+        if mapPress1 != nil && mapPress2 != nil{
+            var dx = mapPress1!.x - mapPress2!.x
+            var dy = mapPress1!.y - mapPress2!.y
+            let d1 = dx * dx + dy * dy
+            if closest(a, mapPress1!, mapPress2!){
+                mapPress1 = b
+            }else{
+                mapPress2 = b
+            }
+            dx = mapPress1!.x - mapPress2!.x
+            dy = mapPress1!.y - mapPress2!.y
+            let d2 = dx * dx + dy * dy
+            var z = sqrt(d2 / d1)
+            if(FakemapBG.xScale * z > 1){z = 1 / FakemapBG.xScale}
+            if(FakemapBG.xScale * z < 0.02){z = 0.02 / FakemapBG.xScale}
+            FakemapBG.xScale *= z
+            FakemapBG.yScale *= z
+            FakemapBG.position.x *= z
+            FakemapBG.position.y *= z
+        }
+        
         if dPad.contains(b) || thrustButton.contains(b){return}
         FakemapBG.position.x += b.x - a.x
         FakemapBG.position.y += b.y - a.y
     }
-    override func touch(at _: CGPoint) {
+    override func touch(at p: CGPoint) {
+        if mapPress1 == nil{
+            mapPress1 = p
+        }else if mapPress2 == nil{
+            mapPress2 = p
+        }else{
+            (mapPress1, mapPress2) = (mapPress2, p)
+        }
         if !startPressed && !pressed && children.count > MIN_NODES{
             accountIcon.removeFromParent()
             removeTapToStart()
@@ -740,6 +770,7 @@ class Play: PlayCore{
             var up = 0.07
             let _ = timeout(2){
                 up = -0.5
+                self.ship.run(.scale(to: 0.5, duration: 0.5))
             }
             var stop = {}
             let stop1 = interval(0.05){
@@ -747,6 +778,7 @@ class Play: PlayCore{
                 if(abs(mov) < 0.01){
                     return stop()
                 }
+                self.ship.xScale *= 0.99
                 self.cam.run(SKAction.moveBy(x: mov, y: 0, duration: 0.05).ease(.easeOut))
             }
             let stop2 = interval(0.06){
@@ -761,5 +793,19 @@ class Play: PlayCore{
             }
         }
         pressed = false
+    }
+    override func release(at point: CGPoint){
+        if let a = mapPress2{
+            //both
+            if closest(point, mapPress1!, mapPress2!){
+                mapPress1 = mapPress2
+                mapPress2 = nil
+            }else{
+                mapPress2 = nil
+            }
+        }else if let a = mapPress1{
+            //1
+            mapPress1 = nil
+        }
     }
 }

@@ -25,7 +25,6 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
     let star2 = SKSpriteNode(imageNamed: "stars")
     let cam = SKCameraNode()
     let door = SKSpriteNode(imageNamed: "door7")
-    
     //Sound
     
     let inShipSound = SKAudioNode(fileNamed: "inshipSound.wav")

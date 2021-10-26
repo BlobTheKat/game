@@ -202,10 +202,10 @@ class PlayCore: PlayNetwork{
             var sx = ship.position.x
             var sy = ship.position.y
             if isX{
-                sx = (sx < 0 ? -1 : 1) * (loadstack.size!.width / 2 + 10) + loadstack.pos!.x
+                sx = (sx < 0 ? -1 : 1) * (loadstack.size!.width / 2 + 2000) + loadstack.pos!.x
             }
             if isY{
-                sy = (sy < 0 ? -1 : 1) * (loadstack.size!.height / 2 + 10) + loadstack.pos!.y
+                sy = (sy < 0 ? -1 : 1) * (loadstack.size!.height / 2 + 2000) + loadstack.pos!.y
             }
             secx = Int(sx)
             secy = Int(sy)
@@ -215,10 +215,10 @@ class PlayCore: PlayNetwork{
             var sx = ship.position.x
             var sy = ship.position.y
             if isX{
-                sx = (sx < 0 ? -1 : 1) * (loadstack.size!.width / 2 + 10)
+                sx = (sx < 0 ? -1 : 1) * (loadstack.size!.width / 2 + 2000)
             }
             if isY{
-                sy = (sy < 0 ? -1 : 1) * (loadstack.size!.height / 2 + 10)
+                sy = (sy < 0 ? -1 : 1) * (loadstack.size!.height / 2 + 2000)
             }
             let x = loadstack.pos!.x + sx, y = loadstack.pos!.y + sy
             let regionx = 0, regiony = 0//fdiv(Int(x), REGIONSIZE), regiony = fdiv(Int(y), REGIONSIZE)
@@ -262,7 +262,7 @@ class PlayCore: PlayNetwork{
     func drawDebug(){
         if _a == 0{
             lastU = SystemDataUsage.complete &- lastComplete
-            lastComplete += lastU
+            lastComplete = lastComplete &+ lastU
             lastMem = report_memory()
         }
         DEBUG_TXT.text = "X: \(%ship.position.x) / Y: \(%ship.position.y)\nDX: \(%ship.velocity.dx) / DY: \(%ship.velocity.dy)\nA: \(%ship.zRotation), AV: \(%ship.angularVelocity)\nVEL: \(%vel) VER: \(build)\nMEM: \(lastMem)MB NET: \(UInt32(Double(lastU) * gameFPS / 20480.0))KB/s\n\(logs.joined(separator: "\n"))"
