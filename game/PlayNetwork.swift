@@ -24,6 +24,9 @@ class PlayNetwork: PlayConvenience{
     var sector: UInt32 = 0
     var istop = {}
     var loaded = 2
+    var usedShoot = false
+    var shotObj: Object? = nil
+    var usingConstantLazer = false
     var loadstack: (p: [Planet]?, size: CGSize?, pos: CGPoint?) = (p: nil, size: nil, pos: nil)
     var delay: Double = 0
     func parseShip(_ data: inout Data, _ i: Int){
@@ -82,12 +85,18 @@ class PlayNetwork: PlayConvenience{
             //send playerdata
             var data = Data([5])
             ship.encode(data: &data)
-            if hits.count > 10{
-                hits.removeLast(hits.count - 10)
+            
+            if hits.count > 7{
+                hits.removeLast(hits.count - 7)
             }
-            data.write(UInt8(hits.count))
+            data.write(UInt8(
+                hits.count + (shotObj != nil ? 8 : 0)))
+            if !usingConstantLazer{usedShoot = false}
             for hit in hits{
                 data.write(hit)
+            }
+            if shotObj != nil, let i = objects.firstIndex(of: shotObj!){
+                data.write(UInt32(i))
             }
             hits = []
             send(data)

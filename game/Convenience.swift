@@ -291,7 +291,7 @@ prefix operator %
 extension CGFloat{
     static prefix func %(_ num: CGFloat) -> String{
         if num.isNaN{
-            return "NaN     "
+            return " NaN     "
         }
         let neg = num < 0 ? "-" : " "
         let num = abs(num)
@@ -306,6 +306,26 @@ extension CGFloat{
             return "\(neg)\(String(format: "%.\(abs(pw)>9 ? "3" : "4")f", num/pow(10,pw)))\(pw<0 ? "R" : "E")\(Int(abs(pw)))"
         }
         return neg + String(format:"%.\(Int(6-Swift.max(pw,0)))f",num)
+    }
+}
+extension Float{
+    static prefix func %(_ num: Float) -> String{
+        if num.isNaN{
+            return " NaN   "
+        }
+        let neg = num < 0 ? "-" : " "
+        let num = abs(num)
+        if num >= 1e10{
+            return neg + "infnty"
+        }
+        if num < 1e-9{
+            return neg + "0.0000"
+        }
+        let pw = floor(log10(num))
+        if num > 9999 || num < 0.01{
+            return "\(neg)\(String(format: "%.2f", num/pow(10,pw)))\(pw<0 ? "R" : "E")\(Int(abs(pw)))"
+        }
+        return neg + String(format:"%.\(Int(4-Swift.max(pw,0)))f",num)
     }
 }
 extension Bool{

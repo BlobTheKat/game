@@ -120,15 +120,39 @@ class Object: SKSpriteNode, DataCodable{
                 let div = sqrt(dx * dx + dy * dy)
                 dx /= div
                 dy /= div
-                let (obj: obj, len: len, planet: planet) = raylen(objs: parent.planets, objs2: parent.objects, rayorigin: bullet.position, raydir: CGVector(dx: dx, dy: dy), this: position)
+                let (obj: obj, len: len, planet: _) = raylen(objs: parent.planets, objs2: parent.objects, rayorigin: bullet.position, raydir: CGVector(dx: dx, dy: dy), this: position)
                 if let obj = obj{
-                    obj//was hit
+                    parent.shotObj = obj
+                    if obj == parent.ship{
+                        if health > 0{
+                            health -= 1
+                            parent.healthBar.texture = SKTexture(imageNamed: "health\(health)")
+                            print("run")
+                            self.run(SKAction.sequence([
+                                SKAction.run{
+                                    let cam = parent.cam
+                                    parent.vibrateCamera(camera: cam, amount: 5)
+                                },
+                                SKAction.wait(forDuration: 0.5),
+                                SKAction.run {
+                                    parent.cam.removeAction(forKey: "vibratingCamera")
+                                    parent.cam.removeAction(forKey: "vibratingCameras")
+                                }
+                            ]))
+                        }else{
+                            parent.send(Data([127]))
+                            parent.end()
+                            DispatchQueue.main.async{SKScene.transition = .crossFade(withDuration: 0.5);PlayerDied.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0);}
+                        }
+                        //code above DIE if you get hit
+                    }else{
+                        //IF ITS NOT A SHIP
+                    }
                 }
-                if let planet = planet{
-                    //planet was hit
-                }
+                /*if let planet = planet{
+                    
+                }*/
                 let count = (len / 2 - 20) * gameFPS / 1500
-                
                 let o = obj ?? self
                 var offsetx = bullet.position.x - o.position.x
                 var offsety = bullet.position.y - o.position.y
@@ -179,8 +203,7 @@ class Object: SKSpriteNode, DataCodable{
         data.write(Float(self.velocity.dy))
         data.write(Int8(round((self.zRotation.remainder(dividingBy: .pi*2) + .pi*2).remainder(dividingBy: .pi*2) * 40)))
         data.write(UInt8(Int(self.angularVelocity * 768)&255))
-        
-        data.write(UInt16(thrust ? 1 : 0) + UInt16(thrustLeft ? 2 : 0) + UInt16(thrustRight ? 4 : 0) + UInt16(shootFrequency != 0 ? 8 : 0) + UInt16(self.id * 32))
+        data.write(UInt16(thrust ? 1 : 0) + UInt16(thrustLeft ? 2 : 0) + UInt16(thrustRight ? 4 : 0) + UInt16((parent as? Play)?.usedShoot ?? false ? 8 : 0) + UInt16(self.id * 32))
     }
     func decode(data: inout Data){
         self.position = CGPoint(x: CGFloat(data.readunsafe() as Float), y: CGFloat(data.readunsafe() as Float))

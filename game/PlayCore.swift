@@ -202,13 +202,13 @@ class PlayCore: PlayNetwork{
             var sx = ship.position.x
             var sy = ship.position.y
             if isX{
-                sx = (sx < 0 ? -1 : 1) * (loadstack.size!.width / 2 + 2000) + loadstack.pos!.x
+                sx = (sx < 0 ? -1 : 1) * (loadstack.size!.width / 2 + 2000)
             }
             if isY{
-                sy = (sy < 0 ? -1 : 1) * (loadstack.size!.height / 2 + 2000) + loadstack.pos!.y
+                sy = (sy < 0 ? -1 : 1) * (loadstack.size!.height / 2 + 2000)
             }
-            secx = Int(sx)
-            secy = Int(sy)
+            secx = Int(sx + loadstack.pos!.x)
+            secy = Int(sy + loadstack.pos!.y)
             ship.run(SKAction.move(by: CGVector(dx: ship.velocity.dx * CGFloat(gameFPS), dy: ship.velocity.dy * CGFloat(gameFPS)), duration: 1))
         }else if (isX || isY) && ship.controls && _a == 0{
             //calculate which sector you're gonna go to
@@ -239,7 +239,7 @@ class PlayCore: PlayNetwork{
         }
         _a = (_a + 1) % 20
         vel = CGFloat(sqrt(ship.velocity.dx*ship.velocity.dx + ship.velocity.dy*ship.velocity.dy)) * CGFloat(gameFPS)
-        speedLabel.text = "\(Int(vel/3)).00"
+        speedLabel.text = %Float(vel / 2)
     }
     func report_memory() -> UInt16{
         var taskInfo = mach_task_basic_info()
@@ -265,6 +265,6 @@ class PlayCore: PlayNetwork{
             lastComplete = lastComplete &+ lastU
             lastMem = report_memory()
         }
-        DEBUG_TXT.text = "X: \(%ship.position.x) / Y: \(%ship.position.y)\nDX: \(%ship.velocity.dx) / DY: \(%ship.velocity.dy)\nA: \(%ship.zRotation), AV: \(%ship.angularVelocity)\nVEL: \(%vel) VER: \(build)\nMEM: \(lastMem)MB NET: \(UInt32(Double(lastU) * gameFPS / 20480.0))KB/s\n\(logs.joined(separator: "\n"))"
+        DEBUG_TXT.text = "X: \(%ship.position.x) / Y: \(%ship.position.y)\nDX: \(%ship.velocity.dx) / DY: \(%ship.velocity.dy)\nA: \(%ship.zRotation), AV: \(%ship.angularVelocity)\nVEL: \(%vel) VER: \(build)\nMEM: \(lastMem)MB NET: \(Int(Double(lastU) * gameFPS / 20480.0))KB/s\n\(logs.joined(separator: "\n"))"
     }
 }

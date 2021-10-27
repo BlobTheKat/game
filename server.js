@@ -446,7 +446,7 @@ server.on('message', function(message, remote) {
         }
         return
     }
-    if(clients.has(address))msg(message,send,address)
+    if(clients.has(address))try{msg(message,send,address)}catch(e){send(Buffer.concat([[127], strbuf("Corrupt Packet")]))}
 });
 
 function msg(data, reply, address){
@@ -455,8 +455,7 @@ function msg(data, reply, address){
     ship.ping()
     if(data[0] == 3){
         reply(Buffer.of(4))
-    }
-    if(data[0] == 5){
+    }else if(data[0] == 5){
         let cc = data[21]
         let hitc = cc & 7
         let i = 22
@@ -493,20 +492,18 @@ function msg(data, reply, address){
         for(var obj of sector.objects){
             if(obj == ship)continue
             dat.push(Buffer.alloc(20))
-            obj.toBuf(dat[dat.length - 1])
+            obj.toBuf(dat[dat.length - 1], 0, ship)
         }
         buf = Buffer.concat(dat)
         reply(buf)
-    }
-    if(data[0] == 127){
+    }else if(data[0] == 127){
         clients.get(address).wasDestroyed()
-    }
-    if(data[0] == 7){
+    }else if(data[0] == 7){
         let x = data.readFloatLE(1)
         let y = data.readFloatLE(5)
         //magic
         let newSector = 1
         console.log("destroyed >:D")
         ship.wasDestroyed()
-    }
+    }else send(Buffer.concat([[127], strbuf("Illegal Packet")]))
 }
