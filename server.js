@@ -37,7 +37,8 @@ function readfile(path){
     while(i < text.length){
         arr.push({})
         while(text[i]){
-            let t = text[i].split(':',2)
+            let t = text[i].split(':')
+            t[1] = t.slice(1).join(':')
             if(!t[1])continue
             t[1] = t[1].trim()
             if(t[1] == "true" || t[1] == "yes")t[1] = true
@@ -163,7 +164,7 @@ if(!meta || xy){
             console.log("Done! Enter \x1b[33mPORT\x1b[m:")
             let _u = function(p){
                 if(+p != +p || p > 65535 || p < 0)return console.log("Enter \x1b[33mPORT\x1b[m:"), RESPONSE = _u
-                let name = (meta && meta.path.replace(/^\//,"")) || 'sectors/sector_'+sx+'_'+sy
+                let name = (meta && meta.path.replace(/^\//,"")) || 'sectors/sector_'+Math.round(sx/1000)+'_'+Math.round(sx/1000)
                 fs.writeFileSync(name, arr.map(a=>Object.entries(a).map(a=>a.join(': ')).join('\n')).join('\n\n'))
                 if(xy)return process.exit(0)
                 fs.writeFileSync('meta', 'x: '+sx+'\ny: '+sy+'\nw: '+w+'\nh: '+h+'\nport: '+p+'\npath: '+name)
