@@ -26,7 +26,6 @@ class PlayCore: PlayNetwork{
     let star3 = SKSpriteNode(imageNamed: "stars")
     let star4 = SKSpriteNode(imageNamed: "stars")
     let speedLabel =  SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
-    var coolingDown = false
     let playerArrow = SKSpriteNode(imageNamed: "playerArrow")
     override func update(_ currentTime: TimeInterval){
         if view == nil{return}

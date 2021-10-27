@@ -163,7 +163,7 @@ if(!meta || xy){
             console.log("Done! Enter \x1b[33mPORT\x1b[m:")
             let _u = function(p){
                 if(+p != +p || p > 65535 || p < 0)return console.log("Enter \x1b[33mPORT\x1b[m:"), RESPONSE = _u
-                let name = (meta && meta.path) || 'sector_'+sx+'_'+sy
+                let name = (meta && meta.path.replace(/^\//,"")) || 'sectors/sector_'+sx+'_'+sy
                 fs.writeFileSync(name, arr.map(a=>Object.entries(a).map(a=>a.join(': ')).join('\n')).join('\n\n'))
                 if(xy)return process.exit(0)
                 fs.writeFileSync('meta', 'x: '+sx+'\ny: '+sy+'\nw: '+w+'\nh: '+h+'\nport: '+p+'\npath: '+name)
@@ -182,7 +182,7 @@ if(!meta || xy){
     if(xy)setImmediate(a=>(RESPONSE(xy[0]),RESPONSE(xy[1]),RESPONSE=null))
 }else{
     setImmediate(function(){
-        let data = readfile(meta.path)
+        let data = readfile(meta.path.replace(/^\//,""))
         data.forEach(function(item){
             if(item.id)sector.objects.push(new Asteroid(item))
             else sector.planets.push(new Planet(item))
@@ -388,7 +388,7 @@ class ClientData{
         if(Math.abs(this.y - y) < dy * 0.5)this.y = y, update--
         if(Math.abs(this.dz - dz) < amult * 0.001)this.dz = dz, update--
         if(Math.abs(this.z - z) < dz * 0.5)this.z = z, update--
-        if(!update)return this.tobuf()*/
+        if(!update)return this.toBuf()*/
         this.x = x
         this.y = y
         this.z = z
@@ -409,6 +409,7 @@ class ClientData{
         buf[offset+16] = Math.round(((this.z % PI2) + PI2) % PI2 * 40)
         buf.writeUInt8((this.dz * 768)&255, offset+17)
         buf.writeUint16LE((this.thrust & 15) + (this.id << 5) + (this.shoots == ref ? 16 : 0), offset + 18)
+        if(this.shoots == ref)this.shoots = null
         return buf
     }
     ping(){
@@ -474,7 +475,7 @@ function msg(data, reply, address){
                 ship.shoots = obj
             }
             i += 4
-        }else ship.shoots = null
+        }
         
         let a = ship.validate(data.slice(1,21))
         let buf = Buffer.alloc(a.length ? 22 : 2)

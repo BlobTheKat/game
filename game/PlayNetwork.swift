@@ -25,6 +25,7 @@ class PlayNetwork: PlayConvenience{
     var istop = {}
     var loaded = 2
     var usedShoot = false
+    var coolingDown = false
     var shotObj: Object? = nil
     var usingConstantLazer = false
     var loadstack: (p: [Planet]?, size: CGSize?, pos: CGPoint?) = (p: nil, size: nil, pos: nil)
@@ -91,7 +92,7 @@ class PlayNetwork: PlayConvenience{
             }
             data.write(UInt8(
                 hits.count + (shotObj != nil ? 8 : 0)))
-            if !usingConstantLazer{usedShoot = false}
+            if !usingConstantLazer || coolingDown{usedShoot = false}
             for hit in hits{
                 data.write(hit)
             }
