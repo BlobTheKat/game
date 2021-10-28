@@ -65,7 +65,7 @@ class PlayConvenience: SKScene{
 }
 
 func random() -> CGFloat{
-    return CGFloat(Float(arc4random()) / 0x100000000)
+    return CGFloat(Double(arc4random()) / 0x100000000)
 }
 func random(min: CGFloat, max: CGFloat) -> CGFloat{
     return floor(random() * (max - min) + min)
@@ -73,5 +73,9 @@ func random(min: CGFloat, max: CGFloat) -> CGFloat{
 
 func randDir(_ radius: CGFloat) -> CGVector{
     let direction = random() * .pi * 2
+    return CGVector(dx: sin(direction) * radius, dy: cos(direction) * radius)
+}
+
+func dir(_ direction: CGFloat, _ radius: CGFloat) -> CGVector{
     return CGVector(dx: sin(direction) * radius, dy: cos(direction) * radius)
 }

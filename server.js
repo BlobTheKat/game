@@ -507,5 +507,5 @@ function msg(data, reply, address){
         let newSector = 1
         console.log("destroyed >:D")
         ship.wasDestroyed()
-    }else send(Buffer.concat([[127], strbuf("Illegal Packet")]))
+    }else reply(Buffer.concat([[127], strbuf("Illegal Packet")]))
 }

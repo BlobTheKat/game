@@ -8,6 +8,26 @@
 import Foundation
 import SpriteKit
 
+let P20 = CGFloat.pi / 10
+
+let appear = { (_ pos: CGPoint) -> [Particle] in
+    var p = [Particle]()
+    for i in 1...20{
+        let dir = dir(CGFloat(i) * P20, random(min: 50, max: 100))
+        p.append(Particle[State(color: (r: 0, g: 0.2, b: 1), size: CGSize(width: 15, height: 15), zRot: 0, position: CGPoint(x: pos.x + dir.dx, y: pos.y + dir.dy), alpha: 0), State(color: (r: 1, g: 1, b: 1), size: CGSize(width: 10, height: 10), zRot: 0, position: CGPoint(x: pos.x, y: pos.y), alpha: 1, delay: 1)])
+    }
+    return p
+}
+let disappear = { (_ pos: CGPoint) -> [Particle] in
+    var p = [Particle]()
+    for i in 1...20{
+        let dir = dir(CGFloat(i) * P20, random(min: 50, max: 100))
+        p.append(Particle[State(color: (r: 1, g: 1, b: 0), size: CGSize(width: 10, height: 10), zRot: 0, position: CGPoint(x: pos.x, y: pos.y), alpha: 1), State(color: (r: 1, g: 0, b: 0), size: CGSize(width: 15, height: 15), zRot: 0, position: CGPoint(x: pos.x + dir.dx, y: pos.y + dir.dy), alpha: 0, delay: 1)])
+        
+    }
+    return p
+}
+
 let particles: [(Object) -> Particle] = [
     { (planet) in
         let dir = randDir(planet.radius)

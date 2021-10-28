@@ -37,6 +37,7 @@ class Object: SKSpriteNode, DataCodable{
     var shlock: Int = 0
     var particle = {(_:Object) -> Particle in fatalError("particle() accessed before super.init call")}
     var asteroid: Bool
+    var death: UInt16 = 0
     func defParticle(_ ship: Object) -> Particle{
         let d: CGFloat = CGFloat(1.5 * gameFPS)
         let start = State(color: (r: 1, g: 1, b: 0), size: CGSize(width: 10, height: 10), zRot: 0, position: ship.position, alpha: 0.9)
@@ -97,9 +98,15 @@ class Object: SKSpriteNode, DataCodable{
         zRotation += angularVelocity
         var i = 0
         guard let parent = parent else{return}
+        if self.death > 0{
+            self.death -= 1
+            if self.death % 100 == 0{
+                self.death = 0
+            }
+        }
         shootQueue += shootFrequency
         while shootQueue > 1{
-            self.run(shootSound)
+            self.run(parent.shootSound)
             if shlock > 0{
                 zRotation = -atan2(parent.ship.position.x - position.x, parent.ship.position.y - position.y)
                 shlock -= 1
@@ -123,26 +130,28 @@ class Object: SKSpriteNode, DataCodable{
                 let (obj: obj, len: len, planet: _) = raylen(objs: parent.planets, objs2: parent.objects, rayorigin: bullet.position, raydir: CGVector(dx: dx, dy: dy), this: position)
                 if let obj = obj{
                     parent.shotObj = obj
+                    obj.death = 200
                     if obj == parent.ship{
-                        if health > 0{
-                            health -= 1
-                            parent.healthBar.texture = SKTexture(imageNamed: "health\(health)")
-                            print("run")
-                            self.run(SKAction.sequence([
-                                SKAction.run{
-                                    let cam = parent.cam
-                                    parent.vibrateCamera(camera: cam, amount: 5)
-                                },
-                                SKAction.wait(forDuration: 0.5),
-                                SKAction.run {
-                                    parent.cam.removeAction(forKey: "vibratingCamera")
-                                    parent.cam.removeAction(forKey: "vibratingCameras")
-                                }
-                            ]))
-                        }else{
-                            parent.send(Data([127]))
-                            parent.end()
-                            DispatchQueue.main.async{SKScene.transition = .crossFade(withDuration: 0.5);PlayerDied.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0);}
+                        let _ = timeout((len - 10) / 1500){
+                            if parent.health > 0{
+                                parent.health -= 1
+                                parent.healthBar.texture = SKTexture(imageNamed: "health\(parent.health)")
+                                self.run(SKAction.sequence([
+                                    SKAction.run{
+                                        let cam = parent.cam
+                                        parent.vibrateCamera(camera: cam, amount: 5)
+                                    },
+                                    SKAction.wait(forDuration: 0.5),
+                                    SKAction.run {
+                                        parent.cam.removeAction(forKey: "vibratingCamera")
+                                        parent.cam.removeAction(forKey: "vibratingCameras")
+                                    }
+                                ]))
+                            }else if parent.health == 0{
+                                
+                                let _ = timeout(1){parent.send(Data([127]))
+                                    parent.end();self.death = 200;parent.kill(parent.ship);SKScene.transition = .crossFade(withDuration: 0.5);PlayerDied.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0);}
+                            }
                         }
                         //code above DIE if you get hit
                     }else{
@@ -201,12 +210,12 @@ class Object: SKSpriteNode, DataCodable{
         data.write(Float(self.position.y))
         data.write(Float(self.velocity.dx))
         data.write(Float(self.velocity.dy))
-        data.write(Int8(round((self.zRotation.remainder(dividingBy: .pi*2) + .pi*2).remainder(dividingBy: .pi*2) * 40)))
+        data.write(Int8(round(self.zRotation.remainder(dividingBy: .pi*2) * 40)))
         data.write(UInt8(Int(self.angularVelocity * 768)&255))
         data.write(UInt16(thrust ? 1 : 0) + UInt16(thrustLeft ? 2 : 0) + UInt16(thrustRight ? 4 : 0) + UInt16((parent as? Play)?.usedShoot ?? false ? 8 : 0) + UInt16(self.id * 32))
     }
     func decode(data: inout Data){
-        self.position = CGPoint(x: CGFloat(data.readunsafe() as Float), y: CGFloat(data.readunsafe() as Float))
+        let pos = CGPoint(x: CGFloat(data.readunsafe() as Float), y: CGFloat(data.readunsafe() as Float))
         self.velocity = CGVector(dx: CGFloat(data.readunsafe() as Float), dy: CGFloat(data.readunsafe() as Float))
         self.zRotation = CGFloat(data.readunsafe() as Int8) / 40
         self.angularVelocity = CGFloat(data.readunsafe() as Int8) / 768
@@ -229,6 +238,7 @@ class Object: SKSpriteNode, DataCodable{
             self.shootFrequency = shoot ? SHOOTFREQUENCIES[id-1] : 0
         }
         let id = Int(bits / 32)
+        if id != 0{self.position = pos}
         if id != self.id || oa != asteroid{
             self.id = id
             let ship = (asteroid ? asteroids : ships)[id]
@@ -365,19 +375,22 @@ class Planet: Object{
             if n.asteroid || deathzone || superhot{
                 let parent = n.parent as? Play
                 if parent != nil{
-                    n.dynamic = false
-                    n.controls = false
-                    if let parent = (n.parent as? Play), let i = parent.objects.firstIndex(of: n){
-                        parent.objects[i] = Object()
-                    }
-                    n.run(SKAction.sequence([SKAction.fadeOut(withDuration: 1),SKAction.run{n.removeFromParent()
-                        if n == parent!.ship{
-                            parent!.send(Data([127]))
-                            parent!.end()
-                            DispatchQueue.main.async{SKScene.transition = .crossFade(withDuration: 0.5);PlayerDied.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0);}
+                    if n == parent!.ship{
+                        n.dynamic = false
+                        n.controls = false
+                        if let parent = (n.parent as? Play), let i = parent.objects.firstIndex(of: n){
+                            parent.objects[i] = Object()
                         }
-                    }]))
-                    n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * CGFloat(gameFPS), dy: CGFloat(n.velocity.dy) * CGFloat(gameFPS)), duration: 1))
+                        n.run(SKAction.sequence([SKAction.fadeOut(withDuration: 1),SKAction.run{n.removeFromParent()
+                            
+                                parent!.send(Data([127]))
+                                parent!.end()
+                                DispatchQueue.main.async{SKScene.transition = .crossFade(withDuration: 0.5);PlayerDied.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0);}
+                        }]))
+                        n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * CGFloat(gameFPS), dy: CGFloat(n.velocity.dy) * CGFloat(gameFPS)), duration: 1))
+                    }else{
+                        n.death = 100
+                    }
                 }
                
                 return
@@ -421,19 +434,21 @@ class Planet: Object{
             if deathzone && !superhot{
                 let parent = n.parent as? Play
                 if parent != nil{
-                    n.dynamic = false
-                    n.controls = false
-                    if let parent = (n.parent as? Play), let i = parent.objects.firstIndex(of: n){
-                        parent.objects[i] = Object()
-                    }
-                    n.run(SKAction.sequence([SKAction.fadeOut(withDuration: 1),SKAction.run{n.removeFromParent()
-                        if n == parent!.ship{
-                            parent!.send(Data([127]))
-                            parent!.end()
-                            DispatchQueue.main.async{SKScene.transition = .crossFade(withDuration: 0.5);PlayerDied.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0);}
+                    if n == parent!.ship{
+                        n.dynamic = false
+                        n.controls = false
+                        if let parent = (n.parent as? Play), let i = parent.objects.firstIndex(of: n){
+                            parent.objects[i] = Object()
                         }
-                    }]))
-                    n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * CGFloat(gameFPS), dy: CGFloat(n.velocity.dy) * CGFloat(gameFPS)), duration: 1))
+                        n.run(SKAction.sequence([SKAction.fadeOut(withDuration: 1),SKAction.run{n.removeFromParent()
+                                parent!.send(Data([127]))
+                                parent!.end()
+                                DispatchQueue.main.async{SKScene.transition = .crossFade(withDuration: 0.5);PlayerDied.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0);}
+                        }]))
+                        n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * CGFloat(gameFPS), dy: CGFloat(n.velocity.dy) * CGFloat(gameFPS)), duration: 1))
+                    }else{
+                        n.death = 100
+                    }
                 }
                 return
             }
