@@ -24,21 +24,71 @@ class PlayNetwork: PlayConvenience{
     var sector: UInt32 = 0
     var istop = {}
     var loaded = 2
+    var usedShoot = false
+    var coolingDown = false
+    var shotObj: Object? = nil
+    var usingConstantLazer = false
+    var tracked: [Object] = []
+    var trackArrows: [SKSpriteNode] = []
     var loadstack: (p: [Planet]?, size: CGSize?, pos: CGPoint?) = (p: nil, size: nil, pos: nil)
     var delay: Double = 0
+    let inlightSpeed = SKAudioNode(fileNamed: "InLightSpeed.wav")
+    
+    func kill(_ n: Object){
+        if n.death > 100{
+            //explode
+            for i in disappear(n.position){
+                self.particles.append(i)
+                self.addChild(i)
+            }
+        }else if n.death > 0{
+            //fade
+            n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * CGFloat(gameFPS), dy: CGFloat(n.velocity.dy) * CGFloat(gameFPS)), duration: 1))
+        }else{n.removeFromParent()}
+    }
+    
+    
     func parseShip(_ data: inout Data, _ i: Int){
         guard i < objects.count else {
             let object = Object()
             object.decode(data: &data)
             objects.append(object)
-            if object.id != 0{DispatchQueue.main.async{self.addChild(object)}}
+            if object.id != 0{
+                for i in appear(object.position){
+                    self.particles.append(i)
+                    self.addChild(i)
+                }
+                self.addChild(object)
+                object.alpha = 0
+                let _ = timeout(1){
+                    object.alpha = 1
+                }
+            }
             return
         }
         let object = objects[i]
         object.decode(data: &data)
-        DispatchQueue.main.async{
-            if object.id == 0 && object.parent != nil{object.removeFromParent()}
-            if object.id != 0 && object.parent == nil{self.addChild(object)}
+        if object.id == 0 && object.parent != nil{
+            if let i = tracked.firstIndex(of: object){
+                trackArrows[i].removeFromParent()
+                tracked.remove(at: i)
+                trackArrows.remove(at: i)
+            }
+            kill(object)
+            object.removeFromParent()
+        }
+        if object.id != 0 && object.parent == nil{
+            if ship.death == 0{
+                for i in appear(object.position){
+                    self.particles.append(i)
+                    self.addChild(i)
+                }
+                self.addChild(object)
+                object.alpha = 0
+                let _ = timeout(1){
+                    object.alpha = 1
+                }
+            }
         }
     }
     func sectorpos(_ x: Int, _ y: Int){
@@ -82,13 +132,20 @@ class PlayNetwork: PlayConvenience{
             //send playerdata
             var data = Data([5])
             ship.encode(data: &data)
-            if hits.count > 10{
-                hits.removeLast(hits.count - 10)
+            
+            if hits.count > 7{
+                hits.removeLast(hits.count - 7)
             }
-            data.write(UInt8(hits.count))
+            if shotObj != nil && objects.firstIndex(of: shotObj!) == nil{shotObj = nil}
+            data.write(UInt8(hits.count + (shotObj != nil ? 8 : 0)))
+            if !usingConstantLazer || coolingDown{usedShoot = false}
             for hit in hits{
                 data.write(hit)
             }
+            if shotObj != nil, let i = objects.firstIndex(of: shotObj!){
+                data.write(UInt32(i))
+            }
+            shotObj = nil
             hits = []
             send(data)
         })
@@ -116,12 +173,12 @@ class PlayNetwork: PlayConvenience{
         DEBUG_TXT.fontColor = .white
         DEBUG_TXT.horizontalAlignmentMode = .left
         DEBUG_TXT.verticalAlignmentMode = .top
-        DEBUG_TXT.numberOfLines = 10
-        cam.addChild(DEBUG_TXT)
+        DEBUG_TXT.numberOfLines = 20
         api.sector(completion: sectorpos)
     }
     var ended = false
     func end(){
+        inlightSpeed.run(stopSound)
         //release texture objects
         for p in loadstack.p ?? []{
             p.texture = nil
@@ -175,6 +232,15 @@ class PlayNetwork: PlayConvenience{
                 physics.asyncAfter(deadline: last){ [self] in
                     var i = 0
                     while data.count > 19{parseShip(&data, i);i += 1}
+                    for e in objects.suffix(max(objects.count - i, 0)){
+                        if let i = tracked.firstIndex(of: e){
+                            trackArrows[i].removeFromParent()
+                            tracked.remove(at: i)
+                            trackArrows.remove(at: i)
+                        }
+                        kill(e)
+                        e.removeFromParent()
+                    }
                     objects.removeLast(max(objects.count - i, 0))
                 }
             }

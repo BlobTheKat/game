@@ -8,25 +8,21 @@
 import SpriteKit
 import GameKit
 
-var shootSound = SKAction.playSoundFileNamed("Lazer.wav", waitForCompletion: false)
 
 let stopSound = SKAction.stop()
 let playSound = SKAction.play()
-
 
 class Play: PlayCore{
     
     //SOUND EFFECT
     var lightSpeedOut = SKAction.playSoundFileNamed("LightSpeedOut.wav", waitForCompletion: false)
-    
-    let inlightSpeed = SKAudioNode(fileNamed: "InLightSpeed.wav")
    
+    var playedLightSpeedOut = false
+    var health = 13
+    var shootSound = SKAction.playSoundFileNamed("Lazer.wav", waitForCompletion: false)
     
     
-    
-    
-    
-    
+   
     
     let tapToStart =  SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
     var currentSpeed = Int()
@@ -34,13 +30,16 @@ class Play: PlayCore{
     var showMap = false
     var actionStopped = false
     var heatLevel = 0
-    var usingConstantLazer = false
     var showNav = false
     let thrustButton = SKSpriteNode(imageNamed: "thrustOff")
     let heatingLaser = SKSpriteNode(imageNamed: "heating0")
     let dPad = SKSpriteNode(imageNamed: "dPad")
     //CCOUNT
     let accountIcon = SKSpriteNode(imageNamed: "accountIcon")
+    let accountBG = SKSpriteNode(imageNamed: "accountBG")
+    var showAccount = false
+    
+    
     let speedBG = SKSpriteNode(imageNamed: "speedBG")
     let mapBG = SKSpriteNode(imageNamed: "mapBG")
     let FakemapBG = SKSpriteNode(imageNamed: "fakeMapBG")
@@ -54,18 +53,18 @@ class Play: PlayCore{
     let repairIcon = SKSpriteNode(imageNamed: "repairOff")
     let lightSpeedIcon = SKSpriteNode(imageNamed: "lightSpeedOff")
     let cockpitIcon = SKSpriteNode(imageNamed: "cockpitOff")
+    let removeTrackerIcon = SKSpriteNode(imageNamed: "removeTracker")
     
     //WARNINGS
     var isWarning = false
     let warning = SKSpriteNode(imageNamed: "warning")
 
-    let speedUI = SKSpriteNode(imageNamed: "speed29")
+    let healthBar = SKSpriteNode(imageNamed: "health13")
     
     let tunnel1 = SKSpriteNode(imageNamed: "tunnel1")
     let tunnel2 = SKSpriteNode(imageNamed: "tunnel2")
     
-    
-    
+    let f3 = SKShapeNode(circleOfRadius: 43)
     func suit(_ id: Int){
         ship.id = id
         let sh = ships[id]
@@ -79,6 +78,9 @@ class Play: PlayCore{
         ship.body(radius: CGFloat(radius), mass: CGFloat(mass), texture: SKTexture(imageNamed: t))
         ship.shootPoints = SHOOTPOINTS[id-1]
         ship.shootVectors = SHOOTVECTORS[id-1]
+    }
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     override init(size: CGSize) {
         super.init(size: size)
@@ -96,21 +98,35 @@ class Play: PlayCore{
         tunnel2.position = pos(mx: 0.5, my: 0, x: 5)
         tunnel2.setScale(0.4)
         cam.addChild(tunnel2)
+        ship.death = 100
         self.addChild(ship)
         vibrateCamera(camera: cam)
         //ACCOUNT
-        accountIcon.position = pos(mx: 0.5, my: 0.5, x: -50, y: 20)
+        let nw = accountBG.size.width
+        accountBG.position = pos(mx: 0, my: 0.5, x: 0)
+        accountBG.setScale(0.3)
+        accountBG.zPosition = 1000
+        accountBG.anchorPoint = CGPoint(x: 0.5 ,y: 0)
+        cam.addChild(accountBG)
+        
+        accountIcon.position = pos(mx: 0, my: 0.5, x: accountBG.size.width * 0.5 + 150, y: 20)
         accountIcon.anchorPoint = CGPoint(x: 1, y: 1)
         accountIcon.setScale(0.6)
         cam.addChild(accountIcon)
+        if(accountIcon.position.x > self.size.width * 0.4 - 70){
+            //reposition for smaller screens
+            let dif = accountIcon.position.x - self.size.width * 0.4 - 70
+            accountIcon.position.x -= dif
+            print(self.size.width * 0.4, accountIcon.size.width, nw)
+            accountBG.setScale((self.size.width - accountIcon.size.width) / nw)
+            accountBG.position.x -= dif - 100
+        }
         inlightSpeed.run(playSound)
+        
+        
         
         self.addChild(inlightSpeed)
         didInit()
-    }
-    
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
     }
     var moved = false
     override func didMove(to view: SKView) {
@@ -119,7 +135,6 @@ class Play: PlayCore{
         guard ready else{return}
         ship.position = CGPoint(x: CGFloat(secx) - loadstack.pos!.x, y: CGFloat(secy) - loadstack.pos!.y)
         cam.position = CGPoint(x: ship.position.x, y: ship.position.y)
-        
         moved = true
         border1.zRotation = .pi / 2
         border1.position.y = (cam.position.y < 0 ? -0.5 : 0.5) * loadstack.size!.height
@@ -132,7 +147,7 @@ class Play: PlayCore{
         self.addChild(border2)
         ship.run(SKAction.fadeAlpha(by: 1, duration: 1).ease(.easeOut))
         //setting tapToStart label relative to camera (static)
-        self.label(node: tapToStart, "tap to start", pos: pos(mx: 0, my: -0.4), size: fmed, color: .white, font: "HalogenbyPixelSurplus-Regular", zPos: 1000, isStatic: true)
+        self.label(node: tapToStart, "tap to start", pos: pos(mx: 0, my: -0.4), size: fmed, color: .white, font: "HalogenbyPixelSurplus-Regular", zPos: 999, isStatic: true)
         self.run(SKAction.repeat(SKAction.sequence([
             SKAction.run{
                 if self.children.count < self.MIN_NODES{
@@ -162,10 +177,6 @@ class Play: PlayCore{
                 self.tapToStart.run(SKAction.moveBy(x: 0, y: -10, duration: 2).ease(.easeOut))
             }
         }
-        star1.texture!.filteringMode = .nearest
-        star2.texture!.filteringMode = .nearest
-        star3.texture!.filteringMode = .nearest
-        star4.texture!.filteringMode = .nearest
     }
     var trails: [SKSpriteNode] = []
     var animated = false
@@ -271,6 +282,7 @@ class Play: PlayCore{
         self.tapToStart.run(SKAction.scale(by: 1.5, duration: 0.2))
     }
     func startGame(){
+        wasMoved()
             self.removeAction(forKey: "loading")
             map(planets: planets, size: loadstack.size!, pos: loadstack.pos!, x: true)
             for (_, v) in sectors{
@@ -304,7 +316,7 @@ class Play: PlayCore{
             speedLabel.color = .white
             speedLabel.zRotation = 0.165
             speedLabel.horizontalAlignmentMode = .left
-            speedLabel.position = CGPoint(x: -self.size.width/5.5 ,y: -self.size.height/6.9)
+            speedLabel.position = CGPoint(x: -speedBG.size.width/2.7 ,y: -speedBG.size.height/3)
             speedLabel.xScale = 1.3
             speedBG.addChild(speedLabel)
             
@@ -318,27 +330,11 @@ class Play: PlayCore{
             
         
         avatar.position = pos(mx: -0.385, my: 0.35)
-        avatar.alpha = 0.1
+        avatar.alpha = 0.3
         avatar.zPosition = 10
         avatar.setScale(0.7)
         cam.addChild(avatar)
-        
-            
-            self.addChild(star1)
-            star1.setScale(2)
-            star1.zPosition = -10
-            self.addChild(star2)
-            star2.setScale(2)
-            star2.zPosition = -10
-            self.addChild(star3)
-            star3.setScale(2)
-            star3.zPosition = -10
-            self.addChild(star4)
-            star4.zPosition = -10
-            star4.setScale(2)
-        
-            
-            //NAVIGATION
+        //NAVIGATION
        
         navArrow.position = pos(mx: 0.43, my: 0.5)
         navArrow.alpha = 1
@@ -371,6 +367,18 @@ class Play: PlayCore{
         lightSpeedIcon.setScale(1.1)
         navBG.addChild(lightSpeedIcon)
         
+        removeTrackerIcon.position = CGPoint(x: lightSpeedIcon.position.x + (lightSpeedIcon.size.width * 1.5) ,y: lightSpeedIcon.position.y )
+        removeTrackerIcon.alpha = 1
+        removeTrackerIcon.zPosition = 11
+        removeTrackerIcon.setScale(0.9)
+        navBG.addChild(removeTrackerIcon)
+        f3.position = CGPoint(x: repairIcon.position.x + (repairIcon.size.width * 1.5) ,y: repairIcon.position.y)
+        f3.alpha = 0.1
+        f3.zPosition = 11
+        f3.setScale(0.9)
+        f3.fillColor = .black
+        navBG.addChild(f3)
+        
             cockpitIcon.position = CGPoint(x: -navBG.size.width/1.2 ,y: lightSpeedIcon.position.y + (lightSpeedIcon.size.height * 1.2) )
             cockpitIcon.alpha = 1
             cockpitIcon.anchorPoint = CGPoint(x: 0.1, y: 0)
@@ -379,11 +387,11 @@ class Play: PlayCore{
             navBG.addChild(cockpitIcon)
        //WARNINGS
             
-        warning.position = CGPoint(x: 0 ,y: -speedUI.size.height   )
+        warning.position = CGPoint(x: 0 ,y: -healthBar.size.height   )
         warning.alpha = 0
         warning.zPosition = 10
         warning.setScale(2)
-        speedUI.addChild(warning)
+        healthBar.addChild(warning)
             
             
             
@@ -422,18 +430,18 @@ class Play: PlayCore{
             heatingLaser.setScale(0.12)
             thrustButton.addChild(heatingLaser)
             
-        speedUI.position = pos(mx: 0, my: 0.47)
-        speedUI.alpha = 1
-        speedUI.zPosition = 10
-        speedUI.setScale(0.15)
-        cam.addChild(speedUI)
+        healthBar.position = pos(mx: 0, my: 0.47)
+        healthBar.alpha = 1
+        healthBar.zPosition = 10
+        healthBar.setScale(0.15)
+        cam.addChild(healthBar)
             
             
-            speedBG.position = CGPoint(x: speedUI.size.width * 1.8, y: -speedUI.size.height * 2.5 )
+            speedBG.position = CGPoint(x: healthBar.size.width * 1.8, y: -healthBar.size.height * 2.5 )
         speedBG.alpha = 1
         speedBG.zPosition = 10
         speedBG.setScale(2)
-        speedUI.addChild(speedBG)
+        healthBar.addChild(speedBG)
         
         
         tunnel1.run(SKAction.moveBy(x: -200, y: 30, duration: 0.6).ease(.easeOut))
@@ -455,109 +463,21 @@ class Play: PlayCore{
         ])), withKey: "warningAlpha")
     }
     var pressed = false
-    override func nodeDown(_ node: SKNode, at point: CGPoint) {
-        if accountIcon == node{
-            pressed = true
-            GKLocalPlayer.local.authenticateHandler = { viewController, error in
-                if let viewController = viewController{
-                    viewController.present(controller, animated: true) {
-                        print("authed")
-                    }
-                    return
-                }
-            }
-        }
-        if cockpitIcon == node{
-            cockpitIcon.texture = SKTexture(imageNamed: "cockpitOn")
-        }
-        if let n = node as? Object{
-            guard n as? Planet == nil else{return}
-            if let i = tracked.firstIndex(of: n){
-                tracked.remove(at: i)
-                trackArrows.remove(at: i)
-            }else{
-                tracked.append(n)
-                let a = SKSpriteNode(imageNamed: "arrow")
-                a.anchorPoint = CGPoint(x: 0.5, y: 1)
-                a.setScale(0.25)
-                trackArrows.append(a)
-            }
-        }
-        if repairIcon == node{
-            if isWarning{
-                warning.removeAction(forKey: "warningAlpha")
-                warning.alpha = 0
-                isWarning = false
-            }else{
-                DisplayWARNING()
-                isWarning = true
-            }
-        }
-        if navArrow == node{
-            if showNav == false{
-            navArrow.run(SKAction.move(to: pos(mx: 0.43, my: 0 ), duration: 0.35).ease(.easeOut))
-            navArrow.run(SKAction.rotate(toAngle: 3.18, duration: 0.35).ease(.easeOut))
-                navBG.run(SKAction.move(to: pos(mx: 0.43, my: 0 ), duration: 0.35).ease(.easeOut))
-                showNav = true
-            }else if showNav == true{
-                navArrow.run(SKAction.move(to: pos(mx: 0.43, my: 0.5 ), duration: 0.35).ease(.easeOut))
-                navArrow.run(SKAction.rotate(toAngle: 0, duration: 0.35).ease(.easeOut))
-                navBG.run(SKAction.move(to: pos(mx: 0.43, my: 0.5  ), duration: 0.35).ease(.easeOut))
-                showNav = false
-            }
-        }
-        if thrustButton == node{
-            if point.y > thrustButton.position.y + 50{
-                thrustButton.texture = SKTexture(imageNamed: "shooting2")
-                if !usingConstantLazer{
-                    self.actionStopped = false
-                    constantLazer()
-                }
-                
-            }else{
-                thrustButton.texture = SKTexture(imageNamed: "thrustOn")
-                self.removeAction(forKey: "constantLazer")
-                ship.shootFrequency = 0
-                self.heatLevel = 0
-                self.heatingLaser.alpha = 0
-                self.actionStopped = true
-                self.coolingDown = false
-                self.heatingLaser.texture = SKTexture(imageNamed: "heating0")
-                usingConstantLazer = false
-                ship.thrust = true
-            }
-            
-        }
-        if dPad == node{
-            if point.x > dPad.position.x{
-                ship.thrustRight = true
-                dPad.texture = SKTexture(imageNamed: "dPadRight")
-                ship.thrustLeft = false
-            }else{
-                ship.thrustLeft = true
-                dPad.texture = SKTexture(imageNamed: "dPadLeft")
-                ship.thrustRight = false
-            }
-        }
-        
-        if mapIcon == node{
-            mapIcon.texture = SKTexture(imageNamed: "mapT")
-            
-            if showMap == false{
-                mapBG.alpha = 1
-                FakemapBG.alpha = 1
-                showMap = true
-                
-                FakemapBG.position = CGPoint(x: -mainMap.position.x/10 - playerArrow.position.x/10 ,y: -mainMap.position.y/10 - playerArrow.position.y/10)
-            }else if showMap == true{
-                mapBG.alpha = 0
-                FakemapBG.alpha = 0
-                showMap = false
-            }
-        }
-    }
     
+    func removeTrackers(){
+        for t in tracked{
+            for i in t.children{
+                if i.zPosition == 9{i.removeFromParent()}
+            }
+        }
+        for t in trackArrows{
+            t.removeFromParent()
+        }
+        tracked.removeAll()
+        trackArrows.removeAll()
+    }
     func constantLazer(){
+        usedShoot = true
         usingConstantLazer = true
         ship.shootFrequency = SHOOTFREQUENCIES[ship.id-1]
         ship.shootQueue = 1 - ship.shootFrequency
@@ -621,6 +541,166 @@ class Play: PlayCore{
             }
         ]), withKey: "constantLazer")
     }
+    
+    func hideControls(){
+        navArrow.removeFromParent()
+        thrustButton.removeFromParent()
+        dPad.removeFromParent()
+        shipDirection.removeFromParent()
+    }
+    func showControls(){
+        guard navArrow.parent == nil else {return}
+        guard started else {return}
+        cam.addChild(navArrow)
+        cam.addChild(dPad)
+        cam.addChild(thrustButton)
+        cam.addChild(shipDirection)
+    }
+    
+    override func nodeDown(_ node: SKNode, at point: CGPoint) {
+        
+        
+        if removeTrackerIcon == node{
+            removeTrackers()
+        }
+        if accountIcon == node{
+            pressed = true
+            GKLocalPlayer.local.authenticateHandler = { viewController, error in
+                if let viewController = viewController{
+                    viewController.present(controller, animated: true) {
+                        print("authed")
+                    }
+                    return
+                }
+            }
+        }
+        if cockpitIcon == node{
+            cockpitIcon.texture = SKTexture(imageNamed: "cockpitOn")
+        }
+        if let n = node as? Object{
+            guard n != ship else {return}
+            guard n as? Planet == nil else{return}
+            if let i = tracked.firstIndex(of: n){
+                for i in n.children{
+                    if i.zPosition == 9{i.removeFromParent()}
+                }
+                tracked.remove(at: i)
+                trackArrows.remove(at: i)
+            }else{
+                
+                
+                let tracker1 = SKSpriteNode(imageNamed: "tracker1")
+                let tracker2 = SKSpriteNode(imageNamed: "tracker2")
+                
+                tracker1.zPosition = 9
+                tracker1.setScale(1)
+                n.addChild(tracker1)
+                tracker1.run(.repeatForever(.rotate(byAngle: -.pi, duration: 1)))
+                tracker2.zPosition = 9
+                tracker2.setScale(1)
+                n.addChild(tracker2)
+                tracker2.run(.repeatForever(.rotate(byAngle: .pi, duration: 1.3)))
+                
+                
+                tracked.append(n)
+                let a = SKSpriteNode(imageNamed: "arrow\(tracked.count % 3)")
+                a.anchorPoint = CGPoint(x: 0.5, y: 1)
+                a.setScale(0.25)
+                trackArrows.append(a)
+            }
+        }
+        if repairIcon == node{
+            if isWarning{
+                warning.removeAction(forKey: "warningAlpha")
+                warning.alpha = 0
+                isWarning = false
+            }else{
+                DisplayWARNING()
+                isWarning = true
+            }
+        }
+        
+        if accountIcon == node{
+            
+            if !showAccount{
+                accountIcon.run(SKAction.moveBy(x: 0, y: -200, duration: 0.35).ease(.easeOut))
+                accountBG.run(SKAction.moveBy(x: 0, y: -300, duration: 0.35).ease(.easeOut))
+                showAccount = true
+            }else{
+                accountIcon.run(SKAction.moveBy(x: 0, y: 200, duration: 0.35).ease(.easeOut))
+                accountBG.run(SKAction.moveBy(x: 0, y: 300, duration: 0.35).ease(.easeOut))
+                showAccount = false
+            }
+            
+        }
+        if navArrow == node{
+            if showNav == false{
+            navArrow.run(SKAction.move(to: pos(mx: 0.43, my: 0 ), duration: 0.35).ease(.easeOut))
+            navArrow.run(SKAction.rotate(toAngle: 3.18, duration: 0.35).ease(.easeOut))
+                navBG.run(SKAction.move(to: pos(mx: 0.43, my: 0 ), duration: 0.35).ease(.easeOut))
+                showNav = true
+            }else if showNav == true{
+                navArrow.run(SKAction.move(to: pos(mx: 0.43, my: 0.5 ), duration: 0.35).ease(.easeOut))
+                navArrow.run(SKAction.rotate(toAngle: 0, duration: 0.35).ease(.easeOut))
+                navBG.run(SKAction.move(to: pos(mx: 0.43, my: 0.5  ), duration: 0.35).ease(.easeOut))
+                showNav = false
+            }
+        }
+        if thrustButton == node{
+            if point.y > thrustButton.position.y + 50{
+                thrustButton.texture = SKTexture(imageNamed: "shooting2")
+                if !usingConstantLazer{
+                    self.actionStopped = false
+                    constantLazer()
+                }
+                
+            }else{
+                thrustButton.texture = SKTexture(imageNamed: "thrustOn")
+                self.removeAction(forKey: "constantLazer")
+                ship.shootFrequency = 0
+                self.heatLevel = 0
+                self.heatingLaser.alpha = 0
+                self.actionStopped = true
+                self.coolingDown = false
+                self.heatingLaser.texture = SKTexture(imageNamed: "heating0")
+                usingConstantLazer = false
+                ship.thrust = true
+            }
+            
+        }
+        if dPad == node{
+            if point.x > dPad.position.x{
+                ship.thrustRight = true
+                dPad.texture = SKTexture(imageNamed: "dPadRight")
+                ship.thrustLeft = false
+            }else{
+                ship.thrustLeft = true
+                dPad.texture = SKTexture(imageNamed: "dPadLeft")
+                ship.thrustRight = false
+            }
+        }
+        
+        if mapIcon == node{
+            mapIcon.texture = SKTexture(imageNamed: "mapT")
+            
+            if showMap == false{
+                mapBG.alpha = 1
+                FakemapBG.alpha = 1
+                showMap = true
+                
+                FakemapBG.position = CGPoint(x: -mainMap.position.x/10 - playerArrow.position.x/10 ,y: -mainMap.position.y/10 - playerArrow.position.y/10)
+            }else if showMap == true{
+                mapBG.alpha = 0
+                FakemapBG.alpha = 0
+                showMap = false
+            }
+        }
+        if f3 == node{
+            if DEBUG_TXT.parent == nil{
+                cam.addChild(DEBUG_TXT)
+            }else{DEBUG_TXT.removeFromParent()}
+        }
+    }
     override func nodeMoved(_ node: SKNode, at point: CGPoint) {
         if dPad == node{
             if point.x > dPad.position.x{
@@ -666,7 +746,6 @@ class Play: PlayCore{
             self.heatingLaser.alpha = 0
             self.actionStopped = true
             self.coolingDown = false
-            self.heatingLaser.texture = SKTexture(imageNamed: "heating0")
             usingConstantLazer = false
             ship.thrust = false
             thrustButton.texture = SKTexture(imageNamed: "thrustOff")
@@ -695,12 +774,30 @@ class Play: PlayCore{
     }
     var d = Data()
     override func keyDown(_ key: UIKeyboardHIDUsage) {
+        hideControls()
         if key == .keyboardUpArrow || key == .keyboardW{
             ship.thrust = true
         }else if key == .keyboardRightArrow || key == .keyboardD{
             ship.thrustRight = true
         }else if key == .keyboardLeftArrow || key == .keyboardA{
             ship.thrustLeft = true
+        }else if key == .keyboardDownArrow || key == .keyboardS || key == .keyboardK{
+            if !usingConstantLazer{
+                self.actionStopped = false
+                constantLazer()
+            }
+        }else if key == .keyboardM{
+            if showMap == false{
+                mapBG.alpha = 1
+                FakemapBG.alpha = 1
+                showMap = true
+                
+                FakemapBG.position = CGPoint(x: -mainMap.position.x/10 - playerArrow.position.x/10 ,y: -mainMap.position.y/10 - playerArrow.position.y/10)
+            }else if showMap == true{
+                mapBG.alpha = 0
+                FakemapBG.alpha = 0
+                showMap = false
+            }
         }
         if key == .keyboardN{
             ship.encode(data: &d)
@@ -709,9 +806,51 @@ class Play: PlayCore{
             ship.decode(data: &d)
         }else if key == .keyboardEqualSign{
             send(Data([127]))
-            dmessage = "Y u diskonnekt??"
+            dmessage = "Disconnected :O"
             end()
             Disconnected.renderTo(skview)
+        }else if key == .keyboardF3 || key == .keyboardTab{
+            if DEBUG_TXT.parent == nil{
+                cam.addChild(DEBUG_TXT)
+            }else{DEBUG_TXT.removeFromParent()}
+        }
+        if key == .keyboardSpacebar{
+            if  !showAccount && !startPressed && !pressed && children.count > MIN_NODES{
+                if !playedLightSpeedOut{
+                    accountIcon.removeFromParent()
+                    removeTapToStart()
+                    
+                    self.run(lightSpeedOut)
+                    playedLightSpeedOut = true
+                    //anim
+                    //*
+                    var mov = 0.1
+                    var up = 0.07
+                    let _ = timeout(2){
+                        up = -0.5
+                        self.ship.run(.scale(to: 0.5, duration: 0.5))
+                    }
+                    var stop = {}
+                    let stop1 = interval(0.05){
+                        mov = -sign(mov) * max(0, abs(mov) + up)
+                        if(abs(mov) < 0.01){
+                            return stop()
+                        }
+                        self.ship.xScale *= 0.99
+                        self.cam.run(SKAction.moveBy(x: mov, y: 0, duration: 0.05).ease(.easeOut))
+                    }
+                    let stop2 = interval(0.06){
+                        self.cam.run(SKAction.moveBy(x: 0, y: mov, duration: 0.06).ease(.easeOut))
+                    }
+                    stop = {stop1();stop2()}
+                    let _ = "*///" //this line is useless but its for the comment switch so dont delete it
+                    let _ = timeout(2) {
+                        self.startGame()
+                        self.removeAction(forKey: "inLightSpeed")
+                        self.inlightSpeed.run(stopSound)
+                    }
+                }
+            }
         }
     }
     override func keyUp(_ key: UIKeyboardHIDUsage) {
@@ -721,12 +860,27 @@ class Play: PlayCore{
             ship.thrustRight = false
         }else if key == .keyboardLeftArrow || key == .keyboardA{
             ship.thrustLeft = false
+        }else if key == .keyboardDownArrow || key == .keyboardS || key == .keyboardK{
+            self.removeAction(forKey: "constantLazer")
+            ship.shootFrequency = 0
+            self.heatLevel = 0
+            self.heatingLaser.alpha = 0
+            self.actionStopped = true
+            self.coolingDown = false
+            usingConstantLazer = false
+            self.heatingLaser.texture = SKTexture(imageNamed: "heating0")
+        }else if key == .keyboardC{
+            self.end()
+            SKScene.transition = SKTransition.crossFade(withDuration: 1.5)
+            DPlay.renderTo(skview)
+            SKScene.transition = SKTransition.crossFade(withDuration: 0)
         }
     }
     var mapPress1: CGPoint? = nil
     var mapPress2: CGPoint? = nil
     override func swipe(from a: CGPoint, to b: CGPoint) {
         guard showMap else {return}
+        if dPad.contains(b) || thrustButton.contains(b){return}
         if mapPress1 != nil && mapPress2 != nil{
             var dx = mapPress1!.x - mapPress2!.x
             var dy = mapPress1!.y - mapPress2!.y
@@ -747,12 +901,11 @@ class Play: PlayCore{
             FakemapBG.position.x *= z
             FakemapBG.position.y *= z
         }
-        
-        if dPad.contains(b) || thrustButton.contains(b){return}
         FakemapBG.position.x += b.x - a.x
         FakemapBG.position.y += b.y - a.y
     }
     override func touch(at p: CGPoint) {
+        showControls()
         if mapPress1 == nil{
             mapPress1 = p
         }else if mapPress2 == nil{
@@ -760,42 +913,46 @@ class Play: PlayCore{
         }else{
             (mapPress1, mapPress2) = (mapPress2, p)
         }
-        if !startPressed && !pressed && children.count > MIN_NODES{
-            accountIcon.removeFromParent()
-            removeTapToStart()
-            self.run(lightSpeedOut)
-            //anim
-            //*
-            var mov = 0.1
-            var up = 0.07
-            let _ = timeout(2){
-                up = -0.5
-                self.ship.run(.scale(to: 0.5, duration: 0.5))
-            }
-            var stop = {}
-            let stop1 = interval(0.05){
-                mov = -sign(mov) * max(0, abs(mov) + up)
-                if(abs(mov) < 0.01){
-                    return stop()
+        if  !showAccount && !startPressed && !pressed && children.count > MIN_NODES{
+            if !playedLightSpeedOut{
+                accountIcon.removeFromParent()
+                removeTapToStart()
+                
+                self.run(lightSpeedOut)
+                playedLightSpeedOut = true
+                //anim
+                //*
+                var mov = 0.1
+                var up = 0.07
+                let _ = timeout(2){
+                    up = -0.5
+                    self.ship.run(.scale(to: 0.5, duration: 0.5))
                 }
-                self.ship.xScale *= 0.99
-                self.cam.run(SKAction.moveBy(x: mov, y: 0, duration: 0.05).ease(.easeOut))
-            }
-            let stop2 = interval(0.06){
-                self.cam.run(SKAction.moveBy(x: 0, y: mov, duration: 0.06).ease(.easeOut))
-            }
-            stop = {stop1();stop2()}
-            let _ = "*///" //this line is useless but its for the comment switch so dont delete it
-            let _ = timeout(2) {
-                self.startGame()
-                self.removeAction(forKey: "inLightSpeed")
-                self.inlightSpeed.run(stopSound)
+                var stop = {}
+                let stop1 = interval(0.05){
+                    mov = -sign(mov) * max(0, abs(mov) + up)
+                    if(abs(mov) < 0.01){
+                        return stop()
+                    }
+                    self.ship.xScale *= 0.99
+                    self.cam.run(SKAction.moveBy(x: mov, y: 0, duration: 0.05).ease(.easeOut))
+                }
+                let stop2 = interval(0.06){
+                    self.cam.run(SKAction.moveBy(x: 0, y: mov, duration: 0.06).ease(.easeOut))
+                }
+                stop = {stop1();stop2()}
+                let _ = "*///" //this line is useless but its for the comment switch so dont delete it
+                let _ = timeout(2) {
+                    self.startGame()
+                    self.removeAction(forKey: "inLightSpeed")
+                    self.inlightSpeed.run(stopSound)
+                }
             }
         }
         pressed = false
     }
     override func release(at point: CGPoint){
-        if let a = mapPress2{
+        if mapPress2 != nil{
             //both
             if closest(point, mapPress1!, mapPress2!){
                 mapPress1 = mapPress2
@@ -803,7 +960,7 @@ class Play: PlayCore{
             }else{
                 mapPress2 = nil
             }
-        }else if let a = mapPress1{
+        }else if mapPress1 != nil{
             //1
             mapPress1 = nil
         }

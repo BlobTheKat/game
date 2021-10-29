@@ -22,7 +22,8 @@ let fbig: CGFloat = 72
 let gameFPS = 60.0
 let build = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "null"
 
-
+//star texture size * 2
+let SS: CGFloat = 2440
 
 
 func bg(_ a: @escaping () -> ()){DispatchQueue.global(qos: .background).async(execute: a)}

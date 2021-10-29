@@ -37,8 +37,8 @@ function readfile(path){
     while(i < text.length){
         arr.push({})
         while(text[i]){
-            let t = text[i].indexOf(':')
-            t = [text[i].slice(0,t), text[i].slice(t+1)]
+            let t = text[i].split(':')
+            t[1] = t.slice(1).join(':')
             if(!t[1])continue
             t[1] = t[1].trim()
             if(t[1] == "true" || t[1] == "yes")t[1] = true
@@ -165,7 +165,7 @@ if(!meta || xy){
             console.log("Done! Enter \x1b[33mPORT\x1b[m:")
             let _u = function(p){
                 if(+p != +p || p > 65535 || p < 0)return console.log("Enter \x1b[33mPORT\x1b[m:"), RESPONSE = _u
-                let name = (meta && meta.path) || 'sector_'+sx+'_'+sy
+                let name = (meta && meta.path.replace(/^\//,"")) || 'sectors/sector_'+Math.round(sx/1000)+'_'+Math.round(sx/1000)
                 fs.writeFileSync(name, arr.map(a=>Object.entries(a).map(a=>a.join(': ')).join('\n')).join('\n\n'))
                 if(xy)return process.exit(0)
                 fs.writeFileSync('meta', 'x: '+sx+'\ny: '+sy+'\nw: '+w+'\nh: '+h+'\nport: '+p+'\npath: '+name)
@@ -184,7 +184,7 @@ if(!meta || xy){
     if(xy)setImmediate(a=>(RESPONSE(xy[0]),RESPONSE(xy[1]),RESPONSE=null))
 }else{
     setImmediate(function(){
-        let data = readfile(meta.path)
+        let data = readfile(meta.path.replace(/^\//,""))
         data.forEach(function(item){
             if(item.id)sector.objects.push(new Asteroid(item))
             else sector.planets.push(new Planet(item))
@@ -390,7 +390,7 @@ class ClientData{
         if(Math.abs(this.y - y) < dy * 0.5)this.y = y, update--
         if(Math.abs(this.dz - dz) < amult * 0.001)this.dz = dz, update--
         if(Math.abs(this.z - z) < dz * 0.5)this.z = z, update--
-        if(!update)return this.tobuf()*/
+        if(!update)return this.toBuf()*/
         this.x = x
         this.y = y
         this.z = z
@@ -411,6 +411,7 @@ class ClientData{
         buf[offset+16] = Math.round(((this.z % PI2) + PI2) % PI2 * 40)
         buf.writeUInt8((this.dz * 768)&255, offset+17)
         buf.writeUint16LE((this.thrust & 15) + (this.id << 5) + (this.shoots == ref ? 16 : 0), offset + 18)
+        if(this.shoots == ref)this.shoots = null
         return buf
     }
     ping(){
@@ -448,7 +449,7 @@ server.on('message', function(message, remote) {
         }
         return
     }
-    if(clients.has(address))msg(message,send,address)
+    if(clients.has(address))try{msg(message,send,address)}catch(e){send(Buffer.concat([[127], strbuf("Corrupt Packet")]))}
 });
 
 function msg(data, reply, address){
@@ -457,8 +458,7 @@ function msg(data, reply, address){
     ship.ping()
     if(data[0] == 3){
         reply(Buffer.of(4))
-    }
-    if(data[0] == 5){
+    }else if(data[0] == 5){
         let cc = data[21]
         let hitc = cc & 7
         let i = 22
@@ -477,7 +477,7 @@ function msg(data, reply, address){
                 ship.shoots = obj
             }
             i += 4
-        }else ship.shoots = null
+        }
         
         let a = ship.validate(data.slice(1,21))
         let buf = Buffer.alloc(a.length ? 22 : 2)
@@ -495,20 +495,18 @@ function msg(data, reply, address){
         for(var obj of sector.objects){
             if(obj == ship)continue
             dat.push(Buffer.alloc(20))
-            obj.toBuf(dat[dat.length - 1])
+            obj.toBuf(dat[dat.length - 1], 0, ship)
         }
         buf = Buffer.concat(dat)
         reply(buf)
-    }
-    if(data[0] == 127){
+    }else if(data[0] == 127){
         clients.get(address).wasDestroyed()
-    }
-    if(data[0] == 7){
+    }else if(data[0] == 7){
         let x = data.readFloatLE(1)
         let y = data.readFloatLE(5)
         //magic
         let newSector = 1
         console.log("destroyed >:D")
         ship.wasDestroyed()
-    }
+    }else reply(Buffer.concat([[127], strbuf("Illegal Packet")]))
 }

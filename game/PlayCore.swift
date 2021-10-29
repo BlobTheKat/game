@@ -8,7 +8,7 @@
 import Foundation
 import SpriteKit
 
-class PlayCore: PlayNetwork{
+class PlayCore: PlayAmbient{
     var latency = 0.0
     var lastUpdate: TimeInterval? = nil
     let border1 = SKSpriteNode(imageNamed: "tunnel1")
@@ -17,16 +17,10 @@ class PlayCore: PlayNetwork{
     var camOffset = CGPoint(x: 0, y: 0.2)
     var vel: CGFloat = 0
     
-    var tracked: [Object] = []
-    var trackArrows: [SKSpriteNode] = []
+    
     
     let shipDirection = SKSpriteNode(imageNamed: "direction")
-    let star1 = SKSpriteNode(imageNamed: "stars")
-    let star2 = SKSpriteNode(imageNamed: "stars")
-    let star3 = SKSpriteNode(imageNamed: "stars")
-    let star4 = SKSpriteNode(imageNamed: "stars")
     let speedLabel =  SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
-    var coolingDown = false
     let playerArrow = SKSpriteNode(imageNamed: "playerArrow")
     override func update(_ currentTime: TimeInterval){
         if view == nil{return}
@@ -79,15 +73,6 @@ class PlayCore: PlayNetwork{
         
         shipDirection.zRotation = -atan2(ship.velocity.dx, ship.velocity.dy)
         
-        
-        let shipX = floor((ship.position.x)/2440)
-        let shipY = floor((ship.position.y)/2440)
-        
-        star1.position = CGPoint(x: shipX * 2440 ,y: shipY * 2440 )
-        star2.position = CGPoint(x: shipX * 2440 + 2440 ,y: shipY * 2440 )
-        star3.position = CGPoint(x: shipX * 2440 ,y: shipY * 2440 + 2440 )
-        star4.position = CGPoint(x: shipX * 2440 + 2440 ,y: shipY * 2440 + 2440)
-        
         if (cam.position.y < 0) != (border1.position.y < 0){
             border1.position.y *= -1
             border1.xScale *= -1
@@ -99,6 +84,12 @@ class PlayCore: PlayNetwork{
         border1.position.x = cam.position.x
         border2.position.y = cam.position.y
         drawDebug()
+        stars.position = CGPoint(x: cam.position.x / 5, y: cam.position.y / 5)
+        stars.update()
+        stars2.position = CGPoint(x: cam.position.x / 2.6, y: cam.position.y / 2.6)
+        stars2.update()
+        stars3.position = CGPoint(x: cam.position.x / 2, y: cam.position.y / 2)
+        stars3.update()
     }
     var _a = 0
     func spaceUpdate(){
@@ -131,7 +122,11 @@ class PlayCore: PlayNetwork{
         for t in tracked{
             if t.parent == nil{
                 tracked.remove(at: a)
+                trackArrows[a].removeFromParent()
                 trackArrows.remove(at: a)
+                for i in t.children{
+                    if i.zPosition == 9{i.removeFromParent()}
+                }
                 continue
             }
             let i = trackArrows[a]
@@ -165,7 +160,7 @@ class PlayCore: PlayNetwork{
                 let d = (x * x + y * y)
                 let r = (ship.radius + s.radius) * (ship.radius + s.radius)
                 if d < r{
-                    let q = sqrt(r / d)
+                    let q = min(500, sqrt(r / d))
                     ship.position.x = s.position.x + x * q
                     ship.position.y = s.position.y + y * q
                     //self and node collided
@@ -202,13 +197,13 @@ class PlayCore: PlayNetwork{
             var sx = ship.position.x
             var sy = ship.position.y
             if isX{
-                sx = (sx < 0 ? -1 : 1) * (loadstack.size!.width / 2 + 2000) + loadstack.pos!.x
+                sx = (sx < 0 ? -1 : 1) * (loadstack.size!.width / 2 + 2000)
             }
             if isY{
-                sy = (sy < 0 ? -1 : 1) * (loadstack.size!.height / 2 + 2000) + loadstack.pos!.y
+                sy = (sy < 0 ? -1 : 1) * (loadstack.size!.height / 2 + 2000)
             }
-            secx = Int(sx)
-            secy = Int(sy)
+            secx = Int(sx + loadstack.pos!.x)
+            secy = Int(sy + loadstack.pos!.y)
             ship.run(SKAction.move(by: CGVector(dx: ship.velocity.dx * CGFloat(gameFPS), dy: ship.velocity.dy * CGFloat(gameFPS)), duration: 1))
         }else if (isX || isY) && ship.controls && _a == 0{
             //calculate which sector you're gonna go to
@@ -239,7 +234,7 @@ class PlayCore: PlayNetwork{
         }
         _a = (_a + 1) % 20
         vel = CGFloat(sqrt(ship.velocity.dx*ship.velocity.dx + ship.velocity.dy*ship.velocity.dy)) * CGFloat(gameFPS)
-        speedLabel.text = "\(Int(vel/3)).00"
+        speedLabel.text = %Float(vel / 2)
     }
     func report_memory() -> UInt16{
         var taskInfo = mach_task_basic_info()
@@ -265,6 +260,6 @@ class PlayCore: PlayNetwork{
             lastComplete = lastComplete &+ lastU
             lastMem = report_memory()
         }
-        DEBUG_TXT.text = "X: \(%ship.position.x) / Y: \(%ship.position.y)\nDX: \(%ship.velocity.dx) / DY: \(%ship.velocity.dy)\nA: \(%ship.zRotation), AV: \(%ship.angularVelocity)\nVEL: \(%vel) VER: \(build)\nMEM: \(lastMem)MB NET: \(UInt32(Double(lastU) * gameFPS / 20480.0))KB/s\n\(logs.joined(separator: "\n"))"
+        DEBUG_TXT.text = "X: \(%ship.position.x) / Y: \(%ship.position.y)\nDX: \(%ship.velocity.dx) / DY: \(%ship.velocity.dy)\nA: \(%ship.zRotation), AV: \(%ship.angularVelocity)\nVEL: \(%vel) VER: \(build)\nMEM: \(lastMem)MB NET: \(Int(Double(lastU) * gameFPS / 20480.0))KB/s\n\(logs.joined(separator: "\n"))"
     }
 }
