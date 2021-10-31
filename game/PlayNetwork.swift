@@ -190,6 +190,7 @@ class PlayNetwork: PlayConvenience{
     }
     var last: DispatchTime = .now()
     func gotIp(_ ip: String){
+        print("got ip")
         var stopAuth = {}
         var authed = false
         send = connect(ip){[self](d) in

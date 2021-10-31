@@ -148,9 +148,24 @@ class Object: SKSpriteNode, DataCodable{
                                     }
                                 ]))
                             }else if parent.health == 0{
-                                
-                                let _ = timeout(1){parent.send(Data([127]))
-                                    parent.end();self.death = 200;parent.kill(parent.ship);SKScene.transition = .crossFade(withDuration: 0.5);PlayerDied.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0);}
+                                parent.health = -1
+                                self.death = 200
+                                parent.kill(parent.ship)
+                                parent.ship.removeFromParent()
+                                parent.ship.controls = false
+                                parent.ship.dynamic = false
+                                let _ = timeout(1){
+                                    
+                                    parent.send(Data([127]))
+                                    
+                                    parent.stars.removeFromParent()
+                                    parent.stars2.removeFromParent()
+                                    parent.stars3.removeFromParent()
+                                    SKScene.transition = .crossFade(withDuration: 0.5)
+                                    PlayerDied.renderTo(skview)
+                                    SKScene.transition = .crossFade(withDuration: 0)
+                                    parent.end()
+                                }
                             }
                         }
                         //code above DIE if you get hit

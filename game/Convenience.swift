@@ -33,11 +33,10 @@ func filtern(_ nods: [SKNode]) -> Set<SKNode>{
 extension SKScene{
     static var font = "Arial"
     static var transition = SKTransition.crossFade(withDuration: 0)
-    static var _k = 0
     static func renderTo(_ view: SKView){
         let scene = self.init(size: view.frame.size)
         SKScene.transition.pausesIncomingScene = false
-        scene.scaleMode = .aspectFill
+        scene.scaleMode = .aspectFit
         scene.backgroundColor = .black
         view.presentScene(scene, transition: SKScene.transition)
     }

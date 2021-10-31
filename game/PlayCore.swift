@@ -84,7 +84,7 @@ class PlayCore: PlayAmbient{
         border1.position.x = cam.position.x
         border2.position.y = cam.position.y
         drawDebug()
-        stars.position = CGPoint(x: cam.position.x / 5, y: cam.position.y / 5)
+        stars.position = CGPoint(x: cam.position.x / 4, y: cam.position.y / 4)
         stars.update()
         stars2.position = CGPoint(x: cam.position.x / 2.6, y: cam.position.y / 2.6)
         stars2.update()

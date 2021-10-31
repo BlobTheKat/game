@@ -78,7 +78,7 @@ class SKAmbientContainer: SKNode{
     }
 }
 
-let BSTARS = [SKTexture(imageNamed: "bstars1")]
+let BSTARS = [SKTexture(imageNamed: "bstars-1"),SKTexture(imageNamed: "bstars-2")]
 let STARS = [SKTexture(imageNamed: "stars1"), SKTexture(imageNamed: "stars2")]
 
 class PlayAmbient: PlayNetwork{
@@ -99,20 +99,20 @@ class PlayAmbient: PlayNetwork{
             let n = SKSpriteNode()
             n.texture = STARS.randomElement()
             n.size = n.texture!.size()
-            n.setScale(3)
+            n.setScale(1.5)
             n.texture!.filteringMode = .nearest
             return n
         }, frequency: 1, deriviation: 0)
-        self.stars2.BLOCKSIZE = 1500
+        self.stars2.BLOCKSIZE = 750
         self.stars3 = SKAmbientContainer({
             let n = SKSpriteNode()
             n.texture = BSTARS.randomElement()
             n.size = n.texture!.size()
-            n.setScale(2)
+            n.setScale(1)
             n.texture!.filteringMode = .nearest
             return n
         }, frequency: 1, deriviation: 0)
-        self.stars3.BLOCKSIZE = 1000
+        self.stars3.BLOCKSIZE = 500
         self.addChild(self.stars)
         self.addChild(self.stars2)
         self.addChild(self.stars3)
