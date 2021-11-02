@@ -238,7 +238,7 @@ class PlayNetwork: PlayConvenience{
             })
             return
         }
-        send = connect("192.168.1.64:65152"){[self](d) in
+        send = connect(ip){[self](d) in
             if ended{return}
             guard view == skview else{return}
             var data = d

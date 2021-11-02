@@ -1,0 +1,27 @@
+{
+  "name": "spaceship",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "dependencies": {
+    "basic-repl": "^1.1.2",
+    "gamecenter-identity-verifier": "^0.1.1",
+    "node-fetch": "^2.6.2",
+    "request": "^2.88.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BlobTheKat/game.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BlobTheKat/game/issues"
+  },
+  "homepage": "https://github.com/BlobTheKat/game#readme"
+}
