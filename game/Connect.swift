@@ -99,11 +99,17 @@ func connect(_ host: String, _ a: @escaping (Data) -> ()) -> (Data) -> (){
     var queue: [Data] = []
     var ready = false
     var c = {(_:Data?,_:NWConnection.ContentContext?,_:Bool,_:NWError?)in}
-    c = { (data, _, isComplete, _) in
+    c = { (data, _, isComplete, err) in
         if isComplete && data != nil{
             a(data!)
         }
-        connection?.receiveMessage(completion: c)
+        if err == nil{
+            connection?.receiveMessage(completion: c)
+        }else{
+            (skview.scene as? Play)?.end()
+            dmessage = "Connection Ended"
+            DispatchQueue.main.async{Disconnected.renderTo(skview)}
+        }
     }
     connection = NWConnection(host: host, port: port, using: .udp)
     connection?.stateUpdateHandler = { (newState) in
@@ -114,18 +120,20 @@ func connect(_ host: String, _ a: @escaping (Data) -> ()) -> (Data) -> (){
                 DispatchQueue.main.async{for data in queue{
                     connection?.send(content: data, completion: NWConnection.SendCompletion.contentProcessed(({ (NWError) in
                         if NWError != nil {
-                            print("ERROR! Error when sending Data:\n \(NWError!)")
+                            print("Error when sending Data:\n \(NWError!)")
                         }
                     })))
                 }
                 connection?.receiveMessage(completion: c)}
             case .cancelled:
-            p?.end()
+            ready = false
+                p?.end()
                 dmessage = "Connection Interrupted"
                 DispatchQueue.main.async{Disconnected.renderTo(skview)}
             case .failed(_):
-            p?.end()
-                dmessage = "Could not connect to server"
+            ready = false
+                p?.end()
+                dmessage = "Disconnected!"
                 DispatchQueue.main.async{Disconnected.renderTo(skview)}
             default:break
         }
@@ -135,7 +143,7 @@ func connect(_ host: String, _ a: @escaping (Data) -> ()) -> (Data) -> (){
         guard ready else {queue.append(data);return}
         bg{connection?.send(content: data, completion: NWConnection.SendCompletion.contentProcessed(({ (NWError) in
             if NWError != nil {
-                print("ERROR! Error when sending Data:\n \(NWError!)")
+                print("Error when sending Data:\n \(NWError!)")
             }
         })))}
     }

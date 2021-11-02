@@ -13,7 +13,7 @@ func second() -> String{
     return s < 10 ? "0\(s)" : "\(s)"
 }
 
-var logs = ["[\(second())] Game started!"]
+var logs = [String]()
 
 func print(_ items: Any...){
     let str = items.map({a in return "\(a)"}).joined(separator: " ")
@@ -38,7 +38,11 @@ extension SKScene{
         SKScene.transition.pausesIncomingScene = false
         scene.scaleMode = .aspectFit
         scene.backgroundColor = .black
-        view.presentScene(scene, transition: SKScene.transition)
+        for stop in stop{
+            stop()
+        }
+        stop.removeAll()
+        DispatchQueue.main.async{view.presentScene(scene, transition: SKScene.transition)}
     }
     func label(node: SKLabelNode, _ txt: String, pos: CGPoint, size: CGFloat = 32, color: UIColor = .white, font: String = SKScene.font, zPos: CGFloat = 10, isStatic: Bool = false){
         node.fontName = font
@@ -50,7 +54,6 @@ extension SKScene{
         if isStatic{
             camera?.addChild(node)
         }else{
-            
             self.addChild(node)
         }
         
@@ -148,19 +151,29 @@ func fromNow(_ time: Double) -> DispatchTime{
     return .now() + .microseconds(Int(time * 1000000))
 }
 
-func interval(_ every: Double, _ a: @escaping () -> ()) -> () -> (){
-    let c = DispatchQueue.main.schedule(after: .init(.now()), interval: .init(.milliseconds(Int(every * 1000))), tolerance: .init(.milliseconds(1)), options: nil, a)
-    return {c.cancel()}
+func interval(_ every: Double, _ a: @escaping () -> (), label: String = "") -> () -> (){
+    var cancelled = false
+    var x = {}
+    if label != ""{print("start \(label)")}
+    x = {
+        a()
+        if !cancelled{if label != ""{print("exec \(label)")};DispatchQueue.main.asyncAfter(deadline: fromNow(every), execute: x)}
+    }
+    x()
+    var i = 0
+    return {i += 1;if label != ""{print("cancelled \(label) (\(i))")};cancelled = true}
+    //let c = DispatchQueue.main.schedule(after: .init(.now()), interval: .init(.milliseconds(Int(every * 1000))), tolerance: .init(.milliseconds(5)), options: nil, a)
+    //return {c.cancel()}
 }
 
-func timeout(_ after: Double, _ a: @escaping () -> ()) -> () -> (){
+func timeout(_ after: Double, _ a: @escaping () -> (), label: String = "") -> () -> (){
     var cancelled = false
+    if label != ""{print("start \(label)")}
     DispatchQueue.main.asyncAfter(deadline: fromNow(after)){
-        if !cancelled{a()}
+        if !cancelled{if label != ""{print("exec \(label)")};a()}
     }
-    return {
-        cancelled = true
-    }
+    var i = 0
+    return {i += 1;if label != ""{print("cancelled \(label) (\(i))")};cancelled = true}
 }
 
 
@@ -283,6 +296,13 @@ extension CGPoint{
     }
     func add(y: CGFloat) -> CGPoint{
         return CGPoint(x: self.x, y: self.y + y)
+    }
+    static func +(a: CGPoint, b: CGPoint) -> CGPoint{
+        return CGPoint(x: a.x + b.x, y: a.y + b.y)
+    }
+    static func +=(a: inout CGPoint, b: CGPoint){
+        a.x += b.x
+        a.y += b.y
     }
 }
 

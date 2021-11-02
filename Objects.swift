@@ -12,7 +12,6 @@ protocol DataCodable {
     func encode(data: inout Data)
     func decode(data: inout Data)
 }
-var d: [Int: Int] = [:]
 class Object: SKSpriteNode, DataCodable{
     var shootPoints: [CGPoint] = []
     var shootVectors: [CGFloat] = []
@@ -38,6 +37,7 @@ class Object: SKSpriteNode, DataCodable{
     var particle = {(_:Object) -> Particle in fatalError("particle() accessed before super.init call")}
     var asteroid: Bool
     var death: UInt16 = 0
+    var namelabel: SKLabelNode? = nil
     func defParticle(_ ship: Object) -> Particle{
         let d: CGFloat = CGFloat(1.5 * gameFPS)
         let start = State(color: (r: 1, g: 1, b: 0), size: CGSize(width: 10, height: 10), zRot: 0, position: ship.position, alpha: 0.9)
@@ -155,16 +155,13 @@ class Object: SKSpriteNode, DataCodable{
                                 parent.ship.controls = false
                                 parent.ship.dynamic = false
                                 let _ = timeout(1){
-                                    
-                                    parent.send(Data([127]))
-                                    
+                                    parent.end()
                                     parent.stars.removeFromParent()
                                     parent.stars2.removeFromParent()
                                     parent.stars3.removeFromParent()
                                     SKScene.transition = .crossFade(withDuration: 0.5)
                                     PlayerDied.renderTo(skview)
                                     SKScene.transition = .crossFade(withDuration: 0)
-                                    parent.end()
                                 }
                             }
                         }
@@ -217,21 +214,21 @@ class Object: SKSpriteNode, DataCodable{
     func encode(data: inout Data){
         if self.id == 0{
             data.write(Int64(0))
-            data.write(Int64(0))
             data.write(Int32(0))
+            data.write(Int16(0))
             return
         }
         data.write(Float(self.position.x))
         data.write(Float(self.position.y))
-        data.write(Float(self.velocity.dx))
-        data.write(Float(self.velocity.dy))
+        data.write(Int8(round(self.velocity.dx * gameFPS / 16).clamp(-128, 127)))
+        data.write(Int8(round(self.velocity.dy * gameFPS / 16).clamp(-128, 127)))
         data.write(Int8(round(self.zRotation.remainder(dividingBy: .pi*2) * 40)))
         data.write(UInt8(Int(self.angularVelocity * 768)&255))
         data.write(UInt16(thrust ? 1 : 0) + UInt16(thrustLeft ? 2 : 0) + UInt16(thrustRight ? 4 : 0) + UInt16((parent as? Play)?.usedShoot ?? false ? 8 : 0) + UInt16(self.id * 32))
     }
     func decode(data: inout Data){
         let pos = CGPoint(x: CGFloat(data.readunsafe() as Float), y: CGFloat(data.readunsafe() as Float))
-        self.velocity = CGVector(dx: CGFloat(data.readunsafe() as Float), dy: CGFloat(data.readunsafe() as Float))
+        self.velocity = CGVector(dx: CGFloat(data.readunsafe() as Int8) / gameFPS * 16, dy: CGFloat(data.readunsafe() as Int8) / gameFPS * 16)
         self.zRotation = CGFloat(data.readunsafe() as Int8) / 40
         self.angularVelocity = CGFloat(data.readunsafe() as Int8) / 768
         let bits: UInt16 = data.readunsafe()
@@ -256,6 +253,7 @@ class Object: SKSpriteNode, DataCodable{
         if id != 0{self.position = pos}
         if id != self.id || oa != asteroid{
             self.id = id
+            (skview.scene as? Play)?.needsName = id != 0 && !asteroid && namelabel == nil
             let ship = (asteroid ? asteroids : ships)[id]
             guard case .string(let t) = ship["texture"] else {fatalError("invalid texture")}
             guard case .number(let radius) = ship["radius"] else {fatalError("invalid radius")}
@@ -394,11 +392,11 @@ class Planet: Object{
                         n.dynamic = false
                         n.controls = false
                         if let parent = (n.parent as? Play), let i = parent.objects.firstIndex(of: n){
+                            n.namelabel?.removeFromParent()
+                            n.namelabel = nil
                             parent.objects[i] = Object()
                         }
                         n.run(SKAction.sequence([SKAction.fadeOut(withDuration: 1),SKAction.run{n.removeFromParent()
-                            
-                                parent!.send(Data([127]))
                                 parent!.end()
                                 DispatchQueue.main.async{SKScene.transition = .crossFade(withDuration: 0.5);PlayerDied.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0);}
                         }]))
@@ -453,10 +451,11 @@ class Planet: Object{
                         n.dynamic = false
                         n.controls = false
                         if let parent = (n.parent as? Play), let i = parent.objects.firstIndex(of: n){
+                            n.namelabel?.removeFromParent()
+                            n.namelabel = nil
                             parent.objects[i] = Object()
                         }
                         n.run(SKAction.sequence([SKAction.fadeOut(withDuration: 1),SKAction.run{n.removeFromParent()
-                                parent!.send(Data([127]))
                                 parent!.end()
                                 DispatchQueue.main.async{SKScene.transition = .crossFade(withDuration: 0.5);PlayerDied.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0);}
                         }]))

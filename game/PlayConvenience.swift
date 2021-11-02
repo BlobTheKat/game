@@ -44,13 +44,13 @@ class PlayConvenience: SKScene{
         
         
         
-        let _ = interval(Double(duration)) {
+        stop.append(interval(Double(duration)) {
             node.run(SKAction.fadeAlpha(by: -amount, duration: Double(duration)/2).ease(.easeInEaseOut))
             
             let _ = timeout(Double(duration)/2) {
                 node.run(SKAction.fadeAlpha(by: amount, duration: Double(duration)/2).ease(.easeInEaseOut))
             }
-        }
+        })
         
         
         

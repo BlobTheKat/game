@@ -53,7 +53,6 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
         
         if body1.categoryBitMask == physicscategory.player && body2.categoryBitMask == physicscategory.hitBox{
             inCockpit.alpha = 1
-            print("hi")
         }
         
         
@@ -214,7 +213,6 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
             
         }
         if inCockpit == node{
-            
             SKScene.transition = SKTransition.crossFade(withDuration: 1.5)
             Play.renderTo(skview)
             SKScene.transition = SKTransition.crossFade(withDuration: 0)

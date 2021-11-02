@@ -25,6 +25,7 @@ let build = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
 //star texture size * 2
 let SS: CGFloat = 2440
 
+var stop: [() -> ()] = []
 
 func bg(_ a: @escaping () -> ()){DispatchQueue.global(qos: .background).async(execute: a)}
 
@@ -142,12 +143,14 @@ func emptytextures(s: SectorData){
 
 func image(_ url: String, completion: @escaping (SKTexture) -> (), err: @escaping (String) -> ()){
     if let i = textures[url]{
-        completion(i)
+        DispatchQueue.main.async{completion(i)}
         return
     }
     if let i = images[url]{
-        textures[url] = SKTexture(image: UIImage(data: i)!)
-        completion(textures[url]!)
+        DispatchQueue.main.async{
+            textures[url] = SKTexture(image: UIImage(data: i)!)
+            completion(textures[url]!)
+        }
         return
     }
     fetch(url) { (data: Data) in
@@ -168,7 +171,6 @@ func image(_ url: String, completion: @escaping (SKTexture) -> (), err: @escapin
     }
 
 }
-
 let REGIONSIZE = 500000
 func exists(px: Int, py: Int) -> Bool{
     let delegated = CGPoint(x: 0, y: 0)//fdiv(px, REGIONSIZE), y: fdiv(py, REGIONSIZE))
@@ -184,7 +186,7 @@ func exists(px: Int, py: Int) -> Bool{
     }
     return false
 }
-func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @escaping (String) -> (), ipget: @escaping (String) -> (), _ a: [SectorData] = []){
+func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @escaping (String) -> (), ipget: @escaping (String) -> (), load: @escaping (CGFloat) -> (), _ a: [SectorData] = []){
     
     let regionx = 0//fdiv(x, REGIONSIZE)
     let regiony = 0//fdiv(y, REGIONSIZE)
@@ -199,16 +201,16 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                 ipget(ip)
                 
                 //Load
+                let TOT = sector.0.count
                 var DONE = 0
                 for p in sector.0{
-                    DONE += 1
                     image(p.name!) { (i: SKTexture) in
                         p.texture = i
                         p.size = i.size()
-                        DONE -= 1
-                        if DONE == 0{
+                        DONE += 1
+                        load(CGFloat(DONE) / CGFloat(TOT))
+                        if DONE == TOT{
                             //DONE :O POG
-                            
                             completion(sector)
                         }
                     } err: { e in err(e); loaded.remove(CGPoint(x: regionx, y: regiony)) }
@@ -219,7 +221,7 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
         if !loaded.contains(CGPoint(x: regionx, y: regiony)){
             let a = sectors[CGPoint(x: regionx, y: regiony)]
             sectors[CGPoint(x: regionx, y: regiony)] = nil
-            sector(x: Int(x), y: Int(y), completion: completion, err: err, ipget: ipget, a ?? [])
+            sector(x: Int(x), y: Int(y), completion: completion, err: err, ipget: ipget, load: load, a ?? [])
             return
         }
         err("Spacetime continuum ends here...")
@@ -251,6 +253,7 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
             found = found || current
             if current{ipget(ip)}
             var DONE = 0
+            var TOT = 0
             while(len > 0){
                 len -= 1
                 let id = data.readunsafe() as UInt16
@@ -274,12 +277,13 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                 let img = "https://firebasestorage.googleapis.com/v0/b/\(bucketname).appspot.com/o/\(data.read(lentype: Int8.self) ?? "default").png?alt=media"
                 
                 if current && !exists{
-                    DONE += 1
+                    TOT += 1
                     image(img) { (i: SKTexture) in
                         p.texture = i
                         p.size = i.size()
-                        DONE -= 1
-                        if DONE == 0{
+                        DONE += 1
+                        load(CGFloat(DONE) / CGFloat(TOT))
+                        if DONE == TOT{
                             s.0 = planets
                             s.2.bucket = ""
                             if px < xx || px > xx + REGIONSIZE || py < yy || py > yy + REGIONSIZE{

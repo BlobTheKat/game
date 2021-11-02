@@ -154,6 +154,7 @@ class PlayCore: PlayAmbient{
         a = 0
         for s in objects{
             s.update()
+            s.namelabel?.position = CGPoint(x: s.position.x, y: s.position.y + 30)
             if s != ship && s.id > 0{
                 let x = ship.position.x - s.position.x
                 let y = ship.position.y - s.position.y
@@ -189,7 +190,7 @@ class PlayCore: PlayAmbient{
                 SKAction.fadeOut(withDuration: 1),
                 SKAction.run{ [self] in
                     ship.removeFromParent()
-                    send(Data([8, 0, 0, 0, 0]))
+                    send(Data([9, 0, 0, 0, 0]))
                     end()
                     DispatchQueue.main.async{SKScene.transition = .crossFade(withDuration: 0.5);Play.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0)}
                 }

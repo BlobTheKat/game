@@ -20,7 +20,7 @@ class Play: PlayCore{
     var playedLightSpeedOut = false
     var health = 13
     var shootSound = SKAction.playSoundFileNamed("Lazer.wav", waitForCompletion: false)
-    
+    var gkview: UIViewController? = nil
     
    
     
@@ -64,6 +64,8 @@ class Play: PlayCore{
     let tunnel1 = SKSpriteNode(imageNamed: "tunnel1")
     let tunnel2 = SKSpriteNode(imageNamed: "tunnel2")
     
+    let loadingbg = SKShapeNode(rect: CGRect(x: -150, y: 0, width: 300, height: 3))
+    
     let f3 = SKShapeNode(circleOfRadius: 43)
     func suit(_ id: Int){
         ship.id = id
@@ -84,6 +86,34 @@ class Play: PlayCore{
     }
     override init(size: CGSize) {
         super.init(size: size)
+        if creds != nil{
+            gotIp()
+        }else{
+            GKLocalPlayer.local.authenticateHandler = { viewController, error in
+                if let viewController = viewController{
+                    self.gkview = viewController
+                    return
+                }
+                if error != nil{
+                    //guest
+                    self.gameGuest()
+                }
+                self.gameAuthed()
+            }
+        }
+        cam.addChild(loadingbg)
+        loadingbg.lineWidth = 0
+        loadingbg.position.y = -0.35 * self.size.height
+        loadingbg.fillColor = .gray
+        
+        cam.addChild(loading)
+        loading.lineWidth = 0
+        loading.position.y = -0.35 * self.size.height
+        loading.fillColor = .white
+        loading.zPosition = 1
+        loading.xScale = 0
+        loading.position.x = -150
+        
         cam.position = CGPoint.zero
         self.addChild(cam)
         self.camera = cam
@@ -117,13 +147,42 @@ class Play: PlayCore{
             //reposition for smaller screens
             let dif = accountIcon.position.x - self.size.width * 0.4 - 70
             accountIcon.position.x -= dif
-            print(self.size.width * 0.4, accountIcon.size.width, nw)
             accountBG.setScale((self.size.width - accountIcon.size.width) / nw)
-            accountBG.position.x -= dif - 100
+            accountBG.position.x = accountIcon.position.x - accountBG.size.width / 2 - 130
         }
         inlightSpeed.run(playSound)
         
-        
+        ship.run(SKAction.fadeAlpha(by: 1, duration: 1).ease(.easeOut))
+        ship.producesParticles = true
+        var step = 0
+        ship.particle = { (_ ship: Object) in
+            step = (step + 1) % 16
+            let i = max(ship.alpha * 1.5 - 0.45, 0)
+            return Particle[State(color: (r: 0.1, g: 0.7, b: 0.7), size: CGSize(width: 11, height: 2), zRot: 0, position: ship.position.add(y: -5), alpha: i), State(color: (r: 1, g: 1, b: 1), size: CGSize(width: 5, height: 2), zRot: 0, position: ship.position.add(y: -35), alpha: 0, delay: TimeInterval(i))]
+        }
+        ship.particleFrequency = 1
+        self.label(node: tapToStart, "loading sector   ", pos: pos(mx: 0, my: -0.3, x: -153), size: fmed, color: .white, font: "HalogenbyPixelSurplus-Regular", zPos: 999, isStatic: true)
+        tapToStart.horizontalAlignmentMode = .left
+        tapToStart.alpha = 0.7
+        ship.zPosition = 5
+        tapToStart.run(.repeatForever(.sequence([
+            .wait(forDuration: 0.5),
+            .run{
+                self.tapToStart.text = "loading sector.  "
+            },
+            .wait(forDuration: 0.5),
+            .run{
+                self.tapToStart.text = "loading sector.. "
+            },
+            .wait(forDuration: 0.5),
+            .run{
+                self.tapToStart.text = "loading sector..."
+            },
+            .wait(forDuration: 0.5),
+            .run{
+                self.tapToStart.text = "loading sector   "
+            }
+        ])), withKey: "dotdotdot")
         
         self.addChild(inlightSpeed)
         didInit()
@@ -133,8 +192,17 @@ class Play: PlayCore{
         startAnimation()
         guard !moved else {return}
         guard ready else{return}
+        loadingbg.removeFromParent()
+        loading.removeFromParent()
+        tapToStart.horizontalAlignmentMode = .center
+        tapToStart.position.x = 0
+        tapToStart.alpha = 0
+        tapToStart.run(.fadeAlpha(to: 0.7, duration: 0.7))
         ship.position = CGPoint(x: CGFloat(secx) - loadstack.pos!.x, y: CGFloat(secy) - loadstack.pos!.y)
-        cam.position = CGPoint(x: ship.position.x, y: ship.position.y)
+        cam.position = CGPoint(x: ship.position.x, y: ship.position.y - 0.08 * self.size.height)
+        for particle in particles{
+            particle.position += ship.position
+        }
         moved = true
         border1.zRotation = .pi / 2
         border1.position.y = (cam.position.y < 0 ? -0.5 : 0.5) * loadstack.size!.height
@@ -145,37 +213,29 @@ class Play: PlayCore{
         border2.yScale = 2
         self.addChild(border1)
         self.addChild(border2)
-        ship.run(SKAction.fadeAlpha(by: 1, duration: 1).ease(.easeOut))
+        tapToStart.removeAction(forKey: "dotdotdot")
         //setting tapToStart label relative to camera (static)
-        self.label(node: tapToStart, "tap to start", pos: pos(mx: 0, my: -0.4), size: fmed, color: .white, font: "HalogenbyPixelSurplus-Regular", zPos: 999, isStatic: true)
         self.run(SKAction.repeat(SKAction.sequence([
             SKAction.run{
                 if self.children.count < self.MIN_NODES{
-                    self.tapToStart.text = "loading..."
+                    self.tapToStart.text = "loading sector..."
                 }else{
-                    self.tapToStart.text = "tap to start"
+                    if !self.authed{
+                        self.tapToStart.text = "connecting..."
+                    }else{
+                        self.tapToStart.text = "tap to start"
+                    }
                 }
             },
             SKAction.wait(forDuration: 0.2)
         ]), count: 100), withKey: "loading")
-        //position indicator
-        tapToStart.alpha = 0.7
-        ship.zPosition = 5
-        ship.producesParticles = true
-        var step = 0
-        ship.particle = { (_ ship: Object) in
-            step = (step + 1) % 16
-            let i = max(ship.alpha * 1.5 - 0.45, 0)
-            return Particle[State(color: (r: 0.1, g: 0.7, b: 0.7), size: CGSize(width: 11, height: 2), zRot: 0, position: ship.position.add(y: -5), alpha: i), State(color: (r: 1, g: 1, b: 1), size: CGSize(width: 5, height: 2), zRot: 0, position: ship.position.add(y: -35), alpha: 0, delay: TimeInterval(i))]
-        }
-        ship.particleFrequency = 1
-        let _ = interval(3) {
+        stop.append(interval(3){
             self.tapToStart.run(SKAction.moveBy(x: 0, y: 10, duration: 2).ease(.easeOut))
-        }
-        let _ = timeout(1.5) {
-            let _ = interval(3){
+        })
+        let _ = timeout(1.5){
+            stop.append(interval(3){
                 self.tapToStart.run(SKAction.moveBy(x: 0, y: -10, duration: 2).ease(.easeOut))
-            }
+            })
         }
     }
     var trails: [SKSpriteNode] = []
@@ -277,7 +337,6 @@ class Play: PlayCore{
         sector.position = CGPoint(x: pos.x / 10, y: pos.y / 10)
     }
     func removeTapToStart(){
-        
         self.tapToStart.run(SKAction.fadeOut(withDuration: 0.3).ease(.easeOut))
         self.tapToStart.run(SKAction.scale(by: 1.5, duration: 0.2))
     }
@@ -541,7 +600,6 @@ class Play: PlayCore{
             }
         ]), withKey: "constantLazer")
     }
-    
     func hideControls(){
         navArrow.removeFromParent()
         thrustButton.removeFromParent()
@@ -556,7 +614,6 @@ class Play: PlayCore{
         cam.addChild(thrustButton)
         cam.addChild(shipDirection)
     }
-    
     override func nodeDown(_ node: SKNode, at point: CGPoint) {
         
         
@@ -564,15 +621,14 @@ class Play: PlayCore{
             removeTrackers()
         }
         if accountIcon == node{
-            pressed = true
-            GKLocalPlayer.local.authenticateHandler = { viewController, error in
-                if let viewController = viewController{
-                    viewController.present(controller, animated: true) {
-                        print("authed")
-                    }
-                    return
+            gkview?.present(controller, animated: true){
+                if GKLocalPlayer.local.isAuthenticated{
+                    self.gameAuthed()
+                }else{
+                    //guest
                 }
             }
+            pressed = true
         }
         if cockpitIcon == node{
             cockpitIcon.texture = SKTexture(imageNamed: "cockpitOn")
@@ -802,7 +858,7 @@ class Play: PlayCore{
         if key == .keyboardN{
             ship.encode(data: &d)
         }else if key == .keyboardB{
-            guard d.count >= 20 else{return}
+            guard d.count >= 14 else{return}
             ship.decode(data: &d)
         }else if key == .keyboardEqualSign{
             send(Data([127]))

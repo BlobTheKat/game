@@ -46,13 +46,14 @@ class PlayerDied: PlayConvenience{
         ]))
         charcter.run(SKAction.scale(by: 0.1, duration: 40))
         charcter.run(SKAction.rotate(byAngle: -4, duration: 40))
-        let _ = interval(4) {
+        stop.append(interval(4) {
+            
             self.charcter.run(SKAction.moveBy(x: 0, y: 7, duration: 2).ease(.easeInEaseOut))
             
             let _ = timeout(2) {
                 self.charcter.run(SKAction.moveBy(x: 0, y: -7, duration: 2).ease(.easeInEaseOut))
             }
-        }
+        })
         let text = "You died!"
         var i = 0
         let _ = timeout(0.2){var a = {};a = interval(0.1){

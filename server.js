@@ -5,11 +5,15 @@ const VERSION = 1;
 var dgram = require('dgram');
 var server = dgram.createSocket('udp4');
 var fs = require('fs');
-var fetch
+var fetch, verify
 exit = process.exit
 try{fetch = require('node-fetch')}catch(e){
-    console.log("\x1b[31m[Error]\x1b[37m To run this server, you need to install node-fetch. Type this in the bash shell: \x1b[m\x1b[34mnpm i node-fetch@2.6.2\x1b[m")
-    process.exit(1);
+    console.log("\x1b[31m[Error]\x1b[37m To run this server, you need to install node-fetch 2.6.2. Type this in the bash shell: \x1b[m\x1b[34mnpm i node-fetch@2.6.2\x1b[m")
+    process.exit(1)
+}
+try{verify = require("gamecenter-identity-verifier").verify}catch(e){
+    console.log("\x1b[31m[Error]\x1b[37m To run this server, you need to install gamcecenter-identity-verifier. Type this in the bash shell: \x1b[m\x1b[34mnpm i gamecenter-identity-verifier\x1b[m")
+    process.exit(1)
 }
 let clients = new Map()
 let FPS = 60
@@ -240,15 +244,15 @@ class Asteroid{
         this.mass = asteroids[this.id].mass
         this.respawnstate = [this.x, this.y, this.dx, this.dy]
     }
-    toBuf(buf = Buffer.alloc(20), offset = 0){
+    toBuf(buf = Buffer.alloc(14), offset = 0){
         buf.writeFloatLE(this.x,offset)
         buf.writeFloatLE(this.y,offset+4)
-        buf.writeFloatLE(this.dx,offset+8)
-        buf.writeFloatLE(this.dy,offset+12)
+        buf.writeInt8(Math.max(Math.min(127, Math.round(this.dx * FPS / 16)), -128),offset+8)
+        buf.writeInt8(Math.max(Math.min(127, Math.round(this.dy * FPS / 16)), -128),offset+9)
         let PI2 = Math.PI * 2
-        buf[offset+16] = Math.round(((this.z % PI2) + PI2) % PI2 * 40)
-        buf.writeUInt8((this.dz * 768)&255, offset+17)
-        buf.writeUint16LE(6 + (this.id << 5), offset + 18)
+        buf[offset+10] = Math.round(((this.z % PI2) + PI2) % PI2 * 40)
+        buf.writeUInt8((this.dz * 768)&255, offset+11)
+        buf.writeUint16LE(6 + (this.id << 5), offset + 12)
         return buf
     }
     update(thing){
@@ -286,11 +290,12 @@ class Asteroid{
         this.z += thing.dz * r / d
     }
 }
-let A = {toBuf(){return Buffer.alloc(20)},updatep(){},update(){}}
+let A = {toBuf(){return Buffer.alloc(14)},updatep(){},update(){}}
 class ClientData{
-    constructor(name = "Player", remote = ""){
+    constructor(name = "", id = "", remote = ""){
+        this.name = name
+        this.playerid = id
         this.remote = remote+""
-        this.name = name+""
         this.state = 0
         this.x = 0.0
         this.y = 0.0
@@ -355,14 +360,14 @@ class ClientData{
     }
     validate(buffer = Buffer()){
         //let delay = -0.001 * FPS * (this.u - (this.u=Date.now()))
-        if(buffer.length < 20)return Buffer.alloc(0)
+        if(buffer.length < 14)return Buffer.alloc(0)
         let x = buffer.readFloatLE(0)
         let y = buffer.readFloatLE(4)
-        let dx = buffer.readFloatLE(8)
-        let dy = buffer.readFloatLE(12)
-        let z = buffer.readInt8(16) / 40
-        let dz = buffer.readInt8(17) / 768
-        let thrust = buffer.readUint16LE(18)
+        let dx = buffer.readInt8(8) / FPS * 16
+        let dy = buffer.readInt8(9) / FPS * 16
+        let z = buffer.readInt8(10) / 40
+        let dz = buffer.readInt8(11) / 768
+        let thrust = buffer.readUint16LE(12)
         /*if(true){
             this.ship = (ship << 8) + level
         }
@@ -382,7 +387,7 @@ class ClientData{
         this.y += dy
         this.z += dz
         
-        let buf = Buffer.alloc(20)
+        let buf = Buffer.alloc(14)
         let update = 6
         if(Math.abs(this.dx - dx) < mult / 60)this.dx = dx, update--
         if(Math.abs(this.dy - dy) < mult / 60)this.dy = dy, update--
@@ -401,16 +406,16 @@ class ClientData{
         this.id = thrust >> 5
         return Buffer.alloc(0)
     }
-    toBuf(buf = Buffer.alloc(20), offset = 0, ref){
+    toBuf(buf = Buffer.alloc(14), offset = 0, ref){
         if(performance.nodeTiming.duration - this.u._idleStart > 1000){return}
         buf.writeFloatLE(this.x,offset)
         buf.writeFloatLE(this.y,offset+4)
-        buf.writeFloatLE(this.dx,offset+8)
-        buf.writeFloatLE(this.dy,offset+12)
+        buf.writeInt8(Math.max(Math.min(127, Math.round(this.dx * FPS / 16)), -128),offset+8)
+        buf.writeInt8(Math.max(Math.min(127, Math.round(this.dy * FPS / 16)), -128),offset+9)
         let PI2 = Math.PI * 2
-        buf[offset+16] = Math.round(((this.z % PI2) + PI2) % PI2 * 40)
-        buf.writeUInt8((this.dz * 768)&255, offset+17)
-        buf.writeUint16LE((this.thrust & 15) + (this.id << 5) + (this.shoots == ref ? 16 : 0), offset + 18)
+        buf[offset+10] = Math.round(((this.z % PI2) + PI2) % PI2 * 40)
+        buf.writeUInt8((this.dz * 768)&255, offset+11)
+        buf.writeUint16LE((this.thrust & 15) + (this.id << 5) + (this.shoots == ref ? 16 : 0), offset + 12)
         if(this.shoots == ref)this.shoots = null
         return buf
     }
@@ -419,37 +424,54 @@ class ClientData{
         this.u = setTimeout(this.destroy.bind(this),5000)
     }
     destroy(){
-        server.send(Buffer.concat([Buffer.of(127), strbuf('Disconnected for inactivity')]), this.remote.split(' ')[1], this.remote.split(' ')[0], e => e && console.log(e))
+        server.send(Buffer.concat([Buffer.of(127), strbuf('Disconnected for inactivity')]), this.remote.split(':')[1], this.remote.split(':')[0], e => e && console.log(e))
         this.wasDestroyed()
+        
     }
     wasDestroyed(){
         clearTimeout(this.u)
         clients.delete(this.remote)
         sector.objects[sector.objects.indexOf(this)]=A
-        while(sector.objects[sector.objects.length]==A)sector.objects.pop()
+        while(sector.objects[sector.objects.length-1]==A)sector.objects.pop()
     }
 }
+const bundleId = "locus.tunnelvision"
 server.on('message', function(message, remote) {
     let send = a=>server.send(a,remote.port,remote.address,e => e && console.log(e))
-    let address = remote.address + ' ' + remote.port
+    let address = remote.address + ':' + remote.port
     if(message[0] === 0){
-        if(clients.get(address))return send(Buffer.of(1))
         try{
             let version = message.readUint16LE(1)
             if(version < VERSION)return send(Buffer.of(120))
-            let len = message.readUint32LE(3)
-            if(len > 64)throw new RangeError()
-            let name = message.subarray(7,7+len).toString()
-            clients.set(address, new ClientData(name, address))
-            clients.get(address).ready(0, 0, 0, 0, 0, 0, 1, 0, 0)
-            send(Buffer.of(1))
+            let i
+            let len = message.readUint8(3)
+            let publicKeyUrl = message.subarray(4,i = 4 + len).toString()
+            len = message.readUint16LE(i),i += 2
+            let signature = message.subarray(i, i += len).toString("base64")
+            len = message.readUint8(i++)
+            let salt = message.subarray(i, i += len).toString("base64")
+            len = message.readUint8(i++)
+            let playerId = message.subarray(i, i += len).toString()
+            let timestamp = message.readUint32LE(i) + message.readUint32LE(i + 4, void(i += 8)) * 4294967296
+            len = message.readUint8(i++)
+            let name = message.subarray(i, i += len).toString()
+            if(clients.get(address) == timestamp || typeof clients.get(address) == "object")return send(Buffer.of(1))
+            clients.set(address, timestamp)
+            verify({publicKeyUrl, signature, salt, playerId, timestamp, bundleId}, function(err){
+                if(err){
+                    send(Buffer.from(Buffer.concat([Buffer.of(127), strbuf("Invalid identity")])))
+                }else{
+                    clients.set(address, new ClientData(name, playerId, address))
+                    clients.get(address).ready(0, 0, 0, 0, 0, 0, 1, 0, 0)
+                    send(Buffer.of(1))
+                }
+            })
         }catch(e){
-            console.log(e)
             send(Buffer.from(Buffer.concat([Buffer.of(127), strbuf('Connection failed')])))
         }
         return
     }
-    if(clients.has(address))try{msg(message,send,address)}catch(e){send(Buffer.concat([[127], strbuf("Corrupt Packet")]))}
+    if(typeof clients.get(address) == "object")try{msg(message,send,address)}catch(e){console.log(e);send(Buffer.concat([Buffer.of(127), strbuf("Corrupt Packet")]))}
 });
 
 function msg(data, reply, address){
@@ -459,9 +481,9 @@ function msg(data, reply, address){
     if(data[0] == 3){
         reply(Buffer.of(4))
     }else if(data[0] == 5){
-        let cc = data[21]
+        let cc = data[15]
         let hitc = cc & 7
-        let i = 22
+        let i = 16
         while(hitc--){
             let x = data.readUint32LE(i)
             let obj = sector.objects[x]
@@ -478,9 +500,22 @@ function msg(data, reply, address){
             }
             i += 4
         }
-        
-        let a = ship.validate(data.slice(1,21))
-        let buf = Buffer.alloc(a.length ? 22 : 2)
+        hitc = cc >> 4
+        if(hitc){
+            let buf = [Buffer.of(8)]
+            while(hitc--){
+                let x = data.readUint32LE(i)
+                let obj = sector.objects[x]
+                let name = (obj && obj.name) || ""
+                buf.push(Buffer.alloc(4))
+                buf[buf.length - 1].writeUint32LE(x)
+                buf.push(strbuf(name))
+                i += 4
+            }
+            reply(Buffer.concat(buf))
+        }
+        let a = ship.validate(data.slice(1,15))
+        let buf = Buffer.alloc(a.length ? 16 : 2)
         buf[0] = 6
         buf[1] = delay
         if(a.length){
@@ -488,25 +523,23 @@ function msg(data, reply, address){
             buf.writeUint32LE(a.readUint32LE(),2)
             buf.writeUint32LE(a.readUint32LE(4),6)
             buf.writeUint32LE(a.readUint32LE(8),10)
-            buf.writeUint32LE(a.readUint32LE(12),14)
-            buf.writeUint32LE(a.readUint32LE(16),18)
+            buf.writeUint32LE(a.readUint16LE(12),14)
         }
         let dat = [buf]
         for(var obj of sector.objects){
             if(obj == ship)continue
-            dat.push(Buffer.alloc(20))
+            dat.push(Buffer.alloc(14))
             obj.toBuf(dat[dat.length - 1], 0, ship)
         }
         buf = Buffer.concat(dat)
         reply(buf)
     }else if(data[0] == 127){
         clients.get(address).wasDestroyed()
-    }else if(data[0] == 7){
+    }else if(data[0] == 9){
         let x = data.readFloatLE(1)
         let y = data.readFloatLE(5)
         //magic
         let newSector = 1
-        console.log("destroyed >:D")
         ship.wasDestroyed()
     }else reply(Buffer.concat([[127], strbuf("Illegal Packet")]))
 }

@@ -1,6 +1,6 @@
 typealias arr[a] = int a[\0]
 typealias str = arr[char]
-typealias obj = float float float float byte byte short
+typealias obj = float float byte byte byte byte short
 
 Client: AUTH [name]
         (0 str)
@@ -13,10 +13,13 @@ Server: LS_HBEAT
         (4)
 [end]
 [loop 0.1s]
-Client: PDATA [ship]
-        (5 obj)
+Client: PDATA [ship] ([hitlen] [shot] [namelen]) [hits]? [shot]? [names]?
+        (5 obj 3bit bit 4bit int[\2] int[\3] int[\4])
 Server: PDATA [ships]
         (6 arr[obj])
+
+Server: NAMES [strs]
+        (8 arr[str])
 [end]
 
 End:
@@ -24,7 +27,7 @@ Client: DISC
         (127)
 
 Client: SECMOV [x] [y]
-        (7 float float)
+        (9 float float)
 Server: OKTHEN [sector]
         (2 int)
 

@@ -21,9 +21,11 @@ class GameViewController: UIViewController {
         if let view = self.view as! SKView? {
             controller = self
             skview = view
-            SKScene.transition = SKTransition.crossFade(withDuration: 1.5)
-            Play.renderTo(skview)
-            SKScene.transition = SKTransition.crossFade(withDuration: 0)
+            let scene = Play(size: view.frame.size)
+            scene.scaleMode = .aspectFit
+            scene.backgroundColor = .black
+            SKScene.transition.pausesIncomingScene = false
+            view.presentScene(scene, transition: SKScene.transition)
             view.preferredFramesPerSecond = 60
             view.showsNodeCount = true
             view.showsFPS = true
@@ -36,6 +38,9 @@ class GameViewController: UIViewController {
         return true
     }
 
+    override var prefersHomeIndicatorAutoHidden: Bool {
+        return true
+    }
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         if UIDevice.current.userInterfaceIdiom == .phone {
             return .allButUpsideDown

@@ -7,7 +7,9 @@
 
 import Foundation
 import SpriteKit
+import GameKit
 
+var creds: (url: URL, sig: Data, salt: Data, time: UInt64, id: String)?
 class PlayNetwork: PlayConvenience{
     var DEBUG_TXT = SKLabelNode(fontNamed: "Menlo")
     var MIN_NODES = 70
@@ -33,7 +35,20 @@ class PlayNetwork: PlayConvenience{
     var loadstack: (p: [Planet]?, size: CGSize?, pos: CGPoint?) = (p: nil, size: nil, pos: nil)
     var delay: Double = 0
     let inlightSpeed = SKAudioNode(fileNamed: "InLightSpeed.wav")
+    let loading = SKShapeNode(rect: CGRect(x: -150, y: 0, width: 300, height: 3))
     
+    var needsNames = Set<Int>()
+    var auth_ = false
+    func gameAuthed(){
+        if auth_{return}
+        gotIp()
+        auth_ = true
+    }
+    func gameGuest(){
+        if auth_{return}
+        gotIp()
+        auth_ = true
+    }
     func kill(_ n: Object){
         if n.death > 100{
             //explode
@@ -46,12 +61,13 @@ class PlayNetwork: PlayConvenience{
             n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * CGFloat(gameFPS), dy: CGFloat(n.velocity.dy) * CGFloat(gameFPS)), duration: 1))
         }else{n.removeFromParent()}
     }
-    
-    
+    var needsName = false
     func parseShip(_ data: inout Data, _ i: Int){
         guard i < objects.count else {
             let object = Object()
             object.decode(data: &data)
+            if needsName{needsNames.insert(i)}
+            needsName = false
             objects.append(object)
             if object.id != 0{
                 for i in appear(object.position){
@@ -68,7 +84,12 @@ class PlayNetwork: PlayConvenience{
         }
         let object = objects[i]
         object.decode(data: &data)
+        if needsName{needsNames.insert(i)}
+        needsName = false
         if object.id == 0 && object.parent != nil{
+            needsNames.remove(i)
+            object.namelabel?.removeFromParent()
+            object.namelabel = nil
             if let i = tracked.firstIndex(of: object){
                 trackArrows[i].removeFromParent()
                 tracked.remove(at: i)
@@ -106,7 +127,10 @@ class PlayNetwork: PlayConvenience{
             dmessage = a
             self.end()
             DispatchQueue.main.async{Disconnected.renderTo(skview)}
-        } ipget: {ip in self.gotIp(ip)}
+        } ipget: {self.ip = $0;self.gotIp()} load: { frac in
+            self.loading.run(.scaleX(to: frac, duration: 0.1).ease(.easeOut))
+            self.loading.run(.moveTo(x: (frac - 1) * 150, duration: 0.1).ease(.easeOut))
+        }
     }
     func didLoad(){
         planets.append(contentsOf: loadstack.p!)
@@ -137,12 +161,15 @@ class PlayNetwork: PlayConvenience{
                 hits.removeLast(hits.count - 7)
             }
             if shotObj != nil && objects.firstIndex(of: shotObj!) == nil{shotObj = nil}
-            data.write(UInt8(hits.count + (shotObj != nil ? 8 : 0)))
+            data.write(UInt8(hits.count + (shotObj != nil ? 8 : 0) + min(needsNames.count, 15) * 16))
             if !usingConstantLazer || coolingDown{usedShoot = false}
             for hit in hits{
                 data.write(hit)
             }
             if shotObj != nil, let i = objects.firstIndex(of: shotObj!){
+                data.write(UInt32(i))
+            }
+            for i in needsNames.prefix(15){
                 data.write(UInt32(i))
             }
             shotObj = nil
@@ -160,7 +187,6 @@ class PlayNetwork: PlayConvenience{
     func ping(){
         a()
         a = timeout(5){
-            self.send(Data([127]))
             dmessage = "Lost connection!"
             self.end()
             Disconnected.renderTo(skview)
@@ -174,10 +200,12 @@ class PlayNetwork: PlayConvenience{
         DEBUG_TXT.horizontalAlignmentMode = .left
         DEBUG_TXT.verticalAlignmentMode = .top
         DEBUG_TXT.numberOfLines = 20
+        cam.addChild(DEBUG_TXT)
         api.sector(completion: sectorpos)
     }
     var ended = false
     func end(){
+        if !ended{send(Data([127]))}
         inlightSpeed.run(stopSound)
         //release texture objects
         for p in loadstack.p ?? []{
@@ -186,19 +214,37 @@ class PlayNetwork: PlayConvenience{
         send = {(_:Data) in}
         a()
         istop()
+        stopAuth()
         ended = true
     }
+    var p = false
     var last: DispatchTime = .now()
-    func gotIp(_ ip: String){
-        print("got ip")
-        var stopAuth = {}
-        var authed = false
-        send = connect(ip){[self](d) in
+    var authed = false
+    var ip: String = ""
+    var stopAuth = {}
+    func gotIp(){
+        if !p{p = true;return}
+        let player = GKLocalPlayer.local
+        if player.isAuthenticated && creds == nil{
+            player.fetchItems(forIdentityVerificationSignature: { url, sig, salt, time, err in
+                if err != nil || url == nil || sig == nil{
+                    dmessage = "Failed to identify"
+                    self.end()
+                    DispatchQueue.main.async{Disconnected.renderTo(skview)}
+                    return
+                }
+                creds = (url: url!, sig: sig!, salt: salt ?? Data(), time: time, id: GKLocalPlayer.local.teamPlayerID)
+                self.gotIp()
+            })
+            return
+        }
+        send = connect("192.168.1.64:65152"){[self](d) in
             if ended{return}
             guard view == skview else{return}
             var data = d
             let code: UInt8 = data.readunsafe()
             if code == 1{
+                ping()
                 if !authed{
                     authed = true
                     stopAuth()
@@ -207,24 +253,23 @@ class PlayNetwork: PlayConvenience{
                     startHB()
                 }
                 return
-            }
-            guard ship.controls else {return}
-            if code == 127{
+            }else if code == 127{
                 dmessage = data.read() ?? "Disconnected!"
                 end()
                 DispatchQueue.main.async{Disconnected.renderTo(skview)}
             }else if code == 4{
                 ping()
                 last = .now()
-            }else if code == 6{
+            }
+            guard ship.controls else {return}
+            if code == 6{
                 ping()
                 delay = Double(data.readunsafe() as UInt8) / 100
                 last = (last + delay).clamp(.now(), .now().advanced(by: DispatchTimeInterval.milliseconds(MAX_DELAY)))
                 physics.asyncAfter(deadline: last){ [self] in
                     var i = 1
-                    while data.count > 19{parseShip(&data, i);i += 1}
+                    while data.count > 13{parseShip(&data, i);i += 1}
                 }
-                
             }else if code == 7{
                 ping()
                 delay = data.readunsafe()
@@ -232,7 +277,7 @@ class PlayNetwork: PlayConvenience{
                 if .now().advanced(by: DispatchTimeInterval.milliseconds(MAX_DELAY)) < last || .now() > last{last = .now()}
                 physics.asyncAfter(deadline: last){ [self] in
                     var i = 0
-                    while data.count > 19{parseShip(&data, i);i += 1}
+                    while data.count > 13{parseShip(&data, i);i += 1}
                     for e in objects.suffix(max(objects.count - i, 0)){
                         if let i = tracked.firstIndex(of: e){
                             trackArrows[i].removeFromParent()
@@ -240,15 +285,35 @@ class PlayNetwork: PlayConvenience{
                             trackArrows.remove(at: i)
                         }
                         kill(e)
+                        e.namelabel?.removeFromParent()
+                        e.namelabel = nil
                         e.removeFromParent()
                     }
                     objects.removeLast(max(objects.count - i, 0))
                 }
+            }else if code == 8{
+                while data.count > 0{
+                    let id = Int(data.readunsafe() as UInt32)
+                    let name = data.read() ?? ""
+                    guard needsNames.contains(id) else {continue}
+                    needsNames.remove(id)
+                    objects[id].namelabel = SKLabelNode(text: "...")
+                    label(node: objects[id].namelabel!, name, pos: CGPoint(x: objects[id].position.x, y: objects[id].position.y + 30), size: 24, font: "Menlo")
+                    
+                }
             }
         }
-        let hello = try! messages.hello(name: "BlobKat")
+        var data = Data()
+        data.write(Int8(0))
+        data.write(UInt16(VERSION))
+        data.write(creds!.url.absoluteString, lentype: UInt8.self)
+        data.write([UInt8](creds!.sig), lentype: UInt16.self)
+        data.write([UInt8](creds!.salt), lentype: UInt8.self)
+        data.write(creds!.id, lentype: UInt8.self)
+        data.write(creds!.time)
+        data.write(GKLocalPlayer.local.alias, lentype: UInt8.self)
         var tries = 0
-        stopAuth = interval(0.5) { [self] in
+        stopAuth = interval(0.5){ [self] in
             tries += 1
             if tries > 10{
                 stopAuth()
@@ -257,7 +322,7 @@ class PlayNetwork: PlayConvenience{
                 DispatchQueue.main.async{Disconnected.renderTo(skview)}
                 return
             }
-            send(hello)
+            send(data)
         }
     }
 }
