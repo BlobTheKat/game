@@ -623,9 +623,11 @@ class Play: PlayCore{
         if accountIcon == node{
             gkview?.present(controller, animated: true){
                 if GKLocalPlayer.local.isAuthenticated{
+                    //get token
                     self.gameAuthed()
                 }else{
-                    //guest
+                    //create token
+                    self.gameGuest()
                 }
             }
             pressed = true

@@ -187,8 +187,16 @@ extension SKAction{
         return self
     }
 }
-
 extension Data{
+    func hexEncodedString(uppercase: Bool = false) -> String {
+        return self.map {
+            if $0 < 16 {
+                return "0" + String($0, radix: 16, uppercase: uppercase)
+            } else {
+                return String($0, radix: 16, uppercase: uppercase)
+            }
+        }.joined()
+    }
     mutating func write<LenType: FixedWidthInteger>(_ a: String, encoding: String.Encoding = .utf8, lentype: LenType.Type){
         guard a.count <= lentype.max else{fatalError("Buffer overload when writing string (smh how much ram do you have??)")}
         write(lentype.init(a.count))

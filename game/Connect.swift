@@ -218,7 +218,28 @@ let messages = M()
 var secx = 2000
 var secy = 2000
 
+/*
+ Token Format:
+ datacenter_ip_b64.random_256_b64.userid_hex
+ in the case of a guest user, userid_b64 is ommited (and so is the trailing spare dot)
+ datacenter_ip_b64: data server of this specific token. Alphanumeric name
+ random_256_b64: random buffer encoded into base64
+ 
+ Example token: operation-supersecret.vS4U4Oh1lGhipWxJAkIMPS656sug0DojaZiFyHQOGFc=.2f18ab65881fa104b501082c21457aba
+*/
 struct api{
+    static func guestToken() -> String{
+        //random token
+        var array = Data(count: 32)
+        if SecRandomCopyBytes(kSecRandomDefault, 32, &array) == errSecSuccess{
+            return "guest-0.\(array.base64EncodedString())"
+        }else{
+            fatalError("Random Bytes Failed")
+        }
+    }
+    static func token(completion: @escaping (String) -> ()){
+        GKLocalPlayer.local
+    }
     static func sector(completion: @escaping (_ x: Int, _ y: Int) -> ()){
         completion(secx, secy)
     }

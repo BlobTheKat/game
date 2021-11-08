@@ -281,6 +281,7 @@ class PlayNetwork: PlayConvenience{
                     for e in objects.suffix(max(objects.count - i, 0)){
                         if let i = tracked.firstIndex(of: e){
                             trackArrows[i].removeFromParent()
+                            for a in tracked[i].children{if a.zPosition == 9{a.removeFromParent()}}
                             tracked.remove(at: i)
                             trackArrows.remove(at: i)
                         }
@@ -294,11 +295,11 @@ class PlayNetwork: PlayConvenience{
             }else if code == 8{
                 while data.count > 0{
                     let id = Int(data.readunsafe() as UInt32)
-                    let name = data.read() ?? ""
-                    guard needsNames.contains(id) else {continue}
+                    let name = data.read() ?? "Player"
+                    //guard needsNames.contains(id) else {continue}
                     needsNames.remove(id)
                     objects[id].namelabel = SKLabelNode(text: "...")
-                    label(node: objects[id].namelabel!, name, pos: CGPoint(x: objects[id].position.x, y: objects[id].position.y + 30), size: 24, font: "Menlo")
+                    label(node: objects[id].namelabel!, name, pos: CGPoint(x: objects[id].position.x, y: objects[id].position.y + 30), size: 20, color: .green, font: "Menlo")
                     
                 }
             }

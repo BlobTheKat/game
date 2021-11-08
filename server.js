@@ -457,10 +457,12 @@ server.on('message', function(message, remote) {
             let name = message.subarray(i, i += len).toString()
             if(clients.get(address) == timestamp || typeof clients.get(address) == "object")return send(Buffer.of(1))
             clients.set(address, timestamp)
-            verify({publicKeyUrl, signature, salt, playerId, timestamp, bundleId}, function(err){
+            verify({publicKeyUrl, signature, salt, playerId, timestamp, bundleId}, async function(err){
                 if(err){
                     send(Buffer.from(Buffer.concat([Buffer.of(127), strbuf("Invalid identity")])))
                 }else{
+                    //fetch DB stuff
+                    
                     clients.set(address, new ClientData(name, playerId, address))
                     clients.get(address).ready(0, 0, 0, 0, 0, 0, 1, 0, 0)
                     send(Buffer.of(1))
@@ -471,6 +473,7 @@ server.on('message', function(message, remote) {
         }
         return
     }
+    
     if(typeof clients.get(address) == "object")try{msg(message,send,address)}catch(e){console.log(e);send(Buffer.concat([Buffer.of(127), strbuf("Corrupt Packet")]))}
 });
 
