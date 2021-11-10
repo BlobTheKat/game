@@ -458,7 +458,7 @@ server.on('message', function(message, remote) {
             if(clients.get(address) == timestamp || typeof clients.get(address) == "object")return send(Buffer.of(1))
             clients.set(address, timestamp)
             verify({publicKeyUrl, signature, salt, playerId, timestamp, bundleId}, async function(err){
-                if(err){
+                if(err && playerId){
                     send(Buffer.from(Buffer.concat([Buffer.of(127), strbuf("Invalid identity")])))
                 }else{
                     //fetch DB stuff
@@ -544,5 +544,17 @@ function msg(data, reply, address){
         //magic
         let newSector = 1
         ship.wasDestroyed()
+    }else if(data[0] == 10){
+        let planetIndex = data.readUint32LE(1)
+        let planetLvl = data.readUint32LE(5)
+        let planet = sector.planets[planetIndex]
+        if(!planet){return}
+        
+        //magic
+        
+        let data = Buffer.alloc(5)
+        data[0] = 11
+        data.writeUint32LE(planetLvl)
+        reply(data)
     }else reply(Buffer.concat([[127], strbuf("Illegal Packet")]))
 }

@@ -22,6 +22,11 @@ Server: NAMES [strs]
         (8 arr[str])
 [end]
 
+
+Client: CONONISE ...
+        (10 )
+
+
 End:
 Client: DISC
         (127)

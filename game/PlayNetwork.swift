@@ -233,12 +233,16 @@ class PlayNetwork: PlayConvenience{
                     DispatchQueue.main.async{Disconnected.renderTo(skview)}
                     return
                 }
+                
                 creds = (url: url!, sig: sig!, salt: salt ?? Data(), time: time, id: GKLocalPlayer.local.teamPlayerID)
                 self.gotIp()
             })
             return
+        }else if creds == nil{
+            creds = (url: URL(string: "http://example.com")!, sig: Data(), salt: Data(), time: 1, id: "")
         }
-        send = connect(ip){[self](d) in
+        send = connect("192.168.1.248:65152"){[self](d) in
+            
             if ended{return}
             guard view == skview else{return}
             var data = d
@@ -302,6 +306,10 @@ class PlayNetwork: PlayConvenience{
                     label(node: objects[id].namelabel!, name, pos: CGPoint(x: objects[id].position.x, y: objects[id].position.y + 30), size: 20, color: .green, font: "Menlo")
                     
                 }
+            }else if code == 11{
+                print("colonize ok")
+                
+                //complete colonization
             }
         }
         var data = Data()

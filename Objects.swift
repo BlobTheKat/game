@@ -432,6 +432,10 @@ class Planet: Object{
                 let circle = parents!.planetsMP[parents!.planets.firstIndex(of: self)!]
                 circle.fillColor = UIColor.green
                 parents?.playerArrow.removeFromParent()
+                
+                //TO DO WITH COLONISING
+                parents?.navArrow.texture = SKTexture(imageNamed: "navArrow2")
+                parents?.navBG.addChild(parents!.coloIcon)
                 //GANGE MAP HERE
             }
         }else{
@@ -442,6 +446,9 @@ class Planet: Object{
                 //GANGE MAP HERE
                 if parents?.playerArrow.parent == nil{
                     parents!.mainMap.addChild(parents!.playerArrow)
+                    //TO DO WITH COLONISING
+                    parents?.navArrow.texture = SKTexture(imageNamed: "navArrow")
+                    parents!.coloIcon.removeFromParent()
                 }
             }
             if deathzone && !superhot{

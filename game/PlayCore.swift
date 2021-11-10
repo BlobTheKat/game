@@ -263,4 +263,13 @@ class PlayCore: PlayAmbient{
         }
         DEBUG_TXT.text = "X: \(%ship.position.x) / Y: \(%ship.position.y)\nDX: \(%ship.velocity.dx) / DY: \(%ship.velocity.dy)\nA: \(%ship.zRotation), AV: \(%ship.angularVelocity)\nVEL: \(%vel) VER: \(build)\nMEM: \(lastMem)MB NET: \(Int(Double(lastU) * gameFPS / 20480.0))KB/s\n\(logs.joined(separator: "\n"))"
     }
+    
+    
+    // COLONISATION
+    func colonize(_ planet: Planet){
+        var data = Data([10])
+        data.write(UInt32(planets.firstIndex(of: planet)!))
+        data.write(UInt32(1))
+        send(data)
+    }
 }

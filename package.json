@@ -6,7 +6,7 @@
   "dependencies": {
     "basic-repl": "^1.1.2",
     "gamecenter-identity-verifier": "^0.1.1",
-    "node-fetch": "^2.6.2",
+    "node-fetch": "^2.6.6",
     "request": "^2.88.2"
   },
   "scripts": {

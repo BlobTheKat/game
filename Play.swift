@@ -15,12 +15,24 @@ let playSound = SKAction.play()
 class Play: PlayCore{
     
     //SOUND EFFECT
+    
     var lightSpeedOut = SKAction.playSoundFileNamed("LightSpeedOut.wav", waitForCompletion: false)
    
     var playedLightSpeedOut = false
     var health = 13
     var shootSound = SKAction.playSoundFileNamed("Lazer.wav", waitForCompletion: false)
     var gkview: UIViewController? = nil
+    
+    let thrustSound = SKAudioNode(fileNamed: "thrust.wav")
+    
+    var playingThrustSound = false
+
+    //COLONIZE
+    
+    var colonize = false
+    var colonizeBG = SKSpriteNode(imageNamed: "coloBG")
+    var buyIcon = SKSpriteNode(imageNamed: "buyIcon")
+    var backIcon = SKSpriteNode(imageNamed: "backIcon")
     
    
     
@@ -54,6 +66,7 @@ class Play: PlayCore{
     let lightSpeedIcon = SKSpriteNode(imageNamed: "lightSpeedOff")
     let cockpitIcon = SKSpriteNode(imageNamed: "cockpitOff")
     let removeTrackerIcon = SKSpriteNode(imageNamed: "removeTracker")
+    let coloIcon = SKSpriteNode(imageNamed: "colonizeOff")
     
     //WARNINGS
     var isWarning = false
@@ -66,7 +79,7 @@ class Play: PlayCore{
     
     let loadingbg = SKShapeNode(rect: CGRect(x: -150, y: 0, width: 300, height: 3))
     
-    let f3 = SKShapeNode(circleOfRadius: 43)
+    
     func suit(_ id: Int){
         ship.id = id
         let sh = ships[id]
@@ -101,6 +114,8 @@ class Play: PlayCore{
                 self.gameAuthed()
             }
         }
+        
+        
         cam.addChild(loadingbg)
         loadingbg.lineWidth = 0
         loadingbg.position.y = -0.35 * self.size.height
@@ -237,6 +252,7 @@ class Play: PlayCore{
                 self.tapToStart.run(SKAction.moveBy(x: 0, y: -10, duration: 2).ease(.easeOut))
             })
         }
+        DEBUG_TXT.removeFromParent()
     }
     var trails: [SKSpriteNode] = []
     var animated = false
@@ -431,12 +447,33 @@ class Play: PlayCore{
         removeTrackerIcon.zPosition = 11
         removeTrackerIcon.setScale(0.9)
         navBG.addChild(removeTrackerIcon)
-        f3.position = CGPoint(x: repairIcon.position.x + (repairIcon.size.width * 1.5) ,y: repairIcon.position.y)
-        f3.alpha = 0.1
-        f3.zPosition = 11
-        f3.setScale(0.9)
-        f3.fillColor = .black
-        navBG.addChild(f3)
+        
+        
+        //COLONIZING
+        colonizeBG.anchorPoint = CGPoint(x: 0.5 ,y: 0)
+        colonizeBG.position = pos(mx: -0.5, my: -0.55, x: 0, y: 0)
+        colonizeBG.zPosition = 100
+        colonizeBG.setScale(0.8)
+        
+        
+        
+        
+        
+        backIcon.position = pos(mx: 0.085, my: 0.2, x: 0, y: 0)
+        backIcon.zPosition = 101
+        backIcon.setScale(0.5)
+        colonizeBG.addChild(backIcon)
+        
+        buyIcon.position = CGPoint(x: backIcon.position.x + backIcon.size.width * 1.5 , y: backIcon.position.y)
+        buyIcon.zPosition = 101
+        buyIcon.setScale(0.5)
+        colonizeBG.addChild(buyIcon)
+        
+        
+        
+        coloIcon.position = CGPoint(x: repairIcon.position.x + (repairIcon.size.width * 1.5) ,y: repairIcon.position.y)
+        coloIcon.zPosition = 11
+        coloIcon.setScale(0.9)
         
             cockpitIcon.position = CGPoint(x: -navBG.size.width/1.2 ,y: lightSpeedIcon.position.y + (lightSpeedIcon.size.height * 1.2) )
             cockpitIcon.alpha = 1
@@ -476,7 +513,7 @@ class Play: PlayCore{
         cam.addChild(shipDirection)
         
         
-            thrustButton.position = pos(mx: -0.4, my: -0.4, x: 50, y: 70)
+            thrustButton.position = pos(mx: -0.4, my: -0.4, x: 50, y: 80)
             thrustButton.alpha = 1
             thrustButton.zPosition = 10
             thrustButton.setScale(1.4)
@@ -634,6 +671,8 @@ class Play: PlayCore{
         }
         if cockpitIcon == node{
             cockpitIcon.texture = SKTexture(imageNamed: "cockpitOn")
+            
+            
         }
         if let n = node as? Object{
             guard n != ship else {return}
@@ -705,6 +744,12 @@ class Play: PlayCore{
             }
         }
         if thrustButton == node{
+            
+            if !playingThrustSound{
+                
+                self.thrustSound.run(playSound)
+                playingThrustSound = true
+            }
             if point.y > thrustButton.position.y + 50{
                 thrustButton.texture = SKTexture(imageNamed: "shooting2")
                 if !usingConstantLazer{
@@ -753,10 +798,20 @@ class Play: PlayCore{
                 showMap = false
             }
         }
-        if f3 == node{
-            if DEBUG_TXT.parent == nil{
-                cam.addChild(DEBUG_TXT)
-            }else{DEBUG_TXT.removeFromParent()}
+        if coloIcon == node{
+            colonize.toggle()
+            
+            if colonize{
+            cam.addChild(colonizeBG)
+            thrustButton.removeFromParent()
+            dPad.removeFromParent()
+            shipDirection.removeFromParent()
+            }else if !colonize{
+            colonizeBG.removeFromParent()
+            cam.addChild(thrustButton)
+            cam.addChild(dPad)
+            cam.addChild(shipDirection)
+            }
         }
     }
     override func nodeMoved(_ node: SKNode, at point: CGPoint) {
@@ -798,6 +853,11 @@ class Play: PlayCore{
     
     override func nodeUp(_ node: SKNode, at _: CGPoint) {
         if thrustButton == node{
+            if playingThrustSound{
+                
+                self.thrustSound.run(stopSound)
+                playingThrustSound = false
+            }
             self.removeAction(forKey: "constantLazer")
             ship.shootFrequency = 0
             self.heatLevel = 0
