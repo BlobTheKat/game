@@ -85,7 +85,17 @@ class PlayAmbient: PlayNetwork{
     var stars = SKAmbientContainer()
     var stars2 = SKAmbientContainer()
     var stars3 = SKAmbientContainer()
+    
+    var collectibles = SKAmbientContainer()
     func wasMoved() {
+        
+        self.collectibles = SKAmbientContainer({
+            let n = SKSpriteNode()
+            n.texture = SKTexture(imageNamed: "particle")
+            n.size = n.texture!.size()
+            n.setScale(2)
+            return n
+        }, frequency: 2, deriviation: 2)
         self.stars = SKAmbientContainer({
             let n = SKSpriteNode()
             n.texture = STARS.randomElement()

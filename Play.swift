@@ -517,7 +517,7 @@ class Play: PlayCore{
         coloStatsRecource.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
         coloStatsRecource.position = pos(mx: 0.05, my: 0.45, x: 0, y: 0)
         coloStatsRecource.fontSize = 30
-        coloStatsRecource.text = "resource: hermStone"
+        coloStatsRecource.text = "resource: Blackstone"
         colonizeBG.addChild(coloStatsRecource)
         
         coloStatsPrice.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
