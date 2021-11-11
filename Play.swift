@@ -503,25 +503,25 @@ class Play: PlayCore{
         //COLONIZE LABELS
         
         coloStatsName.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
-        coloStatsName.position = pos(mx: 0.085, my: 0.7, x: 0, y: 0)
+        coloStatsName.position = pos(mx: 0.05, my: 0.65, x: 0, y: 0)
         coloStatsName.fontSize = 30
         coloStatsName.text = "Name: Big Ed"
         colonizeBG.addChild(coloStatsName)
         
         coloStatsStatus.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
-        coloStatsStatus.position = pos(mx: 0.085, my: 0.6, x: 0, y: 0)
+        coloStatsStatus.position = pos(mx: 0.05, my: 0.55, x: 0, y: 0)
         coloStatsStatus.fontSize = 30
         coloStatsStatus.text = "status: unowned"
         colonizeBG.addChild(coloStatsStatus)
         
         coloStatsRecource.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
-        coloStatsRecource.position = pos(mx: 0.085, my: 0.5, x: 0, y: 0)
+        coloStatsRecource.position = pos(mx: 0.05, my: 0.45, x: 0, y: 0)
         coloStatsRecource.fontSize = 30
         coloStatsRecource.text = "resource: hermStone"
         colonizeBG.addChild(coloStatsRecource)
         
         coloStatsPrice.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
-        coloStatsPrice.position = pos(mx: 0.085, my: 0.4, x: 0, y: 0)
+        coloStatsPrice.position = pos(mx: 0.05, my: 0.35, x: 0, y: 0)
         coloStatsPrice.fontSize = 30
         coloStatsPrice.text = "price: 10,000 K$"
         colonizeBG.addChild(coloStatsPrice)
