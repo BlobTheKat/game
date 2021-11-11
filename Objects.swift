@@ -134,7 +134,20 @@ class Object: SKSpriteNode, DataCodable{
                     if obj == parent.ship{
                         let _ = timeout((len - 10) / 1500){
                             if parent.health > 0{
-                                parent.health -= 1
+                                if parent.health > 2{
+                                    parent.health -= 2
+                                }else{
+                                    parent.health -= 1
+                                }
+                                
+                                if parent.health < 4{
+                                    parent.warningLabel.text = "warning: low health"
+                                    if parent.warningLabel.parent == nil{
+                                        parent.DisplayWARNING()
+                                    }
+                                   
+                                }
+                                
                                 parent.healthBar.texture = SKTexture(imageNamed: "health\(parent.health)")
                                 self.run(SKAction.sequence([
                                     SKAction.run{
@@ -434,6 +447,10 @@ class Planet: Object{
                 parents?.playerArrow.removeFromParent()
                 
                 //TO DO WITH COLONISING
+               
+                //currentPlanetTexture = self.texture!
+                parents!.coloPlanet.texture = self.texture
+
                 parents?.navArrow.texture = SKTexture(imageNamed: "navArrow2")
                 parents?.navBG.addChild(parents!.coloIcon)
                 //GANGE MAP HERE

@@ -12,6 +12,8 @@ import GameKit
 let stopSound = SKAction.stop()
 let playSound = SKAction.play()
 
+var currentPlanetTexture = SKTexture()
+
 class Play: PlayCore{
     
     //SOUND EFFECT
@@ -23,16 +25,28 @@ class Play: PlayCore{
     var shootSound = SKAction.playSoundFileNamed("Lazer.wav", waitForCompletion: false)
     var gkview: UIViewController? = nil
     
-    let thrustSound = SKAudioNode(fileNamed: "thrust.wav")
+    
     
     var playingThrustSound = false
 
     //COLONIZE
     
     var colonize = false
-    var colonizeBG = SKSpriteNode(imageNamed: "coloBG")
-    var buyIcon = SKSpriteNode(imageNamed: "buyIcon")
-    var backIcon = SKSpriteNode(imageNamed: "backIcon")
+    let colonizeBG = SKSpriteNode(imageNamed: "coloBG")
+    let coloPlanet = SKSpriteNode(imageNamed: "coloPlanet")
+    let buyIcon = SKSpriteNode(imageNamed: "buyIcon")
+    let backIcon = SKSpriteNode(imageNamed: "backIcon")
+    let planetAncher = SKSpriteNode(imageNamed: "planetAncher")
+    
+    var coloStatsStatus = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+    var coloStatsPrice = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+    var coloStatsRecource = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+    var coloStatsName = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+    
+    var coloStatus = String()
+    var coloPrice = String()
+    var coloRecsource = String()
+    var coloName = String()
     
    
     
@@ -71,6 +85,7 @@ class Play: PlayCore{
     //WARNINGS
     var isWarning = false
     let warning = SKSpriteNode(imageNamed: "warning")
+    var warningLabel = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
 
     let healthBar = SKSpriteNode(imageNamed: "health13")
     
@@ -207,6 +222,8 @@ class Play: PlayCore{
         startAnimation()
         guard !moved else {return}
         guard ready else{return}
+        self.addChild(thrustSound)
+        thrustSound.run(stopSound)
         loadingbg.removeFromParent()
         loading.removeFromParent()
         tapToStart.horizontalAlignmentMode = .center
@@ -455,9 +472,23 @@ class Play: PlayCore{
         colonizeBG.zPosition = 100
         colonizeBG.setScale(0.8)
         
+       
+        coloPlanet.position = pos(mx: 0.17, my: 1, x: 0, y: 0)
+        coloPlanet.zPosition = 102
+        coloPlanet.setScale(0.65)
+        colonizeBG.addChild(coloPlanet)
+        coloPlanet.run(SKAction.repeatForever(SKAction.sequence([
+            SKAction.rotate(byAngle: 0.07, duration: 1),
+                ])))
         
-        
-        
+        planetAncher.position = CGPoint(x: coloPlanet.position.x , y: coloPlanet.position.y)
+        planetAncher.zPosition = 102
+        planetAncher.setScale(0.65)
+        colonizeBG.addChild(planetAncher)
+        planetAncher.run(SKAction.repeatForever(SKAction.sequence([
+            SKAction.scale(to: 0.6, duration: 2).ease(.easeOut),
+            SKAction.scale(to: 0.65, duration: 2).ease(.easeOut),
+                ])))
         
         backIcon.position = pos(mx: 0.085, my: 0.2, x: 0, y: 0)
         backIcon.zPosition = 101
@@ -468,6 +499,36 @@ class Play: PlayCore{
         buyIcon.zPosition = 101
         buyIcon.setScale(0.5)
         colonizeBG.addChild(buyIcon)
+        
+        //COLONIZE LABELS
+        
+        coloStatsName.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
+        coloStatsName.position = pos(mx: 0.085, my: 0.7, x: 0, y: 0)
+        coloStatsName.fontSize = 30
+        coloStatsName.text = "Name: Big Ed"
+        colonizeBG.addChild(coloStatsName)
+        
+        coloStatsStatus.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
+        coloStatsStatus.position = pos(mx: 0.085, my: 0.6, x: 0, y: 0)
+        coloStatsStatus.fontSize = 30
+        coloStatsStatus.text = "status: unowned"
+        colonizeBG.addChild(coloStatsStatus)
+        
+        coloStatsRecource.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
+        coloStatsRecource.position = pos(mx: 0.085, my: 0.5, x: 0, y: 0)
+        coloStatsRecource.fontSize = 30
+        coloStatsRecource.text = "resource: hermStone"
+        colonizeBG.addChild(coloStatsRecource)
+        
+        coloStatsPrice.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
+        coloStatsPrice.position = pos(mx: 0.085, my: 0.4, x: 0, y: 0)
+        coloStatsPrice.fontSize = 30
+        coloStatsPrice.text = "price: 10,000 K$"
+        colonizeBG.addChild(coloStatsPrice)
+        
+        
+        
+        
         
         
         
@@ -552,12 +613,22 @@ class Play: PlayCore{
      
     func DisplayWARNING(){
         
+        
+        
+        warningLabel.zPosition = 101
+        warningLabel.position = pos(mx: 0, my: 0, x: 0, y: -25)
+        warningLabel.fontSize = 60
+        warning.addChild(warningLabel)
+        
+        
         warning.run(SKAction.repeatForever(SKAction.sequence([
         
             SKAction.fadeAlpha(to: 1, duration: 0.8).ease(.easeInEaseOut),
             SKAction.fadeAlpha(to: 0.15, duration: 0.8).ease(.easeInEaseOut)
         ])), withKey: "warningAlpha")
     }
+    
+    
     var pressed = false
     
     func removeTrackers(){
@@ -717,6 +788,11 @@ class Play: PlayCore{
             }
         }
         
+        if warning == node{
+            warning.removeAction(forKey: "warningAlpha")
+            warning.alpha = 0
+        }
+        
         if accountIcon == node{
             
             if !showAccount{
@@ -745,11 +821,8 @@ class Play: PlayCore{
         }
         if thrustButton == node{
             
-            if !playingThrustSound{
-                
-                self.thrustSound.run(playSound)
-                playingThrustSound = true
-            }
+            
+
             if point.y > thrustButton.position.y + 50{
                 thrustButton.texture = SKTexture(imageNamed: "shooting2")
                 if !usingConstantLazer{
@@ -768,6 +841,12 @@ class Play: PlayCore{
                 self.heatingLaser.texture = SKTexture(imageNamed: "heating0")
                 usingConstantLazer = false
                 ship.thrust = true
+                if playingThrustSound == false{
+                    print("playing")
+                    thrustSound.run(SKAction.changeVolume(to: 1.5, duration: 0.01))
+                    thrustSound.run(playSound)
+                    playingThrustSound = true
+                }
             }
             
         }
@@ -802,6 +881,7 @@ class Play: PlayCore{
             colonize.toggle()
             
             if colonize{
+            //coloPlanet.texture = currentPlanetTexture
             cam.addChild(colonizeBG)
             thrustButton.removeFromParent()
             dPad.removeFromParent()
@@ -854,8 +934,13 @@ class Play: PlayCore{
     override func nodeUp(_ node: SKNode, at _: CGPoint) {
         if thrustButton == node{
             if playingThrustSound{
+                thrustSound.run(SKAction.changeVolume(to: 0, duration: 0.5))
+
+                thrustSound.run(SKAction.sequence([
+                    SKAction.wait(forDuration: 0.5),
+                    SKAction.run{self.thrustSound.run(stopSound)}
+                ]))
                 
-                self.thrustSound.run(stopSound)
                 playingThrustSound = false
             }
             self.removeAction(forKey: "constantLazer")

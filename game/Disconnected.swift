@@ -22,6 +22,7 @@ class Disconnected: PlayConvenience{
     let tapToReconnect = SKLabelNode()
     
     override func didMove(to view: SKView) {
+
         
         label(node: reconnectLabel, dmessage, pos: pos(mx: 0.5, my: 0.3), size: fsmall, color: .white)
         dmessage = "Disconnected!"

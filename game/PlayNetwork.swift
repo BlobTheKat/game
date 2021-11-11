@@ -35,6 +35,7 @@ class PlayNetwork: PlayConvenience{
     var loadstack: (p: [Planet]?, size: CGSize?, pos: CGPoint?) = (p: nil, size: nil, pos: nil)
     var delay: Double = 0
     let inlightSpeed = SKAudioNode(fileNamed: "InLightSpeed.wav")
+    var thrustSound = SKAudioNode(fileNamed: "thrust.wav")
     let loading = SKShapeNode(rect: CGRect(x: -150, y: 0, width: 300, height: 3))
     
     var needsNames = Set<Int>()

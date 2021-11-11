@@ -12,9 +12,9 @@
 		3340582B27234E6C0068C811 /* InLightSpeed.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3340582A27234E6C0068C811 /* InLightSpeed.wav */; };
 		3346242D26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 3346242C26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf */; };
 		336988C42729AF9D00521873 /* PlayAmbient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 336988C32729AF9D00521873 /* PlayAmbient.swift */; };
-		33891B0A273C257900F4BE64 /* thrust.wav in Resources */ = {isa = PBXBuildFile; fileRef = 33891B09273C257900F4BE64 /* thrust.wav */; };
 		33A8791F2725EC460096A6C4 /* playerWalking.wav in Resources */ = {isa = PBXBuildFile; fileRef = 33A8791E2725EC460096A6C4 /* playerWalking.wav */; };
 		33A879212725EC4B0096A6C4 /* inshipSound.wav in Resources */ = {isa = PBXBuildFile; fileRef = 33A879202725EC4B0096A6C4 /* inshipSound.wav */; };
+		33C227AE273C679B00F83862 /* thrust.wav in Resources */ = {isa = PBXBuildFile; fileRef = 33C227AD273C679B00F83862 /* thrust.wav */; };
 		33CF26192722C46500D25508 /* DPlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33CF26182722C46500D25508 /* DPlay.swift */; };
 		33E378B726BD57780034B14E /* PlayerDied.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33E378B626BD57780034B14E /* PlayerDied.swift */; };
 		33FC9DB826B45A1400216BC7 /* PlayConvenience.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33FC9DB726B45A1400216BC7 /* PlayConvenience.swift */; };
@@ -43,9 +43,9 @@
 		3340582A27234E6C0068C811 /* InLightSpeed.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = InLightSpeed.wav; sourceTree = "<group>"; };
 		3346242C26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "HalogenbyPixelSurplus-Regular.otf"; sourceTree = SOURCE_ROOT; };
 		336988C32729AF9D00521873 /* PlayAmbient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayAmbient.swift; sourceTree = "<group>"; };
-		33891B09273C257900F4BE64 /* thrust.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = thrust.wav; sourceTree = "<group>"; };
 		33A8791E2725EC460096A6C4 /* playerWalking.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = playerWalking.wav; sourceTree = "<group>"; };
 		33A879202725EC4B0096A6C4 /* inshipSound.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = inshipSound.wav; sourceTree = "<group>"; };
+		33C227AD273C679B00F83862 /* thrust.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = thrust.wav; sourceTree = "<group>"; };
 		33CF26182722C46500D25508 /* DPlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DPlay.swift; sourceTree = "<group>"; };
 		33E378B626BD57780034B14E /* PlayerDied.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerDied.swift; sourceTree = "<group>"; };
 		33FC9DB726B45A1400216BC7 /* PlayConvenience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayConvenience.swift; sourceTree = "<group>"; };
@@ -95,12 +95,12 @@
 		3340582527234A9C0068C811 /* soundEffect  */ = {
 			isa = PBXGroup;
 			children = (
-				33891B09273C257900F4BE64 /* thrust.wav */,
 				33A879202725EC4B0096A6C4 /* inshipSound.wav */,
 				33A8791E2725EC460096A6C4 /* playerWalking.wav */,
 				3340582827234AD30068C811 /* Lazer.wav */,
 				3340582627234ACC0068C811 /* LightSpeedOut.wav */,
 				3340582A27234E6C0068C811 /* InLightSpeed.wav */,
+				33C227AD273C679B00F83862 /* thrust.wav */,
 			);
 			path = "soundEffect ";
 			sourceTree = "<group>";
@@ -223,7 +223,7 @@
 				3346242D26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf in Resources */,
 				3340582727234ACC0068C811 /* LightSpeedOut.wav in Resources */,
 				3340582927234AD30068C811 /* Lazer.wav in Resources */,
-				33891B0A273C257900F4BE64 /* thrust.wav in Resources */,
+				33C227AE273C679B00F83862 /* thrust.wav in Resources */,
 				3340582B27234E6C0068C811 /* InLightSpeed.wav in Resources */,
 				33A879212725EC4B0096A6C4 /* inshipSound.wav in Resources */,
 				33A8791F2725EC460096A6C4 /* playerWalking.wav in Resources */,
