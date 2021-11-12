@@ -90,6 +90,7 @@ class PlayCore: PlayAmbient{
         stars2.update()
         stars3.position = CGPoint(x: cam.position.x / 2, y: cam.position.y / 2)
         stars3.update()
+        collectibles.update()
         for s in collectibles.sprites[CGPoint(x: floor(ship.position.x / 128), y: floor(ship.position.y / 128))] ?? []{
             let x = s.position.x - ship.position.x
             let y = s.position.y - ship.position.y
@@ -97,6 +98,7 @@ class PlayCore: PlayAmbient{
             if d < ship.radius + 16{
                 s.run(.sequence([.scale(to: 0, duration: 0.5),.run{s.removeFromParent()}]))
                 //COLLECT HERE
+                
             }
         }
     }

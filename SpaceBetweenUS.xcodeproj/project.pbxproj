@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -29,7 +29,7 @@
 		3484BFD82709C6C600C06FFC /* PlayCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3484BFD72709C6C600C06FFC /* PlayCore.swift */; };
 		34A5547226BBE13D00D43C04 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A5547126BBE13C00D43C04 /* Constants.swift */; };
 		34A5547426BC201800D43C04 /* Disconnected.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A5547326BC201800D43C04 /* Disconnected.swift */; };
-		34C5BC30271ED7F200997B1D /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34C5BC2F271ED7F200997B1D /* GameKit.framework */; };
+		34C5BC30271ED7F200997B1D /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34C5BC2F271ED7F200997B1D /* GameKit.framework */; platformFilter = ios; };
 		DC78185E26945B9200A19FE9 /* Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC78185D26945B9200A19FE9 /* Connect.swift */; };
 		DC9F527B269249AB00DDF0AF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC9F527A269249AB00DDF0AF /* AppDelegate.swift */; };
 		DC9F5283269249AB00DDF0AF /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC9F5282269249AB00DDF0AF /* GameViewController.swift */; };

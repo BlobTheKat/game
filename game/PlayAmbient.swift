@@ -96,6 +96,7 @@ class PlayAmbient: PlayNetwork{
             n.setScale(2)
             return n
         }, frequency: 2, deriviation: 2)
+        
         self.stars = SKAmbientContainer({
             let n = SKSpriteNode()
             n.texture = STARS.randomElement()
@@ -123,6 +124,7 @@ class PlayAmbient: PlayNetwork{
             return n
         }, frequency: 1, deriviation: 0)
         self.stars3.BLOCKSIZE = 500
+        self.addChild(self.collectibles)
         self.addChild(self.stars)
         self.addChild(self.stars2)
         self.addChild(self.stars3)
