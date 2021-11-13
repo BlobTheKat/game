@@ -11,6 +11,15 @@ import GameKit
 
 let stopSound = SKAction.stop()
 let playSound = SKAction.play()
+var screenSize = 1.0
+var Biggeradjust35 = 35.0
+var adjust10 = CGFloat()
+var adjust15 = CGFloat()
+var adjust20 = CGFloat()
+var  adjust5 = CGFloat()
+var  adjust3 = CGFloat()
+var  adjust1 = CGFloat()
+var smallerScreenSize = false
 
 var currentPlanetTexture = SKTexture()
 
@@ -113,10 +122,13 @@ class Play: PlayCore{
         fatalError("init(coder:) has not been implemented")
     }
     override init(size: CGSize) {
+        
+        
         super.init(size: size)
         if creds != nil{
             gotIp()
         }else{
+            
             GKLocalPlayer.local.authenticateHandler = { viewController, error in
                 if let viewController = viewController{
                     self.gkview = viewController
@@ -219,6 +231,32 @@ class Play: PlayCore{
     }
     var moved = false
     override func didMove(to view: SKView) {
+        
+        if self.frame.size.width == 568.0{
+             
+            Biggeradjust35 = 0
+             adjust1 = 1
+             adjust3 = 3
+             adjust5 = 5
+             adjust10 = 10
+             adjust15 = 15
+             adjust20 = 20
+            
+            screenSize = 1.6
+        }
+        if self.frame.size.width < 850{
+            
+            Biggeradjust35 = 0
+            adjust1 = 0
+            adjust3 = 0
+            adjust5 = 0
+            adjust10 = 0
+            adjust15 = 0
+            adjust20 = 0
+            screenSize = 1.5
+        }
+        
+        
         startAnimation()
         guard !moved else {return}
         guard ready else{return}
@@ -374,6 +412,13 @@ class Play: PlayCore{
         self.tapToStart.run(SKAction.scale(by: 1.5, duration: 0.2))
     }
     func startGame(){
+        //IMPORTANT SIZE ALGORITHM
+        
+        colonizeBG.anchorPoint = CGPoint(x: 1 ,y: 1)
+        colonizeBG.position = pos(mx: -0.175, my: 0.5, x: 0, y: 20)
+        colonizeBG.zPosition = 100
+        colonizeBG.setScale(1)
+
         wasMoved()
             self.removeAction(forKey: "loading")
             map(planets: planets, size: loadstack.size!, pos: loadstack.pos!, x: true)
@@ -419,10 +464,10 @@ class Play: PlayCore{
             
        
             
-            
+        print("\(self.view!.frame.size.width) screen SIZE")
         
         avatar.position = pos(mx: -0.385, my: 0.35)
-        avatar.alpha = 0.3
+        avatar.alpha = 1
         avatar.zPosition = 10
         avatar.setScale(0.7)
         cam.addChild(avatar)
@@ -467,62 +512,59 @@ class Play: PlayCore{
         
         
         //COLONIZING
-        colonizeBG.anchorPoint = CGPoint(x: 0.5 ,y: 0)
-        colonizeBG.position = pos(mx: -0.5, my: -0.55, x: 0, y: 0)
-        colonizeBG.zPosition = 100
-        colonizeBG.setScale(0.8)
-        
-       
-        coloPlanet.position = pos(mx: 0.17, my: 1, x: 0, y: 0)
+        coloPlanet.position = CGPoint(x: colonizeBG.position.x, y:  -90 - Biggeradjust35)
         coloPlanet.zPosition = 102
-        coloPlanet.setScale(0.65)
+        print("\(colonizeBG.size.width) colo width")
+        coloPlanet.setScale(0.65/CGFloat(screenSize))
         colonizeBG.addChild(coloPlanet)
+        
         coloPlanet.run(SKAction.repeatForever(SKAction.sequence([
             SKAction.rotate(byAngle: 0.07, duration: 1),
                 ])))
         
         planetAncher.position = CGPoint(x: coloPlanet.position.x , y: coloPlanet.position.y)
         planetAncher.zPosition = 102
-        planetAncher.setScale(0.65)
+        planetAncher.setScale(0.65/CGFloat(screenSize))
         colonizeBG.addChild(planetAncher)
         planetAncher.run(SKAction.repeatForever(SKAction.sequence([
-            SKAction.scale(to: 0.6, duration: 2).ease(.easeOut),
-            SKAction.scale(to: 0.65, duration: 2).ease(.easeOut),
+            SKAction.scale(to: 0.6/CGFloat(screenSize), duration: 2).ease(.easeOut),
+            SKAction.scale(to: 0.65/CGFloat(screenSize), duration: 2).ease(.easeOut),
                 ])))
         
-        backIcon.position = pos(mx: 0.085, my: 0.2, x: 0, y: 0)
-        backIcon.zPosition = 101
-        backIcon.setScale(0.5)
+        backIcon.position = CGPoint(x: (colonizeBG.position.x - (coloPlanet.size.width/4)) - 10, y:  (-350 + (adjust10 * 3)) - Biggeradjust35 * 1.6)
+        backIcon.zPosition = 102
+        backIcon.setScale(0.5/screenSize)
         colonizeBG.addChild(backIcon)
         
-        buyIcon.position = CGPoint(x: backIcon.position.x + backIcon.size.width * 1.5 , y: backIcon.position.y)
-        buyIcon.zPosition = 101
-        buyIcon.setScale(0.5)
+        buyIcon.position = CGPoint(x: (backIcon.position.x + backIcon.size.width * 1.35) - adjust15 , y: backIcon.position.y)
+        buyIcon.zPosition = 102
+        buyIcon.setScale(0.5/screenSize)
         colonizeBG.addChild(buyIcon)
         
         //COLONIZE LABELS
         
         coloStatsName.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
-        coloStatsName.position = pos(mx: 0.05, my: 0.65, x: 0, y: 0)
-        coloStatsName.fontSize = 30
+        coloStatsName.position = CGPoint(x: colonizeBG.position.x - (coloPlanet.size.width/1.65), y:  (-200 + adjust5) - Biggeradjust35 * 1.6)
+        coloStatsName.fontSize = (30/screenSize) - adjust3
         coloStatsName.text = "Name: Big Ed"
         colonizeBG.addChild(coloStatsName)
         
         coloStatsStatus.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
-        coloStatsStatus.position = pos(mx: 0.05, my: 0.55, x: 0, y: 0)
-        coloStatsStatus.fontSize = 30
+        coloStatsStatus.position = CGPoint(x: colonizeBG.position.x - (coloPlanet.size.width/1.65), y:  (-235 + adjust10) - Biggeradjust35 * 1.6)
+        coloStatsStatus.fontSize = (30/screenSize) - adjust3
         coloStatsStatus.text = "status: unowned"
         colonizeBG.addChild(coloStatsStatus)
         
         coloStatsRecource.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
-        coloStatsRecource.position = pos(mx: 0.05, my: 0.45, x: 0, y: 0)
-        coloStatsRecource.fontSize = 30
+        coloStatsRecource.position = CGPoint(x: colonizeBG.position.x - (coloPlanet.size.width/1.65), y:  (-270 + adjust15) - Biggeradjust35 * 1.6)
+        coloStatsRecource.fontSize = (30/screenSize) - adjust3
+        print("\(coloStatsRecource.fontSize)FONT SIZE")
         coloStatsRecource.text = "resource: Blackstone"
         colonizeBG.addChild(coloStatsRecource)
         
         coloStatsPrice.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
-        coloStatsPrice.position = pos(mx: 0.05, my: 0.35, x: 0, y: 0)
-        coloStatsPrice.fontSize = 30
+        coloStatsPrice.position = CGPoint(x: colonizeBG.position.x - (coloPlanet.size.width/1.65), y:  (-305 + adjust20) - Biggeradjust35 * 1.6)
+        coloStatsPrice.fontSize = (30/screenSize) - adjust3
         coloStatsPrice.text = "price: 10,000 K$"
         colonizeBG.addChild(coloStatsPrice)
         

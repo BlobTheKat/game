@@ -91,13 +91,17 @@ class PlayCore: PlayAmbient{
         stars3.position = CGPoint(x: cam.position.x / 2, y: cam.position.y / 2)
         stars3.update()
         collectibles.update()
-        for s in collectibles.sprites[CGPoint(x: floor(ship.position.x / 128), y: floor(ship.position.y / 128))] ?? []{
+        for s in collectibles.sprites[CGPoint(x: floor(ship.position.x / 512), y: floor(ship.position.y / 512))] ?? []{
             let x = s.position.x - ship.position.x
             let y = s.position.y - ship.position.y
             let d = x * x + y * y
-            if d < ship.radius + 16{
-                s.run(.sequence([.scale(to: 0, duration: 0.5),.run{s.removeFromParent()}]))
+            if d < (ship.radius + 16) * (ship.radius + 16) + 200 {
+                
+                s.run(.fadeOut(withDuration: 0.4).ease(.easeOut))
+                s.run(.sequence([.scale(to: 1.5, duration: 0.7),.run{s.removeFromParent()}]))
+                
                 //COLLECT HERE
+                
                 
             }
         }

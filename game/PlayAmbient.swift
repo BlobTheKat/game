@@ -86,17 +86,38 @@ class PlayAmbient: PlayNetwork{
     var stars2 = SKAmbientContainer()
     var stars3 = SKAmbientContainer()
     
+    
+    func random() -> CGFloat{
+    
+        return CGFloat(Float(arc4random()) / 0xFFFFFFFF)
+        }
+    func random(min min: CGFloat, max: CGFloat) -> CGFloat{
+        
+        return random() * (max - min) + min
+ 
+        
+    }
+    
+    
     var collectibles = SKAmbientContainer()
     func wasMoved() {
         
-        self.collectibles = SKAmbientContainer({
-            let n = SKSpriteNode()
-            n.texture = SKTexture(imageNamed: "particle")
-            n.size = n.texture!.size()
-            n.setScale(2)
-            return n
-        }, frequency: 2, deriviation: 2)
+      
         
+       
+        self.collectibles = SKAmbientContainer({
+            
+            let randomTexture = self.random(min: 0, max: 8)
+            print(randomTexture)
+            let n = SKSpriteNode()
+            n.position = CGPoint( x: self.random(min: 0, max: 512), y: self.random(min: 0, max: 512) )
+            n.texture = SKTexture(imageNamed: "particle\(randomTexture)")
+            n.size = n.texture!.size()
+            n.setScale(1)
+            return n
+        }, frequency: 0.5, deriviation: 0.5)
+        
+        collectibles.BLOCKSIZE = 512
         self.stars = SKAmbientContainer({
             let n = SKSpriteNode()
             n.texture = STARS.randomElement()
