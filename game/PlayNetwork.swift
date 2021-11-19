@@ -27,6 +27,7 @@ class PlayNetwork: PlayConvenience{
     var istop = {}
     var loaded = 2
     var usedShoot = false
+    var newShoot = false
     var coolingDown = false
     var shotObj: Object? = nil
     var usingConstantLazer = false
@@ -157,13 +158,13 @@ class PlayNetwork: PlayConvenience{
             //send playerdata
             var data = Data([5])
             ship.encode(data: &data)
-            
             if hits.count > 7{
                 hits.removeLast(hits.count - 7)
             }
             if shotObj != nil && objects.firstIndex(of: shotObj!) == nil{shotObj = nil}
             data.write(UInt8(hits.count + (shotObj != nil ? 8 : 0) + min(needsNames.count, 15) * 16))
             if !usingConstantLazer || coolingDown{usedShoot = false}
+            newShoot = false
             for hit in hits{
                 data.write(hit)
             }
@@ -201,6 +202,7 @@ class PlayNetwork: PlayConvenience{
         DEBUG_TXT.horizontalAlignmentMode = .left
         DEBUG_TXT.verticalAlignmentMode = .top
         DEBUG_TXT.numberOfLines = 20
+        DEBUG_TXT.zPosition = .infinity
         cam.addChild(DEBUG_TXT)
         api.sector(completion: sectorpos)
     }
@@ -274,12 +276,24 @@ class PlayNetwork: PlayConvenience{
                 physics.asyncAfter(deadline: last){ [self] in
                     var i = 1
                     while data.count > 13{parseShip(&data, i);i += 1}
+                    for e in objects.suffix(max(objects.count - i, 0)){
+                        if let i = tracked.firstIndex(of: e){
+                            trackArrows[i].removeFromParent()
+                            for a in tracked[i].children{if a.zPosition == 9{a.removeFromParent()}}
+                            tracked.remove(at: i)
+                            trackArrows.remove(at: i)
+                        }
+                        kill(e)
+                        e.namelabel?.removeFromParent()
+                        e.namelabel = nil
+                        e.removeFromParent()
+                    }
+                    objects.removeLast(max(objects.count - i, 0))
                 }
             }else if code == 7{
                 ping()
-                delay = data.readunsafe()
-                last = last + delay
-                if .now().advanced(by: DispatchTimeInterval.milliseconds(MAX_DELAY)) < last || .now() > last{last = .now()}
+                delay = Double(data.readunsafe() as UInt8) / 100
+                last = (last + delay).clamp(.now(), .now().advanced(by: DispatchTimeInterval.milliseconds(MAX_DELAY)))
                 physics.asyncAfter(deadline: last){ [self] in
                     var i = 0
                     while data.count > 13{parseShip(&data, i);i += 1}
@@ -321,7 +335,12 @@ class PlayNetwork: PlayConvenience{
         data.write([UInt8](creds!.salt), lentype: UInt8.self)
         data.write(creds!.id, lentype: UInt8.self)
         data.write(creds!.time)
-        data.write(GKLocalPlayer.local.alias, lentype: UInt8.self)
+        var local = GKLocalPlayer.local.alias
+        if local == "Unknown"{
+            let id = UIDevice.current.identifierForVendor!.uuidString.prefix(2)
+            local = "Guest \(%(UInt8(id, radix: 16) ?? 0))"
+        }
+        data.write(local, lentype: UInt8.self)
         var tries = 0
         stopAuth = interval(0.5){ [self] in
             tries += 1

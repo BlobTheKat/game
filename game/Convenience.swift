@@ -29,6 +29,11 @@ func filtern(_ nods: [SKNode]) -> Set<SKNode>{
     }*/
     return nodes
 }
+extension SKSpriteNode{
+    func pos(mx: CGFloat = 0.5, my: CGFloat = 0.5, x: CGFloat = 0, y: CGFloat = 0) -> CGPoint{
+        return CGPoint(x: self.size.width * mx + x, y: self.size.height * my + y)
+    }
+}
 
 extension SKScene{
     static var font = "Arial"

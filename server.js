@@ -61,9 +61,57 @@ sin.push()
 //usage: sin[angle * PI256 & 255]
 //or cos: sin[angle * PI256 + 64 & 255]
 
+function idtoip(id,space=false){
+    id = parseInt(id, 32)
+    let port = id & 65535
+    id = Math.floor(id / 65536)
+    let a4 = id & 255
+    id >>= 8
+    let a3 = id & 255
+    id >>= 8
+    let a2 = id & 255
+    id >>= 8
+    let a1 = id & 255
+    id >>= 8
+    return a1+"."+a2+"."+a3+"."+a4+(space?" ":":")+port
+}
+function iptoid(ip){
+    ip = ip.split(/:| /g)
+    ip[0] = ip[0].split(".").reduce((a,b) => (a * 256) + (b&255), 0)
+    ip = ip[0] * 65536 + (ip[1] & 65535)
+    return ip.toString(32).toUpperCase()
+}
+function send(buffer, ip){
+    ip = ip.split(/[: ]/g)
+    server.send(buffer, ip[1], ip[0])
+}
 
+let FUNCS = {
+    tp(player, x, y){
+        player = clients.get(idtoip(player))
+        if(!player)return "\x1b[33mNo such player"
+        player.rubber = true
+        player.x = +x
+        player.y = +y
+    },
+    list(){
+        let players = []
+        for(var i in sector.objects){
+            let cli = sector.objects[i]
+            if(cli instanceof Asteroid)continue
+            players.push(iptoid(cli.remote) + ": "+cli.remote+": "+cli.name+" (x: "+cli.x+", y: "+cli.y+")")
+        }
+        return players.join("\n")
+    },
+    kick(player, reason="Kicked"){
+        player = idtoip(player)
+        send(Buffer.concat([Buffer.of(127), strbuf(reason)]), player)
+    }
+}
 
 function _(_){
+    let __ = _.match(/\S+|"[^"]*"|'[^']*'/g).map(a => a[0]=="'"||a[0]=='"'?a.slice(1,-1):a)
+    if(FUNCS[__[0]])return FUNCS[__[0]](...__.slice(1))
     return eval(_)
 }
 try{RESPONSE = null;require('basic-repl')('$',v=>([RESPONSE,RESPONSE=null][0]||_)(v))}catch(e){
@@ -402,9 +450,9 @@ class ClientData{
         this.dx = dx
         this.dy = dy
         this.dz = dz
-        this.thrust = thrust & 15
+        this.thrust = thrust & 31
         this.id = thrust >> 5
-        return Buffer.alloc(0)
+        return
     }
     toBuf(buf = Buffer.alloc(14), offset = 0, ref){
         if(performance.nodeTiming.duration - this.u._idleStart > 1000){return}
@@ -415,7 +463,8 @@ class ClientData{
         let PI2 = Math.PI * 2
         buf[offset+10] = Math.round(((this.z % PI2) + PI2) % PI2 * 40)
         buf.writeUInt8((this.dz * 768)&255, offset+11)
-        buf.writeUint16LE((this.thrust & 15) + (this.id << 5) + (this.shoots == ref ? 16 : 0), offset + 12)
+        if(this.thrust & 24)console.log(this.thrust&31)
+        buf.writeUint16LE((this.thrust & 31) + (this.id << 5) + (!(this.thrust & 16) && this.shoots == ref ? 16 : 0), offset + 12)
         if(this.shoots == ref)this.shoots = null
         return buf
     }
@@ -436,7 +485,7 @@ class ClientData{
     }
 }
 const bundleId = "locus.tunnelvision"
-server.on('message', function(message, remote) {
+server.on('message', async function(message, remote) {
     let send = a=>server.send(a,remote.port,remote.address,e => e && console.log(e))
     let address = remote.address + ':' + remote.port
     if(message[0] === 0){
@@ -462,6 +511,7 @@ server.on('message', function(message, remote) {
                     send(Buffer.from(Buffer.concat([Buffer.of(127), strbuf("Invalid identity")])))
                 }else{
                     //fetch DB stuff
+                    //let data = 
                     
                     clients.set(address, new ClientData(name, playerId, address))
                     clients.get(address).ready(0, 0, 0, 0, 0, 0, 1, 0, 0)
@@ -517,16 +567,14 @@ function msg(data, reply, address){
             }
             reply(Buffer.concat(buf))
         }
-        let a = ship.validate(data.slice(1,15))
-        let buf = Buffer.alloc(a.length ? 16 : 2)
+        let a = ship.rubber ? true : ship.validate(data.slice(1,15))
+        let buf = Buffer.alloc(a ? 16 : 2)
         buf[0] = 6
         buf[1] = delay
-        if(a.length){
+        if(a){
             buf[0] = 7
-            buf.writeUint32LE(a.readUint32LE(),2)
-            buf.writeUint32LE(a.readUint32LE(4),6)
-            buf.writeUint32LE(a.readUint32LE(8),10)
-            buf.writeUint32LE(a.readUint16LE(12),14)
+            ship.toBuf(buf,2)
+            ship.rubber = false
         }
         let dat = [buf]
         for(var obj of sector.objects){

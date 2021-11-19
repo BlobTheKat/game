@@ -57,7 +57,10 @@ class Play: PlayCore{
     var coloRecsource = String()
     var coloName = String()
     
-   
+    
+    
+    
+    
     
     let tapToStart =  SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
     var currentSpeed = Int()
@@ -118,13 +121,16 @@ class Play: PlayCore{
         ship.shootPoints = SHOOTPOINTS[id-1]
         ship.shootVectors = SHOOTVECTORS[id-1]
     }
+    let NORMAL = 1300.0
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     override init(size: CGSize) {
+        let diagonal = size.width + size.height
+        let divider = pow(diagonal / NORMAL, 0.6)
         
         
-        super.init(size: size)
+        super.init(size: CGSize(width: size.width / divider, height: size.height / divider))
         if creds != nil{
             gotIp()
         }else{
@@ -232,7 +238,7 @@ class Play: PlayCore{
     var moved = false
     override func didMove(to view: SKView) {
         
-        if self.frame.size.width == 568.0{
+        /*if self.frame.size.width == 568.0{
              
             Biggeradjust35 = 0
              adjust1 = 1
@@ -244,7 +250,7 @@ class Play: PlayCore{
             
             screenSize = 1.6
         }
-        if self.frame.size.width < 850{
+        if self.frame.size.width  >=  850{
             
             Biggeradjust35 = 0
             adjust1 = 0
@@ -254,12 +260,19 @@ class Play: PlayCore{
             adjust15 = 0
             adjust20 = 0
             screenSize = 1.5
-        }
+        }*/
         
-        
+        Biggeradjust35 = 0
+        adjust1 = 0
+        adjust3 = 0
+        adjust5 = 0
+        adjust10 = 0
+        adjust15 = 0
+        adjust20 = 0
         startAnimation()
-        guard !moved else {return}
+        guard !moved else{return}
         guard ready else{return}
+        moved = true
         self.addChild(thrustSound)
         thrustSound.run(stopSound)
         loadingbg.removeFromParent()
@@ -267,13 +280,12 @@ class Play: PlayCore{
         tapToStart.horizontalAlignmentMode = .center
         tapToStart.position.x = 0
         tapToStart.alpha = 0
-        tapToStart.run(.fadeAlpha(to: 0.7, duration: 0.7))
+        tapToStart.run(.fadeAlpha(to: 0.7, duration: 0.7), withKey: "in")
         ship.position = CGPoint(x: CGFloat(secx) - loadstack.pos!.x, y: CGFloat(secy) - loadstack.pos!.y)
         cam.position = CGPoint(x: ship.position.x, y: ship.position.y - 0.08 * self.size.height)
         for particle in particles{
             particle.position += ship.position
         }
-        moved = true
         border1.zRotation = .pi / 2
         border1.position.y = (cam.position.y < 0 ? -0.5 : 0.5) * loadstack.size!.height
         border2.position.x = (cam.position.x < 0 ? -0.5 : 0.5) * loadstack.size!.width
@@ -408,6 +420,7 @@ class Play: PlayCore{
         sector.position = CGPoint(x: pos.x / 10, y: pos.y / 10)
     }
     func removeTapToStart(){
+        self.tapToStart.removeAction(forKey: "in")
         self.tapToStart.run(SKAction.fadeOut(withDuration: 0.3).ease(.easeOut))
         self.tapToStart.run(SKAction.scale(by: 1.5, duration: 0.2))
     }
@@ -415,9 +428,13 @@ class Play: PlayCore{
         //IMPORTANT SIZE ALGORITHM
         
         colonizeBG.anchorPoint = CGPoint(x: 1 ,y: 1)
-        colonizeBG.position = pos(mx: -0.175, my: 0.5, x: 0, y: 20)
+        let dify = (self.size.height + 40) / colonizeBG.size.height
+        print(dify,colonizeBG.size.height)
+        colonizeBG.size.height = self.size.height + 40
+        colonizeBG.size.width *= dify
+        colonizeBG.position = pos(mx: -0.5, my: 0.5, x: 250, y: 20)
+        
         colonizeBG.zPosition = 100
-        colonizeBG.setScale(1)
 
         wasMoved()
             self.removeAction(forKey: "loading")
@@ -465,12 +482,37 @@ class Play: PlayCore{
        
             
         print("\(self.view!.frame.size.width) screen SIZE")
-        
-        avatar.position = pos(mx: -0.385, my: 0.35)
+        avatar.anchorPoint.x = 0
+        avatar.position = pos(mx: -0.5, my: 0.3, x: 20)
         avatar.alpha = 1
         avatar.zPosition = 10
-        avatar.setScale(0.7)
+        avatar.setScale(0.3)
         cam.addChild(avatar)
+        for i in 0...7 {
+            
+            let  energyNode = SKSpriteNode(imageNamed: "energyOff")
+            energyNodes.append(energyNode)
+            
+            if i == 0{
+                energyNodes[i].position = CGPoint(x: 180, y: -43)
+            }else{
+                energyNodes[i].position = CGPoint(x: energyNodes[i - 1].position.x + energyNodes[0].size.width*0.95 , y: -43)
+            }
+            
+            energyNodes[i].zPosition = avatar.zPosition + 1
+            energyNodes[i].setScale(1)
+            avatar.addChild(energyNodes[i])
+        }
+        
+        energyCount.text = "K$ 0"
+        energyCount.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
+        energyCount.zPosition = avatar.zPosition + 1
+        energyCount.position = CGPoint(x: 165 , y: -100)
+        energyCount.fontColor = UIColor.white
+        energyCount.fontSize = 36
+        
+        avatar.addChild(energyCount)
+        
         //NAVIGATION
        
         navArrow.position = pos(mx: 0.43, my: 0.5)
@@ -512,59 +554,56 @@ class Play: PlayCore{
         
         
         //COLONIZING
-        coloPlanet.position = CGPoint(x: colonizeBG.position.x, y:  -90 - Biggeradjust35)
-        coloPlanet.zPosition = 102
-        print("\(colonizeBG.size.width) colo width")
-        coloPlanet.setScale(0.65/CGFloat(screenSize))
+        coloPlanet.position = CGPoint(x: -125, y: -120)
+        coloPlanet.zPosition = 101
+        coloPlanet.setScale(0.5)
         colonizeBG.addChild(coloPlanet)
-        
         coloPlanet.run(SKAction.repeatForever(SKAction.sequence([
             SKAction.rotate(byAngle: 0.07, duration: 1),
                 ])))
         
         planetAncher.position = CGPoint(x: coloPlanet.position.x , y: coloPlanet.position.y)
-        planetAncher.zPosition = 102
-        planetAncher.setScale(0.65/CGFloat(screenSize))
+        planetAncher.zPosition = 101
+        planetAncher.setScale(0.5)
         colonizeBG.addChild(planetAncher)
         planetAncher.run(SKAction.repeatForever(SKAction.sequence([
-            SKAction.scale(to: 0.6/CGFloat(screenSize), duration: 2).ease(.easeOut),
-            SKAction.scale(to: 0.65/CGFloat(screenSize), duration: 2).ease(.easeOut),
-                ])))
+            SKAction.scale(to: 0.5, duration: 2).ease(.easeOut),
+            SKAction.scale(to: 0.45, duration: 2).ease(.easeOut),
+        ])))
         
-        backIcon.position = CGPoint(x: (colonizeBG.position.x - (coloPlanet.size.width/4)) - 10, y:  (-350 + (adjust10 * 3)) - Biggeradjust35 * 1.6)
-        backIcon.zPosition = 102
-        backIcon.setScale(0.5/screenSize)
+        backIcon.position = colonizeBG.pos(mx: 0, my: -1, x: -180, y: 60)
+        backIcon.zPosition = 101
+        backIcon.setScale(0.4)
         colonizeBG.addChild(backIcon)
         
-        buyIcon.position = CGPoint(x: (backIcon.position.x + backIcon.size.width * 1.35) - adjust15 , y: backIcon.position.y)
-        buyIcon.zPosition = 102
-        buyIcon.setScale(0.5/screenSize)
+        buyIcon.position = colonizeBG.pos(mx: 0, my: -1, x: -70, y: 60)
+        buyIcon.zPosition = 101
+        buyIcon.setScale(0.4)
         colonizeBG.addChild(buyIcon)
         
         //COLONIZE LABELS
         
         coloStatsName.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
-        coloStatsName.position = CGPoint(x: colonizeBG.position.x - (coloPlanet.size.width/1.65), y:  (-200 + adjust5) - Biggeradjust35 * 1.6)
-        coloStatsName.fontSize = (30/screenSize) - adjust3
+        coloStatsName.position = colonizeBG.pos(mx: 0, my: 0, x: -230, y: -240)
+        coloStatsName.fontSize = 20
         coloStatsName.text = "Name: Big Ed"
         colonizeBG.addChild(coloStatsName)
         
         coloStatsStatus.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
-        coloStatsStatus.position = CGPoint(x: colonizeBG.position.x - (coloPlanet.size.width/1.65), y:  (-235 + adjust10) - Biggeradjust35 * 1.6)
-        coloStatsStatus.fontSize = (30/screenSize) - adjust3
+        coloStatsStatus.position = colonizeBG.pos(mx: 0, my: 0, x: -230, y: -270)
+        coloStatsStatus.fontSize = 20
         coloStatsStatus.text = "status: unowned"
         colonizeBG.addChild(coloStatsStatus)
         
         coloStatsRecource.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
-        coloStatsRecource.position = CGPoint(x: colonizeBG.position.x - (coloPlanet.size.width/1.65), y:  (-270 + adjust15) - Biggeradjust35 * 1.6)
-        coloStatsRecource.fontSize = (30/screenSize) - adjust3
-        print("\(coloStatsRecource.fontSize)FONT SIZE")
+        coloStatsRecource.position = colonizeBG.pos(mx: 0, my: 0, x: -230, y: -300)
+        coloStatsRecource.fontSize = 20
         coloStatsRecource.text = "resource: Blackstone"
         colonizeBG.addChild(coloStatsRecource)
         
         coloStatsPrice.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
-        coloStatsPrice.position = CGPoint(x: colonizeBG.position.x - (coloPlanet.size.width/1.65), y:  (-305 + adjust20) - Biggeradjust35 * 1.6)
-        coloStatsPrice.fontSize = (30/screenSize) - adjust3
+        coloStatsPrice.position = colonizeBG.pos(mx: 0, my: 0, x: -230, y: -330)
+        coloStatsPrice.fontSize = 20
         coloStatsPrice.text = "price: 10,000 K$"
         colonizeBG.addChild(coloStatsPrice)
         
@@ -653,21 +692,31 @@ class Play: PlayCore{
         
     }
      
-    func DisplayWARNING(){
+    func DisplayWARNING(_ label: String, _ warningType: Int, _ blink: Bool){
         
+        if warningType == 1{
+            warning.texture = SKTexture(imageNamed: "warning")
+        }else if warningType == 2 {
+            warning.texture = SKTexture(imageNamed: "achieved")
+        }
+       
         
+        warningLabel.text = "\(label)"
         
         warningLabel.zPosition = 101
         warningLabel.position = pos(mx: 0, my: 0, x: 0, y: -25)
         warningLabel.fontSize = 60
         warning.addChild(warningLabel)
         
-        
-        warning.run(SKAction.repeatForever(SKAction.sequence([
-        
-            SKAction.fadeAlpha(to: 1, duration: 0.8).ease(.easeInEaseOut),
-            SKAction.fadeAlpha(to: 0.15, duration: 0.8).ease(.easeInEaseOut)
-        ])), withKey: "warningAlpha")
+        if blink{
+            warning.run(SKAction.repeatForever(SKAction.sequence([
+            
+                SKAction.fadeAlpha(to: 1, duration: 1).ease(.easeInEaseOut),
+                SKAction.fadeAlpha(to: 0.15, duration: 1).ease(.easeInEaseOut)
+            ])), withKey: "warningAlpha")
+        }else{
+            warning.run(SKAction.fadeAlpha(to: 1, duration: 1).ease(.easeIn))
+        }
     }
     
     
@@ -687,6 +736,7 @@ class Play: PlayCore{
     }
     func constantLazer(){
         usedShoot = true
+        newShoot = true
         usingConstantLazer = true
         ship.shootFrequency = SHOOTFREQUENCIES[ship.id-1]
         ship.shootQueue = 1 - ship.shootFrequency
@@ -750,6 +800,25 @@ class Play: PlayCore{
             }
         ]), withKey: "constantLazer")
     }
+    
+    func increseEnergy(){
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    }
+    
+    
+    
+    
     func hideControls(){
         navArrow.removeFromParent()
         thrustButton.removeFromParent()
@@ -765,6 +834,62 @@ class Play: PlayCore{
         cam.addChild(shipDirection)
     }
     override func nodeDown(_ node: SKNode, at point: CGPoint) {
+        
+        switch node{
+            
+        case backIcon:
+            if colonize{
+            colonizeBG.removeFromParent()
+            cam.addChild(thrustButton)
+            cam.addChild(dPad)
+            cam.addChild(shipDirection)
+            colonize = false
+            }
+            break
+        case buyIcon:
+            if energyAmount >= 10{
+                energyAmount -= 10
+                if colonize{
+                colonizeBG.removeFromParent()
+                cam.addChild(thrustButton)
+                cam.addChild(dPad)
+                cam.addChild(shipDirection)
+                colonize = false
+                }
+                
+                cam.run(SKAction.sequence([
+                    .run{ self.DisplayWARNING("colonized succesfuly",2,false)},
+                    .wait(forDuration: 2),
+                    .run{self.cam.removeAction(forKey: "warningAlpha")},
+                    .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
+                    .wait(forDuration: 1),
+                    .run{self.warningLabel.removeFromParent()}
+                    
+                ]))
+                
+               
+            }else if energyAmount < 10{
+                cam.run(SKAction.sequence([
+                    .run{ self.DisplayWARNING("not enough energy",1,false)},
+                    .wait(forDuration: 2),
+                    .run{self.cam.removeAction(forKey: "warningAlpha")},
+                    .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
+                    .wait(forDuration: 1),
+                    .run{self.warningLabel.removeFromParent()}
+                    
+                ]))
+                
+                
+            }
+            break
+        default:
+            break
+        }
+        
+        
+        
+        
+        
         
         
         if removeTrackerIcon == node{
@@ -825,7 +950,7 @@ class Play: PlayCore{
                 warning.alpha = 0
                 isWarning = false
             }else{
-                DisplayWARNING()
+                DisplayWARNING("emptyWarning",1,true)
                 isWarning = true
             }
         }
@@ -833,6 +958,7 @@ class Play: PlayCore{
         if warning == node{
             warning.removeAction(forKey: "warningAlpha")
             warning.alpha = 0
+            cam.run(.run{self.warningLabel.removeFromParent()})
         }
         
         if accountIcon == node{
@@ -923,16 +1049,10 @@ class Play: PlayCore{
             colonize.toggle()
             
             if colonize{
-            //coloPlanet.texture = currentPlanetTexture
             cam.addChild(colonizeBG)
             thrustButton.removeFromParent()
             dPad.removeFromParent()
             shipDirection.removeFromParent()
-            }else if !colonize{
-            colonizeBG.removeFromParent()
-            cam.addChild(thrustButton)
-            cam.addChild(dPad)
-            cam.addChild(shipDirection)
             }
         }
     }

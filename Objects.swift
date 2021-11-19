@@ -107,6 +107,7 @@ class Object: SKSpriteNode, DataCodable{
         shootQueue += shootFrequency
         while shootQueue > 1{
             self.run(parent.shootSound)
+            parent.vibratePhone(.heavy)
             if shlock > 0{
                 zRotation = -atan2(parent.ship.position.x - position.x, parent.ship.position.y - position.y)
                 shlock -= 1
@@ -127,7 +128,7 @@ class Object: SKSpriteNode, DataCodable{
                 let div = sqrt(dx * dx + dy * dy)
                 dx /= div
                 dy /= div
-                let (obj: obj, len: len, planet: _) = raylen(objs: parent.planets, objs2: parent.objects, rayorigin: bullet.position, raydir: CGVector(dx: dx, dy: dy), this: position)
+                let (obj: obj, len: len, planet: planet) = raylen(objs: parent.planets, objs2: parent.objects, rayorigin: bullet.position, raydir: CGVector(dx: dx, dy: dy), this: position)
                 if let obj = obj{
                     parent.shotObj = obj
                     obj.death = 200
@@ -141,9 +142,9 @@ class Object: SKSpriteNode, DataCodable{
                                 }
                                 
                                 if parent.health < 4{
-                                    parent.warningLabel.text = "warning: low health"
+                                  
                                     if parent.warningLabel.parent == nil{
-                                        parent.DisplayWARNING()
+                                        parent.DisplayWARNING("warning: low health",1,true)
                                     }
                                    
                                 }
@@ -183,9 +184,22 @@ class Object: SKSpriteNode, DataCodable{
                         //IF ITS NOT A SHIP
                     }
                 }
-                /*if let planet = planet{
+                let sdx = parent.ship.position.x - (planet?.position.x ?? .infinity)
+                let sdy = parent.ship.position.y - (planet?.position.y ?? .infinity)
+                if let planet = planet, !planet.superhot && sdx * sdx + sdy * sdy < planet.radius * planet.radius * 16{
+                    planet.emitq += planet.emitf * 2
+                    while planet.emitq > 1{
+                        planet.emit(randDir(planet.radius - 50))
+                        planet.emitq -= 1
+                        let cam = parent.cam
+                        parent.vibrateCamera(camera: cam, amount: 5)
+                        let _ = timeout(0.5){
+                            parent.cam.removeAction(forKey: "vibratingCamera")
+                            parent.cam.removeAction(forKey: "vibratingCameras")
+                        }
+                    }
                     
-                }*/
+                }
                 let count = (len / 2 - 20) * gameFPS / 1500
                 let o = obj ?? self
                 var offsetx = bullet.position.x - o.position.x
@@ -237,7 +251,8 @@ class Object: SKSpriteNode, DataCodable{
         data.write(Int8(round(self.velocity.dy * gameFPS / 16).clamp(-128, 127)))
         data.write(Int8(round(self.zRotation.remainder(dividingBy: .pi*2) * 40)))
         data.write(Int8(round(self.angularVelocity * 768)))
-        data.write(UInt16(thrust ? 1 : 0) + UInt16(thrustLeft ? 2 : 0) + UInt16(thrustRight ? 4 : 0) + UInt16((parent as? Play)?.usedShoot ?? false ? 8 : 0) + UInt16(self.id * 32))
+        let new = (parent as? Play)?.newShoot ?? false
+        data.write(UInt16(thrust ? 1 : 0) + UInt16(thrustLeft ? 2 : 0) + UInt16(thrustRight ? 4 : 0) + UInt16(((parent as? Play)?.usedShoot ?? false) && !new ? 8 : 0) + UInt16(new ? 16 : 0) + UInt16(self.id * 32))
     }
     func decode(data: inout Data){
         let pos = CGPoint(x: CGFloat(data.readunsafe() as Float), y: CGFloat(data.readunsafe() as Float))
@@ -249,8 +264,12 @@ class Object: SKSpriteNode, DataCodable{
         thrust = bits & 1 != 0
         thrustLeft = bits & 2 != 0
         thrustRight = bits & 4 != 0
-        let shoot = bits & 8 != 0
-        self.shlock += Int((bits & 16) / 16)
+        var shoot = bits & 8 != 0
+        let sadd = Int((bits & 16) / 16)
+        if sadd == 1 && !shoot{
+            self.shootQueue = 1
+            shoot = true
+        }else if sadd == 1{self.shlock += sadd}
         if !asteroid && thrustLeft && thrustRight{
             thrustLeft = false
             thrustRight = false
@@ -339,6 +358,38 @@ class Planet: Object{
     override func defParticle(_ planet: Object) -> Particle{
         return Particle()
     }
+    var emitq = 0.0
+    var emitf = 0.1
+    var collectibles = Set<SKSpriteNode>()
+    func cook(_ point: CGPoint, to radius: CGFloat = .nan) -> CGVector{
+        let radius = radius.isNaN ? self.radius : radius
+        var x = point.x - self.position.x
+        var y = point.y - self.position.y
+                
+        //now let's normalize these coordinates to the radius of the planet (minus some padding)
+        let d = radius / sqrt(x * x + y * y)
+        x *= d
+        y *= d
+        return CGVector(dx: x, dy: y)
+    }
+    func emit(_ p: CGVector){
+        //we can make a particle node that will be added to the planet
+        let randomTexture = random(min: 0, max: 8)
+        let n = SKSpriteNode()
+        n.position = CGPoint(x: p.dx + self.position.x, y: p.dy + self.position.y)
+        n.texture = SKTexture(imageNamed: "particle\(randomTexture)")
+        n.size = n.texture!.size()
+        n.setScale(0.5)
+        n.zPosition = -1.5
+        self.parent?.addChild(n)
+        
+        //now we can animate the particle
+        let d2 = (self.radius + random(min: 30, max: 120)) / (self.radius - 50) - 1
+        n.run(.sequence([.move(by: CGVector(dx: p.dx * d2, dy: p.dy * d2), duration: 1.5).ease({t in return (2-t)*t}),.wait(forDuration: 18),.fadeOut(withDuration: 1),.run{n.removeFromParent();self.collectibles.remove(n)}]))
+        collectibles.insert(n)
+        
+       
+    }
     override func update() {}
     func update(_ node: SKSpriteNode?){
         if let i = node{
@@ -384,7 +435,6 @@ class Planet: Object{
         zRotation += angularVelocity
     }
     func gravity(_ n: Object){
-    
         guard n.dynamic else{return}
         n.landed = false
         let mass: CGFloat = self.mass
@@ -410,8 +460,8 @@ class Planet: Object{
                             parent.objects[i] = Object()
                         }
                         n.run(SKAction.sequence([SKAction.fadeOut(withDuration: 1),SKAction.run{n.removeFromParent()
-                                parent!.end()
-                                DispatchQueue.main.async{SKScene.transition = .crossFade(withDuration: 0.5);PlayerDied.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0);}
+                                
+                            DispatchQueue.main.async{parent!.end();SKScene.transition = .crossFade(withDuration: 0.5);PlayerDied.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0);}
                         }]))
                         n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * CGFloat(gameFPS), dy: CGFloat(n.velocity.dy) * CGFloat(gameFPS)), duration: 1))
                     }else{
@@ -428,13 +478,15 @@ class Planet: Object{
             n.velocity.dx = 0
             n.velocity.dy = 0
             n.angularVelocity = 0
-            n.zRotation = atan2(y, x) - .pi/2
+            if n == (n.parent as? Play)?.ship{n.zRotation = atan2(y, x) - .pi/2}
             n.landed = true
         }else if d <= r + radius && !n.asteroid && !deathzone && !superhot{
-            if n.landed{
-                n.zRotation += angularVelocity
-            }else{
-                n.zRotation = atan2(y, x) - .pi/2
+            if n == (n.parent as? Play)?.ship{
+                if n.landed{
+                    n.zRotation += angularVelocity
+                }else{
+                    n.zRotation = atan2(y, x) - .pi/2
+                }
             }
             let t = atan2(x,y) - angularVelocity
             n.velocity = CGVector(dx: sin(t)*sqrt(d)-x, dy: cos(t)*sqrt(d)-y)
@@ -480,8 +532,7 @@ class Planet: Object{
                             parent.objects[i] = Object()
                         }
                         n.run(SKAction.sequence([SKAction.fadeOut(withDuration: 1),SKAction.run{n.removeFromParent()
-                                parent!.end()
-                                DispatchQueue.main.async{SKScene.transition = .crossFade(withDuration: 0.5);PlayerDied.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0);}
+                            DispatchQueue.main.async{parent!.end();SKScene.transition = .crossFade(withDuration: 0.5);PlayerDied.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0);}
                         }]))
                         n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * CGFloat(gameFPS), dy: CGFloat(n.velocity.dy) * CGFloat(gameFPS)), duration: 1))
                     }else{
@@ -490,6 +541,32 @@ class Planet: Object{
                 }
                 return
             }
+            if m < 0 && n == parents?.ship && superhot{
+                emitq += emitf
+                while emitq > 1{
+                    let dir = randDir(self.radius - 50)
+                    self.emit(dir)
+                    emitq -= 1
+                }
+            }
+            if d < radius * radius + 300 * radius + 22500 && !n.asteroid{
+                //check for collect
+                let r = n.radius * n.radius + 30 * n.radius + 225
+                for i in self.collectibles{
+                    if i.zPosition != -1.5{continue}
+                    let x = i.position.x - n.position.x
+                    let y = i.position.y - n.position.y
+                    if x * x + y * y < r{
+                        //collect
+                        energyAmount += 10
+                        self.collectibles.remove(i)
+                        i.run(.fadeOut(withDuration: 0.4).ease(.easeOut))
+                        i.run(.sequence([.scale(to: 1.5, duration: 0.7),.run{i.removeFromParent()}]))
+                        parents?.vibratePhone(.light)
+                    }
+                }
+            }
+            
             n.velocity.dx += x * m
             n.velocity.dy += y * m
             n.zRotation += angularVelocity * r / d

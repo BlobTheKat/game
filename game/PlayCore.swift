@@ -8,7 +8,24 @@
 import Foundation
 import SpriteKit
 
+
+var energyAmount = 0.0
+var energySpace = 100.0
+var energyPercent = 0.0
+
+
+enum impactType{
+    case light
+    case medium
+    case heavy
+    case error
+    case success
+    case warning
+}
+
 class PlayCore: PlayAmbient{
+    var energyCount = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+    var energyNodes: [SKSpriteNode] = []
     var latency = 0.0
     var lastUpdate: TimeInterval? = nil
     let border1 = SKSpriteNode(imageNamed: "tunnel1")
@@ -17,6 +34,44 @@ class PlayCore: PlayAmbient{
     var camOffset = CGPoint(x: 0, y: 0.2)
     var vel: CGFloat = 0
     
+    
+    
+    func vibratePhone(_ impact: impactType) {
+         
+    
+    
+        switch impact{
+            case .error:
+                let generator = UINotificationFeedbackGenerator()
+                generator.notificationOccurred(.error)
+
+            case .success:
+                let generator = UINotificationFeedbackGenerator()
+                generator.notificationOccurred(.success)
+
+            case .warning:
+                let generator = UINotificationFeedbackGenerator()
+                generator.notificationOccurred(.warning)
+
+            case .light:
+                let generator = UIImpactFeedbackGenerator(style: .light)
+                generator.impactOccurred()
+
+            case .medium:
+                let generator = UIImpactFeedbackGenerator(style: .medium)
+                generator.impactOccurred()
+
+            case .heavy:
+                let generator = UIImpactFeedbackGenerator(style: .heavy)
+                generator.impactOccurred()
+
+            default:
+                let generator = UISelectionFeedbackGenerator()
+                generator.selectionChanged()
+                
+            }
+    }
+   
     
     
     let shipDirection = SKSpriteNode(imageNamed: "direction")
@@ -90,24 +145,21 @@ class PlayCore: PlayAmbient{
         stars2.update()
         stars3.position = CGPoint(x: cam.position.x / 2, y: cam.position.y / 2)
         stars3.update()
-        collectibles.update()
-        for s in collectibles.sprites[CGPoint(x: floor(ship.position.x / 512), y: floor(ship.position.y / 512))] ?? []{
-            let x = s.position.x - ship.position.x
-            let y = s.position.y - ship.position.y
-            let d = x * x + y * y
-            if d < (ship.radius + 16) * (ship.radius + 16) + 200 {
-                
-                s.run(.fadeOut(withDuration: 0.4).ease(.easeOut))
-                s.run(.sequence([.scale(to: 1.5, duration: 0.7),.run{s.removeFromParent()}]))
-                
-                //COLLECT HERE
-                
-                
-            }
-        }
     }
     var _a = 0
     func spaceUpdate(){
+      
+        
+        energyCount.text = "k$ \(energyAmount)"
+        
+        energyPercent = floor((energyAmount / energySpace) * 8)
+        
+        var i = 0.0
+        for node in energyNodes{
+            node.texture = i < energyPercent ? SKTexture(imageNamed: "energyOn") : SKTexture(imageNamed: "energyOff")
+            i += 1
+        }
+        
         if coolingDown{
             ship.shootFrequency = 0
         }
@@ -205,7 +257,7 @@ class PlayCore: PlayAmbient{
                 SKAction.fadeOut(withDuration: 1),
                 SKAction.run{ [self] in
                     ship.removeFromParent()
-                    send(Data([9, 0, 0, 0, 0]))
+                    send(Data([9, 0, 0, 0, 0, 0, 0, 0, 0]))
                     end()
                     DispatchQueue.main.async{SKScene.transition = .crossFade(withDuration: 0.5);Play.renderTo(skview);SKScene.transition = .crossFade(withDuration: 0)}
                 }
