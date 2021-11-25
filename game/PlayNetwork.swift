@@ -213,6 +213,9 @@ class PlayNetwork: PlayConvenience{
         //release texture objects
         for p in loadstack.p ?? []{
             p.texture = nil
+            for c in p.children{
+                (c as? SKSpriteNode)?.texture = nil
+            }
         }
         send = {(_:Data) in}
         a()
@@ -244,7 +247,7 @@ class PlayNetwork: PlayConvenience{
         }else if creds == nil{
             creds = (url: URL(string: "http://example.com")!, sig: Data(), salt: Data(), time: 1, id: "")
         }
-        send = connect("192.168.1.248:65152"){[self](d) in
+        send = connect(ip){[self](d) in
             
             if ended{return}
             guard view == skview else{return}

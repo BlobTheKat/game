@@ -287,7 +287,7 @@ class PlayCore: PlayAmbient{
             let regionx = 0, regiony = 0//fdiv(Int(x), REGIONSIZE), regiony = fdiv(Int(y), REGIONSIZE)
             var d = false
             for sector in sectors[CGPoint(x: regionx, y: regiony)]!{
-                let (_, (pos: pos, size: size), (name: name, ip: _, bucket: _)) = sector
+                let (_, (pos: pos, size: size), (name: name, ip: _)) = sector
                 let w2 = size.width / 2
                 let h2 = size.height / 2
                 if x > pos.x - w2 && x < pos.x + w2 && y > pos.y - h2 && y < pos.y + h2 && !d{

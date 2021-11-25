@@ -85,13 +85,6 @@ class PlayAmbient: PlayNetwork{
     var stars = SKAmbientContainer()
     var stars2 = SKAmbientContainer()
     var stars3 = SKAmbientContainer()
-    /*func random() -> CGFloat{
-        return CGFloat(Double(arc4random()) / 4294967296)
-    }
-    func random(min: CGFloat, max: CGFloat) -> CGFloat{
-        return random() * (max - min) + min
-    }*/
-    //WHAT IS WRONG WITH YOU I ALREADY DEFINED THIS FUNCTION OUTSIDE OF THE CLASS (FOR A REASON!)
     func wasMoved() {
         self.stars = SKAmbientContainer({
             let n = SKSpriteNode()

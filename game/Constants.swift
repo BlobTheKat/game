@@ -8,7 +8,7 @@
 import Foundation
 import SpriteKit
 import Network
-
+import SDWebImageSVGCoder
 
 let MAX_DELAY = 300 //in milliseconds, the maximum amount of time a packet can be delayed for smoothness
 
@@ -121,7 +121,7 @@ var smap = GameData("/map")!
 var ships = GameData("/ships")!
 var asteroids = GameData("/asteroids")!
 let VERSION = 1
-typealias SectorData = ([Planet], (pos: CGPoint, size: CGSize), (name:String,ip:String,bucket:String))
+typealias SectorData = ([Planet], (pos: CGPoint, size: CGSize), (name:String,ip:String))
 extension CGPoint: Hashable{
     public func hash(into hasher: inout Hasher) {
         hasher.combine(self.x)
@@ -138,10 +138,12 @@ func emptytextures(s: SectorData){
     textures.removeAll()
     for p in s.0{
         p.texture = nil
+        for c in p.children{
+            (c as? SKSpriteNode)?.texture = nil
+        }
     }
 }
-
-func image(_ url: String, completion: @escaping (SKTexture) -> (), err: @escaping (String) -> ()){
+/*func image(_ url: String, completion: @escaping (SKTexture) -> (), err: @escaping (String) -> ()){
     if let i = textures[url]{
         DispatchQueue.main.async{completion(i)}
         return
@@ -153,9 +155,10 @@ func image(_ url: String, completion: @escaping (SKTexture) -> (), err: @escapin
         }
         return
     }
+    
     fetch(url) { (data: Data) in
         if data[0] == 123{
-            err("Broken Image")
+            err("Missing Image")
             return
         }
         if let a = UIImage(data: data){
@@ -170,7 +173,7 @@ func image(_ url: String, completion: @escaping (SKTexture) -> (), err: @escapin
         err(e)
     }
 
-}
+}*/
 let REGIONSIZE = 500000
 func exists(px: Int, py: Int) -> Bool{
     let delegated = CGPoint(x: 0, y: 0)//fdiv(px, REGIONSIZE), y: fdiv(py, REGIONSIZE))
@@ -187,34 +190,25 @@ func exists(px: Int, py: Int) -> Bool{
     return false
 }
 func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @escaping (String) -> (), ipget: @escaping (String) -> (), load: @escaping (CGFloat) -> (), _ a: [SectorData] = []){
-    
     let regionx = 0//fdiv(x, REGIONSIZE)
     let regiony = 0//fdiv(y, REGIONSIZE)
     guard sectors[CGPoint(x: regionx, y: regiony)] == nil else {
         let x = CGFloat(x)
         let y = CGFloat(y)
         for sector in sectors[CGPoint(x: regionx, y: regiony)]!{
-            let (_, (pos: pos, size: size), (name: _, ip: ip, bucket: _)) = sector
+            let (_, (pos: pos, size: size), (name: _, ip: ip)) = sector
             let w2 = size.width / 2
             let h2 = size.height / 2
             if x > pos.x - w2 && x < pos.x + w2 && y > pos.y - h2 && y < pos.y + h2{
                 ipget(ip)
-                
-                //Load
-                let TOT = sector.0.count
-                var DONE = 0
+                //reinstate textures
                 for p in sector.0{
-                    image(p.name!) { (i: SKTexture) in
-                        p.texture = i
-                        p.size = i.size()
-                        DONE += 1
-                        load(CGFloat(DONE) / CGFloat(TOT))
-                        if DONE == TOT{
-                            //DONE :O POG
-                            completion(sector)
-                        }
-                    } err: { e in err(e); loaded.remove(CGPoint(x: regionx, y: regiony)) }
+                    p.texture = SKTexture(imageNamed: p.name!)
+                    for c in p.children{
+                        (c as? SKSpriteNode)?.texture = SKTexture(imageNamed: c.name!)
+                    }
                 }
+                completion(sector)
                 return
             }
         }
@@ -230,7 +224,7 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
     sectors[CGPoint(x: regionx, y: regiony)] = a
     fetch("https://region-\(regionx)-\(regiony).ksh3.tk") { (d: Data) in
         var data = d
-        guard let bucketname = data.read() else {return}
+        guard let _ = data.read() else {return}
         var found = false
         while data.count > 0{
             let xx = regionx * REGIONSIZE
@@ -248,12 +242,10 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
             let name = String(bytes: data.read(count: Int(nl)) as [UInt8], encoding: .utf8)!
             let ip = String(bytes: data.read(count: Int(ipl)) as [UInt8], encoding: .utf8)!
             var planets = [Planet]()
-            var s = (planets, (pos: CGPoint(x: px, y: py), size: CGSize(width: w, height: h)),(name:name,ip:ip,bucket:bucketname))
+            var s = (planets, (pos: CGPoint(x: px, y: py), size: CGSize(width: w, height: h)),(name:name,ip:ip))
             let current = x > px - w/2 && x < px + w/2 && y > py - h/2 && y < py + h/2
             found = found || current
             if current{ipget(ip)}
-            var DONE = 0
-            var TOT = 0
             while(len > 0){
                 len -= 1
                 let id = data.readunsafe() as UInt16
@@ -274,46 +266,36 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                 }
                 p.superhot = id & 8 != 0
                 if !exists{planets.append(p)}
-                let img = "https://firebasestorage.googleapis.com/v0/b/\(bucketname).appspot.com/o/\(data.read(lentype: Int8.self) ?? "default").png?alt=media"
-                
+                var img = (data.read(lentype: UInt8.self) ?? "none").split(separator: " ").map({a in return String(a)})
+                if img.count < 1{img.append("none")}
                 if current && !exists{
-                    TOT += 1
-                    image(img) { (i: SKTexture) in
-                        p.texture = i
-                        p.size = i.size()
-                        DONE += 1
-                        load(CGFloat(DONE) / CGFloat(TOT))
-                        if DONE == TOT{
-                            s.0 = planets
-                            s.2.bucket = ""
-                            if px < xx || px > xx + REGIONSIZE || py < yy || py > yy + REGIONSIZE{
-                                let delegated = CGPoint(x: 0, y: 0)//fdiv(px, REGIONSIZE), y: fdiv(py, REGIONSIZE))
-                                if sectors[delegated] != nil{
-                                    sectors[delegated]!.append(s)
-                                }else{
-                                    sectors[delegated] = [s]
-                                }
-                            }else{sectors[CGPoint(x: regionx, y: regiony)]!.append(s)}
-                            completion(s)
+                    var i = 0
+                    for img in img{
+                        if i == 0{
+                            p.texture = SKTexture(imageNamed: img)
+                            p.size = p.texture!.size()
+                            p.name = img
+                        }else{
+                            let node = SKSpriteNode()
+                            p.addChild(node)
+                            node.texture = SKTexture(imageNamed: img)
+                            node.size = node.texture!.size()
+                            node.name = img
                         }
-                    } err: {e in
-                        loaded.remove(CGPoint(x: regionx, y: regiony))
-                        err(e)
+                        i += 1
                     }
                 }
-                p.name = img
             }
-            if !current && !exists{
-                s.0 = planets
-                if px < xx || px > xx + REGIONSIZE || py < yy || py > yy + REGIONSIZE{
-                    let delegated = CGPoint(x: 0, y: 0)//fdiv(px, REGIONSIZE), y: fdiv(py, REGIONSIZE))
-                    if sectors[delegated] != nil{
-                        sectors[delegated]!.append(s)
-                    }else{
-                        sectors[delegated] = [s]
-                    }
-                }else{sectors[CGPoint(x: regionx, y: regiony)]!.append(s)}
-            }
+            s.0 = planets
+            if px < xx || px > xx + REGIONSIZE || py < yy || py > yy + REGIONSIZE{
+                let delegated = CGPoint(x: 0, y: 0)//fdiv(px, REGIONSIZE), y: fdiv(py, REGIONSIZE))
+                if sectors[delegated] != nil{
+                    sectors[delegated]!.append(s)
+                }else{
+                    sectors[delegated] = [s]
+                }
+            }else{sectors[CGPoint(x: regionx, y: regiony)]!.append(s)}
+            if current{completion(s)}
         }
         if !found{err("Spacetime continuum ends here...");return}
         loaded.insert(CGPoint(x: regionx, y: regiony))

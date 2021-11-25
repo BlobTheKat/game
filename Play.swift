@@ -11,15 +11,6 @@ import GameKit
 
 let stopSound = SKAction.stop()
 let playSound = SKAction.play()
-var screenSize = 1.0
-var Biggeradjust35 = 35.0
-var adjust10 = CGFloat()
-var adjust15 = CGFloat()
-var adjust20 = CGFloat()
-var  adjust5 = CGFloat()
-var  adjust3 = CGFloat()
-var  adjust1 = CGFloat()
-var smallerScreenSize = false
 
 var currentPlanetTexture = SKTexture()
 
@@ -237,38 +228,6 @@ class Play: PlayCore{
     }
     var moved = false
     override func didMove(to view: SKView) {
-        
-        /*if self.frame.size.width == 568.0{
-             
-            Biggeradjust35 = 0
-             adjust1 = 1
-             adjust3 = 3
-             adjust5 = 5
-             adjust10 = 10
-             adjust15 = 15
-             adjust20 = 20
-            
-            screenSize = 1.6
-        }
-        if self.frame.size.width  >=  850{
-            
-            Biggeradjust35 = 0
-            adjust1 = 0
-            adjust3 = 0
-            adjust5 = 0
-            adjust10 = 0
-            adjust15 = 0
-            adjust20 = 0
-            screenSize = 1.5
-        }*/
-        
-        Biggeradjust35 = 0
-        adjust1 = 0
-        adjust3 = 0
-        adjust5 = 0
-        adjust10 = 0
-        adjust15 = 0
-        adjust20 = 0
         startAnimation()
         guard !moved else{return}
         guard ready else{return}
@@ -426,29 +385,25 @@ class Play: PlayCore{
     }
     func startGame(){
         //IMPORTANT SIZE ALGORITHM
-        
         colonizeBG.anchorPoint = CGPoint(x: 1 ,y: 1)
         let dify = (self.size.height + 40) / colonizeBG.size.height
-        print(dify,colonizeBG.size.height)
         colonizeBG.size.height = self.size.height + 40
         colonizeBG.size.width *= dify
         colonizeBG.position = pos(mx: -0.5, my: 0.5, x: 250, y: 20)
-        
         colonizeBG.zPosition = 100
-
         wasMoved()
-            self.removeAction(forKey: "loading")
-            map(planets: planets, size: loadstack.size!, pos: loadstack.pos!, x: true)
-            for (_, v) in sectors{
-                for s in v{
-                    if s.1.pos == loadstack.pos!{continue}
-                    map(planets: s.0, size: s.1.size, pos:s.1.pos, x: false)
-                }
+        self.removeAction(forKey: "loading")
+        map(planets: planets, size: loadstack.size!, pos: loadstack.pos!, x: true)
+        for (_, v) in sectors{
+            for s in v{
+                if s.1.pos == loadstack.pos!{continue}
+                map(planets: s.0, size: s.1.size, pos:s.1.pos, x: false)
             }
-            
-            for p in self.planetindicators{
-                p.alpha = 1
-            }
+        }
+        
+        for p in self.planetindicators{
+            p.alpha = 1
+        }
         cam.run(SKAction.scale(to: 2, duration: 0.5).ease(.easeInEaseOut))
         startData()
         ship.producesParticles = false
@@ -463,25 +418,20 @@ class Play: PlayCore{
         }
         cam.removeAction(forKey: "vibratingCamera")
         cam.removeAction(forKey: "vibratingCameras")
+        speedLabel.text = "320"
+        speedLabel.zPosition = 9
+        speedLabel.fontSize = 70
+        speedLabel.color = .white
+        speedLabel.zRotation = 0.165
+        speedLabel.horizontalAlignmentMode = .left
+        speedLabel.position = CGPoint(x: -speedBG.size.width/2.7 ,y: -speedBG.size.height/3)
+        speedLabel.xScale = 1.3
         
-            speedLabel.text = "320"
-            speedLabel.zPosition = 9
-            speedLabel.fontSize = 70
-            speedLabel.color = .white
-            speedLabel.zRotation = 0.165
-            speedLabel.horizontalAlignmentMode = .left
-            speedLabel.position = CGPoint(x: -speedBG.size.width/2.7 ,y: -speedBG.size.height/3)
-            speedLabel.xScale = 1.3
-            speedBG.addChild(speedLabel)
-            
-            dPad.position = pos(mx: 0.4, my: -0.4, x: -50, y: 50)
-            dPad.zPosition = 10
-            dPad.setScale(1.5)
-            cam.addChild(dPad)
-            
-       
-            
-        print("\(self.view!.frame.size.width) screen SIZE")
+        speedBG.addChild(speedLabel)
+        dPad.position = pos(mx: 0.4, my: -0.4, x: -50, y: 50)
+        dPad.zPosition = 10
+        dPad.setScale(1.5)
+        cam.addChild(dPad)
         avatar.anchorPoint.x = 0
         avatar.position = pos(mx: -0.5, my: 0.3, x: 20)
         avatar.alpha = 1
@@ -489,57 +439,50 @@ class Play: PlayCore{
         avatar.setScale(0.3)
         cam.addChild(avatar)
         for i in 0...7 {
-            
             let  energyNode = SKSpriteNode(imageNamed: "energyOff")
             energyNodes.append(energyNode)
-            
             if i == 0{
                 energyNodes[i].position = CGPoint(x: 180, y: -43)
             }else{
                 energyNodes[i].position = CGPoint(x: energyNodes[i - 1].position.x + energyNodes[0].size.width*0.95 , y: -43)
             }
-            
             energyNodes[i].zPosition = avatar.zPosition + 1
             energyNodes[i].setScale(1)
             avatar.addChild(energyNodes[i])
         }
-        
         energyCount.text = "K$ 0"
         energyCount.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
         energyCount.zPosition = avatar.zPosition + 1
         energyCount.position = CGPoint(x: 165 , y: -100)
         energyCount.fontColor = UIColor.white
         energyCount.fontSize = 36
-        
         avatar.addChild(energyCount)
-        
         //NAVIGATION
-       
         navArrow.position = pos(mx: 0.43, my: 0.5)
         navArrow.alpha = 1
         navArrow.zPosition = 11
         navArrow.setScale(0.3)
         cam.addChild(navArrow)
-            
+        
         navBG.position = CGPoint(x: navArrow.position.x,y: navArrow.position.y + navArrow.size.height)
         navBG.alpha = 1
         navBG.anchorPoint = CGPoint(x: 0.5 ,y: 0)
         navBG.zPosition = 11
         navBG.setScale(0.4)
         cam.addChild(navBG)
-            
+        
         mapIcon.position = CGPoint(x: -navBG.size.width/1.2 ,y: navBG.size.height/6 )
         mapIcon.alpha = 1
         mapIcon.zPosition = 11
         mapIcon.setScale(0.3)
         navBG.addChild(mapIcon)
-            
-        repairIcon.position = CGPoint(x: -navBG.size.width/1.2 ,y: mapIcon.position.y + (mapIcon.size.height * 1.2) )
+        
+        repairIcon.position = CGPoint(x: -navBG.size.width/1.2 ,y: mapIcon.position.y + (mapIcon.size.height * 1.2))
         repairIcon.alpha = 1
         repairIcon.zPosition = 11
         repairIcon.setScale(1.1)
         navBG.addChild(repairIcon)
-            
+        
         lightSpeedIcon.position = CGPoint(x: -navBG.size.width/1.2 ,y: repairIcon.position.y + (repairIcon.size.height * 1.2) )
         lightSpeedIcon.alpha = 1
         lightSpeedIcon.zPosition = 11
@@ -699,15 +642,12 @@ class Play: PlayCore{
         }else if warningType == 2 {
             warning.texture = SKTexture(imageNamed: "achieved")
         }
-       
-        
         warningLabel.text = "\(label)"
         
         warningLabel.zPosition = 101
         warningLabel.position = pos(mx: 0, my: 0, x: 0, y: -25)
         warningLabel.fontSize = 60
-        warning.addChild(warningLabel)
-        
+        if warningLabel.parent == nil{warning.addChild(warningLabel)}
         if blink{
             warning.run(SKAction.repeatForever(SKAction.sequence([
             
@@ -826,12 +766,11 @@ class Play: PlayCore{
         shipDirection.removeFromParent()
     }
     func showControls(){
-        guard navArrow.parent == nil else {return}
         guard started else {return}
-        cam.addChild(navArrow)
-        cam.addChild(dPad)
-        cam.addChild(thrustButton)
-        cam.addChild(shipDirection)
+        if navArrow.parent == nil{cam.addChild(navArrow)}
+        if dPad.parent == nil{cam.addChild(dPad)}
+        if thrustButton.parent == nil{cam.addChild(thrustButton)}
+        if shipDirection.parent == nil{cam.addChild(shipDirection)}
     }
     override func nodeDown(_ node: SKNode, at point: CGPoint) {
         
@@ -839,11 +778,9 @@ class Play: PlayCore{
             
         case backIcon:
             if colonize{
-            colonizeBG.removeFromParent()
-            cam.addChild(thrustButton)
-            cam.addChild(dPad)
-            cam.addChild(shipDirection)
-            colonize = false
+                colonizeBG.removeFromParent()
+                showControls()
+                colonize = false
             }
             break
         case buyIcon:
@@ -851,9 +788,7 @@ class Play: PlayCore{
                 energyAmount -= 10
                 if colonize{
                 colonizeBG.removeFromParent()
-                cam.addChild(thrustButton)
-                cam.addChild(dPad)
-                cam.addChild(shipDirection)
+                showControls()
                 colonize = false
                 }
                 
@@ -862,9 +797,6 @@ class Play: PlayCore{
                     .wait(forDuration: 2),
                     .run{self.cam.removeAction(forKey: "warningAlpha")},
                     .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
-                    .wait(forDuration: 1),
-                    .run{self.warningLabel.removeFromParent()}
-                    
                 ]))
                 
                
@@ -874,9 +806,6 @@ class Play: PlayCore{
                     .wait(forDuration: 2),
                     .run{self.cam.removeAction(forKey: "warningAlpha")},
                     .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
-                    .wait(forDuration: 1),
-                    .run{self.warningLabel.removeFromParent()}
-                    
                 ]))
                 
                 
@@ -958,7 +887,6 @@ class Play: PlayCore{
         if warning == node{
             warning.removeAction(forKey: "warningAlpha")
             warning.alpha = 0
-            cam.run(.run{self.warningLabel.removeFromParent()})
         }
         
         if accountIcon == node{
@@ -1010,7 +938,6 @@ class Play: PlayCore{
                 usingConstantLazer = false
                 ship.thrust = true
                 if playingThrustSound == false{
-                    print("playing")
                     thrustSound.run(SKAction.changeVolume(to: 1.5, duration: 0.01))
                     thrustSound.run(playSound)
                     playingThrustSound = true
@@ -1050,9 +977,7 @@ class Play: PlayCore{
             
             if colonize{
             cam.addChild(colonizeBG)
-            thrustButton.removeFromParent()
-            dPad.removeFromParent()
-            shipDirection.removeFromParent()
+            hideControls()
             }
         }
     }

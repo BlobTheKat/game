@@ -435,7 +435,7 @@ class Planet: Object{
         zRotation += angularVelocity
     }
     func gravity(_ n: Object){
-        guard n.dynamic else{return}
+        guard n.dynamic else{ return }
         n.landed = false
         let mass: CGFloat = self.mass
         let x = n.position.x - self.position.x
