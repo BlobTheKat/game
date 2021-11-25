@@ -229,6 +229,9 @@ class PlayNetwork: PlayConvenience{
     var ip: String = ""
     var stopAuth = {}
     func gotIp(){
+        fetch("http://82.165.238.159:81/dummy"){ (_: Data) in
+            print("done")
+        } _: {a in print(a)}
         if !p{p = true;return}
         let player = GKLocalPlayer.local
         if player.isAuthenticated && creds == nil{

@@ -19,7 +19,6 @@
 		33E378B726BD57780034B14E /* PlayerDied.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33E378B626BD57780034B14E /* PlayerDied.swift */; };
 		33FC9DB826B45A1400216BC7 /* PlayConvenience.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33FC9DB726B45A1400216BC7 /* PlayConvenience.swift */; };
 		341B34FE26C557F6006115F1 /* Particles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 341B34FD26C557F6006115F1 /* Particles.swift */; };
-		3458D02B274EDF4F00756C38 /* SDWebImageSVGCoder in Frameworks */ = {isa = PBXBuildFile; productRef = 3458D02A274EDF4F00756C38 /* SDWebImageSVGCoder */; };
 		347FD84326BEA56400396640 /* ships in Resources */ = {isa = PBXBuildFile; fileRef = 347FD84226BEA56400396640 /* ships */; };
 		347FD84526BEC05500396640 /* map in Resources */ = {isa = PBXBuildFile; fileRef = 347FD84426BEC05500396640 /* map */; };
 		347FD84A26C12EEE00396640 /* asteroids in Resources */ = {isa = PBXBuildFile; fileRef = 347FD84926C12EEE00396640 /* asteroids */; };
@@ -79,7 +78,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				34C5BC30271ED7F200997B1D /* GameKit.framework in Frameworks */,
-				3458D02B274EDF4F00756C38 /* SDWebImageSVGCoder in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -181,7 +179,6 @@
 			);
 			name = game;
 			packageProductDependencies = (
-				3458D02A274EDF4F00756C38 /* SDWebImageSVGCoder */,
 			);
 			productName = game;
 			productReference = DC9F5277269249AB00DDF0AF /* game.app */;
@@ -211,7 +208,6 @@
 			);
 			mainGroup = DC9F526E269249AB00DDF0AF;
 			packageReferences = (
-				3458D029274EDF4F00756C38 /* XCRemoteSwiftPackageReference "SDWebImageSVGCoder" */,
 			);
 			productRefGroup = DC9F5278269249AB00DDF0AF /* Products */;
 			projectDirPath = "";
@@ -491,25 +487,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		3458D029274EDF4F00756C38 /* XCRemoteSwiftPackageReference "SDWebImageSVGCoder" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/SDWebImage/SDWebImageSVGCoder";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		3458D02A274EDF4F00756C38 /* SDWebImageSVGCoder */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 3458D029274EDF4F00756C38 /* XCRemoteSwiftPackageReference "SDWebImageSVGCoder" */;
-			productName = SDWebImageSVGCoder;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = DC9F526F269249AB00DDF0AF /* Project object */;
 }

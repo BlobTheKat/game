@@ -8,7 +8,6 @@
 import Foundation
 import SpriteKit
 import Network
-import SDWebImageSVGCoder
 
 let MAX_DELAY = 300 //in milliseconds, the maximum amount of time a packet can be delayed for smoothness
 
