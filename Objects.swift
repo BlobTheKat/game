@@ -359,7 +359,7 @@ class Planet: Object{
         return Particle()
     }
     var emitq = 0.0
-    var emitf = 0.1
+    var emitf = 2.55
     var collectibles = Set<SKSpriteNode>()
     func cook(_ point: CGPoint, to radius: CGFloat = .nan) -> CGVector{
         let radius = radius.isNaN ? self.radius : radius

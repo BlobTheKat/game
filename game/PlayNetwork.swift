@@ -229,21 +229,15 @@ class PlayNetwork: PlayConvenience{
     var ip: String = ""
     var stopAuth = {}
     func gotIp(){
-        fetch("http://82.165.238.159:81/dummy"){ (_: Data) in
-            print("done")
-        } _: {a in print(a)}
         if !p{p = true;return}
         let player = GKLocalPlayer.local
         if player.isAuthenticated && creds == nil{
             player.fetchItems(forIdentityVerificationSignature: { url, sig, salt, time, err in
                 if err != nil || url == nil || sig == nil{
-                    dmessage = "Failed to identify"
-                    self.end()
-                    DispatchQueue.main.async{Disconnected.renderTo(skview)}
-                    return
+                    creds = (url: URL(string: "http://example.com")!, sig: Data(), salt: Data(), time: 1, id: "")
+                }else{
+                    creds = (url: url!, sig: sig!, salt: salt ?? Data(), time: time, id: GKLocalPlayer.local.teamPlayerID)
                 }
-                
-                creds = (url: url!, sig: sig!, salt: salt ?? Data(), time: time, id: GKLocalPlayer.local.teamPlayerID)
                 self.gotIp()
             })
             return

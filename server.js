@@ -146,15 +146,15 @@ if(!meta || xy){
         try{
             a = fs.readFileSync('region_'+rx+'_'+ry+'.region')
         }catch(e){
-        fetch('https://region-'+rx+'-'+ry+'.ksh3.tk').then(a=>a.buffer()).then(a=>{
+        fetch('https://raw.githubusercontent.com/BlobTheKat/data/master/'+rx+'_'+ry+'.region').then(a=>a.buffer()).then(a=>{
             fs.writeFileSync('region_'+rx+'_'+ry+'.region', a)
             done(a)
         })}
         if(a)done(a)
         function done(dat){
             console.log('Parsing region')
-            let i = dat.readUint32LE() + 4
             let sx, sy, w, h
+            let i = 0
             while(true){
                 sx = dat.readInt16LE(i) * 1000 + rx * REGIONSIZE;i+=2
                 sy = dat.readInt16LE(i) * 1000 + ry * REGIONSIZE;i+=2
@@ -169,10 +169,11 @@ if(!meta || xy){
                     let b = id & 4 ? 1 : 0
                     let c = id & 8 ? 1 : 0
                     if(id & 1){
-                        i += 10 + (a + b) * 4 + c * 2
+                        i += 10 + (b + c) * 4 + a * 2
                     }else{
-                        i += b * 4 + a * 2 + 14
-                        i += dat[i] + 1
+                        i += b * 4 + a * 2 + 15
+                        i += dat[i] + (id & 16 ? 2 : 1)
+                        i += id & 32 ? dat[i] + 1 : 0
                     }
                 }
             }
@@ -202,6 +203,7 @@ if(!meta || xy){
                     id >>= 4
                     sector.objects.push(new Asteroid(o={id,x,y,dx,dy}))
                 }else{
+                    let id2 = dat[i++]
                     let x = dat.readInt32LE(i);i += 4
                     let y = dat.readInt32LE(i);i += 4
                     let mass = dat.readInt32LE(i);i += 4
@@ -209,8 +211,12 @@ if(!meta || xy){
                     if(a)i += 2
                     if(b)spin = dat.readFloatLE(i),i += 4
                     i += dat[i] + 1
-                    id >>= 4
-                    sector.planets.push(new Planet(o={radius:id,x,y,mass,spin,superhot:c}))
+                    let richness = 0.1
+                    if(id & 16)richness = dat[i++] / 100
+                    if(id & 32)i += dat[i] + 1
+                    id >>= 8
+                    id += id2 << 8
+                    sector.planets.push(new Planet(o={radius:id,x,y,mass,spin,superhot:c,richness}))
                 }
                 arr.push(o)
             }
