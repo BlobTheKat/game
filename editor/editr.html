@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#fff">
+	<style>
+		header{
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 50px;
+			background-color: var(--light2);
+			z-index: 9;
+			box-shadow: 0 -10px 20px #000;
+		}
+		files{
+			position: fixed;
+			left: 0;
+			top: 50px;
+			bottom: 0;
+			width: 200px;
+			background-color: var(--light3);
+			z-index: 1;
+			box-shadow: -10px 0 20px #000;
+		}
+		code{
+			position: fixed;
+			top: 50px;
+			left: 200px;
+			bottom: 0;
+			right: 0;
+		}
+		textarea, visual{
+			outline: none;
+			-webkit-tap-highlight-color: transparent;
+			padding: 8px;
+			color: #111;
+			font-family: menlo, monospace;
+			position: absolute;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			right: 0;
+			border: none;
+			resize: none;
+			width: 100%;
+			height: 100%;
+			z-index: 8;
+			background-color: transparent;
+			color: transparent;
+			caret-color: #333;
+			font-size: 12px;
+		}
+		visual{
+			z-index:7;
+			color: #111;
+		}
+		@media (max-width: 400px){
+			files{
+				width: var(--w);
+			}
+			code{
+				left: var(--w);
+			}
+		}
+		html, body{
+			height: 100%;
+			touch-action: none;
+			font-family: Arial;
+			font-size: 12px;
+			overscroll-behavior: none;
+			-webkit-user-drag: none;
+			-khtml-user-drag: none;
+			-moz-user-drag: none;
+			-o-user-drag: none;
+			overflow: hidden;
+		}
+		*{margin:0;padding:0;box-sizing:border-box}
+	</style>
+</head>
+<body>
+	<header></header>
+	<files></files>
+	<code><textarea oninput="console.log(start,this.selectionStart);process(this.value)"></textarea><visual></visual></code>
+	<script>
+	let textarea = document.querySelector("textarea")
+	textarea.onpaste=textarea.onkeypress
+	let start = textarea.selectionStart, end = textarea.selectionEnd
+	document.onselectionchange=function(event){
+		start=textarea.selectionStart
+		end=textarea.selectionEnd
+	}
+	function process(str){
+		str = str.replace(/'([^'\\]|\\.)*'|"([^"\\]|\\.)*"|`([^`\\]|\\.)*`/g, "<$`>")
+		return str
+	}
+	function id(id){
+    return document.getElementById(id)
+  }
+  let varfor = el => new Proxy(el.style, {
+    get(t, k){
+      return t.getPropertyValue("--" + k.replace(/[A-Z]/g, a => "-"+a.toLowerCase()))
+    },
+    set(t, k, v){
+      t.setProperty("--" + k.replace(/[A-Z]/g, a => "-"+a.toLowerCase()), v)
+			return true;
+    }
+  })
+  const vars = varfor(document.body)
+	Object.assign(vars, {
+		light: "#e8e8e8",
+		light2: "#bbb",
+		w: "0",
+		light3: "#ddd"
+	})
+	</script>
+</body>
