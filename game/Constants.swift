@@ -298,6 +298,7 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                         node.setScale(scale)
                         node.name = t
                     }
+                    p.populate(with: (type: .lab, lvl: 5), rot: 128)
                     i += 1
                 }
             }

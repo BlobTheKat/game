@@ -338,7 +338,15 @@ func collision(planetpos: CGPoint, planetr: CGFloat, rayorigin: CGPoint, raydir:
     let touches = x * raydir.dy >= 0 && x2 - 2 * py * x - 2 * px * x * a + px * px + py * py < planetr * planetr
     return touches ? sqrt(x2) : .infinity
 }
-
+typealias byte = UInt8
+enum ColonizeItemType: UInt8{
+    case lab = 0
+    case shooter = 1
+    case dish = 2
+    case satellite = 3
+}
+let coloNames = ["lab", "shooter", "dish", "satellite"]
+typealias ColonizeItem = (type: ColonizeItemType, lvl: UInt8)
 class Planet: Object{
     override func body(radius: CGFloat, mass: CGFloat, texture: SKTexture? = nil){
         zPosition = 2
@@ -371,6 +379,16 @@ class Planet: Object{
         x *= d
         y *= d
         return CGVector(dx: x, dy: y)
+    }
+    
+    func populate(with item: ColonizeItem, rot: UInt8){
+        let rot = CGFloat(rot) * .pi / 128
+        let node = SKSpriteNode(imageNamed: "\(coloNames[Int(item.type.rawValue)])\(item.lvl)")
+        node.setScale((self.xScale + self.yScale) / 4)
+        let rad = self.radius + node.size.height / 2 - 20
+        node.position = CGPoint(x: sin(rot) * rad, y: cos(rot) * rad)
+        node.zRotation = -rot
+        self.addChild(node)
     }
     func emit(_ p: CGVector){
         //we can make a particle node that will be added to the planet

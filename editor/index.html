@@ -31,6 +31,7 @@
     -moz-user-drag: none;
     -o-user-drag: none;
     overflow: hidden;
+    transition: --perspective 0.5s linear;
   }
   body{
     display: flex;
@@ -99,9 +100,7 @@
     border-radius: 50%;
     left: 50%;
     bottom: 50%;
-    image-rendering: pixelated;
-    image-rendering: optimizeSpeed;
-    image-rendering: crisp-edges;
+    
   }
   asteroid{
     position: absolute;
@@ -122,6 +121,9 @@
   asteroid:empty{
     background-color: darkgoldenrod;
   }
+  img{image-rendering: pixelated;
+    image-rendering: optimizeSpeed;
+    image-rendering: crisp-edges;}
   planet img, asteroid img{
     margin: 50%;
     transform: translate(-50%, -50%) scale(var(--scale,1));
@@ -208,7 +210,7 @@
   #side input{
     flex-grow: 1;
   }
-  #side btn{
+  btn{
     flex-grow: 1;
     background: #222;
     color: #fff;
@@ -216,7 +218,7 @@
     line-height: 30px;
     text-align: center;
   }
-  #side btn:active{
+  btn:active{
     background: #181818;
   }
   @keyframes rotate {
@@ -258,6 +260,9 @@
     display: block;
   }
   body.home .home{
+    display: block;
+  }
+  body.peditor .peditor{
     display: block;
   }
   home{
@@ -318,8 +323,143 @@
     bottom: 50px;
     height: 50px;
   }
+  canv{
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 50px;
+    bottom: 0;
+    right: 300px;
+  }
+  menu.peditor{
+    display: none;
+    right: 0;
+    width: 300px;
+    overflow-y: scroll;
+  }
+  #planets planet{
+    position: unset;
+    width: 200px;
+    height: 200px;
+    margin: 40px auto 35px auto;
+  }
+  #planets planet img{
+    margin: 0;
+    z-index: unset;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: unset;
+    height: unset;
+    cursor: grab;
+  }
+  #planets planet img:active{
+    cursor: grabbing;
+  }
+  .submenucontrol{
+    display: block;
+    text-align: left;
+    margin-top: 10px
+  }
+  .submenucontrol:before{
+    content: "▶";
+    padding: 0 10px;
+    transition: transform 0.1s ease-out;
+    display: inline-block;
+    transform-origin: 48% 53%;
+  }
+  .submenucontrol.open:before{
+    transform: rotate(90deg);
+  }
+  .submenucontrol.open + submenu{
+    display: block;
+  }
+  submenu{
+    overflow: hidden;
+    display: none;
+    transition: opacity 1s ease-out;
+  }
+  canv div{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(var(--size));
+    border-radius: 50%;
+    outline: calc(20px - var(--perspective) / 5) red solid;
+  }
+  @keyframes rotate2{
+    from{transform: translate(-50%, 50%) scale(var(--scale,1)) rotate(0)}
+    to{transform: translate(-50%, 50%) scale(var(--scale,1)) rotate(360deg)}
+  }
+  canv div img{
+    position: absolute;
+    bottom: calc(var(--pos) * var(--perspective) + 50%) !important;
+    left: calc(var(--pos) * var(--perspective) + 50%) !important;
+    top: unset !important;
+    transform: translate(-50%, 50%) scale(var(--scale,1));
+    z-index: calc(var(--pos) - 1000) !important;
+    width: unset !important;
+    filter: drop-shadow(calc(0px - var(--perspective)) var(--perspective) calc(var(--perspective) / 20) rgba(0,0,0,0.3));
+    animation: var(--animation);
+  }
+  .btn.editor, .btn.peditor{
+    display: none;
+  }
+  btn.remove{
+    display: block;
+    width: 60px;
+    float: right;
+    position: relative;
+    top: -70px;
+    z-index: 999;
+  }
   </style>
 </head>
+<canv id="canvas" class="peditor">
+  <div style="--size:1"></div>
+</canv>
+<menu id="planets" class="peditor">
+  <row id="radiusrow"><label>Layer Scale: </label><input min=0.01 step=0.1 max=50 onchange="lastGhost.style.setProperty('--scale',this.value);redo_size()" type="number" style="flex-grow:2"/></row>
+  <btn class="submenucontrol">Gradients</btn>
+  <submenu>
+    
+  </submenu>
+  <btn class="submenucontrol">Planets</btn>
+  <submenu>
+    
+  </submenu>
+  <btn class="submenucontrol">Stars</btn>
+  <submenu>
+    
+  </submenu>
+  <btn class="submenucontrol">Destroyers</btn>
+  <submenu>
+    
+  </submenu>
+  <btn class="submenucontrol">Spirals</btn>
+  <submenu>
+    
+  </submenu>
+  <btn class="submenucontrol">Layers</btn>
+  <submenu>
+    
+  </submenu>
+  <btn class="submenucontrol">Cores</btn>
+  <submenu>
+    
+  </submenu>
+  <btn class="submenucontrol">Current Planets</btn>
+  <submenu>
+    
+  </submenu>
+  <row><label>Name: </label><input type="text" style="flex-grow:2"/></row>
+  <row><label>Radius: </label><input min=0 step=5 onchange="square.style.width=square.style.height=2*this.value+'px'" type="number" style="flex-grow:2"/></row>
+  <row><label>Mass: </label><input min=0 step=1000 type="number" style="flex-grow:2"/></row>
+  <row><label>Spin: </label><input type="number" onchange="let spin = +this.value;square.style.setProperty('--animation', spin && ANIMS ? 'rotate2 ' + 0.10471975511965977 / Math.abs(spin) + 's infinite linear' + (spin > 0 ? ' reverse' : '') : 'none')" style="flex-grow:2"/></row>
+  <row><label>Particle: </label><input type="number" style="flex-grow:2"/></row>
+  <row><label>Superhot: </label><input type="checkbox" style="flex-grow:2;margin:auto" /></row>
+  <row><btn id="save" style="line-height:50px">Save!</btn></row>
+</menu>
 <toolbar class="editor header">
   <img class="btn" id="del" src="delete.png" style="padding: 7px 9px" />
   <img class="btn" id="un" src="undo.png" style="padding: 2px" />
@@ -327,7 +467,7 @@
   <img class="btn" id="zo" src="substract.png" style="padding: 7px" />
   <img class="btn" id="zi" src="add.png" style="padding: 7px" />
 </toolbar>
-<menu id="side" class="default">
+<menu id="side" class="default editor">
   <row class="default"><p>Select a sector / planet / asteroid to edit it</p></row>
 
   <row class="planet"><h1>Planet Editor</h1></row>
@@ -373,14 +513,18 @@
 <menu id="menu" style="transform: translateX(100%);">
   <row id="tohome"><img src="/home.png" class="btn" /> <label>Home</label></row>
   <row id="toeditor"><img src="/icon.png" class="btn" /> <label>Locus Editor</label></row>
+  <row id="topeditor"><img src="/pedit.png" class="btn" /> <label>Planet Library</label></row>
   <row id="todb"><img src="/db.png" class="btn" /> <label>Database Explorer</label></row>
 </menu>
 <header class="header">
     <img class="btn" src="/icon.png" id="menubtn" /><!-- will be menu icon --> <label>Menu</label>
     <gap></gap>
     <label id="publish" style="display:none">Publish!</label>
-    <img src="add.png" class="btn" id="addbtn" style="padding: 7px" />
-    <img src="edit.png" class="btn" id="sidebtn" />
+    <img src="add.png" class="editor btn" id="addbtn" style="padding: 7px" />
+    <img src="addplanet.png" class="editor btn" id="planetbtn" style="padding: 2px;display:none" />
+    <img src="edit.png" class="editor btn" id="sidebtn" />
+    <img src="layer.png" class="peditor btn" id="layerbtn" style="padding: 5px" />
+    <!--input type="range"-->
 </header>
 <layer id="layer"></layer>
 <cont class="editor"><div id="scene"></div></cont>
@@ -415,7 +559,7 @@
     let ht = function(e){
       for(touch of e.changedTouches){
         touches.set(touch.identifier, [Date.now(), touch.clientX, touch.clientY,3])
-        c1()
+        c1(e)
       }
     }
     let hm = function(e){
@@ -430,19 +574,19 @@
         y -= dy / zoom}
         touches.set(touch.identifier, [0, touch.clientX, touch.clientY, 0])
         //drag
-        cb(dx, -dy)
+        cb(dx, -dy, e)
         e.preventDefault()
       }
     }
     let hr = function(e){
       for(touch in e.changedTouches){
         touches.delete(touch.identifier)
-        c2()
+        c2(e)
       }
     }
     let hc = function(e){
       touches.set(-1, [0, e.clientX, e.clientY,3])
-      c1()
+      c1(e)
     }
     let hd = function(e){
       let t = touches.get(-1)
@@ -451,11 +595,11 @@
       touches.set(-1, [0, e.clientX, e.clientY,0])
       let dx = e.clientX - t[1]
       let dy = e.clientY - t[2]
-      cb(dx, -dy)
+      cb(dx, -dy, e)
     }
     let hu = function(e){
       touches.delete(-1)
-      c2()
+      c2(e)
     }
     element.addEventListener("touchstart", ht)
     element.addEventListener("touchmove", hm)
@@ -468,6 +612,7 @@
   function id(id){
     return document.getElementById(id)
   }
+  let $ = a => Array.from(document.querySelectorAll(a))
   let layer = id("layer")
   function popup(...contents){
 
@@ -622,10 +767,10 @@
     let i = 0;
     let txt = new TextDecoder()
     let sectors = []
-    let lleft = (regions.get(x - 1 + " " + y) || []).length !== 0
-    let rright = (regions.get(x + 1 + " " + y) || []).length !== 0
-    let uup = (regions.get(x + " " + (y + 1)) || []).length !== 0
-    let ddown = (regions.get(x + " " + (y - 1)) || []).length !== 0
+    let lleft = (regions.get(x - 1 + " " + y) || []).length
+    let rright = (regions.get(x + 1 + " " + y) || []).length
+    let uup = (regions.get(x + " " + (y + 1)) || []).length
+    let ddown = (regions.get(x + " " + (y - 1)) || []).length
     let xx = x
     let yy = y
     while(i < a.byteLength){
@@ -685,10 +830,10 @@
       if(right && rright)continue
       if(bottom && ddown)continue
       if(top && uup)continue
-      if(left && top && (regions.get(x - 1 + " " + (y + 1)) || []).length !== 0)continue
-      if(left && bottom && (regions.get(x - 1 + " " + (y - 1)) || []).length !== 0)continue
-      if(right && top && (regions.get(x + 1 + " " + (y + 1)) || []).length !== 0)continue
-      if(right && bottom && (regions.get(x + 1 + " " + (y - 1)) || []).length !== 0)continue
+      if(left && top && (regions.get(xx - 1 + " " + (yy + 1)) || []).length)continue
+      if(left && bottom && (regions.get(xx - 1 + " " + (yy - 1)) || []).length)continue
+      if(right && top && (regions.get(xx + 1 + " " + (yy + 1)) || []).length)continue
+      if(right && bottom && (regions.get(xx + 1 + " " + (yy - 1)) || []).lengt)continue
 
       sectors.push({planets, asteroids, x, y, w, h, region: sectors, ip, name})
     }
@@ -844,6 +989,7 @@
   }
   let speed = -1;
   function measureSpeed(){if(speed>=0)return speed;let i = 10000000, t=Date.now();while(i--);return speed=Date.now()-t}
+  vars.perspective = "100px"
   function redraw(){
     speed = -1
     //iterate, flag, delete
@@ -957,7 +1103,7 @@
     sideopen = false
     menu.style.transform = menuopen ? "translateX(100%)" : ""
     side.style.transform = sideopen ? "translateX(-100%)" : ""
-    menu.nextElementSibling.children[1].textContent = menuopen ? "Menu" : "Locus Editor"
+    menu.nextElementSibling.children[1].textContent = menuopen ? "Menu" : ({editor: "Locus Editor",db:"Database Explorer", peditor: "Planet Library"})[document.body.classList[0]]
   })
   function sidebar(a){
     sideopen = a
@@ -967,6 +1113,43 @@
     menu.nextElementSibling.children[1].textContent = menuopen ? "Menu" : "Locus Editor"
   }
   link("sidebtn", () => sidebar(!sideopen))
+  link("planetbtn", function(e){
+    nodeEdited && (nodeEdited.style.outline = "none")
+    sectorEdited && (sectorEdited.style.outlineColor = "#999")
+    nodeEdited && (nodeEdited.style.setProperty('--animation', ''))
+    nodeEdited = null
+    sectorEdited = null
+    region(Math.floor(x+0.5),Math.floor(y+0.5)).then(region => {
+      let sx = ((x%1+1.5)%1)*500, sy = ((y%1+1.5)%1)*500
+      let sector = region.find(a => Math.abs(a.x - sx) < a.w/2 && Math.abs(a.y - sy) < a.h/2)
+      if(!sector)return
+      sx = (sx - sector.x) * 1000
+      sy = (sy - sector.y) * 1000
+      let planet = {textureshort: "", texture: [], superhot: false, radius: 100, mass: 10000, x: sx, y: sy,spin:0,particle:null}
+      sector.planets.push(planet)
+      if(sector.element){
+        //add planet
+        let p = document.createElement("planet")
+        let x = planet.x / 1000
+        let y = planet.y / 1000
+        p.t = planet.texture
+        planet.superhot && p.classList.add("hot")
+        p.style.transform = "translate("+x+"px, "+-y+"px) translate(-50%, 50%) scale(0.001)"
+        p.style.width = p.style.height = planet.radius * 2 + "px"
+        p.object = planet
+        p.sector = sector
+        if(planet.spin && ANIMS)p.style.setProperty('--animation', "rotate " + 0.10471975511965977 / Math.abs(planet.spin) + "s infinite linear" + (planet.spin > 0 ? " reverse" : ""))
+        p.ondragstart=_=>!1
+        sector.element.appendChild(p)
+        nodeEdited = p
+        acted()
+        nodeEdited && (nodeEdited.style.outline = "red 20px solid") && (nodeEdited.style.zIndex = current++) &&
+        !void(nodeEdited.object.spin && ANIMS ? nodeEdited.style.setProperty('--animation', 'rotate ' + 0.10471975511965977 / Math.abs(nodeEdited.object.spin) + 's infinite linear' + (nodeEdited.object.spin > 0 ? ' reverse' : '')) : nodeEdited.style.setProperty('--animation', 'none'))
+        && document.body.offsetWidth >= 800 && !sideopen && sidebar(2)
+        show()
+      }
+    })
+  })
   link("addbtn", function add(){
     nodeEdited && (nodeEdited.style.outline = "none")
     sectorEdited && (sectorEdited.style.outlineColor = "#999")
@@ -974,34 +1157,31 @@
     nodeEdited = null
     sectorEdited = null
     if(zoom > 10000){
-      //create planet
+      //create asteroid
       region(Math.floor(x+0.5),Math.floor(y+0.5)).then(region => {
         let sx = ((x%1+1.5)%1)*500, sy = ((y%1+1.5)%1)*500
         let sector = region.find(a => Math.abs(a.x - sx) < a.w/2 && Math.abs(a.y - sy) < a.h/2)
         if(!sector)return
         sx = (sx - sector.x) * 1000
         sy = (sy - sector.y) * 1000
-        let planet = {textureshort: "", texture: [], superhot: false, radius: 100, mass: 10000, x: sx, y: sy,spin:0,particle:null}
-        sector.planets.push(planet)
+        let planet = {id: 1, x: sx, y: sy}
+        sector.asteroids.push(planet)
         if(sector.element){
           //add planet
-          let p = document.createElement("planet")
+          let p = document.createElement("asteroid")
           let x = planet.x / 1000
           let y = planet.y / 1000
-          p.t = planet.texture
-          planet.superhot && p.classList.add("hot")
-          p.style.transform = "translate("+x+"px, "+-y+"px) translate(-50%, 50%) scale(0.001)"
-          p.style.width = p.style.height = planet.radius * 2 + "px"
+          srcFor('asteroids/'+asteroids[1].texture).then(src=>{p.t = [asteroids[1].texture];p.style.width = p.style.height = asteroids[1].radius * 4 + 'px';p.appendChild(new Image);p.firstElementChild.src=src;p.firstElementChild.style.setProperty("--scale",1)})
+          p.style.transform = "translate("+x+"px, "+-y+"px) translate(-50%, 50%) scale(0.0005)"
+          p.style.width = p.style.height = asteroids[1].radius * 4 + "px"
           p.object = planet
           p.sector = sector
-          if(planet.spin && ANIMS)p.style.setProperty('--animation', "rotate " + 0.10471975511965977 / Math.abs(planet.spin) + "s infinite linear" + (planet.spin > 0 ? " reverse" : ""))
+          if(asteroids[1].spin && ANIMS)p.style.setProperty('--animation', "rotate " + 0.10471975511965977 / Math.abs(asteroids[1].spin) + "s infinite linear" + (asteroids[1].spin > 0 ? " reverse" : ""))
           p.ondragstart=_=>!1
           sector.element.appendChild(p)
           nodeEdited = p
           acted()
-          nodeEdited && (nodeEdited.style.outline = "red 20px solid") && (nodeEdited.style.zIndex = current++) &&
-          !void(nodeEdited.object.spin && ANIMS ? nodeEdited.style.setProperty('--animation', 'rotate ' + 0.10471975511965977 / Math.abs(nodeEdited.object.spin) + 's infinite linear' + (nodeEdited.object.spin > 0 ? ' reverse' : '')) : nodeEdited.style.setProperty('--animation', 'none'))
-          && document.body.offsetWidth >= 800 && !sideopen && sidebar(2)
+          nodeEdited && (nodeEdited.style.outline = "red 20px solid") && (nodeEdited.style.zIndex = current++) && document.body.offsetWidth >= 800 && !sideopen && sidebar(2)
           show()
         }
       })
@@ -1164,6 +1344,198 @@
       }
     })
   })
+  let canv = id("canvas")
+  let square = canv.firstElementChild
+  let ghost = null
+  let lastGhost = null
+  let rad = id("radiusrow")
+  rad.style.visibility = "hidden"
+  let [gradients, planets, stars, destroyers, spirals, layers, cores, currents] = $("#planets submenu")
+  draglink(document.body, function(dx, dy, e){
+    if(!ghost)return
+    if(e.clientX >= document.body.offsetWidth - 300){
+      if(ghost.parentElement != document.body){
+        rad.style.visibility = "hidden"
+        if(ghost.parentElement == square){
+          let on = square.children.length&1 //if odd, remove from start, else remove from end
+          let add = on ? 1 : -1
+          for(var i of square.children){
+            if(i == ghost){on = !on;continue}
+            if(on)i.style.setProperty("--pos", +i.style.getPropertyValue("--pos") + add)
+          }
+        }
+        document.body.appendChild(ghost)
+      }
+      ghost.style.left = parseInt(ghost.style.left) + dx + "px"
+      ghost.style.top = parseInt(ghost.style.top) - dy + "px"
+      return
+    }
+    //target z
+    if(ghost.parentElement == document.body){
+      rad.style.visibility = "visible"
+      let end = square.children.length&1 //if odd, add to end, else add to start
+      ghost.style.setProperty("--pos", +((end?square.lastElementChild:square.firstElementChild)||{style:{getPropertyValue:_=>1}}).style.getPropertyValue("--pos") + (end?1:-1))
+      square.insertAdjacentElement(end?"beforeend":"afterbegin",ghost)
+    }
+    let z = Math.floor((e.clientX - canv.offsetWidth / 2 - e.clientY + 50 + canv.offsetHeight / 2) / parseInt(vars.perspective))
+    let cz = +ghost.style.getPropertyValue("--pos")
+    while(cz < z){
+      let next = ghost.nextElementSibling
+      if(!next)break
+      next.insertAdjacentElement("afterEnd", ghost)
+      //next is now previous
+      next.style.setProperty("--pos", cz)
+      cz++
+    }
+    while(cz > z){
+      let prev = ghost.previousElementSibling
+      if(!prev)break
+      prev.insertAdjacentElement("beforeBegin", ghost)
+      //previous is now next
+      prev.style.setProperty("--pos", cz)
+      cz--
+    }
+    ghost.style.setProperty("--pos", cz)
+  }, function(e){
+    if(ghost)ghost = (ghost.remove(),null)
+    if(!document.body.classList.contains("peditor"))return
+    if(e.target.nodeName != "IMG")return
+    if(e.target.parentElement == square){
+      ghost = e.target
+      ghost.style.cursor = "grabbing"
+      lastGhost = ghost
+      rad.lastElementChild.value = ghost.style.getPropertyValue("--scale") || 1
+      rad.style.visibility = "visible"
+      return
+    }
+    if(e.target.parentElement.parentElement.nodeName != "SUBMENU")return
+    let {target} = e
+    if(target.parentElement.parentElement.previousElementSibling.textContent=="Current Planets"){
+      for(let el of target.parentElement.children){
+        let g = el.cloneNode()
+        let end = square.children.length&1 //if odd, add to end, else add to start
+        if(!end)for(let i of square.children){
+          i.style.setProperty("--pos", i.style.getPropertyValue("--pos") - 1)
+        }
+        g.style.setProperty("--pos", +(square.lastElementChild||{style:{getPropertyValue:_=>-1}}).style.getPropertyValue("--pos") + 1)
+        let rect = el.getBoundingClientRect()
+        g.ondragstart=_=>!1
+        g.style.left = rect.x + "px"
+        g.style.top = rect.y + "px"
+        g.style.position = "absolute"
+        g.style.width = rect.width + "px"
+        g.style.cursor = "grab"
+        g.style.zIndex = "100"
+        square.appendChild(g)
+      }
+      return
+    }
+    let rect = target.getBoundingClientRect()
+    //create ghost
+    ghost = target.cloneNode()
+    lastGhost = ghost
+    rad.lastElementChild.value = "1"
+    rad.style.visibility = "visible"
+    ghost.ondragstart=_=>!1
+    ghost.style.left = rect.x + "px"
+    ghost.style.top = rect.y + "px"
+    ghost.style.position = "absolute"
+    ghost.style.width = rect.width + "px"
+    ghost.style.cursor = "grabbing"
+    ghost.style.zIndex = "100"
+    document.body.appendChild(ghost)
+
+  }, function(e){
+    if(ghost && ghost.parentElement == document.body)ghost.remove(lastGhost = null)
+    else if(ghost)ghost.style.cursor = "grab"
+    redo_size()
+    ghost = null
+  }, false)
+  function redo_size(){
+    let bottom = []
+    let top = Array.from(square.children, a => {
+      let i = a.style.getPropertyValue("--pos")*parseInt(vars.perspective)
+      let h = Math.max(a.offsetHeight, a.offsetWidth) / 2
+      bottom.push(i-h)
+      return i+h
+    })
+    top = Math.max(...top)
+    bottom = Math.min(...bottom)
+    if((top - bottom) == -Infinity)top = bottom = 0
+    let down = Math.min(canv.offsetWidth, canv.offsetHeight) / (top - bottom || 1000)
+    square.style.setProperty("--size", down)
+  }
+  //initialise planet editor
+  async function make(key, txt = fetch("/planets/"+key).then(a=>a.text())){
+    let [radius, mass, particle, spin, ...texture] = (await txt).split(" ")
+    let superhot = false
+    if(radius<0)radius = -radius, superhot = true
+    let textureshort = texture.join(" ")
+    texture = texture.map(a=>a.split(":"))
+    let sizes = texture.map(a=>a[1]||1)
+    texture = texture.map(a=>a[0])
+    radius-=0;mass-=0;spin-=0;particle=particle?+particle:null
+    let planet = document.createElement("planet")
+    let cur = 0;
+    for(let a in texture){
+      let i = document.createElement("img")
+      i.style.setProperty("--scale",sizes[a])
+      i.onload = function(){
+        cur = Math.max(i.width, i.height, cur)
+        planet.style.transform = "scale("+200/cur+")"
+      }
+      i.ondragstart=_=>!1
+      i.name = texture[a]
+      srcFor("planets/"+texture[a]).then(j => i.src = j)
+      planet.appendChild(i)
+    }
+    currents.appendChild(planet)
+    let btn = document.createElement("btn")
+    btn.textContent="remove"
+    link(btn, function(){
+      planet.remove()
+      btn.remove()
+      fetch("/del/"+encodeURI(key))
+    })
+    btn.classList.add("remove")
+    currents.appendChild(btn)
+  }
+  fetch("/dirlist/editor/planets").then(a=>a.text()).then(a=>{
+    let list=a.split("\n").filter(a=>!a.startsWith("."))
+    if(!list[0])return
+    for(let key of list){
+      make(key)
+    }
+  })
+  link("save", function(){
+    let i = $("#planets row input")
+    let [, {value: name}, {value: radius}, {value: mass}, {value: spin}, {value: particle}, {checked: superhot}] = i
+    if(superhot)radius=-radius
+    let textures = Array.from(square.children, i => i.name + ((i=i.style.getPropertyValue("--scale"),i&&i!=1)?":"+i:""))
+    let a = [radius, mass, particle, spin, ...textures].join(" ")
+    fetch("/save/"+name+"?data="+encodeURIComponent(a))
+    square.innerHTML=""
+    for(let a of i.slice(1))a.value="",a.onchange&&a.onchange()
+    redo_size()
+    make(name, a)
+  })
+  fetch("/dirlist/game/Assets.xcassets/planets").then(a=>a.text()).then(a=>{a=a.split("\n").slice(1).map(a=>a.replace(".imageset",""));
+    a.map(name=>srcFor("planets/" + name).then(src => {
+      let planet = document.createElement("planet")
+      let cur = 0;
+      let i = document.createElement("img")
+      i.onload = function(){
+        planet.style.transform = "scale("+200/Math.max(i.width, i.height)+")"
+      }
+      i.name = name
+      i.src = src
+      planet.appendChild(i)
+      let a = name.match(/^[a-zA-Z]+/)[0]
+      ;(({gradient: gradients, object: planets, star: stars, destroy: destroyers, spiral: spirals, layer: layers, core: cores})[a]||{appendChild(){}}).appendChild(planet)
+      i.ondragstart=_=>!1
+    }))
+  })
+
   let keys = {
     q: function zoomOut(ctrl){
       if(zoom < 100)return
@@ -1173,6 +1545,8 @@
         (nodeEdited.style.setProperty('--animation', ''))
         && sideopen == 2 && sidebar(false)
         nodeEdited = null
+        id("addbtn").src = "add.png"
+        id("planetbtn").style.display = "none"
         show()
       }
       redraw()
@@ -1183,6 +1557,8 @@
       if(zoom > 10000){
         sectorEdited && (sectorEdited.style.outlineColor = "#999") && sideopen == 2 && sidebar(false)
         sectorEdited = null
+        id("addbtn").src = "addasteroid.png"
+        id("planetbtn").style.display = "block"
         show()
       }
       redraw()
@@ -1202,6 +1578,19 @@
     s: ctrl => redraw(y -= (ctrl ? 30 : 10) / zoom),
     d: ctrl => redraw(x += (ctrl ? 30 : 10) / zoom),
     Backspace: function deleteObject(ctrl){
+      if(lastGhost && lastGhost.parentElement == square){
+        rad.style.visibility = "hidden"
+        let on = square.children.length&1 //if odd, remove from start, else remove from end
+        let add = on ? 1 : -1
+        for(var i of square.children){
+          if(i == lastGhost){on = !on;continue}
+          if(on)i.style.setProperty("--pos", +i.style.getPropertyValue("--pos") + add)
+        }
+        lastGhost.remove()
+        lastGhost = null
+        redo_size()
+        return
+      }
       if(nodeEdited){
         if('id' in nodeEdited.object){
           nodeEdited.sector.asteroids.splice(nodeEdited.sector.asteroids.indexOf(nodeEdited.object),1)
@@ -1257,29 +1646,16 @@
     }
   }
   function showeditor(type){
-    document.body.classList.remove("editor", "home", "db")
+    document.body.classList.remove("editor", "home", "db", "peditor")
     document.body.classList.add(type)
     if(type == "home" && !menuopen && document.body.offsetWidth >= 800){
       menuopen = true
-      sideopen = false
       menu.style.transform = "translateX(100%)"
-      side.style.transform = ""
-      id("sidebtn").style.display = "none"
-      id("del").style.display = "none"
-      id("addbtn").style.display = "none"
       menu.nextElementSibling.children[1].textContent = "Home"
     }else if(type == "home"){
-      id("sidebtn").style.display = "none"
-      id("del").style.display = "none"
-      id("addbtn").style.display = "none"
-      sideopen = false
-      side.style.transform = ""
       menu.nextElementSibling.children[1].textContent = "Home"
     }else{
       menuopen && (menu.nextElementSibling.children[1].textContent = "Menu")
-      id("sidebtn").style.display = "block"
-      id("del").style.display = "block"
-      id("addbtn").style.display = "block"
     }
     if(type == "editor"){
       redraw()
@@ -1322,7 +1698,21 @@
   }
   showeditor("home")
   link("toeditor", () => showeditor("editor"))
+  link("topeditor", () => showeditor("peditor"))
   link("tohome", () => showeditor("home"))
+  let layerbtn = id("layerbtn")
+  link(layerbtn, function(){
+    if(layerbtn.classList.contains("off")){
+      layerbtn.classList.remove("off")
+      vars.perspective = "100px"
+    }else{
+      layerbtn.classList.add("off")
+      vars.perspective = "0px"
+    }
+  })
+  for(let e of $(".submenucontrol")){let el = e;link(e, function(){
+    el.classList.contains("open") ? el.classList.remove("open") : el.classList.add("open")
+  })}
   onkeydown=e=>document.activeElement && document.activeElement != document.body ? true : keys[e.key] && keys[e.key](e.ctrlKey||e.metaKey,e.shiftKey,void e.preventDefault())
   document.addEventListener('contextmenu', event => event.preventDefault());
   document.querySelectorAll("img").forEach(a=>a.ondragstart=_=>!1)

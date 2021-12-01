@@ -740,25 +740,8 @@ class Play: PlayCore{
             }
         ]), withKey: "constantLazer")
     }
-    
     func increseEnergy(){
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
     }
-    
-    
-    
-    
     func hideControls(){
         navArrow.removeFromParent()
         thrustButton.removeFromParent()
@@ -814,13 +797,6 @@ class Play: PlayCore{
         default:
             break
         }
-        
-        
-        
-        
-        
-        
-        
         if removeTrackerIcon == node{
             removeTrackers()
         }
