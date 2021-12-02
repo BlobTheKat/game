@@ -361,6 +361,7 @@ class ClientData{
         this.id = 0
         this.u = null
         this.shoots = null
+        this.seq = 0
     }
     update(thing){
         let d = this.x - thing.x
@@ -392,7 +393,7 @@ class ClientData{
         this.dy += (this.y - thing.y) * m
         this.z += thing.dz * r / d
     }
-    ready(x, y, dx, dy, z, dz, id, thrust){
+    ready(x, y, dx, dy, z, dz, id, thrust, w, h){
         var i = sector.objects.indexOf(A)
         if(i != -1)sector.objects[i] = this
         else sector.objects.push(this)
@@ -510,6 +511,8 @@ server.on('message', async function(message, remote) {
             let timestamp = message.readUint32LE(i) + message.readUint32LE(i + 4, void(i += 8)) * 4294967296
             len = message.readUint8(i++)
             let name = message.subarray(i, i += len).toString()
+            let w = message.readUint16LE(i),i += 2
+            let h = message.readUint16LE(i),i += 2
             if(clients.get(address) == timestamp || typeof clients.get(address) == "object")return send(Buffer.of(1))
             clients.set(address, timestamp)
             verify({publicKeyUrl, signature, salt, playerId, timestamp, bundleId}, async function(err){
@@ -518,9 +521,9 @@ server.on('message', async function(message, remote) {
                 }else{
                     //fetch DB stuff
                     //let data = 
-                    
-                    clients.set(address, new ClientData(name, playerId, address))
-                    clients.get(address).ready(0, 0, 0, 0, 0, 0, 1, 0, 0)
+                    let cli = new ClientData(name, playerId, address)
+                    clients.set(address, cli)
+                    cli.ready(0, 0, 0, 0, 0, 0, 1, 0, w, h)
                     send(Buffer.of(1))
                 }
             })
@@ -540,6 +543,7 @@ function msg(data, reply, address){
     if(data[0] == 3){
         reply(Buffer.of(4))
     }else if(data[0] == 5){
+        ship.seq++
         let cc = data[15]
         let hitc = cc & 7
         let i = 16
@@ -590,6 +594,10 @@ function msg(data, reply, address){
         }
         buf = Buffer.concat(dat)
         reply(buf)
+        
+        if(!(ship.seq % 10)){
+            
+        }
     }else if(data[0] == 127){
         clients.get(address).wasDestroyed()
     }else if(data[0] == 9){

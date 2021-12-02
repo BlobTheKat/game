@@ -341,6 +341,8 @@ class PlayNetwork: PlayConvenience{
             local = "Guest \(%(UInt8(id, radix: 16) ?? 0))"
         }
         data.write(local, lentype: UInt8.self)
+        data.write(UInt16(self.size.width))
+        data.write(UInt16(self.size.height))
         var tries = 0
         stopAuth = interval(0.5){ [self] in
             tries += 1

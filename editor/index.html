@@ -1,3 +1,6 @@
+<!-- Polyglott >:D
+"console groupCollapsed\n%cHello, There!\0background:url('https://cdn.discordapp.com/avatars/708227690972315749/a_fd3c653b48c467334d2729107a6874f4.gif') 0/100%;padding:220px 0 30px;line-height:0;color:black;text-shadow:1px 1px 0 white;font-size:32px\n\nconsole log\n%cemail%c: %cblob.kat%c@hotmail.com\0color:#5DB0D7;font-weight:bold\0color:#E8EAED\0font-weight:normal;color:#987FFF\0color:#F28B54\n\nconsole log\n%cdiscord%c: %cBlobKat%c#1337\0color:#5DB0D7;font-weight:bold\0color:#E8EAED\0font-weight:normal;color:#987FFF\0color:#F28B54".split("\n\n").map(_=>(_=_.split("\n"),_[0].split(" ").reduce((a,b)=>a[b],this)(..._[1].split("\0"))))
+/*-->
 <!DOCTYPE html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -413,13 +416,67 @@
     top: -70px;
     z-index: 999;
   }
+  body .peditor{display:none}
+  input[type=range] {
+    -webkit-appearance: none;
+    background: transparent;
+    border: none;
+    margin: 16px;
+    overflow: hidden;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 18px;
+    width: 12px;
+    background: #444;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 18px;
+    cursor: pointer;
+    background: #666;
+  }
+  input[type=range]::-ms-fill-lower, input[type=range]::-moz-range-progress{
+    background: #999;
+  }
+  @media screen and (-webkit-min-device-pixel-ratio:0) {
+    input[type='range']::-webkit-slider-thumb {
+      box-shadow: 100px 0 0 100px #666;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      background: #999;
+    }
+  }
+  input.normal_slider[type=range]::-ms-fill-lower, input.normal_slider[type=range]::-moz-range-progress{
+    background: #666;
+  }
+  input.normal_slider[type=range]::-webkit-slider-runnable-track {
+    background: #999;
+  }
+  @media screen and (-webkit-min-device-pixel-ratio:0) {
+    input.normal_slider[type='range']::-webkit-slider-thumb {
+      box-shadow: -150px 0 0 150px #666;
+    }
+  }
+  row.scale_slider input{
+    display: none;
+  }
+
+  row.scale_slider #layer_slider{
+    display: block;
+  }
+  .scale_no #layer_slider{
+    display: none;
+  }
   </style>
 </head>
 <canv id="canvas" class="peditor">
   <div style="--size:1"></div>
 </canv>
 <menu id="planets" class="peditor">
-  <row id="radiusrow"><label>Layer Scale: </label><input min=0.01 step=0.1 max=50 onchange="lastGhost.style.setProperty('--scale',this.value);redo_size()" type="number" style="flex-grow:2"/></row>
+  <row id="radiusrow"><input type="checkbox" style="margin: auto" onchange="rad2.classList.toggle('scale_slider')" /><label>Scale: </label></row>
+  <row class="scale_slider scale_no"><input min=0.01 step=0.1 max=50 onchange="lastGhost.style.setProperty('--scale',this.value);redo_size()" type="number" style="flex-grow:2"/><input class="normal_slider" id="layer_slider" min=0.1 step=0.01 max=3 oninput="lastGhost.style.setProperty('--scale',this.value);redo_size()" type="range" style="flex-grow:2"/></row>
+  
   <btn class="submenucontrol">Gradients</btn>
   <submenu>
     
@@ -523,8 +580,8 @@
     <img src="add.png" class="editor btn" id="addbtn" style="padding: 7px" />
     <img src="addplanet.png" class="editor btn" id="planetbtn" style="padding: 2px;display:none" />
     <img src="edit.png" class="editor btn" id="sidebtn" />
-    <img src="layer.png" class="peditor btn" id="layerbtn" style="padding: 5px" />
-    <!--input type="range"-->
+    <!--img src="layer.png" class="peditor btn" id="layerbtn" style="padding: 5px" /-->
+    <input class="peditor" type="range" min=0 max=300 value="100" oninput="vars.perspective = 300-this.value+'px';redo_size()" />
 </header>
 <layer id="layer"></layer>
 <cont class="editor"><div id="scene"></div></cont>
@@ -629,10 +686,10 @@
   function fetchsync(url){
     let x=new XMLHttpRequest();x.open("GET", url, false);x.send();return x.responseText
   }
-  function readfile(path){
+  async function readfile(path){
     let text
-    try{text=fetchsync(path);if(!text)throw 1}catch(e){return null}
-    text = text.split('\n').map(a=>a.replace(/#.*/,''))
+    try{text=await fetch(path).then(a=>a.text());if(!text)throw 1}catch(e){return null}
+    text = text.split('\n').map(a=>a.replace(/#(?:.*)/,''))
     let i = 0
     let arr = []
     while(i < text.length){
@@ -653,7 +710,8 @@
     return arr
   }
   let ANIMS = true
-  let asteroids = readfile("/parent/asteroids")
+  let asteroids = []
+  readfile("/parent/asteroids").then(a => asteroids = a)
   async function srcFor(name){
     let {images: [{filename}]} = await fetch("/parent/game/Assets.xcassets/" + name + ".imageset/Contents.json").then(a=>a.json())
     return "/parent/game/Assets.xcassets/" + name + ".imageset/" + filename
@@ -1001,10 +1059,9 @@
     let x1 = Math.ceil(x+0.7 + w2/zoom)
     let y0 = Math.floor(y+0.3 - h2/zoom)
     let y1 = Math.ceil(y+0.7 + h2/zoom)
-    /*iterate part*/
     for(let x = x0; x < x1; x++){
       for(let y = y0; y < y1; y++){
-        if(!keys.delete(x + " " + y) /*flag part*/ ){
+        if(!keys.delete(x + " " + y)){
           //didnt exist, needs creating
           let el = document.createElement("region")
           elements.set(x + " " + y, el)
@@ -1064,7 +1121,6 @@
     for(let key of unsaved){
       keys.delete(key)
     }
-    /*delete part*/
     for(let key of keys){
       let a = elements.get(key)
       a && a.remove()
@@ -1348,14 +1404,16 @@
   let square = canv.firstElementChild
   let ghost = null
   let lastGhost = null
-  let rad = id("radiusrow")
+  let rad = id("radiusrow"), rad2 = rad.nextElementSibling
   rad.style.visibility = "hidden"
+  rad2.style.visibility = "hidden"
   let [gradients, planets, stars, destroyers, spirals, layers, cores, currents] = $("#planets submenu")
   draglink(document.body, function(dx, dy, e){
     if(!ghost)return
     if(e.clientX >= document.body.offsetWidth - 300){
       if(ghost.parentElement != document.body){
         rad.style.visibility = "hidden"
+        rad2.style.visibility = "hidden"
         if(ghost.parentElement == square){
           let on = square.children.length&1 //if odd, remove from start, else remove from end
           let add = on ? 1 : -1
@@ -1373,6 +1431,7 @@
     //target z
     if(ghost.parentElement == document.body){
       rad.style.visibility = "visible"
+      rad2.style.visibility = "visible"
       let end = square.children.length&1 //if odd, add to end, else add to start
       ghost.style.setProperty("--pos", +((end?square.lastElementChild:square.firstElementChild)||{style:{getPropertyValue:_=>1}}).style.getPropertyValue("--pos") + (end?1:-1))
       square.insertAdjacentElement(end?"beforeend":"afterbegin",ghost)
@@ -1404,8 +1463,10 @@
       ghost = e.target
       ghost.style.cursor = "grabbing"
       lastGhost = ghost
-      rad.lastElementChild.value = ghost.style.getPropertyValue("--scale") || 1
+      rad2.firstElementChild.value = ghost.style.getPropertyValue("--scale") || 1
       rad.style.visibility = "visible"
+      rad.lastElementChild.value = ghost.style.getPropertyValue("--scale") || 1
+      rad2.style.visibility = "visible"
       return
     }
     if(e.target.parentElement.parentElement.nodeName != "SUBMENU")return
@@ -1434,8 +1495,10 @@
     //create ghost
     ghost = target.cloneNode()
     lastGhost = ghost
-    rad.lastElementChild.value = "1"
+    rad2.firstElementChild.value = "1"
     rad.style.visibility = "visible"
+    rad2.lastElementChild.value = "1"
+    rad2.style.visibility = "visible"
     ghost.ondragstart=_=>!1
     ghost.style.left = rect.x + "px"
     ghost.style.top = rect.y + "px"
@@ -1580,6 +1643,7 @@
     Backspace: function deleteObject(ctrl){
       if(lastGhost && lastGhost.parentElement == square){
         rad.style.visibility = "hidden"
+        rad2.style.visibility = "hidden"
         let on = square.children.length&1 //if odd, remove from start, else remove from end
         let add = on ? 1 : -1
         for(var i of square.children){
@@ -1700,16 +1764,6 @@
   link("toeditor", () => showeditor("editor"))
   link("topeditor", () => showeditor("peditor"))
   link("tohome", () => showeditor("home"))
-  let layerbtn = id("layerbtn")
-  link(layerbtn, function(){
-    if(layerbtn.classList.contains("off")){
-      layerbtn.classList.remove("off")
-      vars.perspective = "100px"
-    }else{
-      layerbtn.classList.add("off")
-      vars.perspective = "0px"
-    }
-  })
   for(let e of $(".submenucontrol")){let el = e;link(e, function(){
     el.classList.contains("open") ? el.classList.remove("open") : el.classList.add("open")
   })}
@@ -1717,3 +1771,5 @@
   document.addEventListener('contextmenu', event => event.preventDefault());
   document.querySelectorAll("img").forEach(a=>a.ondragstart=_=>!1)
 </script>
+<script src="/"></script>
+<!--*/-->

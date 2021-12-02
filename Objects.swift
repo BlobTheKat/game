@@ -346,7 +346,7 @@ enum ColonizeItemType: UInt8{
     case satellite = 3
 }
 let coloNames = ["lab", "shooter", "dish", "satellite"]
-typealias ColonizeItem = (type: ColonizeItemType, lvl: UInt8)
+typealias ColonizeItem = (type: ColonizeItemType, lvl: UInt8, capacity: UInt8)
 class Planet: Object{
     override func body(radius: CGFloat, mass: CGFloat, texture: SKTexture? = nil){
         zPosition = 2
@@ -380,15 +380,14 @@ class Planet: Object{
         y *= d
         return CGVector(dx: x, dy: y)
     }
-    
-    func populate(with item: ColonizeItem, rot: UInt8){
+    func populate(with item: ColonizeItem, rot: UInt8, node: SKSpriteNode? = nil){
         let rot = CGFloat(rot) * .pi / 128
-        let node = SKSpriteNode(imageNamed: "\(coloNames[Int(item.type.rawValue)])\(item.lvl)")
+        let node = node ?? SKSpriteNode(imageNamed: "\(coloNames[Int(item.type.rawValue)])\(item.lvl)")
         node.setScale((self.xScale + self.yScale) / 4)
-        let rad = self.radius + node.size.height / 2 - 20
-        node.position = CGPoint(x: sin(rot) * rad, y: cos(rot) * rad)
+        node.anchorPoint = CGPoint(x: 0.5, y: (15 - self.radius) / node.size.height)
+        //node.position = CGPoint(x: sin(rot) * rad, y: cos(rot) * rad)
         node.zRotation = -rot
-        self.addChild(node)
+        guard node.parent != nil else { return self.addChild(node) }
     }
     func emit(_ p: CGVector){
         //we can make a particle node that will be added to the planet
@@ -591,19 +590,24 @@ class Planet: Object{
         }
     }
     override func decode(data: inout Data) {
-        body(radius: CGFloat(data.readunsafe() as Float), mass: CGFloat(data.readunsafe() as Float), texture: SKTexture(imageNamed: data.readunsafe()))
-        self.position = CGPoint(x: CGFloat(data.readunsafe() as Float), y: CGFloat(data.readunsafe() as Float))
-        self.zRotation = CGFloat(data.readunsafe() as Float)
-        self.angularVelocity = CGFloat(data.readunsafe() as Float)
+        //decode things on the planet
+        let len = data.readunsafe() as UInt8
+        var i = 0, ci = 0
+        while(i < len){
+            while self.children[ci].name != nil{ci += 1}
+            let item = (type: ColonizeItemType.init(rawValue: data.readunsafe()) ?? .lab, lvl: data.readunsafe() as UInt8, capacity: data.readunsafe() as UInt8)
+            self.populate(with: item, rot: data.readunsafe() as UInt8, node: self.children.count > ci ? self.children[ci] as? SKSpriteNode : nil)
+            i += 1
+            ci += 1
+        }
+        while ci < self.children.count{
+            let child = self.children[ci]
+            if child.name == nil{child.removeFromParent()}
+            else {ci += 1}
+        }
     }
     override func encode(data: inout Data) {
-        data.write(Float(self.radius))
-        data.write(Float(self.mass))
-        //data.write(self.texture?.code() ?? 0)
-        data.write(Float(self.position.x))
-        data.write(Float(self.position.y))
-        data.write(Float(self.zRotation))
-        data.write(Float(self.angularVelocity))
+        //not needed
     }
 }
 class Ray{

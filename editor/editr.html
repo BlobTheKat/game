@@ -9,7 +9,7 @@
 			left: 0;
 			width: 100%;
 			height: 50px;
-			background-color: var(--light2);
+			background-color: #ccc;
 			z-index: 9;
 			box-shadow: 0 -10px 20px #000;
 		}
@@ -19,7 +19,7 @@
 			top: 50px;
 			bottom: 0;
 			width: 200px;
-			background-color: var(--light3);
+			background-color: #ddd;
 			z-index: 1;
 			box-shadow: -10px 0 20px #000;
 		}
@@ -50,10 +50,16 @@
 			color: transparent;
 			caret-color: #333;
 			font-size: 12px;
+			line-height: 16px;
+			-moz-tab-size: 2;
+      -o-tab-size: 2;
+      tab-size: 2;
 		}
+		code{background-color: #eee}
 		visual{
 			z-index:7;
 			color: #111;
+			white-space: pre-wrap;
 		}
 		@media (max-width: 400px){
 			files{
@@ -76,12 +82,36 @@
 			overflow: hidden;
 		}
 		*{margin:0;padding:0;box-sizing:border-box}
+		.str{ color: #05D }
+		.num{ color: #4C4 }
+		.key{
+			color: #F65;
+			font-weight: bold
+		}
+		@media (prefers-color-scheme: dark) { 
+      .str { color: #03B }
+			.num { color: #2A2 }
+			.key { color: #D43 }
+			header{
+				background-color: #333;
+			}
+			files{
+				background-color: #222;
+			}
+			visual{
+				color: #eee;
+				background: #111;
+			}
+			textarea{
+				caret-color: #ccc;
+			}
+    }
 	</style>
 </head>
 <body>
 	<header></header>
 	<files></files>
-	<code><textarea oninput="console.log(start,this.selectionStart);process(this.value)"></textarea><visual></visual></code>
+	<code><textarea spellcheck="false" oninput="highlight()" onkeydown="handle(event)"></textarea><visual></visual></code>
 	<script>
 	let textarea = document.querySelector("textarea")
 	textarea.onpaste=textarea.onkeypress
@@ -90,9 +120,56 @@
 		start=textarea.selectionStart
 		end=textarea.selectionEnd
 	}
-	function process(str){
-		str = str.replace(/'([^'\\]|\\.)*'|"([^"\\]|\\.)*"|`([^`\\]|\\.)*`/g, "<$`>")
-		return str
+	let visual = textarea.nextElementSibling
+	const sanidiv = document.createElement('div');
+	const sanitxt = document.createTextNode('');
+	sanidiv.appendChild(sanitxt);
+	function esc(text){
+		sanitxt.nodeValue = text;
+		return sanidiv.innerHTML;
+	}
+
+	function handle(e){
+		if(e.keyCode == 9){
+			e.preventDefault()
+			document.execCommand("insertText", false, "\t")
+		}
+	}
+
+	let reg = /('(?:[^'\\]|\\.)*'?|"(?:[^"\\]|\\.)*"?|`(?:[^`\\]|\\.)*`?)|([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d*)?|[Nn]a[Nn](?!\w)|[Ii]nf(?:inity)?(?!\w))|(class|if|else|while)|[^]/y
+	let names = [NaN, "str", "num", "key"]
+	let and = (a, b) => a && b
+	function reselect(){textarea.selectionStart = start;textarea.selectionEnd = end}
+	function highlight(){
+		let str = textarea.value
+		let nodes = document.createDocumentFragment()
+		reg.lastIndex = 0
+		while(reg.lastIndex < str.length){
+			let match = str.match(reg)
+			let name = names[match.findIndex(and)]
+			if(name){
+				let node = document.createElement("span")
+				node.textContent = match[0]
+				node.classList.add(name)
+				nodes.appendChild(node)
+			}else{
+				let n = nodes.lastChild
+				if(n instanceof Text)n.appendData(match[0])
+				else nodes.appendChild(document.createTextNode(match[0]))
+			}
+		}
+		visual.innerHTML = ""
+		visual.appendChild(nodes)
+	}
+	function append(textchunk){
+		textarea.value += textchunk
+		reselect()
+	}
+	function prepend(textchunk){
+		start += textchunk.length
+		end += textchunk.length
+		textarea.value = textchunk + textarea.value
+		reselect()
 	}
 	function id(id){
     return document.getElementById(id)
@@ -107,11 +184,6 @@
     }
   })
   const vars = varfor(document.body)
-	Object.assign(vars, {
-		light: "#e8e8e8",
-		light2: "#bbb",
-		w: "0",
-		light3: "#ddd"
-	})
+
 	</script>
 </body>

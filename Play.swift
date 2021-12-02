@@ -1160,8 +1160,8 @@ class Play: PlayCore{
             dy = mapPress1!.y - mapPress2!.y
             let d2 = dx * dx + dy * dy
             var z = sqrt(d2 / d1)
-            if(FakemapBG.xScale * z > 1){z = 1 / FakemapBG.xScale}
-            if(FakemapBG.xScale * z < 0.02){z = 0.02 / FakemapBG.xScale}
+            if FakemapBG.xScale * z > 1{z = 1 / FakemapBG.xScale}
+            if FakemapBG.xScale * z < 0.02{z = 0.02 / FakemapBG.xScale}
             FakemapBG.xScale *= z
             FakemapBG.yScale *= z
             FakemapBG.position.x *= z
@@ -1187,7 +1187,6 @@ class Play: PlayCore{
                 self.run(lightSpeedOut)
                 playedLightSpeedOut = true
                 //anim
-                //*
                 var mov = 0.1
                 var up = 0.07
                 let _ = timeout(2){
@@ -1207,7 +1206,6 @@ class Play: PlayCore{
                     self.cam.run(SKAction.moveBy(x: 0, y: mov, duration: 0.06).ease(.easeOut))
                 }
                 stop = {stop1();stop2()}
-                let _ = "*///" //this line is useless but its for the comment switch so dont delete it
                 let _ = timeout(2) {
                     self.startGame()
                     self.removeAction(forKey: "inLightSpeed")
