@@ -1465,7 +1465,7 @@
       lastGhost = ghost
       rad2.firstElementChild.value = ghost.style.getPropertyValue("--scale") || 1
       rad.style.visibility = "visible"
-      rad.lastElementChild.value = ghost.style.getPropertyValue("--scale") || 1
+      rad2.lastElementChild.value = ghost.style.getPropertyValue("--scale") || 1
       rad2.style.visibility = "visible"
       return
     }
@@ -1544,7 +1544,7 @@
       let i = document.createElement("img")
       i.style.setProperty("--scale",sizes[a])
       i.onload = function(){
-        cur = Math.max(i.width, i.height, cur)
+        cur = Math.max(i.width * sizes[a], i.height * sizes[a], cur)
         planet.style.transform = "scale("+200/cur+")"
       }
       i.ondragstart=_=>!1
@@ -1576,11 +1576,12 @@
     if(superhot)radius=-radius
     let textures = Array.from(square.children, i => i.name + ((i=i.style.getPropertyValue("--scale"),i&&i!=1)?":"+i:""))
     let a = [radius, mass, particle, spin, ...textures].join(" ")
-    fetch("/save/"+name+"?data="+encodeURIComponent(a))
-    square.innerHTML=""
-    for(let a of i.slice(1))a.value="",a.onchange&&a.onchange()
-    redo_size()
-    make(name, a)
+    fetch("/save/"+name+"?data="+encodeURIComponent(a)).then(a=>{
+      square.innerHTML=""
+      for(let a of i.slice(1))a.value="",a.onchange&&a.onchange()
+      redo_size()
+      make(name, a)
+    }).catch(a=>alert("Failed Saving :("))
   })
   fetch("/dirlist/game/Assets.xcassets/planets").then(a=>a.text()).then(a=>{a=a.split("\n").slice(1).map(a=>a.replace(".imageset",""));
     a.map(name=>srcFor("planets/" + name).then(src => {
