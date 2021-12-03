@@ -1529,7 +1529,7 @@
     square.style.setProperty("--size", down)
   }
   //initialise planet editor
-  async function make(key, txt = fetch("/planets/"+key).then(a=>a.text())){
+  async function make(key, txt = fetch("super/planets/"+key).then(a=>a.text())){
     let [radius, mass, particle, spin, ...texture] = (await txt).split(" ")
     let superhot = false
     if(radius<0)radius = -radius, superhot = true
@@ -1563,7 +1563,7 @@
     btn.classList.add("remove")
     currents.appendChild(btn)
   }
-  fetch("/dirlist/editor/planets").then(a=>a.text()).then(a=>{
+  fetch("/superdirlist/planets").then(a=>a.text()).then(a=>{
     let list=a.split("\n").filter(a=>!a.startsWith("."))
     if(!list[0])return
     for(let key of list){
@@ -1572,11 +1572,11 @@
   })
   link("save", function(){
     let i = $("#planets row input")
-    let [, {value: name}, {value: radius}, {value: mass}, {value: spin}, {value: particle}, {checked: superhot}] = i
+    let [,,, {value: name}, {value: radius}, {value: mass}, {value: spin}, {value: particle}, {checked: superhot}] = i
     if(superhot)radius=-radius
     let textures = Array.from(square.children, i => i.name + ((i=i.style.getPropertyValue("--scale"),i&&i!=1)?":"+i:""))
     let a = [radius, mass, particle, spin, ...textures].join(" ")
-    fetch("/save/"+name+"?data="+encodeURIComponent(a)).then(a=>{
+    fetch("/save/"+name+"?data="+encodeURIComponent(a)).then(_=>{
       square.innerHTML=""
       for(let a of i.slice(1))a.value="",a.onchange&&a.onchange()
       redo_size()
