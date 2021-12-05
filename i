@@ -1,6 +1,8 @@
 typealias arr[a] = int a[\0]
 typealias str = arr[char]
 typealias obj = float float byte byte byte byte short
+typealias arrend[a] = a[MAX]
+typealias planet = byte ()[\0]
 
 Client: AUTH [name]
         (0 str)
@@ -16,16 +18,20 @@ Server: LS_HBEAT
 Client: PDATA [ship] ([hitlen] [shot] [namelen]) [hits]? [shot]? [names]?
         (5 obj 3bit bit 4bit int[\2] int[\3] int[\4])
 Server: PDATA [ships]
-        (6 arr[obj])
+        (6 arrend[obj])
 
 Server: NAMES [strs]
-        (8 arr[str])
+        (8 arrend[str])
+
+Server: PLANETS [planetdata]
+        (12 arrend[planet])
 [end]
 
 
 Client: CONONISE ...
         (10 )
-
+Server: OKTHEN ...
+        (11 )
 
 End:
 Client: DISC

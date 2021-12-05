@@ -5,10 +5,14 @@ const VERSION = 1;
 var dgram = require('dgram');
 var server = dgram.createSocket('udp4');
 var fs = require('fs');
-var fetch, verify
+var fetch, verify, Buf, BufWriter, TYPES
 exit = process.exit
 try{fetch = require('node-fetch')}catch(e){
     console.log("\x1b[31m[Error]\x1b[37m To run this server, you need to install node-fetch 2.6.2. Type this in the bash shell: \x1b[m\x1b[34mnpm i node-fetch@2.6.2\x1b[m")
+    process.exit(1)
+}
+try{({Buf, BufWriter, TYPES} = require('buf.js'))}catch(e){
+    console.log("\x1b[31m[Error]\x1b[37m To run this server, you need to install buf.js. Type this in the bash shell: \x1b[m\x1b[34mnpm i buf.js\x1b[m")
     process.exit(1)
 }
 try{verify = require("gamecenter-identity-verifier").verify}catch(e){
@@ -117,6 +121,12 @@ function _(_){
 try{RESPONSE = null;require('basic-repl')('$',v=>([RESPONSE,RESPONSE=null][0]||_)(v))}catch(e){
     console.log("\x1b[33m[Warning]\x1b[37m If you would like to manage this server from the console, you need to install basic-repl. Type this in the bash shell: \x1b[m\x1b[34mnpm i basic-repl\x1b[m")
 }
+let unsaveds = {}
+setInterval(function(){
+    for(a in unsaveds){
+        fs.writeFileSync(a, JSON.stringify(unsaveds[a]))
+    }
+}, 9e5)
 var ships = readfile('ships')
 var asteroids = readfile('asteroids')
 var sector = {objects:[],planets:[],time:0,w:0,h:0}
@@ -212,11 +222,12 @@ if(!meta || xy){
                     if(b)spin = dat.readFloatLE(i),i += 4
                     i += dat[i] + 1
                     let richness = 0.1
+                    let resource = "none"
                     if(id & 16)richness = dat[i++] / 100
-                    if(id & 32)i += dat[i] + 1
+                    if(id & 32)resource = dat.slice(i + 1, i += dat[i] + 1).toString()
                     id >>= 8
                     id += id2 << 8
-                    sector.planets.push(new Planet(o={radius:id,x,y,mass,spin,superhot:c,richness}))
+                    sector.planets.push(new Planet(o={radius:id,x,y,mass,spin,superhot:c,richness,resource}))
                 }
                 arr.push(o)
             }
@@ -242,17 +253,17 @@ if(!meta || xy){
     if(xy)setImmediate(a=>(RESPONSE(xy[0]),RESPONSE(xy[1]),RESPONSE=null))
 }else{
     setImmediate(function(){
-        let data = readfile(meta.path.replace(/^\//,""))
-        data.forEach(function(item){
-            if(item.id)sector.objects.push(new Asteroid(item))
-            else sector.planets.push(new Planet(item))
-        })
         sector.w = meta.w
         sector.h = meta.h
         sector.x = meta.x + meta.w / 2
         sector.y = meta.y + meta.h / 2
         sector.w2 = sector.w / 2
         sector.h2 = sector.h / 2
+        let data = readfile(meta.path.replace(/^\//,""))
+        data.forEach(function(item){
+            if(item.id)sector.objects.push(new Asteroid(item))
+            else sector.planets.push(new Planet(item))
+        })
         setInterval(tick.bind(undefined, sector), 1000 / FPS)
         server.bind(meta.port || meta.ip.split(":")[1] || PORT)
     })
@@ -283,8 +294,25 @@ class Planet{
         this.z = 0
         this.dz = dict.spin
         this.superhot = dict.superhot
+        this.filename = "pdata/" + (sector.x + this.x) + "_" + (sector.y + this.y) + ".json"
+        let dat
+        try{if(!dict.resource)throw null;dat = JSON.parse(fs.readFileSync(this.filename))}catch(e){dat = null}
+        this.resource = dict.resource
+        this.data = dat
+    }
+    toBuf(buf, id){
+        if(!this.data || !this.data.items)return
+        buf.short(id)
+        buf.byte(Math.min(this.data.items.length, 127) + (this.resource && !this.data.owner && !this.superhot ? 128 : 0))
+        for(var itm of this.data.items){
+            buf.byte(itm.id)
+            buf.byte(itm.lvl)
+            buf.byte(itm.cap)
+            buf.byte(itm.rot)
+        }
     }
 }
+const PI2 = Math.PI * 2
 class Asteroid{
     constructor(dict){
         this.x = +dict.x
@@ -298,15 +326,14 @@ class Asteroid{
         this.mass = asteroids[this.id].mass
         this.respawnstate = [this.x, this.y, this.dx, this.dy]
     }
-    toBuf(buf = Buffer.alloc(14), offset = 0){
-        buf.writeFloatLE(this.x,offset)
-        buf.writeFloatLE(this.y,offset+4)
-        buf.writeInt8(Math.max(Math.min(127, Math.round(this.dx * FPS / 16)), -128),offset+8)
-        buf.writeInt8(Math.max(Math.min(127, Math.round(this.dy * FPS / 16)), -128),offset+9)
-        let PI2 = Math.PI * 2
-        buf[offset+10] = Math.round(((this.z % PI2) + PI2) % PI2 * 40)
-        buf.writeUInt8((this.dz * 768)&255, offset+11)
-        buf.writeUint16LE(6 + (this.id << 5), offset + 12)
+    toBuf(buf){
+        buf.float(this.x)
+        buf.float(this.y)
+        buf.byte(Math.max(Math.min(127, Math.round(this.dx * FPS / 16)), -128))
+        buf.byte(Math.max(Math.min(127, Math.round(this.dy * FPS / 16)), -128))
+        buf.byte(Math.round(((this.z % PI2) + PI2) % PI2 * 40))
+        buf.byte((this.dz * 768)&255)
+        buf.short(6 + (this.id << 5))
         return buf
     }
     update(thing){
@@ -344,7 +371,9 @@ class Asteroid{
         this.z += thing.dz * r / d
     }
 }
-let A = {toBuf(){return Buffer.alloc(14)},updatep(){},update(){}}
+let A = {toBuf(a){a.int(0);a.int(0);a.int(0);a.short(0)},updatep(){},update(){}}
+
+
 class ClientData{
     constructor(name = "", id = "", remote = ""){
         this.name = name
@@ -362,7 +391,10 @@ class ClientData{
         this.u = null
         this.shoots = null
         this.seq = 0
+        this.data = {}
+				this.crits = []
     }
+    give(amount){this.data.bal=(this.data.bal||0)+amount}
     update(thing){
         let d = this.x - thing.x
         let r = this.y - thing.y
@@ -393,7 +425,7 @@ class ClientData{
         this.dy += (this.y - thing.y) * m
         this.z += thing.dz * r / d
     }
-    ready(x, y, dx, dy, z, dz, id, thrust, w, h){
+    ready(x, y, dx, dy, z, dz, id, thrust, w){
         var i = sector.objects.indexOf(A)
         if(i != -1)sector.objects[i] = this
         else sector.objects.push(this)
@@ -412,17 +444,17 @@ class ClientData{
         this.thrust = thrust >>> 0
         this.state = id != 3 ? (dx || dy ? 2 : 1) : 3
         this.ping()
+        this.range = w * w
     }
-    validate(buffer = Buffer()){
+    validate(buffer){
         //let delay = -0.001 * FPS * (this.u - (this.u=Date.now()))
-        if(buffer.length < 14)return Buffer.alloc(0)
-        let x = buffer.readFloatLE(0)
-        let y = buffer.readFloatLE(4)
-        let dx = buffer.readInt8(8) / FPS * 16
-        let dy = buffer.readInt8(9) / FPS * 16
-        let z = buffer.readInt8(10) / 40
-        let dz = buffer.readInt8(11) / 768
-        let thrust = buffer.readUint16LE(12)
+        let x = buffer.float()
+        let y = buffer.float()
+        let dx = buffer.byte() / FPS * 16
+        let dy = buffer.byte() / FPS * 16
+        let z = buffer.byte() / 40
+        let dz = buffer.byte() / 768
+        let thrust = buffer.ushort()
         /*if(true){
             this.ship = (ship << 8) + level
         }
@@ -459,19 +491,16 @@ class ClientData{
         this.dz = dz
         this.thrust = thrust & 31
         this.id = thrust >> 5
-        return
     }
-    toBuf(buf = Buffer.alloc(14), offset = 0, ref){
-        if(performance.nodeTiming.duration - this.u._idleStart > 1000){return}
-        buf.writeFloatLE(this.x,offset)
-        buf.writeFloatLE(this.y,offset+4)
-        buf.writeInt8(Math.max(Math.min(127, Math.round(this.dx * FPS / 16)), -128),offset+8)
-        buf.writeInt8(Math.max(Math.min(127, Math.round(this.dy * FPS / 16)), -128),offset+9)
-        let PI2 = Math.PI * 2
-        buf[offset+10] = Math.round(((this.z % PI2) + PI2) % PI2 * 40)
-        buf.writeUInt8((this.dz * 768)&255, offset+11)
-        if(this.thrust & 24)console.log(this.thrust&31)
-        buf.writeUint16LE((this.thrust & 31) + (this.id << 5) + (!(this.thrust & 16) && this.shoots == ref ? 16 : 0), offset + 12)
+    toBuf(buf, ref){
+        if(performance.nodeTiming.duration - this.u._idleStart > 1000){buf.int(0);buf.int(0);buf.int(0);buf.short(0);return}
+        buf.float(this.x)
+        buf.float(this.y)
+        buf.byte(Math.max(Math.min(127, Math.round(this.dx * FPS / 16)), -128))
+        buf.byte(Math.max(Math.min(127, Math.round(this.dy * FPS / 16)), -128))
+        buf.byte(Math.round(((this.z % PI2) + PI2) % PI2 * 40))
+        buf.byte((this.dz * 768)&255)
+        buf.short((this.thrust & 31) + (this.id << 5) + (!(this.thrust & 16) && this.shoots == ref ? 16 : 0))
         if(this.shoots == ref)this.shoots = null
         return buf
     }
@@ -482,7 +511,6 @@ class ClientData{
     destroy(){
         server.send(Buffer.concat([Buffer.of(127), strbuf('Disconnected for inactivity')]), this.remote.split(':')[1], this.remote.split(':')[0], e => e && console.log(e))
         this.wasDestroyed()
-        
     }
     wasDestroyed(){
         clearTimeout(this.u)
@@ -492,28 +520,40 @@ class ClientData{
     }
 }
 const bundleId = "locus.tunnelvision"
-server.on('message', async function(message, remote) {
+let delay
+function code_func(a){this.buf[0][0]=a;return this}
+function code_crit(a){this.buf[0][0]=a+128;return this}
+function snd(remote,c,buf=this){if(buf.toBuf)buf=buf.toBuf();c&&(c[buf[1]]=buf,c[(buf[1]-3)&255]=undefined);server.send(buf,remote.port,remote.address,e => e && console.log(e))}
+server.on('message', async function(m, remote) {
     let send = a=>server.send(a,remote.port,remote.address,e => e && console.log(e))
     let address = remote.address + ':' + remote.port
-    if(message[0] === 0){
+    let message = new Buf(m.buffer)
+    let code = message.ubyte()
+    let ship = clients.get(address)
+    message.critical = 0
+    if(code > 127){
+        code -= 128
+        message.critical = message.ubyte() + 256 //when its encoded again it will be put in the 0-255 range again
+        //With this you can now reliably check if its critical without having to use a comparing operator
+    }
+		if(message.critical && typeof ship == "object" && ship.crits[message.critical])return send(ship.crits[message.critical])
+    if(code === 0 && message.critical){
         try{
-            let version = message.readUint16LE(1)
-            if(version < VERSION)return send(Buffer.of(120))
-            let i
-            let len = message.readUint8(3)
-            let publicKeyUrl = message.subarray(4,i = 4 + len).toString()
-            len = message.readUint16LE(i),i += 2
-            let signature = message.subarray(i, i += len).toString("base64")
-            len = message.readUint8(i++)
-            let salt = message.subarray(i, i += len).toString("base64")
-            len = message.readUint8(i++)
-            let playerId = message.subarray(i, i += len).toString()
-            let timestamp = message.readUint32LE(i) + message.readUint32LE(i + 4, void(i += 8)) * 4294967296
-            len = message.readUint8(i++)
-            let name = message.subarray(i, i += len).toString()
-            let w = message.readUint16LE(i),i += 2
-            let h = message.readUint16LE(i),i += 2
-            if(clients.get(address) == timestamp || typeof clients.get(address) == "object")return send(Buffer.of(1))
+            let version = message.ushort()
+            if(version < VERSION)return send(Buffer.concat([Buffer.of(127), strbuf('Please Update')]))
+            let len = message.ubyte()
+            let publicKeyUrl = message.str(len)
+            len = message.ushort()
+            let signature = Buffer.from(message.buffer(len)).toString("base64")
+            len = message.ubyte()
+            let salt = Buffer.from(message.buffer(len)).toString("base64")
+            len = message.ubyte()
+            let playerId = message.str(len)
+            let timestamp = message.uint() + message.uint() * 4294967296
+            len = message.ubyte()
+            let name = message.str(len)
+            let w = message.ushort()
+            if(ship == timestamp || typeof ship == "object")return send(Buffer.of(129, message.critical, 0, 0, 0, 0, 0, 0, 0, 0))
             clients.set(address, timestamp)
             verify({publicKeyUrl, signature, salt, playerId, timestamp, bundleId}, async function(err){
                 if(err && playerId){
@@ -523,100 +563,152 @@ server.on('message', async function(message, remote) {
                     //let data = 
                     let cli = new ClientData(name, playerId, address)
                     clients.set(address, cli)
-                    cli.ready(0, 0, 0, 0, 0, 0, 1, 0, w, h)
-                    send(Buffer.of(1))
+                    cli.ready(0, 0, 0, 0, 0, 0, 1, 0, w)
+                    let buf = Buffer.alloc(10)
+                    buf[0] = 129
+                    buf[1] = message.critical
+                    buf.writeUint32LE(cli.data.bal >>> 0, 2)
+                    buf.writeUint16LE((cli.data.bal / 4294967296) & 65535, 6)
+                    send(buf)
                 }
             })
         }catch(e){
+            console.log(e)
             send(Buffer.from(Buffer.concat([Buffer.of(127), strbuf('Connection failed')])))
         }
         return
     }
-    
-    if(typeof clients.get(address) == "object")try{msg(message,send,address)}catch(e){console.log(e);send(Buffer.concat([Buffer.of(127), strbuf("Corrupt Packet")]))}
+    if(typeof ship != "object")return
+		let r = new BufWriter()
+		r.code = message.critical ? code_crit : code_func
+		r.send = snd.bind(r, remote, message.critical ? ship.crits : null)
+		r.byte(0)
+		message.critical && r.byte(message.critical)
+    delay = Math.min(Math.round(performance.nodeTiming.duration / 10 - ship.u._idleStart / 10), 255)
+    try{ship.ping();msgs[code].call(ship,message,r)}catch(e){console.log(e);send(Buffer.concat([Buffer.of(127), strbuf("Bad Packet")]))}
 });
-
-function msg(data, reply, address){
-    let ship = clients.get(address)
-    let delay = Math.min(Math.round(performance.nodeTiming.duration / 10 - ship.u._idleStart / 10), 255)
-    ship.ping()
-    if(data[0] == 3){
-        reply(Buffer.of(4))
-    }else if(data[0] == 5){
-        ship.seq++
-        let cc = data[15]
-        let hitc = cc & 7
-        let i = 16
-        while(hitc--){
-            let x = data.readUint32LE(i)
-            let obj = sector.objects[x]
-            if(!obj)continue
-            if(obj instanceof ClientData && x <= sector.objects.indexOf(ship))continue
-            ship.update(obj)
-            i += 4
-        }
-        if(cc & 8){
-            let x = data.readUint32LE(i)
-            let obj = sector.objects[x]
-            if(obj){
-                ship.shoots = obj
-            }
-            i += 4
-        }
-        hitc = cc >> 4
-        if(hitc){
-            let buf = [Buffer.of(8)]
-            while(hitc--){
-                let x = data.readUint32LE(i)
-                let obj = sector.objects[x]
-                let name = (obj && obj.name) || ""
-                buf.push(Buffer.alloc(4))
-                buf[buf.length - 1].writeUint32LE(x)
-                buf.push(strbuf(name))
-                i += 4
-            }
-            reply(Buffer.concat(buf))
-        }
-        let a = ship.rubber ? true : ship.validate(data.slice(1,15))
-        let buf = Buffer.alloc(a ? 16 : 2)
-        buf[0] = 6
-        buf[1] = delay
-        if(a){
-            buf[0] = 7
-            ship.toBuf(buf,2)
-            ship.rubber = false
-        }
-        let dat = [buf]
-        for(var obj of sector.objects){
-            if(obj == ship)continue
-            dat.push(Buffer.alloc(14))
-            obj.toBuf(dat[dat.length - 1], 0, ship)
-        }
-        buf = Buffer.concat(dat)
-        reply(buf)
-        
-        if(!(ship.seq % 10)){
-            
-        }
-    }else if(data[0] == 127){
-        clients.get(address).wasDestroyed()
-    }else if(data[0] == 9){
-        let x = data.readFloatLE(1)
-        let y = data.readFloatLE(5)
-        //magic
-        let newSector = 1
-        ship.wasDestroyed()
-    }else if(data[0] == 10){
-        let planetIndex = data.readUint32LE(1)
-        let planetLvl = data.readUint32LE(5)
-        let planet = sector.planets[planetIndex]
-        if(!planet){return}
-        
-        //magic
-        
-        let data = Buffer.alloc(5)
-        data[0] = 11
-        data.writeUint32LE(planetLvl)
-        reply(data)
-    }else reply(Buffer.concat([[127], strbuf("Illegal Packet")]))
+let msgs = {
+	3(data, res){
+		res.code(4).send()
+	},
+	127(data, res){
+		this.wasDestroyed()
+	},
+	10(data, res){
+		let planetIndex = data.int()
+		let _ = data.int()
+		let planet = sector.planets[planetIndex]
+		if(!planet || !planet.resource || (planet.data && planet.data.owner) || planet.superhot)return res.code(13).send()
+		if(!(this.data.bal >= 10))return res.code(13).send()
+		planet.data = {}
+		planet.data.owner = this.playerid
+		this.data.bal -= 10
+		unsaveds[planet.filename] = planet.data
+		res.code(11).send()
+	},
+	9(data, res){
+		let x = data.float()
+		let y = data.float()
+		//magic
+		let newSector = 1
+		this.wasDestroyed()
+	},
+	5(data, res){
+		this.seq++
+		let a = this.rubber ? true : this.validate(data)
+		let cc = data.ubyte()
+		let hitc = cc & 7
+		while(hitc--){
+			let x = data.uint()
+			let obj = sector.objects[x]
+			if(!obj)continue
+			if(obj instanceof ClientData && x <= sector.objects.indexOf(this))continue
+			this.update(obj)
+		}
+		if(cc & 8){
+			let x = data.uint()
+			let obj = sector.objects[x]
+			if(obj){
+				this.shoots = obj
+			}
+		}
+		hitc = cc >> 4
+		if(hitc){
+			let buf = new BufWriter()
+			buf.byte(8)
+			while(hitc--){
+				let x = data.uint()
+				let obj = sector.objects[x]
+				let name = (obj && obj.name) || ""
+				buf.int(x)
+				buf.buffer(strbuf(name))
+			}
+			res.send(buf.toBuf())
+		}
+		
+		let energy = data.uint()
+		energy += data.ushort() * 4294967296
+		this.data.bal = energy
+		res.code(a ? 7 : 6)
+		res.byte(delay)
+		if(a){
+			this.toBuf(res)
+			this.rubber = false
+		}
+		for(var obj of sector.objects){
+			if(obj == this)continue
+			obj.toBuf(res, this)
+		}
+		res.send()
+		if(!(this.seq % 10)){
+			let buf = new BufWriter()
+			if(data.critical)buf.byte(140),buf.byte(data.critical)
+			else buf.byte(12)
+			for(let i in sector.planets){
+				let x = sector.planets[i].x - this.x
+				let y = sector.planets[i].y - this.y
+				if(x * x + y * y > this.range)continue
+				sector.planets[i].toBuf(buf, i)
+			}
+			res.send(buf.toBuf())
+		}
+	},
+	14(data, reply){
+		let x = data.ushort()
+		let planet = sector.planets[x]
+		if(!planet || planet.owner != this.playerid)return reply(Buffer.of(16))
+		x = data.ubyte()
+		if(!planet.data.items || planet.data.items.length <= x)return reply(Buffer.of(16))
+		x = planet.data.items[x]
+		if(data.length > data.i){
+			//rotate
+			x.rot = data.ubyte()
+		}else{
+			//lvlup
+			if(!(this.data.bal >= 10))return reply(Buffer.of(16))
+			x.lvl++
+			this.data.bal -= 10
+			unsaveds[planet.filename] = planet.data
+		}
+		reply(Buffer.of(15))
+	},
+	17(data, reply){
+		let x = data.ushort()
+		let planet = sector.planets[x]
+		if(!planet || planet.owner != this.playerid || !planet.data.items)return reply(Buffer.of(16))
+		let earned = 0
+		for(var i of planet.data.items){
+			if(i.id == 0){
+				earned += i
+			}
+		}
+		let buf = Buffer.of(18, 0, 0, 0, 0, 0, 0, 0, 0)
+		planet.last = planet.last || Date.now() - 6e4
+		let diff = Math.floor((Date.now() - planet.last) / 6e4)
+		this.data.bal += earned * diff
+		buf.writeUint32LE((earned * diff) >>> 0, 1)
+		buf.writeUint16LE(((earned * diff) / 4296967296) & 65535, 5)
+		planet.last += diff * 6e4
+		reply(buf)
+	}
 }

@@ -131,7 +131,7 @@ func connect(_ host: String, _ a: @escaping (Data) -> ()) -> (Data) -> (){
                 dmessage = "Connection Interrupted"
                 DispatchQueue.main.async{Disconnected.renderTo(skview)}
             case .failed(_):
-            ready = false
+                ready = false
                 p?.end()
                 dmessage = "Disconnected!"
                 DispatchQueue.main.async{Disconnected.renderTo(skview)}
@@ -238,7 +238,7 @@ struct api{
         }
     }
     static func token(completion: @escaping (String) -> ()){
-        GKLocalPlayer.local
+        
     }
     static func sector(completion: @escaping (_ x: Int, _ y: Int) -> ()){
         completion(secx, secy)

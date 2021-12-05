@@ -9,7 +9,7 @@ import Foundation
 import SpriteKit
 
 
-var energyAmount = 0.0
+var energyAmount = 2147483648.0
 var energySpace = 100.0
 var energyPercent = 0.0
 
@@ -21,6 +21,7 @@ enum impactType{
     case error
     case success
     case warning
+    case none
 }
 
 class PlayCore: PlayAmbient{
@@ -147,6 +148,7 @@ class PlayCore: PlayAmbient{
         stars3.update()
     }
     var _a = 0
+    var planetLanded: Planet? = nil
     func spaceUpdate(){
       
         

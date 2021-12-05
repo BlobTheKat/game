@@ -68,3 +68,10 @@ let SHOOTVECTORS: [[CGFloat]] = [
 let SHOOTFREQUENCIES: [CGFloat] = [
     0.05
 ]
+let a: [[[[[[[[[[[[[[[[CGFloat]]]]]]]]]]]]]]]] = [] //just for fun
+let SHOOTERDIRS: [[CGFloat]] = [ //for planet shooters (maps to shooter level)
+    [-0.5,0.5],
+    [-0.5,0.5],
+    [-0.6,0,0.6],
+    [-0.6,0,0.6]
+]

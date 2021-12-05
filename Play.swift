@@ -189,7 +189,7 @@ class Play: PlayCore{
             accountBG.setScale((self.size.width - accountIcon.size.width) / nw)
             accountBG.position.x = accountIcon.position.x - accountBG.size.width / 2 - 130
         }
-        inlightSpeed.run(playSound)
+        inlightSpeed.autoplayLooped = true
         
         ship.run(SKAction.fadeAlpha(by: 1, duration: 1).ease(.easeOut))
         ship.producesParticles = true
@@ -232,8 +232,7 @@ class Play: PlayCore{
         guard !moved else{return}
         guard ready else{return}
         moved = true
-        self.addChild(thrustSound)
-        thrustSound.run(stopSound)
+        thrustSound.autoplayLooped = true
         loadingbg.removeFromParent()
         loading.removeFromParent()
         tapToStart.horizontalAlignmentMode = .center
@@ -444,7 +443,7 @@ class Play: PlayCore{
             if i == 0{
                 energyNodes[i].position = CGPoint(x: 180, y: -43)
             }else{
-                energyNodes[i].position = CGPoint(x: energyNodes[i - 1].position.x + energyNodes[0].size.width*0.95 , y: -43)
+                energyNodes[i].position = CGPoint(x: energyNodes[i - 1].position.x + energyNodes[0].size.width*0.95, y: -43)
             }
             energyNodes[i].zPosition = avatar.zPosition + 1
             energyNodes[i].setScale(1)
@@ -681,7 +680,6 @@ class Play: PlayCore{
         ship.shootFrequency = SHOOTFREQUENCIES[ship.id-1]
         ship.shootQueue = 1 - ship.shootFrequency
         self.run(SKAction.sequence([
-
             SKAction.repeat(SKAction.sequence([
             
                 SKAction.wait(forDuration: 1),
@@ -755,6 +753,17 @@ class Play: PlayCore{
         if thrustButton.parent == nil{cam.addChild(thrustButton)}
         if shipDirection.parent == nil{cam.addChild(shipDirection)}
     }
+    override func bought(_ success: Bool){
+        guard success else{
+            return
+        }
+        cam.run(SKAction.sequence([
+            .run{ self.DisplayWARNING("colonized succesfuly",2,false)},
+            .wait(forDuration: 2),
+            .run{self.cam.removeAction(forKey: "warningAlpha")},
+            .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
+        ]))
+    }
     override func nodeDown(_ node: SKNode, at point: CGPoint) {
         
         switch node{
@@ -770,19 +779,11 @@ class Play: PlayCore{
             if energyAmount >= 10{
                 energyAmount -= 10
                 if colonize{
-                colonizeBG.removeFromParent()
-                showControls()
-                colonize = false
+                    colonizeBG.removeFromParent()
+                    showControls()
+                    colonize = false
                 }
-                
-                cam.run(SKAction.sequence([
-                    .run{ self.DisplayWARNING("colonized succesfuly",2,false)},
-                    .wait(forDuration: 2),
-                    .run{self.cam.removeAction(forKey: "warningAlpha")},
-                    .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
-                ]))
-                
-               
+                colonize(planetLanded!)
             }else if energyAmount < 10{
                 cam.run(SKAction.sequence([
                     .run{ self.DisplayWARNING("not enough energy",1,false)},
@@ -913,9 +914,9 @@ class Play: PlayCore{
                 self.heatingLaser.texture = SKTexture(imageNamed: "heating0")
                 usingConstantLazer = false
                 ship.thrust = true
-                if playingThrustSound == false{
+                if !playingThrustSound{
                     thrustSound.run(SKAction.changeVolume(to: 1.5, duration: 0.01))
-                    thrustSound.run(playSound)
+                    self.addChild(thrustSound)
                     playingThrustSound = true
                 }
             }
@@ -949,11 +950,10 @@ class Play: PlayCore{
             }
         }
         if coloIcon == node{
-            colonize.toggle()
-            
-            if colonize{
-            cam.addChild(colonizeBG)
-            hideControls()
+            if !colonize{
+                colonize = true
+                cam.addChild(colonizeBG)
+                hideControls()
             }
         }
     }
@@ -996,16 +996,13 @@ class Play: PlayCore{
     
     override func nodeUp(_ node: SKNode, at _: CGPoint) {
         if thrustButton == node{
-            if playingThrustSound{
-                thrustSound.run(SKAction.changeVolume(to: 0, duration: 0.5))
-
-                thrustSound.run(SKAction.sequence([
-                    SKAction.wait(forDuration: 0.5),
-                    SKAction.run{self.thrustSound.run(stopSound)}
-                ]))
-                
-                playingThrustSound = false
-            }
+            thrustSound.run(SKAction.sequence([
+                SKAction.changeVolume(to: 0, duration: 0.2),
+                SKAction.run{
+                    self.thrustSound.removeFromParent()
+                    self.playingThrustSound = false
+                }
+            ]))
             self.removeAction(forKey: "constantLazer")
             ship.shootFrequency = 0
             self.heatLevel = 0
@@ -1043,6 +1040,11 @@ class Play: PlayCore{
         hideControls()
         if key == .keyboardUpArrow || key == .keyboardW{
             ship.thrust = true
+            if !playingThrustSound{
+                thrustSound.run(SKAction.changeVolume(to: 1.5, duration: 0.01))
+                self.addChild(thrustSound)
+                playingThrustSound = true
+            }
         }else if key == .keyboardRightArrow || key == .keyboardD{
             ship.thrustRight = true
         }else if key == .keyboardLeftArrow || key == .keyboardA{
@@ -1113,7 +1115,7 @@ class Play: PlayCore{
                     let _ = timeout(2) {
                         self.startGame()
                         self.removeAction(forKey: "inLightSpeed")
-                        self.inlightSpeed.run(stopSound)
+                        self.inlightSpeed.removeFromParent()
                     }
                 }
             }
@@ -1122,6 +1124,13 @@ class Play: PlayCore{
     override func keyUp(_ key: UIKeyboardHIDUsage) {
         if key == .keyboardUpArrow || key == .keyboardW{
             ship.thrust = false
+            thrustSound.run(SKAction.sequence([
+                SKAction.changeVolume(to: 0, duration: 0.2),
+                SKAction.run{
+                    self.thrustSound.removeFromParent()
+                    self.playingThrustSound = false
+                }
+            ]))
         }else if key == .keyboardRightArrow || key == .keyboardD{
             ship.thrustRight = false
         }else if key == .keyboardLeftArrow || key == .keyboardA{
@@ -1209,7 +1218,7 @@ class Play: PlayCore{
                 let _ = timeout(2) {
                     self.startGame()
                     self.removeAction(forKey: "inLightSpeed")
-                    self.inlightSpeed.run(stopSound)
+                    self.inlightSpeed.removeFromParent()
                 }
             }
         }

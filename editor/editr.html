@@ -55,11 +55,19 @@
       -o-tab-size: 2;
       tab-size: 2;
 		}
+		textarea::selection{
+			background: rgba(127,127,127,0.5);
+			color: transparent;
+		}
 		code{background-color: #eee}
 		visual{
 			z-index:7;
-			color: #111;
 			white-space: pre-wrap;
+			overflow: auto;
+			padding-right: 20px;
+			right: -12px;
+			width: unset;
+			color: red;
 		}
 		@media (max-width: 400px){
 			files{
@@ -82,16 +90,27 @@
 			overflow: hidden;
 		}
 		*{margin:0;padding:0;box-sizing:border-box}
-		.str{ color: #05D }
+		span{
+			text-size-adjust: none;
+			-webkit-text-size-adjust: none;
+		}
+		.str{ color: #07F }
 		.num{ color: #4C4 }
 		.key{
 			color: #F65;
 			font-weight: bold
 		}
+		.nul {
+			color: #07F;
+			font-weight: bold
+		}
+		.other, .id { color: #111 }
 		@media (prefers-color-scheme: dark) { 
-      .str { color: #03B }
+      .str { color: #05D }
 			.num { color: #2A2 }
 			.key { color: #D43 }
+			.nul { color: #05D }
+			.other, .id { color: #EEE }
 			header{
 				background-color: #333;
 			}
@@ -99,7 +118,6 @@
 				background-color: #222;
 			}
 			visual{
-				color: #eee;
 				background: #111;
 			}
 			textarea{
@@ -121,6 +139,7 @@
 		end=textarea.selectionEnd
 	}
 	let visual = textarea.nextElementSibling
+	textarea.onscroll = () => visual.scrollTo(textarea.scrollLeft, textarea.scrollTop)
 	const sanidiv = document.createElement('div');
 	const sanitxt = document.createTextNode('');
 	sanidiv.appendChild(sanitxt);
@@ -128,16 +147,38 @@
 		sanitxt.nodeValue = text;
 		return sanidiv.innerHTML;
 	}
-
+	let tabs = /(\t*)(class|func|if|for|else(?: *(?:\n|$)| +(?:if|for|while))|init|while)?/y
+	let tabs2 = /\t*( +)/y
 	function handle(e){
 		if(e.keyCode == 9){
 			e.preventDefault()
 			document.execCommand("insertText", false, "\t")
 		}
+		if(e.keyCode == 13){
+			//enter
+			e.preventDefault()
+			let t = textarea.value.slice(0, start)
+			tabs.lastIndex = t.lastIndexOf("\n")+1
+			t = t.match(tabs)
+			t = "\n" + t[1] + (t[2] ? "\t" : "")
+			document.execCommand("insertText", false, t)
+		}
+		if(e.keyCode == 32){
+			let t = textarea.value.slice(0, start)
+			tabs2.lastIndex = t.lastIndexOf("\n")+1
+		 	t = t.match(tabs2)
+			if(t && tabs2.lastIndex == start){
+				e.preventDefault()
+				start -= t[1].length
+				reselect()
+				t = t[1].length / 2 + 0.5
+				t = "\t".repeat(Math.floor(t)) + (t%1 ? " " : "")
+				document.execCommand("insertText", false, t)
+			}
+		}
 	}
-
-	let reg = /('(?:[^'\\]|\\.)*'?|"(?:[^"\\]|\\.)*"?|`(?:[^`\\]|\\.)*`?)|([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d*)?|[Nn]a[Nn](?!\w)|[Ii]nf(?:inity)?(?!\w))|(class|if|else|while)|[^]/y
-	let names = [NaN, "str", "num", "key"]
+	let reg = /('(?:[^'\\]|\\.)*'?|"(?:[^"\\]|\\.)*"?|`(?:[^`\\]|\\.)*`?)|([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d*)?|nan(?!\w)|[+-]?inf(?!\w))|(class|if|else|while|for|import|as|init|func|throw|return)(?!\w)|(null|self|true|false)|(\.?\w+)|([-=+[\]{}|?/<>,.!@$%^&*()#`~:;])|[^]/y
+	let names = [, "str", "num", "key", "nul", "id", "other"]
 	let and = (a, b) => a && b
 	function reselect(){textarea.selectionStart = start;textarea.selectionEnd = end}
 	function highlight(){

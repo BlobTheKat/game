@@ -5,6 +5,7 @@ mass: 140500
 spin: -0.0020000000949949026
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 621
 x: -2510
@@ -13,6 +14,7 @@ mass: 248400
 spin: 0.000699999975040555
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 476
 x: 6460
@@ -21,6 +23,7 @@ mass: 119000
 spin: -0.000699999975040555
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 365
 x: 14990
@@ -29,6 +32,7 @@ mass: 91250
 spin: 0
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 627
 x: -21520
@@ -37,6 +41,7 @@ mass: 156750
 spin: 0
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 525
 x: 12900
@@ -45,6 +50,7 @@ mass: 210000
 spin: 0
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 292
 x: -16570
@@ -53,6 +59,7 @@ mass: 73000
 spin: 0
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 420
 x: -5480
@@ -61,6 +68,7 @@ mass: 105000
 spin: 0
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 290
 x: -7320
@@ -69,6 +77,7 @@ mass: 72500
 spin: 0
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 165
 x: -6550
@@ -77,6 +86,7 @@ mass: 16500
 spin: -0.05999999865889549
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 775
 x: 2760
@@ -85,6 +95,7 @@ mass: 387500
 spin: -0.004000000189989805
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 355
 x: -15210
@@ -93,6 +104,7 @@ mass: 88750
 spin: 0
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 455
 x: 10390
@@ -101,6 +113,7 @@ mass: 113750
 spin: 0
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 246
 x: 5030
@@ -109,6 +122,7 @@ mass: 61500
 spin: 0
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 684
 x: -7040
@@ -117,6 +131,7 @@ mass: 171000
 spin: 0
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 220
 x: 7590
@@ -125,6 +140,7 @@ mass: 55000
 spin: 0
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 277
 x: 13490
@@ -133,6 +149,7 @@ mass: 69250
 spin: 0
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 217
 x: 21230
@@ -141,6 +158,7 @@ mass: 54250
 spin: 0
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 228
 x: -20020
@@ -149,6 +167,7 @@ mass: 11400
 spin: 0
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 621
 x: -11240
@@ -157,6 +176,7 @@ mass: 155250
 spin: 0.000699999975040555
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 476
 x: -10240
@@ -165,6 +185,7 @@ mass: 119000
 spin: -0.000699999975040555
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 365
 x: -18560
@@ -173,6 +194,7 @@ mass: 91250
 spin: 0
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 627
 x: 14170
@@ -181,6 +203,7 @@ mass: 156750
 spin: 0
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 800
 x: 10
@@ -189,6 +212,7 @@ mass: 500000
 spin: 0.0010000000474974513
 superhot: 1
 richness: 0.1
+resource: none
 
 radius: 274
 x: 1750
@@ -197,6 +221,7 @@ mass: 68500
 spin: 0.0010000000474974513
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 298
 x: 2570
@@ -205,6 +230,7 @@ mass: 74500
 spin: 0.0010000000474974513
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 226
 x: -4500
@@ -213,6 +239,7 @@ mass: 56500
 spin: -0.0010000000474974513
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 213
 x: -600
@@ -221,6 +248,7 @@ mass: 53250
 spin: -0.0006000000284984708
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 278
 x: -6180
@@ -229,6 +257,7 @@ mass: 69500
 spin: 0.00039999998989515007
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 237
 x: -3630
@@ -237,6 +266,7 @@ mass: 59250
 spin: 0.003000000026077032
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 417
 x: 960
@@ -245,6 +275,7 @@ mass: 104250
 spin: 0.0020000000949949026
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 270
 x: -10770
@@ -253,6 +284,7 @@ mass: 67500
 spin: -0.0010000000474974513
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 247
 x: 6800
@@ -261,6 +293,7 @@ mass: 61750
 spin: -0.0006000000284984708
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 172
 x: 6640
@@ -269,6 +302,7 @@ mass: 43000
 spin: 0.001500000013038516
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 300
 x: 2780
@@ -277,6 +311,7 @@ mass: 75000
 spin: -0.001500000013038516
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 223
 x: 1390
@@ -285,6 +320,7 @@ mass: 55750
 spin: 0.004999999888241291
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 380
 x: 15260
@@ -293,6 +329,7 @@ mass: 95000
 spin: -0.0008999999845400453
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 276
 x: -10190
@@ -301,6 +338,7 @@ mass: 69000
 spin: 0.00009999999747378752
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 400
 x: 10260
@@ -309,6 +347,7 @@ mass: 100000
 spin: -0.0006000000284984708
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 408
 x: 13410
@@ -317,6 +356,7 @@ mass: 102000
 spin: 0.003000000026077032
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 251
 x: -10160
@@ -325,6 +365,7 @@ mass: 62750
 spin: 0
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 267
 x: 7500
@@ -333,6 +374,7 @@ mass: 66750
 spin: -0.0020000000949949026
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 177
 x: 10240
@@ -341,6 +383,7 @@ mass: 44250
 spin: 0.000699999975040555
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 318
 x: -5030
@@ -349,6 +392,7 @@ mass: 79500
 spin: 0
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 270
 x: -13000
@@ -357,6 +401,7 @@ mass: 67500
 spin: 0
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 376
 x: 2090
@@ -365,6 +410,7 @@ mass: 94000
 spin: 0
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 267
 x: -12260
@@ -373,6 +419,7 @@ mass: 66750
 spin: 0
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 267
 x: 21000
@@ -381,6 +428,7 @@ mass: 66750
 spin: 0
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 198
 x: 5800
@@ -389,6 +437,7 @@ mass: 49500
 spin: 0
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 209
 x: 9260
@@ -397,6 +446,7 @@ mass: 52250
 spin: 0
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 248
 x: 15550
@@ -405,6 +455,7 @@ mass: 62000
 spin: 0
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 278
 x: 10120
@@ -413,6 +464,7 @@ mass: 69500
 spin: 0
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 363
 x: -310
@@ -421,6 +473,7 @@ mass: 90750
 spin: 0
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 303
 x: 21520
@@ -429,6 +482,7 @@ mass: 75750
 spin: 0
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 380
 x: -6800
@@ -437,6 +491,7 @@ mass: 95000
 spin: 0.0006000000284984708
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 276
 x: 20500
@@ -445,6 +500,7 @@ mass: 69000
 spin: 0.0006000000284984708
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 400
 x: -19280
@@ -453,6 +509,7 @@ mass: 100000
 spin: 0.0006000000284984708
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 408
 x: 18210
@@ -461,6 +518,7 @@ mass: 102000
 spin: -0.0006000000284984708
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 251
 x: -770
@@ -469,6 +527,7 @@ mass: 62750
 spin: 0.0006000000284984708
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 270
 x: 12470
@@ -477,6 +536,7 @@ mass: 67500
 spin: -0.0010000000474974513
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 247
 x: 18850
@@ -485,6 +545,7 @@ mass: 61750
 spin: -0.0006000000284984708
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 172
 x: 20820
@@ -493,6 +554,7 @@ mass: 43000
 spin: 0.001500000013038516
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 300
 x: 12210
@@ -501,6 +563,7 @@ mass: 75000
 spin: -0.001500000013038516
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 223
 x: 17940
@@ -509,6 +572,7 @@ mass: 55750
 spin: 0.0006000000284984708
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 208
 x: 3090
@@ -517,6 +581,7 @@ mass: 52000
 spin: 0.0006000000284984708
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 208
 x: -8920
@@ -525,6 +590,7 @@ mass: 52000
 spin: 0.0006000000284984708
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 376
 x: -20630
@@ -533,6 +599,7 @@ mass: 94000
 spin: -0.0020000000949949026
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 267
 x: -22720
@@ -541,6 +608,7 @@ mass: 66750
 spin: 0.00015999999595806003
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 267
 x: -5570
@@ -549,6 +617,7 @@ mass: 66750
 spin: -0.0006000000284984708
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 198
 x: -14000
@@ -557,6 +626,7 @@ mass: 49500
 spin: 0.0006000000284984708
 superhot: 0
 richness: 0.1
+resource: none
 
 radius: 209
 x: -17180
@@ -565,6 +635,7 @@ mass: 52250
 spin: 1.000000013351432e-10
 superhot: 0
 richness: 0.1
+resource: none
 
 id: 1
 x: 4320

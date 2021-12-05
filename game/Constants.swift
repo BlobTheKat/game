@@ -28,12 +28,6 @@ var stop: [() -> ()] = []
 
 func bg(_ a: @escaping () -> ()){DispatchQueue.global(qos: .background).async(execute: a)}
 
-struct servers{
-    static let uswest = ""
-    static let backup = ""
-    static let home = "192.168.1.64"
-}
-
 extension SKTexture{
     static func named(_ a: String) -> SKTexture{
         return SKTexture(imageNamed: a)
@@ -138,7 +132,7 @@ func emptytextures(s: SectorData){
     for p in s.0{
         p.texture = nil
         for c in p.children{
-            (c as? SKSpriteNode)?.texture = nil
+            if c.name != nil{(c as? SKSpriteNode)?.texture = nil}
         }
     }
 }

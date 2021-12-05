@@ -96,18 +96,25 @@ class Object: SKSpriteNode, DataCodable{
         position.x += velocity.dx
         position.y += velocity.dy
         zRotation += angularVelocity
-        var i = 0
-        guard let parent = parent else{return}
         if self.death > 0{
             self.death -= 1
             if self.death % 100 == 0{
                 self.death = 0
             }
         }
+        shoot()
+    }
+    func shoot(){
+        guard let parent = (parent as? Play) else{return}
         shootQueue += shootFrequency
+        var i = 0
         while shootQueue > 1{
-            self.run(parent.shootSound)
-            parent.vibratePhone(.heavy)
+            let x = self.position.x - parent.cam.position.x
+            let y = self.position.y - parent.cam.position.y
+            if x * x + y * y <= 3e6{
+                self.run(parent.shootSound)
+                if self == parent.ship{parent.vibratePhone(.heavy)}
+            }
             if shlock > 0{
                 zRotation = -atan2(parent.ship.position.x - position.x, parent.ship.position.y - position.y)
                 shlock -= 1
@@ -366,8 +373,10 @@ class Planet: Object{
     override func defParticle(_ planet: Object) -> Particle{
         return Particle()
     }
+    var angry = 0 //time in frames till planet forgives you. When you shoot it, goes up to 6000 (100 seconds)
     var emitq = 0.0
     var emitf = 0.1
+    var buyable: Bool = true
     var collectibles = Set<SKSpriteNode>()
     func cook(_ point: CGPoint, to radius: CGFloat = .nan) -> CGVector{
         let radius = radius.isNaN ? self.radius : radius
@@ -380,12 +389,20 @@ class Planet: Object{
         y *= d
         return CGVector(dx: x, dy: y)
     }
-    func populate(with item: ColonizeItem, rot: UInt8, node: SKSpriteNode? = nil){
+    func populate(with item: ColonizeItem, rot: UInt8, node nd: SKSpriteNode? = nil){
+        let node = nd ?? SKSpriteNode(imageNamed: "\(coloNames[Int(item.type.rawValue)])\(item.lvl)")
+        if nd == nil{node.userData = NSMutableDictionary(capacity: 2)}
+        let colo = (node.userData?["type"] as? ColonizeItem)
+        if colo?.type == item.type && colo?.lvl == item.lvl && colo?.capacity == item.capacity && node.userData?["rot"] as? UInt8 == rot{return}
+        node.userData!["type"] = item
+        node.userData!["rot"] = rot
+        node.removeAllActions()
         let rot = CGFloat(rot) * .pi / 128
-        let node = node ?? SKSpriteNode(imageNamed: "\(coloNames[Int(item.type.rawValue)])\(item.lvl)")
         node.setScale((self.xScale + self.yScale) / 4)
-        node.anchorPoint = CGPoint(x: 0.5, y: (15 - self.radius) / node.size.height)
-        //node.position = CGPoint(x: sin(rot) * rad, y: cos(rot) * rad)
+        node.anchorPoint = CGPoint(x: 0.5, y: ((item.type == .satellite ? -170 : 10) - self.radius) / node.size.height)
+        if item.type == .satellite{
+            node.run(.repeatForever(SKAction.rotate(byAngle: self.angularVelocity + 0.05, duration: 1)))
+        }
         node.zRotation = -rot
         guard node.parent != nil else { return self.addChild(node) }
     }
@@ -404,11 +421,26 @@ class Planet: Object{
         let d2 = (self.radius + random(min: 30, max: 120)) / (self.radius - 50) - 1
         n.run(.sequence([.move(by: CGVector(dx: p.dx * d2, dy: p.dy * d2), duration: 1.5).ease({t in return (2-t)*t}),.wait(forDuration: 18),.fadeOut(withDuration: 1),.run{n.removeFromParent();self.collectibles.remove(n)}]))
         collectibles.insert(n)
+        //guard let parent = parent else {return}
+        angry = 600
+        shootFrequency = 0
+        shootVectors = []
+        shootPoints = []
+        for node in self.children.filter({a in return (a.userData?["type"] as? ColonizeItem)?.type == .shooter}){
+            guard let node = node as? SKSpriteNode else { continue }
+            shootFrequency = 0.06
+            let dirs = SHOOTERDIRS[Int((node.userData?["type"] as? ColonizeItem)?.lvl ?? 1) - 1]
+            let point = CGPoint(x: -sin(node.zRotation) * self.radius, y: cos(node.zRotation) * self.radius)
+            shootPoints.append(contentsOf: [CGPoint](repeating: point, count: dirs.count))
+            shootVectors.append(contentsOf: dirs.map({a in return node.zRotation + a}))
+        }
         
-       
     }
     override func update() {}
     func update(_ node: SKSpriteNode?){
+        if self.angry > 1{self.angry -= 1}
+        else{self.shootFrequency = 0}
+        shoot()
         if let i = node{
             guard let parent = parent as? Play else{return}
             guard let cam = parent.camera else {return}
@@ -511,22 +543,21 @@ class Planet: Object{
             n.landed = true
             let parents = parent as? Play
             if parents != nil && n == parents!.ship{
+                parents?.planetLanded = self
                 let circle = parents!.planetsMP[parents!.planets.firstIndex(of: self)!]
                 circle.fillColor = UIColor.green
                 parents?.playerArrow.removeFromParent()
-                
                 //TO DO WITH COLONISING
-               
-                //currentPlanetTexture = self.texture!
-                parents!.coloPlanet.texture = self.texture
-
-                parents?.navArrow.texture = SKTexture(imageNamed: "navArrow2")
-                parents?.navBG.addChild(parents!.coloIcon)
-                //GANGE MAP HERE
+                if self.buyable{
+                    parents!.coloPlanet.texture = self.texture
+                    parents?.navArrow.texture = SKTexture(imageNamed: "navArrow2")
+                    parents?.navBG.addChild(parents!.coloIcon)
+                }
             }
         }else{
             let parents = parent as? Play
             if parents != nil && n == parents!.ship{
+                parents?.planetLanded = nil
                 let circle = parents!.planetsMP[parents!.planets.firstIndex(of: self)!]
                 circle.fillColor = superhot ? .orange : .white
                 //GANGE MAP HERE
@@ -591,10 +622,12 @@ class Planet: Object{
     }
     override func decode(data: inout Data) {
         //decode things on the planet
-        let len = data.readunsafe() as UInt8
+        var len = data.readunsafe() as UInt8
+        self.buyable = len & 128 != 0
+        len &= 127
         var i = 0, ci = 0
         while(i < len){
-            while self.children[ci].name != nil{ci += 1}
+            while (self.children.count > ci ? self.children[ci].name : nil) != nil{ci += 1;continue}
             let item = (type: ColonizeItemType.init(rawValue: data.readunsafe()) ?? .lab, lvl: data.readunsafe() as UInt8, capacity: data.readunsafe() as UInt8)
             self.populate(with: item, rot: data.readunsafe() as UInt8, node: self.children.count > ci ? self.children[ci] as? SKSpriteNode : nil)
             i += 1
