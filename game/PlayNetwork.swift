@@ -250,7 +250,9 @@ class PlayNetwork: PlayConvenience{
         istop()
         ended = true
     }
-    func bought(_ success: Bool){}
+    func didBuy(_ success: Bool){}
+    func didChangeItem(_ success: Bool){}
+    func didCollect(_ success: Bool){}
     var p = false
     var last: DispatchTime = .now()
     var authed = false
@@ -339,7 +341,7 @@ class PlayNetwork: PlayConvenience{
             }
         }else if code == 11{
             print("colonize ok")
-            self.bought(true)
+            self.didBuy(true)
             //complete colonization
         }else if code == 12{
             while data.count > 0{
@@ -348,7 +350,11 @@ class PlayNetwork: PlayConvenience{
             }
         }else if code == 13{
             print("colonize not ok")
-            self.bought(false)
+            self.didBuy(false)
+        }else if code == 15 || code == 16{
+            didChangeItem(code == 15)
+        }else if code == 18 || code == 19{
+            didCollect(code == 18)
         }
     }
     
@@ -368,7 +374,7 @@ class PlayNetwork: PlayConvenience{
         }else if creds == nil{
             creds = (url: URL(string: "http://example.com")!, sig: Data(), salt: Data(), time: 1, id: "")
         }
-        send = connect("192.168.1.64:65152", recieved)
+        send = connect("192.168.1.141:65152", recieved)
         var data = Data()
         data.write(critid(0))
         data.write(UInt16(VERSION))

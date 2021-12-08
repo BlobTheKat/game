@@ -620,16 +620,22 @@ class Planet: Object{
             n.zRotation += angularVelocity * r / d
         }
     }
+    var items = [ColonizeItem?](repeating: nil, count: 256)
     override func decode(data: inout Data) {
         //decode things on the planet
         var len = data.readunsafe() as UInt8
         self.buyable = len & 128 != 0
         len &= 127
         var i = 0, ci = 0
+        for i in 0..<self.items.count{
+            self.items[i] = nil
+        }
         while(i < len){
             while (self.children.count > ci ? self.children[ci].name : nil) != nil{ci += 1;continue}
             let item = (type: ColonizeItemType.init(rawValue: data.readunsafe()) ?? .lab, lvl: data.readunsafe() as UInt8, capacity: data.readunsafe() as UInt8)
-            self.populate(with: item, rot: data.readunsafe() as UInt8, node: self.children.count > ci ? self.children[ci] as? SKSpriteNode : nil)
+            let rot = data.readunsafe() as UInt8
+            self.items[Int(rot)] = item
+            self.populate(with: item, rot: rot, node: self.children.count > ci ? self.children[ci] as? SKSpriteNode : nil)
             i += 1
             ci += 1
         }

@@ -1,12 +1,21 @@
 process.stdout.write('\x1bc')
 var PORT = 65152;
 const VERSION = 1;
+const SERVERCOUNT = 1n;
+const crypto = require("crypto")
 //client states: 0 (authed) 1 (idle) 2 (live) 3 (hidden)
 var dgram = require('dgram');
 var server = dgram.createSocket('udp4');
 var fs = require('fs');
+const PRIVATE_KEY = fs.readFileSync(".i", "utf-8")
 var fetch, verify, Buf, BufWriter, TYPES
 exit = process.exit
+function sign(doc){
+	const signer = crypto.createSign('RSA-SHA256')
+	signer.write(doc)
+	signer.end()
+	return signer.sign(PRIVATE_KEY, 'binary')
+}
 try{fetch = require('node-fetch')}catch(e){
     console.log("\x1b[31m[Error]\x1b[37m To run this server, you need to install node-fetch 2.6.2. Type this in the bash shell: \x1b[m\x1b[34mnpm i node-fetch@2.6.2\x1b[m")
     process.exit(1)
@@ -302,13 +311,15 @@ class Planet{
     }
     toBuf(buf, id){
         if(!this.data || !this.data.items)return
+				let it = this.data.items
         buf.short(id)
-        buf.byte(Math.min(this.data.items.length, 127) + (this.resource && !this.data.owner && !this.superhot ? 128 : 0))
-        for(var itm of this.data.items){
-            buf.byte(itm.id)
-            buf.byte(itm.lvl)
-            buf.byte(itm.cap)
-            buf.byte(itm.rot)
+				let k = Object.keys(it).slice(0,127)
+        buf.byte(k.length + (this.resource && !this.data.owner && !this.superhot ? 128 : 0))
+        for(var i of k){
+            buf.byte(it[i].id)
+            buf.byte(it[i].lvl)
+            buf.byte(it[i].cap)
+            buf.byte(i)
         }
     }
 }
@@ -518,6 +529,13 @@ class ClientData{
         sector.objects[sector.objects.indexOf(this)]=A
         while(sector.objects[sector.objects.length-1]==A)sector.objects.pop()
     }
+		save(){
+			let buf = Buffer.from(JSON.stringify(this.data))
+			let sig = sign(buf)
+			buf = Buffer.concat([Buffer.of(sig.length, sig.length >> 8), sig, buf])
+			sig = Number((BigInt("0x" + this.playerid.slice(3)) % SERVERCOUNT))
+			
+		}
 }
 const bundleId = "locus.tunnelvision"
 let delay
@@ -678,7 +696,7 @@ let msgs = {
 		let planet = sector.planets[x]
 		if(!planet || planet.owner != this.playerid)return reply(Buffer.of(16))
 		x = data.ubyte()
-		if(!planet.data.items || planet.data.items.length <= x)return reply(Buffer.of(16))
+		if(!planet.data.items || !planet.data.items[x])return reply(Buffer.of(16))
 		x = planet.data.items[x]
 		if(data.length > data.i){
 			//rotate
@@ -695,7 +713,7 @@ let msgs = {
 	17(data, reply){
 		let x = data.ushort()
 		let planet = sector.planets[x]
-		if(!planet || planet.owner != this.playerid || !planet.data.items)return reply(Buffer.of(16))
+		if(!planet || planet.owner != this.playerid || !planet.data.items)return reply(Buffer.of(19))
 		let earned = 0
 		for(var i of planet.data.items){
 			if(i.id == 0){

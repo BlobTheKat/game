@@ -97,8 +97,8 @@ class Play: PlayCore{
     
     let loadingbg = SKShapeNode(rect: CGRect(x: -150, y: 0, width: 300, height: 3))
     
-    
     func suit(_ id: Int){
+        //change ship. also changes the characteristics of the ship
         ship.id = id
         let sh = ships[id]
         guard case .string(let t) = sh["texture"] else {fatalError("invalid texture")}
@@ -112,7 +112,11 @@ class Play: PlayCore{
         ship.shootPoints = SHOOTPOINTS[id-1]
         ship.shootVectors = SHOOTVECTORS[id-1]
     }
-    let NORMAL = 1300.0
+    let NORMAL = 1300.0 //used for screen sizing
+    //NORMAL is basically saying "If you add width and height and they add up to NORMAL, then there should be no scaling"
+    //"If they add up to HIGHER, objects are scaled up a bit"
+    //"If they add up to LOWER, objects are scaled down a bit"
+    //Thus, a higher NORMAL value will scale things down overall, and a lower NORMAL value will scale things up overall
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -633,9 +637,7 @@ class Play: PlayCore{
         tunnel2.removeFromParent()
         
     }
-     
     func DisplayWARNING(_ label: String, _ warningType: Int, _ blink: Bool){
-        
         if warningType == 1{
             warning.texture = SKTexture(imageNamed: "warning")
         }else if warningType == 2 {
@@ -651,7 +653,7 @@ class Play: PlayCore{
             warning.run(SKAction.repeatForever(SKAction.sequence([
             
                 SKAction.fadeAlpha(to: 1, duration: 1).ease(.easeInEaseOut),
-                SKAction.fadeAlpha(to: 0.15, duration: 1).ease(.easeInEaseOut)
+                SKAction.fadeAlpha(to: 0.4, duration: 1).ease(.easeInEaseOut)
             ])), withKey: "warningAlpha")
         }else{
             warning.run(SKAction.fadeAlpha(to: 1, duration: 1).ease(.easeIn))
@@ -753,12 +755,14 @@ class Play: PlayCore{
         if thrustButton.parent == nil{cam.addChild(thrustButton)}
         if shipDirection.parent == nil{cam.addChild(shipDirection)}
     }
-    override func bought(_ success: Bool){
+    override func didBuy(_ success: Bool){
         guard success else{
+            //FAILED TO COLONIZE HERE
+            
             return
         }
         cam.run(SKAction.sequence([
-            .run{ self.DisplayWARNING("colonized succesfuly",2,false)},
+            .run{ self.DisplayWARNING("colonized successfuly",2,false)},
             .wait(forDuration: 2),
             .run{self.cam.removeAction(forKey: "warningAlpha")},
             .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
@@ -1025,14 +1029,12 @@ class Play: PlayCore{
         if mapIcon == node{
             mapIcon.texture = SKTexture(imageNamed: "map")
         }
-        
         if cockpitIcon == node{
             cockpitIcon.texture = SKTexture(imageNamed: "cockpitOff")
             self.end()
             SKScene.transition = SKTransition.crossFade(withDuration: 1.5)
             DPlay.renderTo(skview)
             SKScene.transition = SKTransition.crossFade(withDuration: 0)
-            
         }
     }
     var d = Data()

@@ -332,13 +332,40 @@ class PlayCore: PlayAmbient{
         }
         DEBUG_TXT.text = "X: \(%ship.position.x) / Y: \(%ship.position.y)\nDX: \(%ship.velocity.dx) / DY: \(%ship.velocity.dy)\nA: \(%ship.zRotation), AV: \(%ship.angularVelocity)\nVEL: \(%vel) VER: \(build)\nMEM: \(lastMem)MB NET: \(Int(Double(lastU) * gameFPS / 20480.0))KB/s\n\(logs.joined(separator: "\n"))"
     }
-    
-    
-    // COLONISATION
+    // USED FOR COLONIZING A PLANET
     func colonize(_ planet: Planet){
-        var data = Data([10])
+        var data = Data()
+        data.write(critid(10))
         data.write(UInt32(planets.firstIndex(of: planet)!))
         data.write(UInt32(1))
-        send(data)
+        critical(data, abandoned: {
+            //Error: NOT_ACK'D
+            self.didBuy(false)
+        })
+    }
+    //USED FOR MOVING ITEMS AND UPGRADING THEM
+    //changeItem(_ planet: Planet, _ rot: Int, _ newrot: Int) is for MOVING item to newrot
+    //changeItem(_ planet: Planet, _ rot: Int) is for UPGRADING item
+    func changeItem(_ planet: Planet, _ rot: Int, _ newrot: Int = -1){
+        
+        guard planet.items[rot] != nil else {return}
+        var dat = Data()
+        dat.write(critid(14))
+        dat.write(UInt16(planets.firstIndex(of: planet)!))
+        dat.write(UInt8(rot))
+        if newrot != -1{dat.write(UInt8(newrot))}
+        critical(dat, abandoned: {
+            self.didChangeItem(false)
+        })
+    }
+    
+    //USED FOR COLLECTING ALL THE ITEMS FROM PLANET
+    func collectFrom(_ planet: Planet){
+        var dat = Data()
+        dat.write(critid(17))
+        dat.write(UInt16(planets.firstIndex(of: planet)!))
+        critical(dat, abandoned: {
+            self.didCollect(false)
+        })
     }
 }
