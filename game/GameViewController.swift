@@ -11,7 +11,6 @@ import GameplayKit
 
 var skview: SKView = SKView()
 var controller: UIViewController = UIViewController()
-var server = servers.uswest
 
 class GameViewController: UIViewController {
 
@@ -29,9 +28,6 @@ class GameViewController: UIViewController {
             view.preferredFramesPerSecond = 60
             view.showsNodeCount = true
             view.showsFPS = true
-        }
-        if let s = UserDefaults.standard.string(forKey: "server"){
-            server = s
         }
     }
     override var shouldAutorotate: Bool {

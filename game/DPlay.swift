@@ -60,13 +60,7 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
     override func didMove(to view: SKView) {
 
         self.addChild(inShipSound)
-        self.addChild(playerWalking)
-        playerWalking.run(stopSound)
-        
-        self.run(SKAction.repeatForever(SKAction.sequence([
-            SKAction.run{ self.inShipSound.run(playSound)},
-            SKAction.wait(forDuration: 49)
-        ])))
+        playerWalking.autoplayLooped = true
         vibrateCamera(camera: cam, amount: 1)
         //SCENE
         self.addChild(cam)
@@ -256,13 +250,12 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
     override func update(_ currentTime: TimeInterval){
         
         if (movingRight || movingLeft || movingUp || movingDown) && !playingWalkingSound{
-            
             playingWalkingSound = true
-            self.playerWalking.run(playSound)
+            self.addChild(self.playerWalking)
         }
         if !movingRight && !movingLeft && !movingUp && !movingDown{
             
-            self.playerWalking.run(stopSound)
+            self.playerWalking.removeFromParent()
             playingWalkingSound = false
         }
         

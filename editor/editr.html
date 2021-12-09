@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#fff">
+	<style>
+		header{
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 50px;
+			background-color: #ccc;
+			z-index: 9;
+			box-shadow: 0 -10px 20px #000;
+		}
+		files{
+			position: fixed;
+			left: 0;
+			top: 50px;
+			bottom: 0;
+			width: 200px;
+			background-color: #ddd;
+			z-index: 1;
+			box-shadow: -10px 0 20px #000;
+		}
+		code{
+			position: fixed;
+			top: 50px;
+			left: 200px;
+			bottom: 0;
+			right: 0;
+		}
+		textarea, visual{
+			outline: none;
+			-webkit-tap-highlight-color: transparent;
+			padding: 8px;
+			color: #111;
+			font-family: menlo, monospace;
+			position: absolute;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			right: 0;
+			border: none;
+			resize: none;
+			width: 100%;
+			height: 100%;
+			z-index: 8;
+			background-color: transparent;
+			color: transparent;
+			caret-color: #333;
+			font-size: 12px;
+			line-height: 16px;
+			-moz-tab-size: 2;
+      -o-tab-size: 2;
+      tab-size: 2;
+		}
+		textarea::selection{
+			background: rgba(127,127,127,0.5);
+			color: transparent;
+		}
+		code{background-color: #eee}
+		visual{
+			z-index:7;
+			white-space: pre-wrap;
+			overflow: auto;
+			padding-right: 20px;
+			right: -12px;
+			width: unset;
+			color: red;
+		}
+		@media (max-width: 400px){
+			files{
+				width: var(--w);
+			}
+			code{
+				left: var(--w);
+			}
+		}
+		html, body{
+			height: 100%;
+			touch-action: none;
+			font-family: Arial;
+			font-size: 12px;
+			overscroll-behavior: none;
+			-webkit-user-drag: none;
+			-khtml-user-drag: none;
+			-moz-user-drag: none;
+			-o-user-drag: none;
+			overflow: hidden;
+		}
+		*{margin:0;padding:0;box-sizing:border-box}
+		span{
+			text-size-adjust: none;
+			-webkit-text-size-adjust: none;
+		}
+		.str{ color: #07F }
+		.num{ color: #4C4 }
+		.key{
+			color: #F65;
+			font-weight: bold
+		}
+		.nul {
+			color: #07F;
+			font-weight: bold
+		}
+		.other, .id { color: #111 }
+		@media (prefers-color-scheme: dark) { 
+      .str { color: #05D }
+			.num { color: #2A2 }
+			.key { color: #D43 }
+			.nul { color: #05D }
+			.other, .id { color: #EEE }
+			header{
+				background-color: #333;
+			}
+			files{
+				background-color: #222;
+			}
+			visual{
+				background: #111;
+			}
+			textarea{
+				caret-color: #ccc;
+			}
+    }
+	</style>
+</head>
+<body>
+	<header></header>
+	<files></files>
+	<code><textarea spellcheck="false" oninput="highlight()" onkeydown="handle(event)"></textarea><visual></visual></code>
+	<script>
+	let textarea = document.querySelector("textarea")
+	textarea.onpaste=textarea.onkeypress
+	let start = textarea.selectionStart, end = textarea.selectionEnd
+	document.onselectionchange=function(event){
+		start=textarea.selectionStart
+		end=textarea.selectionEnd
+	}
+	let visual = textarea.nextElementSibling
+	textarea.onscroll = () => visual.scrollTo(textarea.scrollLeft, textarea.scrollTop)
+	const sanidiv = document.createElement('div');
+	const sanitxt = document.createTextNode('');
+	sanidiv.appendChild(sanitxt);
+	function esc(text){
+		sanitxt.nodeValue = text;
+		return sanidiv.innerHTML;
+	}
+	let tabs = /(\t*)(class|func|if|for|else(?: *(?:\n|$)| +(?:if|for|while))|init|while)?/y
+	let tabs2 = /\t*( +)/y
+	function handle(e){
+		if(e.keyCode == 9){
+			e.preventDefault()
+			document.execCommand("insertText", false, "\t")
+		}
+		if(e.keyCode == 13){
+			//enter
+			e.preventDefault()
+			let t = textarea.value.slice(0, start)
+			tabs.lastIndex = t.lastIndexOf("\n")+1
+			t = t.match(tabs)
+			t = "\n" + t[1] + (t[2] ? "\t" : "")
+			document.execCommand("insertText", false, t)
+		}
+		if(e.keyCode == 32){
+			let t = textarea.value.slice(0, start)
+			tabs2.lastIndex = t.lastIndexOf("\n")+1
+		 	t = t.match(tabs2)
+			if(t && tabs2.lastIndex == start){
+				e.preventDefault()
+				start -= t[1].length
+				reselect()
+				t = t[1].length / 2 + 0.5
+				t = "\t".repeat(Math.floor(t)) + (t%1 ? " " : "")
+				document.execCommand("insertText", false, t)
+			}
+		}
+	}
+	let reg = /('(?:[^'\\]|\\.)*'?|"(?:[^"\\]|\\.)*"?|`(?:[^`\\]|\\.)*`?)|([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d*)?|nan(?!\w)|[+-]?inf(?!\w))|(class|if|else|while|for|import|as|init|func|throw|return)(?!\w)|(null|self|true|false)|(\.?\w+)|([-=+[\]{}|?/<>,.!@$%^&*()#`~:;])|[^]/y
+	let names = [, "str", "num", "key", "nul", "id", "other"]
+	let and = (a, b) => a && b
+	function reselect(){textarea.selectionStart = start;textarea.selectionEnd = end}
+	function highlight(){
+		let str = textarea.value
+		let nodes = document.createDocumentFragment()
+		reg.lastIndex = 0
+		while(reg.lastIndex < str.length){
+			let match = str.match(reg)
+			let name = names[match.findIndex(and)]
+			if(name){
+				let node = document.createElement("span")
+				node.textContent = match[0]
+				node.classList.add(name)
+				nodes.appendChild(node)
+			}else{
+				let n = nodes.lastChild
+				if(n instanceof Text)n.appendData(match[0])
+				else nodes.appendChild(document.createTextNode(match[0]))
+			}
+		}
+		visual.innerHTML = ""
+		visual.appendChild(nodes)
+	}
+	function append(textchunk){
+		textarea.value += textchunk
+		reselect()
+	}
+	function prepend(textchunk){
+		start += textchunk.length
+		end += textchunk.length
+		textarea.value = textchunk + textarea.value
+		reselect()
+	}
+	function id(id){
+    return document.getElementById(id)
+  }
+  let varfor = el => new Proxy(el.style, {
+    get(t, k){
+      return t.getPropertyValue("--" + k.replace(/[A-Z]/g, a => "-"+a.toLowerCase()))
+    },
+    set(t, k, v){
+      t.setProperty("--" + k.replace(/[A-Z]/g, a => "-"+a.toLowerCase()), v)
+			return true;
+    }
+  })
+  const vars = varfor(document.body)
+
+	</script>
+</body>

@@ -91,9 +91,11 @@ class Disconnected: PlayConvenience{
         shaders.zPosition = 5
         self.addChild(shaders)
     }
-    
+    var moved = false
     
     override func touch(at _: CGPoint) {
+        if moved{return}
+        moved = true
         SKScene.transition = SKTransition.crossFade(withDuration: 1.5)
         Play.renderTo(skview)
         SKScene.transition = SKTransition.crossFade(withDuration: 0)
