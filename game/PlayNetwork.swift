@@ -50,7 +50,7 @@ class PlayNetwork: PlayConvenience{
             fatalError("Message code cannot be higher than 127")
         }
         if SEQ < 255{SEQ += 1}else{SEQ = 0}
-        return UInt16(a + (SEQ<<8) + 128)
+        return UInt16(a) + UInt16(SEQ)*256 + 128
     }
     func critical(_ dat: Data, resend: Double = 0.5, abandon: Int = 10, abandoned: @escaping () -> () = {}, sent: @escaping () -> () = {}){
         let s = SEQ
@@ -63,6 +63,7 @@ class PlayNetwork: PlayConvenience{
             if !crits.contains(s){a();sent()}else if tries == abandon{
                 abandoned()
                 a()
+                crits.remove(s)
             }else{
                 send(dat)
                 tries += 1
@@ -269,6 +270,7 @@ class PlayNetwork: PlayConvenience{
             code -= 128
             if data.count < 1{return}
             let s = data.readunsafe() as UInt8
+
             if !crits.contains(s){return}
             crits.remove(s)
         }
@@ -343,16 +345,13 @@ class PlayNetwork: PlayConvenience{
                 
             }
         }else if code == 11{
-            print("colonize ok")
             self.didBuy(true)
-            //complete colonization
         }else if code == 12{
             while data.count > 0{
                 let id = Int(data.readunsafe() as UInt16)
                 planets[id].decode(data: &data)
             }
         }else if code == 13{
-            print("colonize not ok")
             self.didBuy(false)
         }else if code == 15 || code == 16{
             didChangeItem(code == 15)
@@ -360,9 +359,12 @@ class PlayNetwork: PlayConvenience{
             let a = Double(data.readunsafe() as UInt32)
             energyAmount += a
             lastSentEnergy += a
+            
             didCollect(true)
+            
         }else if code == 19{
             didCollect(false)
+            
         }
     }
     
@@ -382,7 +384,7 @@ class PlayNetwork: PlayConvenience{
         }else if creds == nil{
             creds = (url: URL(string: "http://example.com")!, sig: Data(), salt: Data(), time: 1, id: "")
         }
-        send = connect("192.168.1.248:65152", recieved)
+        send = connect("192.168.1.141:65152", recieved)
         var data = Data()
         data.write(critid(0))
         data.write(UInt16(VERSION))

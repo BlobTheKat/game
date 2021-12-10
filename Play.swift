@@ -17,9 +17,7 @@ var currentPlanetTexture = SKTexture()
 class Play: PlayCore{
     
     //SOUND EFFECT
-    
     var lightSpeedOut = SKAction.playSoundFileNamed("LightSpeedOut.wav", waitForCompletion: false)
-   
     var playedLightSpeedOut = false
     var health = 13
     var shootSound = SKAction.playSoundFileNamed("Lazer.wav", waitForCompletion: false)
@@ -30,7 +28,6 @@ class Play: PlayCore{
     var playingThrustSound = false
 
     //COLONIZE
-    var presence = false
     var colonize = false
     let colonizeBG = SKSpriteNode(imageNamed: "coloBG")
     let coloPlanet = SKSpriteNode(imageNamed: "coloPlanet")
@@ -52,7 +49,7 @@ class Play: PlayCore{
     let editColoIcon = SKSpriteNode(imageNamed: "editPlanet")
     let collect = SKSpriteNode(imageNamed: "collect")
     
-    let collectedLabel = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+    
     let collectStorageLabel = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
     
     let buildBG = SKSpriteNode(imageNamed: "buildBG")
@@ -818,11 +815,8 @@ class Play: PlayCore{
         ]))
     }
     
-    
+    var camp = Complex(r: CGFloat(), i: CGFloat())
     func planetEditMode(){
-       
-       
-        
         presence.toggle()
 
         buildBG.anchorPoint = CGPoint(x: 0.5,y: 1)
@@ -837,22 +831,19 @@ class Play: PlayCore{
         coloArrow.alpha = 1
         coloArrow.zPosition = 1000
         coloArrow.setScale(0.15)
-       
-        
-        
-        if presence == true{
+        if presence{
             cam.addChild(buildBG)
             cam.addChild(coloArrow)
-            
-        }
-        if presence == false{
+            cam.position = planetLanded!.position
+            rot = 0
+            camp.x = 0
+            camp.y = planetLanded!.radius - self.size.width / 15
+            cam.position.y += camp.y
+            cam.setScale(1)
+        }else{
             coloArrow.removeFromParent()
             buildBG.removeFromParent()
-            
-            
         }
-        
-        
     }
     override func nodeDown(_ node: SKNode, at point: CGPoint) {
         
@@ -881,12 +872,26 @@ class Play: PlayCore{
                     .run{self.cam.removeAction(forKey: "warningAlpha")},
                     .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
                 ]))
-                
-                
             }
             break
         case editColoIcon:
             planetEditMode()
+            break
+        case collect:
+            if planetLanded != nil{collectFrom(planetLanded!)}
+            break
+        case coloArrow:
+            if point.x > coloArrow.position.x{
+                rot &+= 1
+                camp *= ROT_STEP
+                cam.position = planetLanded!.position + camp.point()
+                cam.zRotation += PI256
+            }else{
+                rot &-= 1
+                camp /= ROT_STEP
+                cam.position = planetLanded!.position + camp.point()
+                cam.zRotation -= PI256
+            }
             break
         default:
             break

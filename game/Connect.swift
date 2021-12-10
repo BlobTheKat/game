@@ -216,7 +216,7 @@ struct M{
 let messages = M()
 
 var secx = 2000
-var secy = 2000
+var secy = 5000
 
 /*
  Token Format:
