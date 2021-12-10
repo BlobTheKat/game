@@ -101,7 +101,9 @@ class PlayCore: PlayAmbient{
             self.spaceUpdate()
         }
     }
+    var presence = false
     func cameraUpdate(){
+        if presence{return}
         let cx = cam.xScale * self.size.width / 2
         let cy = cam.yScale * self.size.height / 2
         let bx = ((loadstack.size?.width ?? CGFloat.infinity) + border2.size.width) / 2 - 100
@@ -146,9 +148,13 @@ class PlayCore: PlayAmbient{
         stars2.update()
         stars3.position = CGPoint(x: cam.position.x / 2, y: cam.position.y / 2)
         stars3.update()
+        if let planetLanded = planetLanded{
+            collectedLabel.text = "\(Int(NSDate().timeIntervalSince1970 - planetLanded.last) * Int(planetLanded.persec))"
+        }
     }
     var _a = 0
     var planetLanded: Planet? = nil
+    let collectedLabel = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
     func spaceUpdate(){
       
         
@@ -361,6 +367,7 @@ class PlayCore: PlayAmbient{
     
     //USED FOR COLLECTING ALL THE ITEMS FROM PLANET
     func collectFrom(_ planet: Planet){
+        
         var dat = Data()
         dat.write(critid(17))
         dat.write(UInt16(planets.firstIndex(of: planet)!))

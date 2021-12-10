@@ -295,33 +295,34 @@ function tick(sector){
 }
 
 class Planet{
-    constructor(dict){
-        this.x = +dict.x
-        this.y = +dict.y
-        this.radius = dict.radius
-        this.mass = dict.mass
-        this.z = 0
-        this.dz = dict.spin
-        this.superhot = dict.superhot
-        this.filename = "pdata/" + (sector.x + this.x) + "_" + (sector.y + this.y) + ".json"
-        let dat
-        try{if(!dict.resource)throw null;dat = JSON.parse(fs.readFileSync(this.filename))}catch(e){dat = null}
-        this.resource = dict.resource
-        this.data = dat
-    }
-    toBuf(buf, id){
-        if(!this.data || !this.data.items)return
-				let it = this.data.items
-        buf.short(id)
-				let k = Object.keys(it).slice(0,127)
-        buf.byte(k.length + (this.resource && !this.data.owner && !this.superhot ? 128 : 0))
-        for(var i of k){
-            buf.byte(it[i].id)
-            buf.byte(it[i].lvl)
-            buf.byte(it[i].cap)
-            buf.byte(i)
-        }
-    }
+	constructor(dict){
+		this.x = +dict.x
+		this.y = +dict.y
+		this.radius = dict.radius
+		this.mass = dict.mass
+		this.z = 0
+		this.dz = dict.spin
+		this.superhot = dict.superhot
+		this.filename = "pdata/" + (sector.x + this.x) + "_" + (sector.y + this.y) + ".json"
+		let dat
+		try{if(!dict.resource)throw null;dat = JSON.parse(fs.readFileSync(this.filename))}catch(e){dat = null}
+		this.resource = dict.resource
+		this.data = dat
+	}
+	toBuf(buf, id){
+		if(!this.data || !this.data.items)return
+		let it = this.data.items
+		buf.short(id)
+		buf.int(this.last || (this.last = Date.now()/1000 - 6))
+		let k = Object.keys(it).slice(0,127)
+		buf.byte(k.length + (this.resource && !this.data.owner && !this.superhot ? 128 : 0))
+		for(var i of k){
+			buf.byte(it[i].id)
+			buf.byte(it[i].lvl)
+			buf.byte(it[i].cap)
+			buf.byte(i)
+		}
+	}
 }
 const PI2 = Math.PI * 2
 class Asteroid{
@@ -693,7 +694,7 @@ let msgs = {
 	14(data, res){
 		let x = data.ushort()
 		let planet = sector.planets[x]
-		if(!planet || planet.owner != this.playerid)return res.code(16).send()
+		if(!planet || planet.data.owner != this.playerid)return res.code(16).send()
 		x = data.ubyte()
 		if(!planet.data.items || !planet.data.items[x])return res.code(16).send()
 		x = planet.data.items[x]
@@ -712,19 +713,20 @@ let msgs = {
 	17(data, res){
 		let x = data.ushort()
 		let planet = sector.planets[x]
-		if(!planet || planet.owner != this.playerid || !planet.data.items)return res.code(19).send()
+		if(!planet || !planet.data || planet.data.owner != this.playerid || !planet.data.items)return res.code(19).send()
 		let earned = 0
-		for(var i of planet.data.items){
-			if(i.id == 0){
-				earned += i
+		for(var i in planet.data.items){
+			let itm = planet.data.items[i]
+			if(itm.id == 0){
+				earned += 1
 			}
 		}
 		res.code(18)
-		planet.last = planet.last || Date.now() - 6e4
-		let diff = Math.floor((Date.now() - planet.last) / 6e4)
+		planet.last = planet.last || Math.floor(Date.now()/1000 - 6)
+		let diff = Math.floor(Date.now()/1000 - planet.last)
 		this.data.bal += earned * diff
 		res.int((earned * diff) >>> 0)
-		planet.last += diff * 6e4
+		planet.last += diff
 		res.send()
 	}
 }

@@ -377,3 +377,61 @@ extension FixedWidthInteger{
 @inline(__always) func fdiv(_ x: Int, _ y: Int) -> Int{
     return (abs(x) / y) * (x < 0 ? -1 : 1)
 }
+
+
+
+
+
+struct Complex<T> where T: Numeric{
+    var r: T
+    var i: T
+    var x: T{
+        get{return r}
+        set{r = newValue}
+    }
+    var y: T{
+        get{return i}
+        set{i = newValue}
+    }
+    @inline(__always) static func +(a: Self, b: Self) -> Self{
+        return Self(r: a.r + b.r, i: a.i + b.i)
+    }
+    @inline(__always) static func +=(a: inout Self, b: Self){
+        a.i += b.i
+        a.r += b.r
+    }
+    @inline(__always) static func -(a: Self, b: Self) -> Self{
+        return Self(r: a.r - b.r, i: a.i - b.i)
+    }
+    @inline(__always) static func -=(a: inout Self, b: Self){
+        a.i -= b.i
+        a.r -= b.r
+    }
+    @inline(__always) static func *(a: Self, b: Self) -> Self{
+        return Self(r: a.r * b.r - a.i * b.i, i: a.i * b.r + a.r * b.i)
+    }
+    @inline(__always) static func *=(a: inout Self, b: Self){
+        let r = a.r * b.r - a.i * b.i
+        a.i = a.i * b.r + a.r * b.i
+        a.r = r
+    }
+    @inline(__always) static func /(a: Self, b: Self) -> Self where T: FloatingPoint{
+        let B = b.r * b.r + b.i * b.i
+        return Self(r: (b.r * a.r + b.i * a.i) / B, i: (a.i * b.r - a.r * b.i) / B)
+    }
+    @inline(__always) static func /=(a: inout Self, b: Self) where T: FloatingPoint{
+        let B = b.r * b.r + b.i * b.i
+        let r = (b.r * a.r + b.i * a.i) / B
+        a.i = (a.i * b.r - a.r * b.i) / B
+        a.r = r
+    }
+    func abs() -> T where T: FloatingPoint{
+        return sqrt(r * r - i * i)
+    }
+    @inline(__always) static func ==(a: Self, b: Self) -> Bool{
+        return a.r == b.r && a.i == b.i
+    }
+    func point() -> CGPoint where T == CGFloat{
+        return CGPoint(x: r, y: i)
+    }
+}

@@ -10,7 +10,8 @@ import SpriteKit
 import Network
 
 let MAX_DELAY = 300 //in milliseconds, the maximum amount of time a packet can be delayed for smoothness
-
+let PI256: CGFloat = .pi / 128 //for converting radians to octians
+let ROT_STEP = Complex(r: cos(PI256), i: -sin(PI256))
 //more = smoother, more delayed
 //less = faster, rougher
 
