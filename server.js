@@ -310,7 +310,7 @@ class Planet{
 		this.data = dat
 	}
 	toBuf(buf, id){
-		if(!this.data || !this.data.items)return
+		if(!this.data)return
 		let it = this.data.items
 		buf.short(id)
 		buf.int(this.last || (this.last = Date.now()/1000 - 6))
@@ -729,7 +729,7 @@ let msgs = {
 		planet.last += diff
 		unsaveds[planet.filename] = planet.data
 		res.send()
-	}
+	},
 	20(data, res){
 		let x = data.ushort()
 		let planet = sector.planets[x]
