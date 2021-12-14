@@ -191,8 +191,8 @@ func fetch(_ url: String, _ done: @escaping (Data) -> (), _ err: @escaping (Stri
         }
     }.resume()
 }
-var secx = 25000
-var secy = 26000
+var secx = 2000
+var secy = 5000
 
 /*
  Token Format:
