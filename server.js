@@ -665,7 +665,7 @@ let msgs = {
 			res.send(buf.toBuf())
 		}
 		
-		let energy = data.short()
+		let energy = data.int() + (data.int() << 32)
 		this.data.bal = energy
 		res.code(a ? 7 : 6)
 		res.byte(delay)

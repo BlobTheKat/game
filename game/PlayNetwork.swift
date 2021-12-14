@@ -203,7 +203,7 @@ class PlayNetwork: PlayConvenience{
             for i in needsNames.prefix(15){
                 data.write(UInt32(i))
             }
-            data.write(Int16(energyAmount - lastSentEnergy))
+            data.write(Int64(energyAmount))
             lastSentEnergy = energyAmount
             shotObj = nil
             hits = []
