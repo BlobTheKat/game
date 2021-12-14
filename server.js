@@ -727,6 +727,18 @@ let msgs = {
 		this.data.bal += earned * diff
 		res.int((earned * diff) >>> 0)
 		planet.last += diff
+		unsaveds[planet.filename] = planet.data
 		res.send()
+	}
+	20(data, res){
+		let x = data.ushort()
+		let planet = sector.planets[x]
+		if(!planet || planet.data.owner != this.playerid)return res.code(21).send()
+		x = data.ubyte()
+		let i = data.ubyte()
+		if((planet.data.items = planet.data.items || {})[x])return res.code(21).send()
+		planet.data.items[x] = {id: i, lvl: 1, cap: 0}
+		unsaveds[planet.filename] = planet.data
+		res.code(22).send()
 	}
 }

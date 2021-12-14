@@ -101,9 +101,16 @@ class PlayCore: PlayAmbient{
             self.spaceUpdate()
         }
     }
+    var prot: CGFloat = 0
     var presence = false
     func cameraUpdate(){
-        if presence{return}
+        if presence{
+            prot += planetLanded!.angularVelocity
+            planetLanded!.zRotation -= planetLanded!.angularVelocity
+            cam.position.x = (cam.position.x*9 + planetLanded!.position.x)/10
+            cam.position.y = (cam.position.y*9 + planetLanded!.position.y + planetLanded!.radius - self.size.width / 15)/10
+            return
+        }
         let cx = cam.xScale * self.size.width / 2
         let cy = cam.yScale * self.size.height / 2
         let bx = ((loadstack.size?.width ?? CGFloat.infinity) + border2.size.width) / 2 - 100
@@ -142,12 +149,14 @@ class PlayCore: PlayAmbient{
         border1.position.x = cam.position.x
         border2.position.y = cam.position.y
         drawDebug()
-        stars.position = CGPoint(x: cam.position.x / 4, y: cam.position.y / 4)
+        stars.position = CGPoint(x: cam.position.x / 2.6, y: cam.position.y / 2.6)
         stars.update()
-        stars2.position = CGPoint(x: cam.position.x / 2.6, y: cam.position.y / 2.6)
+        stars2.position = CGPoint(x: cam.position.x / 2, y: cam.position.y / 2)
         stars2.update()
-        stars3.position = CGPoint(x: cam.position.x / 2, y: cam.position.y / 2)
+        stars3.position = CGPoint(x: cam.position.x / 1.6, y: cam.position.y / 1.6)
         stars3.update()
+        stars4.update()
+        stars4.position = CGPoint(x: cam.position.x / 4, y: cam.position.y / 4)
         if let planetLanded = planetLanded{
             collectedLabel.text = "\(Int(NSDate().timeIntervalSince1970 - planetLanded.last) * Int(planetLanded.persec))"
         }
@@ -360,6 +369,18 @@ class PlayCore: PlayAmbient{
         dat.write(UInt16(planets.firstIndex(of: planet)!))
         dat.write(UInt8(rot))
         if newrot != -1{dat.write(UInt8(newrot))}
+        critical(dat, abandoned: {
+            self.didChangeItem(false)
+        })
+    }
+    func makeItem(_ planet: Planet, _ rot: Int, _ id: ColonizeItemType){
+        
+        guard planet.items[rot] != nil else {return}
+        var dat = Data()
+        dat.write(critid(20))
+        dat.write(UInt16(planets.firstIndex(of: planet)!))
+        dat.write(UInt8(rot))
+        dat.write(id.rawValue)
         critical(dat, abandoned: {
             self.didChangeItem(false)
         })

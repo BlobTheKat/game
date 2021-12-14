@@ -256,6 +256,7 @@ class PlayNetwork: PlayConvenience{
     func didBuy(_ success: Bool){}
     func didChangeItem(_ success: Bool){}
     func didCollect(_ success: Bool){}
+    func didMake(_ success: Bool){}
     var p = false
     var last: DispatchTime = .now()
     var authed = false
@@ -365,6 +366,8 @@ class PlayNetwork: PlayConvenience{
         }else if code == 19{
             didCollect(false)
             
+        }else if code == 21 || code == 22{
+            didMake(code == 22)
         }
     }
     
