@@ -621,6 +621,7 @@ let msgs = {
 		if(!(this.data.bal >= 10))return res.code(13).send()
 		planet.data = {}
 		planet.data.owner = this.playerid
+		planet.data.items = {0: {id: 0, lvl: 1, cap: 0}}
 		this.data.bal -= 10
 		unsaveds[planet.filename] = planet.data
 		res.code(11).send()
