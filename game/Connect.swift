@@ -191,32 +191,8 @@ func fetch(_ url: String, _ done: @escaping (Data) -> (), _ err: @escaping (Stri
         }
     }.resume()
 }
-
-enum ProtocolError: Error{
-    case valueTooLarge(msg: String)
-    case invalidCase(msg: String)
-    case serverUnhappy(msg: String)
-    case missingValue(msg: String)
-}
-
-struct M{
-    enum msg: UInt8{
-        case hello = 0
-        case keepalive = 1
-    }
-    func hello(name: String) throws -> Data{
-        if name.count > 64{throw ProtocolError.valueTooLarge(msg: "name cannot be longer than 64 characters")}
-        var data = Data([])
-        data.write(msg.hello)
-        data.write(UInt16(VERSION))
-        data.write(name)
-        return data
-    }
-}
-let messages = M()
-
-var secx = 2000
-var secy = 5000
+var secx = 25000
+var secy = 26000
 
 /*
  Token Format:
@@ -241,6 +217,8 @@ struct api{
         
     }
     static func sector(completion: @escaping (_ x: Int, _ y: Int) -> ()){
-        completion(secx, secy)
+        DispatchQueue.main.async {
+            completion(secx, secy)
+        }
     }
 }

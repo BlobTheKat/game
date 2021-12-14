@@ -399,10 +399,10 @@ class Planet: Object{
         node.userData!["type"] = item
         node.userData!["rot"] = rot
         node.removeAllActions()
-        let rot = CGFloat(rot) * .pi / 128
+        let rot = CGFloat(rot) * PI256
         node.setScale((self.xScale + self.yScale) / 4)
         node.anchorPoint = CGPoint(x: 0.5, y: ((item.type == .satellite ? -170 : 10) - self.radius) / node.size.height)
-        if item.type == .satellite{
+        if let p = parent as? Play, item.type == .satellite && !(p.planetLanded == self && p.presence){
             node.run(.repeatForever(SKAction.rotate(byAngle: self.angularVelocity + 0.05, duration: 1)))
         }
         node.zRotation = -rot
@@ -659,9 +659,9 @@ class Planet: Object{
                 
                 let n: SKSpriteNode
                 if node.children.count == 0{
-                    n = SKSpriteNode(imageNamed: "head")
+                    n = SKSpriteNode(imageNamed: "head\(item.lvl)")
                     n.anchorPoint = CGPoint(x: 0.5, y: 0)
-                    n.position.y = (self.radius * 4 / (self.xScale + self.yScale)) - 50
+                    n.position.y = (self.radius * 4 / (self.xScale + self.yScale)) - (item.lvl == 2 ? 50 : 40)
                     node.addChild(n)
                 }else{n = (node.children.first as! SKSpriteNode)}
                 

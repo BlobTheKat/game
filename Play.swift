@@ -814,8 +814,6 @@ class Play: PlayCore{
             .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
         ]))
     }
-    
-    var camp = Complex(r: CGFloat(), i: CGFloat())
     func planetEditMode(){
         presence.toggle()
 
@@ -834,15 +832,32 @@ class Play: PlayCore{
         if presence{
             cam.addChild(buildBG)
             cam.addChild(coloArrow)
-            cam.position = planetLanded!.position
             rot = 0
-            camp.x = 0
-            camp.y = planetLanded!.radius - self.size.width / 15
-            cam.position.y += camp.y
             cam.setScale(1)
+            prot = planetLanded!.zRotation
+            planetLanded!.zRotation = 0
+            for n in planetLanded!.children{
+                if n.name == nil && (n.userData?["type"] as? ColonizeItem)?.type == .satellite{
+                    (n as? SKSpriteNode)?.anchorPoint.y += 1.9
+                    n.removeAllActions()
+                    n.zRotation = -CGFloat(n.userData?["rot"] as! UInt8) * PI256
+                }
+            }
+            repeat{
+                if rot == 255{fatalError("PLANET IS EMPTY")}
+                planetLanded!.zRotation += PI256
+                rot += 1
+            }while planetLanded!.items[Int(rot)] == nil
         }else{
+            planetLanded!.zRotation = prot
             coloArrow.removeFromParent()
             buildBG.removeFromParent()
+            for n in planetLanded!.children{
+                if n.name == nil && (n.userData?["type"] as? ColonizeItem)?.type == .satellite{
+                    n.run(.repeatForever(SKAction.rotate(byAngle: planetLanded!.angularVelocity + 0.05, duration: 1)))
+                    (n as? SKSpriteNode)?.anchorPoint.y -= 1.9
+                }
+            }
         }
     }
     override func nodeDown(_ node: SKNode, at point: CGPoint) {
@@ -881,17 +896,19 @@ class Play: PlayCore{
             if planetLanded != nil{collectFrom(planetLanded!)}
             break
         case coloArrow:
+            var a: CGFloat = 0
             if point.x > coloArrow.position.x{
-                rot &+= 1
-                camp *= ROT_STEP
-                cam.position = planetLanded!.position + camp.point()
-                cam.zRotation += PI256
+                repeat{
+                    a += 1
+                    rot &+= 1
+                }while planetLanded!.items[Int(rot)] == nil
             }else{
-                rot &-= 1
-                camp /= ROT_STEP
-                cam.position = planetLanded!.position + camp.point()
-                cam.zRotation -= PI256
+                repeat{
+                    a -= 1
+                    rot &-= 1
+                }while planetLanded!.items[Int(rot)] == nil
             }
+            planetLanded!.run(.rotate(byAngle: a * PI256, duration: abs(a) / 180.0).ease(.easeInEaseOut))
             break
         default:
             break
@@ -926,11 +943,8 @@ class Play: PlayCore{
                 tracked.remove(at: i)
                 trackArrows.remove(at: i)
             }else{
-                
-                
                 let tracker1 = SKSpriteNode(imageNamed: "tracker1")
                 let tracker2 = SKSpriteNode(imageNamed: "tracker2")
-                
                 tracker1.zPosition = 9
                 tracker1.setScale(1)
                 n.addChild(tracker1)
@@ -939,8 +953,6 @@ class Play: PlayCore{
                 tracker2.setScale(1)
                 n.addChild(tracker2)
                 tracker2.run(.repeatForever(.rotate(byAngle: .pi, duration: 1.3)))
-                
-                
                 tracked.append(n)
                 let a = SKSpriteNode(imageNamed: "arrow\(tracked.count % 3)")
                 a.anchorPoint = CGPoint(x: 0.5, y: 1)
@@ -991,16 +1003,12 @@ class Play: PlayCore{
             }
         }
         if thrustButton == node{
-            
-            
-
             if point.y > thrustButton.position.y + 50{
                 thrustButton.texture = SKTexture(imageNamed: "shooting2")
                 if !usingConstantLazer{
                     self.actionStopped = false
                     constantLazer()
                 }
-                
             }else{
                 thrustButton.texture = SKTexture(imageNamed: "thrustOn")
                 self.removeAction(forKey: "constantLazer")
@@ -1137,7 +1145,9 @@ class Play: PlayCore{
         if key == .keyboardUpArrow || key == .keyboardW{
             ship.thrust = true
             if !playingThrustSound{
-                thrustSound.run(SKAction.changeVolume(to: 1.5, duration: 0.01))
+                thrustSound.removeAllActions()
+                thrustSound.removeFromParent()
+                thrustSound.run(SKAction.changeVolume(to: 1.5, duration: 0.1))
                 self.addChild(thrustSound)
                 playingThrustSound = true
             }
@@ -1227,6 +1237,7 @@ class Play: PlayCore{
                     self.playingThrustSound = false
                 }
             ]))
+            self.playingThrustSound = false
         }else if key == .keyboardRightArrow || key == .keyboardD{
             ship.thrustRight = false
         }else if key == .keyboardLeftArrow || key == .keyboardA{

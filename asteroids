@@ -1,24 +1,24 @@
 radius: 130 #id=0
-mass: 800
+mass: 200
 spin: 0.01
 texture: asteroid
 
-radius: 156 #id=1
-mass: 30000
+radius: 80 #id=1
+mass: 800
 spin: 0.01
 texture: asteroid1
 
-radius: 62 #id=2
-mass: 1000
+radius: 130 #id=2
+mass: 3000
 spin: 0.001
 texture: asteroid2
 
-radius: 134 # id=3
-mass: 800
+radius: 35 # id=3
+mass: 500
 spin: 0.00
 texture: asteroid3
 
-radius: 76 # id=4
-mass: 800
+radius: 50 # id=4
+mass: 300
 spin: -0.01
-texture: asteroid
+texture: asteroid4

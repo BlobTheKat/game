@@ -184,8 +184,8 @@ func exists(px: Int, py: Int) -> Bool{
     return false
 }
 func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @escaping (String) -> (), ipget: @escaping (String) -> (), load: @escaping (CGFloat) -> (), _ a: [SectorData] = []){
-    let regionx = 0//fdiv(x, REGIONSIZE)
-    let regiony = 0//fdiv(y, REGIONSIZE)
+    let regionx = fdiv(x, REGIONSIZE)
+    let regiony = fdiv(y, REGIONSIZE)
     guard sectors[CGPoint(x: regionx, y: regiony)] == nil else {
         let x = CGFloat(x)
         let y = CGFloat(y)
@@ -221,98 +221,100 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
     }
     sectors[CGPoint(x: regionx, y: regiony)] = a
     fetch("https://raw.githubusercontent.com/BlobTheKat/data/master/\(regionx)_\(regiony).region") { (d: Data) in
-        var data = d
-        //guard let _ = data.read() else {return}
-        var found = false
-        let xx = regionx * REGIONSIZE
-        let yy = regiony * REGIONSIZE
-        while data.count > 0{
-            var px = Int(data.readunsafe() as Int16) * 1000 + xx
-            var py = Int(data.readunsafe() as Int16) * 1000 + yy
-            let w = Int(data.readunsafe() as UInt16) * 1000
-            let h = Int(data.readunsafe() as UInt16) * 1000
-            px += w / 2
-            py += h / 2
-            let exists = exists(px: px, py: py)
-            let nl = data.readunsafe() as Int16
-            let ipl = data.readunsafe() as Int16
-            var len = data.readunsafe() as UInt32
-            let name = String(bytes: data.read(count: Int(nl)) as [UInt8], encoding: .utf8)!
-            let ip = String(bytes: data.read(count: Int(ipl)) as [UInt8], encoding: .utf8)!
-            var planets = [Planet]()
-            var s = (planets, (pos: CGPoint(x: px, y: py), size: CGSize(width: w, height: h)),(name:name,ip:ip))
-            let current = x > px - w/2 && x < px + w/2 && y > py - h/2 && y < py + h/2
-            found = found || current
-            if current{ipget(ip)}
-            while(len > 0){
-                len -= 1
-                let id = data.readunsafe() as UInt16
-                if id & 1 == 1{
-                    let _ = data.read(count: 8 + Int(id & 6) + Int(id & 8) / 2) as [UInt8]
-                    continue
-                }
-                let id2 = data.readunsafe() as UInt8
-                let x = Int(data.readunsafe() as Int32)
-                let y = Int(data.readunsafe() as Int32)
-                let p = Planet(radius: CGFloat(id / 256 + UInt16(id2) * 256), mass: CGFloat(data.readunsafe() as Int32))
-                p.position = CGPoint(x: x, y: y)
-                if id & 2 != 0{
-                    p.producesParticles = true
-                    p.particle = particles[Int(data.readunsafe() as Int16)]
-                }
-                if id & 4 != 0{
-                    p.angularVelocity = CGFloat(data.readunsafe() as Float)
-                }
-                p.superhot = id & 8 != 0
-                if !exists{planets.append(p)}
-                var img = (data.read(lentype: UInt8.self) ?? "none").split(separator: " ").map({a in return String(a)})
-                if img.count < 1{img.append("none")}
-                
-                if id & 16 != 0{
-                    p.emitf = CGFloat(data.readunsafe() as UInt8) / 100
-                }
-                if id & 32 != 0{
-                    let _ = data.read(lentype: UInt8.self) ?? ""
-                }
-                var i = 0
-                for img in img{
-                    var img = img.split(separator: ":")
-                    if img.count < 2{img.append("1")}
-                    let scale = CGFloat((img[1] as NSString).floatValue)
-                    let t = String(img[0])
-                    if i == 0{
-                        if current && !exists{
-                            p.texture = SKTexture(imageNamed: t)
-                            p.size = p.texture!.size()
-                        }
-                        p.setScale(scale)
-                        p.name = t
-                    }else{
-                        let node = SKSpriteNode()
-                        p.addChild(node)
-                        if current && !exists{
-                            node.texture = SKTexture(imageNamed: t)
-                            node.size = node.texture!.size()
-                        }
-                        node.setScale(scale)
-                        node.name = t
+        DispatchQueue.main.async {
+            var data = d
+            //guard let _ = data.read() else {return}
+            var found = false
+            let xx = regionx * REGIONSIZE
+            let yy = regiony * REGIONSIZE
+            while data.count > 0{
+                var px = Int(data.readunsafe() as Int16) * 1000 + xx
+                var py = Int(data.readunsafe() as Int16) * 1000 + yy
+                let w = Int(data.readunsafe() as UInt16) * 1000
+                let h = Int(data.readunsafe() as UInt16) * 1000
+                px += w / 2
+                py += h / 2
+                let exists = exists(px: px, py: py)
+                let nl = data.readunsafe() as Int16
+                let ipl = data.readunsafe() as Int16
+                var len = data.readunsafe() as UInt32
+                let name = String(bytes: data.read(count: Int(nl)) as [UInt8], encoding: .utf8)!
+                let ip = String(bytes: data.read(count: Int(ipl)) as [UInt8], encoding: .utf8)!
+                var planets = [Planet]()
+                var s = (planets, (pos: CGPoint(x: px, y: py), size: CGSize(width: w, height: h)),(name:name,ip:ip))
+                let current = x > px - w/2 && x < px + w/2 && y > py - h/2 && y < py + h/2
+                found = found || current
+                if current{ipget(ip)}
+                while(len > 0){
+                    len -= 1
+                    let id = data.readunsafe() as UInt16
+                    if id & 1 == 1{
+                        let _ = data.read(count: 8 + Int(id & 6) + Int(id & 8) / 2) as [UInt8]
+                        continue
                     }
-                    i += 1
+                    let id2 = data.readunsafe() as UInt8
+                    let x = Int(data.readunsafe() as Int32)
+                    let y = Int(data.readunsafe() as Int32)
+                    let p = Planet(radius: CGFloat(id / 256 + UInt16(id2) * 256), mass: CGFloat(data.readunsafe() as Int32))
+                    p.position = CGPoint(x: x, y: y)
+                    if id & 2 != 0{
+                        p.producesParticles = true
+                        p.particle = particles[Int(data.readunsafe() as Int16)]
+                    }
+                    if id & 4 != 0{
+                        p.angularVelocity = CGFloat(data.readunsafe() as Float)
+                    }
+                    p.superhot = id & 8 != 0
+                    if !exists{planets.append(p)}
+                    var img = (data.read(lentype: UInt8.self) ?? "none").split(separator: " ").map({a in return String(a)})
+                    if img.count < 1{img.append("none")}
+                    
+                    if id & 16 != 0{
+                        p.emitf = CGFloat(data.readunsafe() as UInt8) / 100
+                    }
+                    if id & 32 != 0{
+                        let _ = data.read(lentype: UInt8.self) ?? ""
+                    }
+                    var i = 0
+                    for img in img{
+                        var img = img.split(separator: ":")
+                        if img.count < 2{img.append("1")}
+                        let scale = CGFloat((img[1] as NSString).floatValue)
+                        let t = String(img[0])
+                        if i == 0{
+                            if current && !exists{
+                                p.texture = SKTexture(imageNamed: t)
+                                p.size = p.texture!.size()
+                            }
+                            p.setScale(scale)
+                            p.name = t
+                        }else{
+                            let node = SKSpriteNode()
+                            p.addChild(node)
+                            if current && !exists{
+                                node.texture = SKTexture(imageNamed: t)
+                                node.size = node.texture!.size()
+                            }
+                            node.setScale(scale)
+                            node.name = t
+                        }
+                        i += 1
+                    }
                 }
+                s.0 = planets
+                if px < xx || px > xx + REGIONSIZE || py < yy || py > yy + REGIONSIZE{
+                    let delegated = CGPoint(x: 0, y: 0)//fdiv(px, REGIONSIZE), y: fdiv(py, REGIONSIZE))
+                    if sectors[delegated] != nil{
+                        sectors[delegated]!.append(s)
+                    }else{
+                        sectors[delegated] = [s]
+                    }
+                }else{sectors[CGPoint(x: regionx, y: regiony)]!.append(s)}
+                if current{completion(s)}
             }
-            s.0 = planets
-            if px < xx || px > xx + REGIONSIZE || py < yy || py > yy + REGIONSIZE{
-                let delegated = CGPoint(x: 0, y: 0)//fdiv(px, REGIONSIZE), y: fdiv(py, REGIONSIZE))
-                if sectors[delegated] != nil{
-                    sectors[delegated]!.append(s)
-                }else{
-                    sectors[delegated] = [s]
-                }
-            }else{sectors[CGPoint(x: regionx, y: regiony)]!.append(s)}
-            if current{completion(s)}
+            if !found{err("Spacetime continuum ends here...");return}
+            loaded.insert(CGPoint(x: regionx, y: regiony))
         }
-        if !found{err("Spacetime continuum ends here...");return}
-        loaded.insert(CGPoint(x: regionx, y: regiony))
     } _: { e in
         err(e)
     }

@@ -12,7 +12,7 @@ class Disconnected: PlayConvenience{
     
     let charcter = SKSpriteNode(imageNamed: "character")
     let stars = SKSpriteNode(imageNamed: "stars11")
-    let planet = SKSpriteNode(imageNamed: "planet")
+    let planet = SKSpriteNode(imageNamed: "planetA")
     let rock1 = SKSpriteNode(imageNamed: "rock1")
     let rock2 = SKSpriteNode(imageNamed: "rock2")
     let rock3 = SKSpriteNode(imageNamed: "rock3")
