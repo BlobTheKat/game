@@ -350,7 +350,7 @@ class PlayNetwork: PlayConvenience{
         }else if code == 12{
             while data.count > 0{
                 let id = Int(data.readunsafe() as UInt16)
-                planets[id].decode(data: &data)
+                self.planets[id].decode(data: &data)
             }
         }else if code == 13{
             self.didBuy(false)
@@ -387,7 +387,7 @@ class PlayNetwork: PlayConvenience{
         }else if creds == nil{
             creds = (url: URL(string: "http://example.com")!, sig: Data(), salt: Data(), time: 1, id: "")
         }
-        send = connect("192.168.1.141:65152", recieved)
+        send = connect("192.168.1.248:65152", recieved)
         var data = Data()
         data.write(critid(0))
         data.write(UInt16(VERSION))

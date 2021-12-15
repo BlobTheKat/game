@@ -32,6 +32,12 @@ let clients = new Map()
 let FPS = 60
 let G = 0.0001
 let REGIONSIZE = 500000
+let CODES = {
+	HELLO: 0,
+	PING: 3,
+	PONG: 4,
+	DISCONNECT: 127
+}
 function strbuf(str){
     let b = Buffer.from("    "+str)
     b.writeUint32LE(b.length-4)
@@ -556,7 +562,7 @@ server.on('message', async function(m, remote) {
         //With this you can now reliably check if its critical without having to use a comparing operator
     }
 		if(message.critical && typeof ship == "object" && ship.crits[message.critical])return send(ship.crits[message.critical])
-    if(code === 0 && message.critical){
+    if(code === CODES.HELLO && message.critical){
         try{
             let version = message.ushort()
             if(version < VERSION)return send(Buffer.concat([Buffer.of(127), strbuf('Please Update')]))
@@ -607,10 +613,10 @@ server.on('message', async function(m, remote) {
     try{ship.ping();msgs[code].call(ship,message,r)}catch(e){console.log(e);send(Buffer.concat([Buffer.of(127), strbuf("Bad Packet")]))}
 });
 let msgs = {
-	3(data, res){
-		res.code(4).send()
+	[CODES.PING](data, res){
+		res.code(CODES.PONG).send()
 	},
-	127(data, res){
+	[CODES.DISCONNECT](data, res){
 		this.wasDestroyed()
 	},
 	10(data, res){
@@ -698,14 +704,16 @@ let msgs = {
 		if(!planet || planet.data.owner != this.playerid)return res.code(16).send()
 		x = data.ubyte()
 		if(!planet.data.items || !planet.data.items[x])return res.code(16).send()
-		x = planet.data.items[x]
 		if(data.length > data.i){
 			//rotate
-			x.rot = data.ubyte()
+			let y = data.ubyte()
+			if(planet.data.items[y])return res.code(16).send()
+				planet.data.items[y] = planet.data.items[x]
+				delete planet.data.items[x]
 		}else{
 			//lvlup
 			if(!(this.data.bal >= 10))return res.code(16).send()
-			x.lvl++
+			planet.data.items[x].lvl++
 			this.data.bal -= 10
 			unsaveds[planet.filename] = planet.data
 		}

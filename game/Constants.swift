@@ -22,8 +22,17 @@ let fbig: CGFloat = 72
 let gameFPS = 60.0
 let build = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "null"
 
+typealias byte = UInt8
+enum ColonizeItemType: UInt8{
+    case lab = 0
+    case shooter = 1
+    case dish = 2
+    case satellite = 3
+}
+let coloNames = ["lab", "shooter", "dish", "satellite"]
+typealias ColonizeItem = (type: ColonizeItemType, lvl: UInt8, capacity: UInt8)
+
 //star texture size * 2
-let SS: CGFloat = 2440
 
 var stop: [() -> ()] = []
 
@@ -169,7 +178,7 @@ func emptytextures(s: SectorData){
 
 }*/
 let REGIONSIZE = 500000
-func exists(px: Int, py: Int) -> Bool{
+func sectorExists(px: Int, py: Int) -> Bool{
     let delegated = CGPoint(x: 0, y: 0)//fdiv(px, REGIONSIZE), y: fdiv(py, REGIONSIZE))
     if let a = sectors[delegated]{
         if loaded.contains(delegated){
@@ -234,10 +243,10 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                 let h = Int(data.readunsafe() as UInt16) * 1000
                 px += w / 2
                 py += h / 2
-                let exists = exists(px: px, py: py)
-                let nl = data.readunsafe() as Int16
-                let ipl = data.readunsafe() as Int16
-                var len = data.readunsafe() as UInt32
+                let exists = sectorExists(px: px, py: py)
+                let nl = data.readunsafe() as Int16 //name length
+                let ipl = data.readunsafe() as Int16 //IP length
+                var len = data.readunsafe() as UInt32 //length of planet array
                 let name = String(bytes: data.read(count: Int(nl)) as [UInt8], encoding: .utf8)!
                 let ip = String(bytes: data.read(count: Int(ipl)) as [UInt8], encoding: .utf8)!
                 var planets = [Planet]()

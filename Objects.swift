@@ -345,15 +345,6 @@ func collision(planetpos: CGPoint, planetr: CGFloat, rayorigin: CGPoint, raydir:
     let touches = x * raydir.dy >= 0 && x2 - 2 * py * x - 2 * px * x * a + px * px + py * py < planetr * planetr
     return touches ? sqrt(x2) : .infinity
 }
-typealias byte = UInt8
-enum ColonizeItemType: UInt8{
-    case lab = 0
-    case shooter = 1
-    case dish = 2
-    case satellite = 3
-}
-let coloNames = ["lab", "shooter", "dish", "satellite"]
-typealias ColonizeItem = (type: ColonizeItemType, lvl: UInt8, capacity: UInt8)
 class Planet: Object{
     override func body(radius: CGFloat, mass: CGFloat, texture: SKTexture? = nil){
         zPosition = 2
@@ -392,7 +383,7 @@ class Planet: Object{
         return CGVector(dx: x, dy: y)
     }
     func populate(with item: ColonizeItem, rot: UInt8, node nd: SKSpriteNode? = nil) -> SKSpriteNode{
-        let node = nd ?? SKSpriteNode(imageNamed: "\(coloNames[Int(item.type.rawValue)])\(item.lvl)")
+        let node = nd ?? SKSpriteNode()
         if nd == nil{node.userData = NSMutableDictionary(capacity: 2)}
         let colo = (node.userData?["type"] as? ColonizeItem)
         if colo?.type == item.type && colo?.lvl == item.lvl && colo?.capacity == item.capacity && node.userData?["rot"] as? UInt8 == rot{return node}
@@ -400,6 +391,9 @@ class Planet: Object{
         node.userData!["rot"] = rot
         node.removeAllActions()
         let rot = CGFloat(rot) * PI256
+        node.setScale(1)
+        node.texture = SKTexture(imageNamed: "\(coloNames[Int(item.type.rawValue)])\(item.lvl)")
+        node.size = node.texture!.size()
         node.setScale((self.xScale + self.yScale) / 4)
         node.anchorPoint = CGPoint(x: 0.5, y: ((item.type == .satellite ? -170 : 10) - self.radius) / node.size.height)
         if let p = parent as? Play, item.type == .satellite && !(p.planetLanded == self && p.presence){
@@ -441,9 +435,9 @@ class Planet: Object{
                 let x = parent.ship.position.x - (self.position.x + -sin(node.zRotation + self.zRotation) * (self.radius / self.xScale - 27))
                 let y = parent.ship.position.y - (self.position.y + cos(node.zRotation + self.zRotation) * (self.radius / self.yScale - 27))
                 let dir = atan2(-x, y)
-                let r = node.children[0].zRotation * 0.95 + (dir - node.zRotation - zRotation) / 20
-                if abs(r.remainder(dividingBy: .pi * 2)) > 0.75{continue}
+                let r = (node.children[0].zRotation * 0.95 + (dir - node.zRotation - zRotation).remainder(dividingBy: .pi * 2) / 20).remainder(dividingBy: .pi * 2)
                 shootFrequency = 0.06
+                if abs(r) > 0.75{continue}
                 node.children[0].zRotation = r
                 shootPoints.append(p)
                 shootVectors.append(node.children[0].zRotation + node.zRotation)
@@ -580,7 +574,7 @@ class Planet: Object{
                     parents!.coloIcon.removeFromParent()
                 }
                 
-                if parents?.planetLanded == self{parents?.planetLanded = nil;parents?.takeoff()}
+                if parents?.planetLanded == self{parents?.takeoff();parents?.planetLanded = nil}
                 
             }
             if deathzone && !superhot{
@@ -645,6 +639,13 @@ class Planet: Object{
         self.buyable = len & 128 != 0
         len &= 127
         var i = 0, ci = 0
+        if !((parent as? Play)?.dragRemainder.isNaN ?? true){
+            while len > 0{
+                len -= 1
+                let _ = data.readunsafe() as UInt32
+            }
+            return
+        }
         for i in 0..<self.items.count{
             self.items[i] = nil
         }
@@ -656,17 +657,20 @@ class Planet: Object{
             self.items[Int(rot)] = item
             let node = self.populate(with: item, rot: rot, node: self.children.count > ci ? self.children[ci] as? SKSpriteNode : nil)
             if item.type == .shooter{
-                
                 let n: SKSpriteNode
                 if node.children.count == 0{
-                    n = SKSpriteNode(imageNamed: "head\(item.lvl)")
-                    n.anchorPoint = CGPoint(x: 0.5, y: 0)
-                    n.position.y = (self.radius * 4 / (self.xScale + self.yScale)) - (item.lvl == 2 ? 50 : 40)
+                    n = SKSpriteNode()
                     node.addChild(n)
                 }else{n = (node.children.first as! SKSpriteNode)}
+                n.texture = SKTexture(imageNamed: "head\(item.lvl)")
+                n.size = n.texture!.size()
+                n.anchorPoint = CGPoint(x: 0.5, y: 0)
+                n.position.y = (self.radius * 4 / (self.xScale + self.yScale)) - (item.lvl == 2 ? 50 : 40)
                 
             }else if item.type == .lab{
                 self.persec += 1
+            }else{
+                node.removeAllChildren()
             }
             i += 1
             ci += 1

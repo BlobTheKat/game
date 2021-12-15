@@ -76,7 +76,7 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
         cam.addChild(star2)
         star2.setScale(2)
         star2.zPosition = -10001
-        star2.position.y = SS
+        star2.position.y = 2440
         
         boxes.setScale(0.3)
         boxes.position.y = -150
@@ -306,10 +306,10 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
         star1.position.y -= 1.5
         star2.position.y -= 1.5
         if star1.frame.maxY < -self.size.height / 2{
-            star1.position.y += SS * 2
+            star1.position.y += 2440 * 2
         }
         if star2.frame.maxY < -self.size.height / 2{
-            star2.position.y += SS * 2
+            star2.position.y += 2440 * 2
         }
         let inRange = player.position.y > 170 && abs(player.position.x) < 80
         if inRange && !isOpen{

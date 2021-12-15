@@ -103,8 +103,10 @@ class PlayCore: PlayAmbient{
     }
     var prot: CGFloat = 0
     var presence = false
+    func planetEditMode(){}
     func cameraUpdate(){
         if presence{
+            if planetLanded == nil{return planetEditMode()}
             prot += planetLanded!.angularVelocity
             planetLanded!.zRotation -= planetLanded!.angularVelocity
             cam.position.x = (cam.position.x*9 + planetLanded!.position.x)/10
@@ -362,8 +364,6 @@ class PlayCore: PlayAmbient{
     //changeItem(_ planet: Planet, _ rot: Int, _ newrot: Int) is for MOVING item to newrot
     //changeItem(_ planet: Planet, _ rot: Int) is for UPGRADING item
     func changeItem(_ planet: Planet, _ rot: Int, _ newrot: Int = -1){
-        
-        guard planet.items[rot] != nil else {return}
         var dat = Data()
         dat.write(critid(14))
         dat.write(UInt16(planets.firstIndex(of: planet)!))
@@ -373,14 +373,16 @@ class PlayCore: PlayAmbient{
             self.didChangeItem(false)
         })
     }
-    func makeItem(_ planet: Planet, _ rot: Int, _ id: ColonizeItemType){
+    func makeItem(_ planet: Planet, _ rot: UInt8, _ id: ColonizeItemType){
         
-        guard planet.items[rot] != nil else {return}
+        guard planet.items[Int(rot)] == nil else {return}
+        
         var dat = Data()
         dat.write(critid(20))
         dat.write(UInt16(planets.firstIndex(of: planet)!))
         dat.write(UInt8(rot))
         dat.write(id.rawValue)
+        
         critical(dat, abandoned: {
             self.didChangeItem(false)
         })

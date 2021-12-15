@@ -101,7 +101,7 @@ func connect(_ host: String, _ a: @escaping (Data) -> ()) -> (Data) -> (){
     var c = {(_:Data?,_:NWConnection.ContentContext?,_:Bool,_:NWError?)in}
     c = { (data, _, isComplete, err) in
         if isComplete && data != nil{
-            a(data!)
+            DispatchQueue.main.async{a(data!)}
         }
         if err == nil{
             connection?.receiveMessage(completion: c)

@@ -28,6 +28,8 @@ class Play: PlayCore{
     var playingThrustSound = false
 
     //COLONIZE
+    
+    let coloButton: [SKSpriteNode] = [SKSpriteNode(imageNamed: "campIcon"),SKSpriteNode(imageNamed: "cannonIcon"),SKSpriteNode(imageNamed: "researchLabIcon"),SKSpriteNode(imageNamed: "sataliteIcon")]
     var colonize = false
     let colonizeBG = SKSpriteNode(imageNamed: "coloBG")
     let coloPlanet = SKSpriteNode(imageNamed: "coloPlanet")
@@ -54,7 +56,7 @@ class Play: PlayCore{
     
     let buildBG = SKSpriteNode(imageNamed: "buildBG")
     let coloArrow = SKSpriteNode(imageNamed: "coloArrow")
-    
+    let moveItemIcon = SKSpriteNode(imageNamed: "map")
     
     let tapToStart =  SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
     var currentSpeed = Int()
@@ -260,6 +262,10 @@ class Play: PlayCore{
         border2.yScale = 2
         self.addChild(border1)
         self.addChild(border2)
+        
+        moveItemIcon.position = pos(mx: 0.5, my: 0, x: -180, y: 100)
+        moveItemIcon.size = CGSize(width: 50, height: 50)
+        
         tapToStart.removeAction(forKey: "dotdotdot")
         //setting tapToStart label relative to camera (static)
         self.run(SKAction.repeat(SKAction.sequence([
@@ -778,8 +784,7 @@ class Play: PlayCore{
         editColoIcon.removeFromParent()
         collectedLabel.removeFromParent()
         collect.removeFromParent()
-        
-       
+        if presence{planetEditMode()}
         coloArrow.removeFromParent()
         buildBG.removeFromParent()
      
@@ -814,15 +819,14 @@ class Play: PlayCore{
             .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
         ]))
     }
-    func planetEditMode(){
+    override func planetEditMode(){
         presence.toggle()
 
-        buildBG.anchorPoint = CGPoint(x: 0.5,y: 1)
-        buildBG.position = pos(mx: 0, my: 0, x: 0, y: 0)
+        buildBG.anchorPoint = CGPoint(x: 0,y: 1)
+        buildBG.position = pos(mx: -0.5, my: 0, x: -50, y: 0)
         buildBG.alpha = 1
         buildBG.zPosition = 1000
-        buildBG.setScale(0.3)
-        
+        buildBG.setScale(0.4)
         
         coloArrow.anchorPoint = CGPoint(x: 0.5,y: 0)
         coloArrow.position = pos(mx: 0, my: 0.05, x: 0, y: 0)
@@ -832,6 +836,7 @@ class Play: PlayCore{
         if presence{
             cam.addChild(buildBG)
             cam.addChild(coloArrow)
+            cam.addChild(moveItemIcon)
             rot = 0
             cam.setScale(1)
             prot = planetLanded!.zRotation
@@ -843,23 +848,40 @@ class Play: PlayCore{
                     n.zRotation = -CGFloat(n.userData?["rot"] as! UInt8) * PI256
                 }
             }
-            repeat{
-                if rot == 255{fatalError("PLANET IS EMPTY")}
+            while planetLanded!.items[Int(rot)] == nil{
                 planetLanded!.zRotation += PI256
                 rot += 1
-            }while planetLanded!.items[Int(rot)] == nil
+            }
+            for i in 0...3{
+                coloButton[i].position = CGPoint(x: 600 + CGFloat(i) * 400, y: -240)
+                buildBG.addChild(coloButton[i])
+            }
         }else{
             planetLanded!.zRotation = prot
+            dragRemainder = .nan
             coloArrow.removeFromParent()
             buildBG.removeFromParent()
+            moveItemIcon.removeFromParent()
             for n in planetLanded!.children{
                 if n.name == nil && (n.userData?["type"] as? ColonizeItem)?.type == .satellite{
                     n.run(.repeatForever(SKAction.rotate(byAngle: planetLanded!.angularVelocity + 0.05, duration: 1)))
                     (n as? SKSpriteNode)?.anchorPoint.y -= 1.9
                 }
             }
+            for i in 0...3{
+                coloButton[i].removeFromParent()
+            }
         }
     }
+    override func didChangeItem(_ success: Bool){
+        
+        guard success else {
+            dragRemainder = .nan
+            return
+        }
+        dragRemainder = .nan
+    }
+    var orot: UInt8 = 0
     override func nodeDown(_ node: SKNode, at point: CGPoint) {
         
         switch node{
@@ -912,6 +934,33 @@ class Play: PlayCore{
             break
         default:
             break
+        }
+        if node.parent == buildBG, let i = coloButton.firstIndex(of: node as? SKSpriteNode ?? ship){
+            var a = UInt8()
+            var gap = 0
+            var curGap = 0
+            var start = -1
+            for i in 0...255{
+                if planetLanded!.items[i] == nil{
+                    curGap += 1
+                }else{
+                    if curGap > gap{
+                        if start == -1{start = curGap;curGap = 0;continue}
+                        gap = curGap
+                        a = UInt8((i - curGap / 2) & 255)
+                        curGap = 0
+                    }else{
+                        curGap = 0
+                    }
+                }
+            }
+            if start + curGap > gap{
+                gap = start + curGap
+                a = UInt8((start - (start + curGap) / 2) & 255)
+            }
+            rot = a
+            planetLanded!.run(.rotate(toAngle: CGFloat(a) * PI256, duration: abs(CGFloat(a)) / 180.0).ease(.easeInEaseOut))
+            makeItem(planetLanded!, a, .init(rawValue: UInt8(i))!)
         }
         if removeTrackerIcon == node{
             removeTrackers()
@@ -1063,6 +1112,7 @@ class Play: PlayCore{
             }
         }
     }
+    var dragRemainder: CGFloat = .nan
     override func nodeMoved(_ node: SKNode, at point: CGPoint) {
         if dPad == node{
             if point.x > dPad.position.x{
@@ -1075,7 +1125,6 @@ class Play: PlayCore{
                 ship.thrustRight = false
             }
         }
-        
         if thrustButton == node{
             if point.y > thrustButton.position.y + 50{
                 if !usingConstantLazer{
@@ -1261,6 +1310,22 @@ class Play: PlayCore{
     var mapPress1: CGPoint? = nil
     var mapPress2: CGPoint? = nil
     override func swipe(from a: CGPoint, to b: CGPoint) {
+        if !dragRemainder.isNaN{
+            dragRemainder += (b.x - a.x) / 20
+            let d = dragRemainder
+            dragRemainder.formRemainder(dividingBy: 1)
+            var a = floor(d - dragRemainder + 0.1)
+            guard a != 0 else {return} //shortcut
+            while planetLanded!.items[(Int(rot) + Int(a)) & 255] != nil{a += sign(a)}
+            let l = planetLanded!.children.first(where: {$0.userData?["rot"] as? UInt8 == rot})
+            planetLanded!.items[(Int(rot) + Int(a)) & 255] = planetLanded!.items[Int(rot)]
+            planetLanded!.items[Int(rot)] = nil
+            rot &+= UInt8(Int(a) & 255)
+            planetLanded!.run(.sequence([.wait(forDuration: 0.4), .rotate(byAngle: a * PI256, duration: abs(a) / 20.0).ease(.easeInEaseOut)]))
+            l?.zRotation = CGFloat(rot) * -PI256
+            l?.userData?["rot"] = rot
+            return
+        }
         guard showMap else {return}
         if dPad.contains(b) || thrustButton.contains(b){return}
         if mapPress1 != nil && mapPress2 != nil{
@@ -1330,6 +1395,14 @@ class Play: PlayCore{
             }
         }
         pressed = false
+        
+        if presence && moveItemIcon.contains(p){
+            if dragRemainder.isNaN{dragRemainder = 0;orot = rot;coloArrow.removeFromParent()}
+            else{
+                if coloArrow.parent == nil{cam.addChild(coloArrow)}
+                changeItem(planetLanded!, Int(orot), Int(rot))
+            }
+        }
     }
     override func release(at point: CGPoint){
         if mapPress2 != nil{
