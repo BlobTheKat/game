@@ -14,94 +14,7 @@ let playSound = SKAction.play()
 
 var currentPlanetTexture = SKTexture()
 
-class Play: PlayCore{
-    
-    //SOUND EFFECT
-    var lightSpeedOut = SKAction.playSoundFileNamed("LightSpeedOut.wav", waitForCompletion: false)
-    var playedLightSpeedOut = false
-    var health = 13
-    var shootSound = SKAction.playSoundFileNamed("Lazer.wav", waitForCompletion: false)
-    var gkview: UIViewController? = nil
-    
-    
-    
-    var playingThrustSound = false
-
-    //COLONIZE
-    
-    let coloButton: [SKSpriteNode] = [SKSpriteNode(imageNamed: "campIcon"),SKSpriteNode(imageNamed: "cannonIcon"),SKSpriteNode(imageNamed: "researchLabIcon"),SKSpriteNode(imageNamed: "sataliteIcon")]
-    var colonize = false
-    let colonizeBG = SKSpriteNode(imageNamed: "coloBG")
-    let coloPlanet = SKSpriteNode(imageNamed: "coloPlanet")
-    let buyIcon = SKSpriteNode(imageNamed: "buyIcon")
-    let backIcon = SKSpriteNode(imageNamed: "backIcon")
-    let planetAncher = SKSpriteNode(imageNamed: "planetAncher")
-    
-    var coloStatsStatus = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
-    var coloStatsPrice = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
-    var coloStatsRecource = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
-    var coloStatsName = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
-    
-    var coloStatus = String()
-    var coloPrice = String()
-    var coloRecsource = String()
-    var coloName = String()
-    
-    let coloIcon = SKSpriteNode(imageNamed: "colonizeOff")
-    let editColoIcon = SKSpriteNode(imageNamed: "editPlanet")
-    let collect = SKSpriteNode(imageNamed: "collect")
-    
-    
-    let collectStorageLabel = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
-    
-    let buildBG = SKSpriteNode(imageNamed: "buildBG")
-    let coloArrow = SKSpriteNode(imageNamed: "coloArrow")
-    let moveItemIcon = SKSpriteNode(imageNamed: "map")
-    
-    let tapToStart =  SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
-    var currentSpeed = Int()
-    var startPressed = false
-    var showMap = false
-    var actionStopped = false
-    var heatLevel = 0
-    var showNav = false
-    let thrustButton = SKSpriteNode(imageNamed: "thrustOff")
-    let heatingLaser = SKSpriteNode(imageNamed: "heating0")
-    let dPad = SKSpriteNode(imageNamed: "dPad")
-    //CCOUNT
-    let accountIcon = SKSpriteNode(imageNamed: "accountIcon")
-    let accountBG = SKSpriteNode(imageNamed: "accountBG")
-    var showAccount = false
-    
-    
-    let speedBG = SKSpriteNode(imageNamed: "speedBG")
-    let mapBG = SKSpriteNode(imageNamed: "mapBG")
-    let FakemapBG = SKSpriteNode(imageNamed: "fakeMapBG")
-    let avatar = SKSpriteNode(imageNamed: "avatar")
-    
-    
-    //NAVIGATION
-    let navArrow = SKSpriteNode(imageNamed: "navArrow")
-    let navBG = SKSpriteNode(imageNamed: "nav")
-    let mapIcon = SKSpriteNode(imageNamed: "map")
-    let repairIcon = SKSpriteNode(imageNamed: "repairOff")
-    let lightSpeedIcon = SKSpriteNode(imageNamed: "lightSpeedOff")
-    let cockpitIcon = SKSpriteNode(imageNamed: "cockpitOff")
-    let removeTrackerIcon = SKSpriteNode(imageNamed: "removeTracker")
-    
-    
-    //WARNINGS
-    var isWarning = false
-    let warning = SKSpriteNode(imageNamed: "warning")
-    var warningLabel = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
-
-    let healthBar = SKSpriteNode(imageNamed: "health13")
-    
-    let tunnel1 = SKSpriteNode(imageNamed: "tunnel1")
-    let tunnel2 = SKSpriteNode(imageNamed: "tunnel2")
-    
-    let loadingbg = SKShapeNode(rect: CGRect(x: -150, y: 0, width: 300, height: 3))
-    
+extension Play{
     func suit(_ id: Int){
         //change ship. also changes the characteristics of the ship
         ship.id = id
@@ -117,20 +30,7 @@ class Play: PlayCore{
         ship.shootPoints = SHOOTPOINTS[id-1]
         ship.shootVectors = SHOOTVECTORS[id-1]
     }
-    let NORMAL = 1300.0 //used for screen sizing
-    //NORMAL is basically saying "If you add width and height and they add up to NORMAL, then there should be no scaling"
-    //"If they add up to HIGHER, objects are scaled up a bit"
-    //"If they add up to LOWER, objects are scaled down a bit"
-    //Thus, a higher NORMAL value will scale things down overall, and a lower NORMAL value will scale things up overall
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    override init(size: CGSize) {
-        let diagonal = size.width + size.height
-        let divider = pow(diagonal / NORMAL, 0.6)
-        
-        
-        super.init(size: CGSize(width: size.width / divider, height: size.height / divider))
+    func construct() {
         if creds != nil{
             gotIp()
         }else{
@@ -144,7 +44,7 @@ class Play: PlayCore{
                     //guest
                     self.gameGuest()
                 }
-                self.gameAuthed()
+                self.gameCenterAuthed()
             }
         }
         
@@ -209,7 +109,7 @@ class Play: PlayCore{
             return Particle[State(color: (r: 0.1, g: 0.7, b: 0.7), size: CGSize(width: 11, height: 2), zRot: 0, position: ship.position.add(y: -5), alpha: i), State(color: (r: 1, g: 1, b: 1), size: CGSize(width: 5, height: 2), zRot: 0, position: ship.position.add(y: -35), alpha: 0, delay: TimeInterval(i))]
         }
         ship.particleFrequency = 1
-        self.label(node: tapToStart, "loading sector   ", pos: pos(mx: 0, my: -0.3, x: -153), size: fmed, color: .white, font: "HalogenbyPixelSurplus-Regular", zPos: 999, isStatic: true)
+        self.label(node: tapToStart, "loading sector   ", pos: pos(mx: 0, my: -0.3, x: -153), size: 48, color: .white, font: "HalogenbyPixelSurplus-Regular", zPos: 999, isStatic: true)
         tapToStart.horizontalAlignmentMode = .left
         tapToStart.alpha = 0.7
         ship.zPosition = 5
@@ -233,9 +133,17 @@ class Play: PlayCore{
         ])), withKey: "dotdotdot")
         
         self.addChild(inlightSpeed)
-        didInit()
+        DEBUG_TXT.fontSize = 15
+        DEBUG_TXT.position = pos(mx: -0.5, my: 0.5, x: 20, y: -20)
+        DEBUG_TXT.color = UIColor(red: 0, green: 0, blue: 0, alpha: 0.5)
+        DEBUG_TXT.fontColor = .white
+        DEBUG_TXT.horizontalAlignmentMode = .left
+        DEBUG_TXT.verticalAlignmentMode = .top
+        DEBUG_TXT.numberOfLines = 20
+        DEBUG_TXT.zPosition = .infinity
+        cam.addChild(DEBUG_TXT)
+        api.position(completion: sectorpos)
     }
-    var moved = false
     override func didMove(to view: SKView) {
         startAnimation()
         guard !moved else{return}
@@ -248,14 +156,14 @@ class Play: PlayCore{
         tapToStart.position.x = 0
         tapToStart.alpha = 0
         tapToStart.run(.fadeAlpha(to: 0.7, duration: 0.7), withKey: "in")
-        ship.position = CGPoint(x: CGFloat(secx) - loadstack.pos!.x, y: CGFloat(secy) - loadstack.pos!.y)
+        ship.position = CGPoint(x: CGFloat(secx) - sector.1.pos.x, y: CGFloat(secy) - sector.1.pos.y)
         cam.position = CGPoint(x: ship.position.x, y: ship.position.y - 0.08 * self.size.height)
         for particle in particles{
             particle.position += ship.position
         }
         border1.zRotation = .pi / 2
-        border1.position.y = (cam.position.y < 0 ? -0.5 : 0.5) * loadstack.size!.height
-        border2.position.x = (cam.position.x < 0 ? -0.5 : 0.5) * loadstack.size!.width
+        border1.position.y = (cam.position.y < 0 ? -0.5 : 0.5) * sector.1.size.height
+        border2.position.x = (cam.position.x < 0 ? -0.5 : 0.5) * sector.1.size.width
         border1.xScale = cam.position.y < 0 ? 2 : -2
         border2.xScale = cam.position.x < 0 ? 2 : -2
         border1.yScale = 2
@@ -270,7 +178,7 @@ class Play: PlayCore{
         //setting tapToStart label relative to camera (static)
         self.run(SKAction.repeat(SKAction.sequence([
             SKAction.run{
-                if self.children.count < self.MIN_NODES{
+                if self.children.count < self.MIN_NODES_TO_START{
                     self.tapToStart.text = "loading sector..."
                 }else{
                     if !self.authed{
@@ -292,8 +200,6 @@ class Play: PlayCore{
         }
         DEBUG_TXT.removeFromParent()
     }
-    var trails: [SKSpriteNode] = []
-    var animated = false
     func startAnimation(){
         if animated{return}
         animated = true
@@ -304,7 +210,7 @@ class Play: PlayCore{
             delay += 0.1
             let _ = timeout(delay) {
                 self.moveTrail(trail: trail)
-                self.vibrateObject(sprite: trail)
+                vibrateObject(sprite: trail)
                 self.cam.addChild(trail)
             }
         }
@@ -314,7 +220,7 @@ class Play: PlayCore{
             delay += 0.1
             let _ = timeout(delay) {
                 self.moveTrail(trail: longTrail)
-                self.vibrateObject(sprite: longTrail)
+                vibrateObject(sprite: longTrail)
                 self.cam.addChild(longTrail)
             }
         }
@@ -345,9 +251,6 @@ class Play: PlayCore{
             }
         }
     }
-    var planetsMP: [SKShapeNode] = []
-    var amountOfPlanets = 0
-    var mainMap: SKNode = SKNode()
     func map(planets: [Planet], size: CGSize, pos: CGPoint, x: Bool = false){
         if let node = mapnodes[pos]{
             node.removeFromParent()
@@ -361,7 +264,7 @@ class Play: PlayCore{
                     }
                 }
             }
-            if x{planetsMP.append(contentsOf: node.children as! [SKShapeNode]);amountOfPlanets += planetsMP.count - 1
+            if x{planetsMap.append(contentsOf: node.children as! [SKShapeNode]);amountOfPlanets += planetsMap.count - 1
                 mainMap = node
                 node.addChild(playerArrow)
             }
@@ -377,7 +280,7 @@ class Play: PlayCore{
             a.lineWidth = 0
             sector.addChild(a)
             a.name = "planet"
-            if x{planetsMP.append(a);amountOfPlanets += 1}
+            if x{planetsMap.append(a);amountOfPlanets += 1}
         }
         if x{mainMap=sector;sector.addChild(playerArrow)}
         let box = SKShapeNode(rectOf: CGSize(width: size.width/10, height: size.height/10))
@@ -395,6 +298,25 @@ class Play: PlayCore{
         self.tapToStart.run(SKAction.fadeOut(withDuration: 0.3).ease(.easeOut))
         self.tapToStart.run(SKAction.scale(by: 1.5, duration: 0.2))
     }
+    
+    var upgradeStats: (price: Double, time: String, powers: [String: (old: Double, new: Double, max: Double)])?{
+        guard let item = planetLanded?.items[Int(itemRot)] else {return nil}
+        let id = Int(item.type.rawValue)
+        if id > 127{
+            return nil
+        }
+        if items[id].count < item.lvl + 2{return nil}
+        let old = items[id][Int(item.lvl)]
+        let new = items[id][Int(item.lvl)+1]
+        let max = items[id].count > item.lvl + 2 ? items[id][Int(item.lvl)+2] : new
+        var pw = [String: (old: Double, new: Double, max: Double)]()
+        for (k, v) in new{
+            if k == "price" || k == "time"{continue}
+            if old[k] == nil{continue}
+            pw[k] = (old: old[k]!.number!, new: v.number!, max: (max[k] ?? v).number!)
+        }
+        return (price: new["price"]!.number!, time: formatTime(Int(new["time"]!.number!)), powers: pw)
+    }
     func startGame(){
         //IMPORTANT SIZE ALGORITHM
         colonizeBG.anchorPoint = CGPoint(x: 1 ,y: 1)
@@ -403,12 +325,44 @@ class Play: PlayCore{
         colonizeBG.size.width *= dify
         colonizeBG.position = pos(mx: -0.5, my: 0.5, x: 250, y: 20)
         colonizeBG.zPosition = 100
-        wasMoved()
+        
+        self.stars1 = SKAmbientContainer({ n in
+            n.texture = STARS.randomElement()
+            n.size = n.texture!.size()
+            n.setScale(2.5)
+            n.texture!.filteringMode = .nearest
+        }, frequency: 1, deriviation: 0, blocksize: 1250)
+        self.stars2 = SKAmbientContainer({ n in
+            n.texture = STARS.randomElement()
+            n.size = n.texture!.size()
+            n.setScale(1.5)
+            n.texture!.filteringMode = .nearest
+        }, frequency: 1, deriviation: 0, blocksize: 750)
+        self.stars3 = SKAmbientContainer({ n in
+            n.texture = BSTARS.randomElement()
+            n.size = n.texture!.size()
+            n.setScale(1)
+            //n.texture!.filteringMode = .nearest
+        }, frequency: 1, deriviation: 0, blocksize: 500)
+        self.stars4 = SKAmbientContainer({ n in
+            n.texture = BGASSETS.randomElement()
+            n.size = n.texture!.size()
+            n.setScale(0.2)
+            n.alpha = 0.2
+            n.position.x = random(min: 0, max: 1999)
+            n.position.y = random(min: 0, max: 1999)
+        }, frequency: 0.5, deriviation: 0.2, blocksize: 2000)
+        self.addChild(self.stars1)
+        self.addChild(self.stars2)
+        self.addChild(self.stars3)
+        self.addChild(self.stars4)
+        
+        
         self.removeAction(forKey: "loading")
-        map(planets: planets, size: loadstack.size!, pos: loadstack.pos!, x: true)
-        for (_, v) in sectors{
+        map(planets: planets, size: sector.1.size, pos: sector.1.pos, x: true)
+        for (_, v) in regions{
             for s in v{
-                if s.1.pos == loadstack.pos!{continue}
+                if s.1.pos == sector.1.pos{continue}
                 map(planets: s.0, size: s.1.size, pos:s.1.pos, x: false)
             }
         }
@@ -425,7 +379,7 @@ class Play: PlayCore{
         let _ = timeout(0.5) { [self] in
             ship.controls = true
             ship.dynamic = true
-            ship.particle = ship.defParticle
+            ship.particle = Object.defaultParticle
             ship.particleFrequency = 0.2
         }
         cam.removeAction(forKey: "vibratingCamera")
@@ -595,7 +549,7 @@ class Play: PlayCore{
             navBG.addChild(cockpitIcon)
        //WARNINGS
             
-        warning.position = CGPoint(x: 0 ,y: -healthBar.size.height   )
+        warning.position = CGPoint(x: 0, y: -healthBar.size.height)
         warning.alpha = 0
         warning.zPosition = 10
         warning.setScale(2)
@@ -683,10 +637,31 @@ class Play: PlayCore{
             warning.run(SKAction.fadeAlpha(to: 1, duration: 1).ease(.easeIn))
         }
     }
-    
-    
-    var pressed = false
-    
+    func renderUpgradeUI(){
+        //remove from parent
+        //set the properties
+        guard let (price: price, time: time, powers: powers) = upgradeStats else {return}
+        time //string (ex: "3h")
+        formatNum(price) //price as a string (ex: "30K")
+        for (name, (old: old, new: new, max: max)) in powers{
+            name //string (ex: "Energy per second")
+            old //old value
+            new //new value
+            max //maximum value
+            switch name{
+            case "persec":
+                break
+            case "boost":
+                break
+            case "damage":
+                break
+            default:
+                break
+            }
+            
+        }
+        //re-add
+    }
     func removeTrackers(){
         for t in tracked{
             for i in t.children{
@@ -699,13 +674,14 @@ class Play: PlayCore{
         tracked.removeAll()
         trackArrows.removeAll()
     }
-    var rot: UInt8 = 0
     func constantLazer(){
 
         usedShoot = true
         newShoot = true
         usingConstantLazer = true
-        ship.shootFrequency = SHOOTFREQUENCIES[ship.id-1]
+        if case .number(let f) = ships[ship.id]["shootspeed"]{
+            ship.shootFrequency = f
+        }
         ship.shootQueue = 1 - ship.shootFrequency
         self.run(SKAction.sequence([
             SKAction.repeat(SKAction.sequence([
@@ -767,27 +743,23 @@ class Play: PlayCore{
         ]), withKey: "constantLazer")
     }
     func landed(){
-        
-        if !(planetLanded?.buyable ?? true){
+        planetLanded = planetTouched
+        if planetLanded?.ownedState == .yours{
             if editColoIcon.parent == nil{
                 navBG.addChild(editColoIcon)
                 collect.addChild(collectedLabel)
                 avatar.addChild(collect)
             }
-            
         }
-        
-        
     }
     func takeoff(){
-        
         editColoIcon.removeFromParent()
         collectedLabel.removeFromParent()
         collect.removeFromParent()
-        if presence{planetEditMode()}
         coloArrow.removeFromParent()
         buildBG.removeFromParent()
-     
+        if !presence{planetLanded = nil}
+        else{planetEditMode()}
     }
     
     func increseEnergy(){
@@ -806,7 +778,7 @@ class Play: PlayCore{
         if thrustButton.parent == nil{cam.addChild(thrustButton)}
         if shipDirection.parent == nil{cam.addChild(shipDirection)}
     }
-    override func didBuy(_ success: Bool){
+    func didBuy(_ success: Bool){
         guard success else{
             //FAILED TO COLONIZE HERE
             DisplayWARNING("error: try again later", 1, false)
@@ -819,7 +791,7 @@ class Play: PlayCore{
             .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
         ]))
     }
-    override func planetEditMode(){
+    func planetEditMode(){
         presence.toggle()
 
         buildBG.anchorPoint = CGPoint(x: 0,y: 1)
@@ -837,9 +809,9 @@ class Play: PlayCore{
             cam.addChild(buildBG)
             cam.addChild(coloArrow)
             cam.addChild(moveItemIcon)
-            rot = 0
+            itemRot = 0
             cam.setScale(1)
-            prot = planetLanded!.zRotation
+            planetLandedRot = planetLanded!.zRotation
             planetLanded!.zRotation = 0
             for n in planetLanded!.children{
                 if n.name == nil && (n.userData?["type"] as? ColonizeItem)?.type == .satellite{
@@ -848,16 +820,17 @@ class Play: PlayCore{
                     n.zRotation = -CGFloat(n.userData?["rot"] as! UInt8) * PI256
                 }
             }
-            while planetLanded!.items[Int(rot)] == nil{
+            while planetLanded!.items[Int(itemRot)] == nil{
                 planetLanded!.zRotation += PI256
-                rot += 1
+                itemRot += 1
             }
             for i in 0...3{
-                coloButton[i].position = CGPoint(x: 600 + CGFloat(i) * 400, y: -240)
-                buildBG.addChild(coloButton[i])
+                addItemIcons[i].position = CGPoint(x: 600 + CGFloat(i) * 400, y: -240)
+                buildBG.addChild(addItemIcons[i])
             }
+            renderUpgradeUI()
         }else{
-            planetLanded!.zRotation = prot
+            planetLanded!.zRotation = planetLandedRot
             dragRemainder = .nan
             coloArrow.removeFromParent()
             buildBG.removeFromParent()
@@ -868,38 +841,38 @@ class Play: PlayCore{
                     (n as? SKSpriteNode)?.anchorPoint.y -= 1.9
                 }
             }
+            if planetTouched == nil{planetLanded = nil}
             for i in 0...3{
-                coloButton[i].removeFromParent()
+                addItemIcons[i].removeFromParent()
             }
         }
     }
-    override func didChangeItem(_ success: Bool){
-        
+    func didChangeItem(_ success: Bool){
         guard success else {
             dragRemainder = .nan
             return
         }
         dragRemainder = .nan
+        renderUpgradeUI()
     }
-    var orot: UInt8 = 0
     override func nodeDown(_ node: SKNode, at point: CGPoint) {
         
         switch node{
             
         case backIcon:
-            if colonize{
+            if buyScreenShowing{
                 colonizeBG.removeFromParent()
                 showControls()
-                colonize = false
+                buyScreenShowing = false
             }
             break
         case buyIcon:
             if energyAmount >= 10{
                 energyAmount -= 10
-                if colonize{
+                if buyScreenShowing{
                     colonizeBG.removeFromParent()
                     showControls()
-                    colonize = false
+                    buyScreenShowing = false
                 }
                 colonize(planetLanded!)
             }else if energyAmount < 10{
@@ -922,21 +895,22 @@ class Play: PlayCore{
             if point.x > coloArrow.position.x{
                 repeat{
                     a += 1
-                    rot &+= 1
-                }while planetLanded!.items[Int(rot)] == nil
+                    itemRot &+= 1
+                }while planetLanded!.items[Int(itemRot)] == nil
             }else{
                 repeat{
                     a -= 1
-                    rot &-= 1
-                }while planetLanded!.items[Int(rot)] == nil
+                    itemRot &-= 1
+                }while planetLanded!.items[Int(itemRot)] == nil
             }
             planetLanded!.run(.rotate(byAngle: a * PI256, duration: abs(a) / 180.0).ease(.easeInEaseOut))
+            renderUpgradeUI()
             break
         default:
             break
         }
-        if node.parent == buildBG, let i = coloButton.firstIndex(of: node as? SKSpriteNode ?? ship){
-            var a = UInt8()
+        if node.parent == buildBG, let i = addItemIcons.firstIndex(of: node as? SKSpriteNode ?? ship){
+            var pos = UInt8()
             var gap = 0
             var curGap = 0
             var start = -1
@@ -947,7 +921,7 @@ class Play: PlayCore{
                     if curGap > gap{
                         if start == -1{start = curGap;curGap = 0;continue}
                         gap = curGap
-                        a = UInt8((i - curGap / 2) & 255)
+                        pos = UInt8((i - curGap / 2) & 255)
                         curGap = 0
                     }else{
                         curGap = 0
@@ -956,11 +930,11 @@ class Play: PlayCore{
             }
             if start + curGap > gap{
                 gap = start + curGap
-                a = UInt8((start - (start + curGap) / 2) & 255)
+                pos = UInt8((start - (start + curGap) / 2) & 255)
             }
-            rot = a
-            planetLanded!.run(.rotate(toAngle: CGFloat(a) * PI256, duration: abs(CGFloat(a)) / 180.0).ease(.easeInEaseOut))
-            makeItem(planetLanded!, a, .init(rawValue: UInt8(i))!)
+            itemRot = pos
+            planetLanded!.run(.rotate(toAngle: CGFloat(pos) * PI256, duration: abs(CGFloat(pos)) / 180.0).ease(.easeInEaseOut))
+            makeItem(planetLanded!, pos, .init(rawValue: UInt8(i))!)
         }
         if removeTrackerIcon == node{
             removeTrackers()
@@ -969,13 +943,13 @@ class Play: PlayCore{
             gkview?.present(controller, animated: true){
                 if GKLocalPlayer.local.isAuthenticated{
                     //get token
-                    self.gameAuthed()
+                    self.gameCenterAuthed()
                 }else{
                     //create token
                     self.gameGuest()
                 }
             }
-            pressed = true
+            tapToStartPressed = true
         }
         if cockpitIcon == node{
             cockpitIcon.texture = SKTexture(imageNamed: "cockpitOn")
@@ -1003,6 +977,7 @@ class Play: PlayCore{
                 n.addChild(tracker2)
                 tracker2.run(.repeatForever(.rotate(byAngle: .pi, duration: 1.3)))
                 tracked.append(n)
+                
                 let a = SKSpriteNode(imageNamed: "arrow\(tracked.count % 3)")
                 a.anchorPoint = CGPoint(x: 0.5, y: 1)
                 a.setScale(0.25)
@@ -1096,7 +1071,6 @@ class Play: PlayCore{
                 mapBG.alpha = 1
                 FakemapBG.alpha = 1
                 showMap = true
-                
                 FakemapBG.position = CGPoint(x: -mainMap.position.x/10 - playerArrow.position.x/10 ,y: -mainMap.position.y/10 - playerArrow.position.y/10)
             }else if showMap == true{
                 mapBG.alpha = 0
@@ -1105,14 +1079,13 @@ class Play: PlayCore{
             }
         }
         if coloIcon == node{
-            if !colonize{
-                colonize = true
+            if !buyScreenShowing{
+                buyScreenShowing = true
                 cam.addChild(colonizeBG)
                 hideControls()
             }
         }
     }
-    var dragRemainder: CGFloat = .nan
     override func nodeMoved(_ node: SKNode, at point: CGPoint) {
         if dPad == node{
             if point.x > dPad.position.x{
@@ -1176,7 +1149,7 @@ class Play: PlayCore{
             ship.thrustRight = false
             
         }
-        
+        if dragRemainder.isInfinite{dragRemainder = 0}
         if mapIcon == node{
             mapIcon.texture = SKTexture(imageNamed: "map")
         }
@@ -1188,7 +1161,6 @@ class Play: PlayCore{
             SKScene.transition = SKTransition.crossFade(withDuration: 0)
         }
     }
-    var d = Data()
     override func keyDown(_ key: UIKeyboardHIDUsage) {
         hideControls()
         if key == .keyboardUpArrow || key == .keyboardW{
@@ -1223,10 +1195,10 @@ class Play: PlayCore{
             }
         }
         if key == .keyboardN{
-            ship.encode(data: &d)
+            ship.encode(data: &shipStates)
         }else if key == .keyboardB{
-            guard d.count >= 14 else{return}
-            ship.decode(data: &d)
+            guard shipStates.count >= 14 else{return}
+            ship.decode(data: &shipStates)
         }else if key == .keyboardEqualSign{
             send(Data([127]))
             dmessage = "Disconnected :O"
@@ -1238,7 +1210,7 @@ class Play: PlayCore{
             }else{DEBUG_TXT.removeFromParent()}
         }
         if key == .keyboardSpacebar{
-            if  !showAccount && !startPressed && !pressed && children.count > MIN_NODES{
+            if  !showAccount && !startPressed && !tapToStartPressed && children.count > MIN_NODES_TO_START{
                 if !playedLightSpeedOut{
                     accountIcon.removeFromParent()
                     removeTapToStart()
@@ -1307,23 +1279,27 @@ class Play: PlayCore{
             SKScene.transition = SKTransition.crossFade(withDuration: 0)
         }
     }
-    var mapPress1: CGPoint? = nil
-    var mapPress2: CGPoint? = nil
     override func swipe(from a: CGPoint, to b: CGPoint) {
         if !dragRemainder.isNaN{
-            dragRemainder += (b.x - a.x) / 20
+            if abs(a.x) > self.size.width / 5{
+                dragRemainder = sign(a.x) * .infinity
+                return
+            }else if dragRemainder.isInfinite{
+                dragRemainder = 0
+            }
+            dragRemainder += (b.x - a.x) / 12
             let d = dragRemainder
             dragRemainder.formRemainder(dividingBy: 1)
-            var a = floor(d - dragRemainder + 0.1)
-            guard a != 0 else {return} //shortcut
-            while planetLanded!.items[(Int(rot) + Int(a)) & 255] != nil{a += sign(a)}
-            let l = planetLanded!.children.first(where: {$0.userData?["rot"] as? UInt8 == rot})
-            planetLanded!.items[(Int(rot) + Int(a)) & 255] = planetLanded!.items[Int(rot)]
-            planetLanded!.items[Int(rot)] = nil
-            rot &+= UInt8(Int(a) & 255)
-            planetLanded!.run(.sequence([.wait(forDuration: 0.4), .rotate(byAngle: a * PI256, duration: abs(a) / 20.0).ease(.easeInEaseOut)]))
-            l?.zRotation = CGFloat(rot) * -PI256
-            l?.userData?["rot"] = rot
+            var amount = floor(d - dragRemainder + 0.1)
+            guard amount != 0 else {return} //shortcut
+            while planetLanded!.items[(Int(itemRot) + Int(amount)) & 255] != nil{amount += sign(amount)}
+            let l = planetLanded!.children.first(where: {$0.userData?["rot"] as? UInt8 == itemRot})
+            planetLanded!.items[(Int(itemRot) + Int(amount)) & 255] = planetLanded!.items[Int(itemRot)]
+            planetLanded!.items[Int(itemRot)] = nil
+            itemRot &+= UInt8(Int(amount) & 255)
+            planetLanded!.run(.rotate(byAngle: amount * PI256, duration: abs(amount) / 10.0))
+            l?.run(.rotate(byAngle: -amount * PI256, duration: abs(amount) / 10.0))
+            l?.userData?["rot"] = itemRot
             return
         }
         guard showMap else {return}
@@ -1360,7 +1336,7 @@ class Play: PlayCore{
         }else{
             (mapPress1, mapPress2) = (mapPress2, p)
         }
-        if  !showAccount && !startPressed && !pressed && children.count > MIN_NODES{
+        if  !showAccount && !startPressed && !tapToStartPressed && children.count > MIN_NODES_TO_START{
             if !playedLightSpeedOut{
                 accountIcon.removeFromParent()
                 removeTapToStart()
@@ -1394,13 +1370,13 @@ class Play: PlayCore{
                 }
             }
         }
-        pressed = false
+        tapToStartPressed = false
         
         if presence && moveItemIcon.contains(p){
-            if dragRemainder.isNaN{dragRemainder = 0;orot = rot;coloArrow.removeFromParent()}
+            if dragRemainder.isNaN{dragRemainder = 0;oldItemRot = itemRot;coloArrow.removeFromParent()}
             else{
                 if coloArrow.parent == nil{cam.addChild(coloArrow)}
-                changeItem(planetLanded!, Int(orot), Int(rot))
+                changeItem(planetLanded!, Int(oldItemRot), Int(itemRot))
             }
         }
     }

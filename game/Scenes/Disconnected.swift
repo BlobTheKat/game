@@ -8,7 +8,7 @@
 import Foundation
 import SpriteKit
 
-class Disconnected: PlayConvenience{
+class Disconnected: SKScene{
     
     let charcter = SKSpriteNode(imageNamed: "character")
     let stars = SKSpriteNode(imageNamed: "stars11")
@@ -24,9 +24,9 @@ class Disconnected: PlayConvenience{
     override func didMove(to view: SKView) {
 
         
-        label(node: reconnectLabel, dmessage, pos: pos(mx: 0.5, my: 0.3), size: fsmall, color: .white)
+        label(node: reconnectLabel, dmessage, pos: pos(mx: 0.5, my: 0.3), size: 32, color: .white)
         dmessage = "Disconnected!"
-        label(node: tapToReconnect, "-tap to reconnect-", pos: pos(mx: 0.5, my: 0.3, y: -50), size: fsmall - 3.5, color: .white)
+        label(node: tapToReconnect, "-tap to reconnect-", pos: pos(mx: 0.5, my: 0.3, y: -50), size: 28.5, color: .white)
         
         pulsate(node: tapToReconnect, amount: 0.6, duration: 3)
         
@@ -91,11 +91,10 @@ class Disconnected: PlayConvenience{
         shaders.zPosition = 5
         self.addChild(shaders)
     }
-    var moved = false
-    
+    var touched: Bool = false
     override func touch(at _: CGPoint) {
-        if moved{return}
-        moved = true
+        if touched{return}
+        touched = true
         SKScene.transition = SKTransition.crossFade(withDuration: 1.5)
         Play.renderTo(skview)
         SKScene.transition = SKTransition.crossFade(withDuration: 0)

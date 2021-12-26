@@ -10,39 +10,8 @@ import SpriteKit
 import GameKit
 
 var creds: (url: URL, sig: Data, salt: Data, time: UInt64, id: String)?
-class PlayNetwork: PlayConvenience{
-    var DEBUG_TXT = SKLabelNode(fontNamed: "Menlo")
-    var MIN_NODES = 70
-    var ship = Object(radius: 15, mass: 100, texture: .named("ship1"))
-    var hits: [UInt32] = []
-    var planets: [Planet] = []
-    var planetindicators: [SKSpriteNode] = []
-    var cam = SKCameraNode()
-    var particles: [Particle] = []
-    var objects: [Object] = []
-    var a = {}
-    var send = {(_: Data) -> () in}
-    var ready = false
-    var sector: UInt32 = 0
-    var istop = {}
-    var loaded = 2
-    var usedShoot = false
-    var newShoot = false
-    var coolingDown = false
-    var shotObj: Object? = nil
-    var usingConstantLazer = false
-    var tracked: [Object] = []
-    var trackArrows: [SKSpriteNode] = []
-    var loadstack: (p: [Planet]?, size: CGSize?, pos: CGPoint?) = (p: nil, size: nil, pos: nil)
-    var delay: Double = 0
-    let inlightSpeed = SKAudioNode(fileNamed: "InLightSpeed.wav")
-    var thrustSound = SKAudioNode(fileNamed: "thrust.wav")
-    let loading = SKShapeNode(rect: CGRect(x: -150, y: 0, width: 300, height: 3))
-    var needsNames = Set<Int>()
-    var auth_ = false
-    var SEQ = UInt8(255)
-    var crits = Set<UInt8>()
-    var lastSentEnergy = 0.0
+extension Play{
+    
     func critid(_ a: UInt8) -> UInt16{
         //low: a
         //high: SEQ
@@ -55,14 +24,14 @@ class PlayNetwork: PlayConvenience{
     func critical(_ dat: Data, resend: Double = 0.5, abandon: Int = 10, abandoned: @escaping () -> () = {}, sent: @escaping () -> () = {}){
         let s = SEQ
         crits.insert(s)
-        var a = {}
+        var stop = {}
         send(dat)
         var tries = 1
-        a = interval(resend){ [self] in
-            if ended{return a()}
-            if !crits.contains(s){a();sent()}else if tries == abandon{
+        stop = interval(resend){ [self] in
+            if ended{return stop()}
+            if !crits.contains(s){stop();sent()}else if tries == abandon{
                 abandoned()
-                a()
+                stop()
                 crits.remove(s)
             }else{
                 send(dat)
@@ -70,15 +39,15 @@ class PlayNetwork: PlayConvenience{
             }
         }
     }
-    func gameAuthed(){
-        if auth_{return}
+    func gameCenterAuthed(){
+        if gameAuthed{return}
         gotIp()
-        auth_ = true
+        gameAuthed = true
     }
     func gameGuest(){
-        if auth_{return}
+        if gameAuthed{return}
         gotIp()
-        auth_ = true
+        gameAuthed = true
     }
     func kill(_ n: Object){
         if n.death > 100{
@@ -89,10 +58,9 @@ class PlayNetwork: PlayConvenience{
             }
         }else if n.death > 0{
             //fade
-            n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * CGFloat(gameFPS), dy: CGFloat(n.velocity.dy) * CGFloat(gameFPS)), duration: 1))
+            n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * gameFPS, dy: CGFloat(n.velocity.dy) * gameFPS), duration: 1))
         }else{n.removeFromParent()}
     }
-    var needsName = false
     func parseShip(_ data: inout Data, _ i: Int){
         guard i < objects.count else {
             let object = Object()
@@ -148,24 +116,26 @@ class PlayNetwork: PlayConvenience{
         objects.removeAll()
         objects.append(ship)
         game.sector(x: x, y: y) { [self] data in
-            (loadstack.p, (pos: loadstack.pos, size: loadstack.size), _) = data
+            self.ip = data.2.ip
+            gotIp()
+            sector = data
             loaded -= 1
-            if loadstack.p!.count < 1{
-                MIN_NODES = 65
+            if sector.0.count < 1{
+                MIN_NODES_TO_START = 65
             }
             if loaded == 0{didLoad()}
         } err: { a in
             dmessage = a
             self.end()
             DispatchQueue.main.async{Disconnected.renderTo(skview)}
-        } ipget: {self.ip = $0;self.gotIp()} load: { frac in
+        } load: { frac in
             self.loading.run(.scaleX(to: frac, duration: 0.1).ease(.easeOut))
             self.loading.run(.moveTo(x: (frac - 1) * 150, duration: 0.1).ease(.easeOut))
         }
     }
     func didLoad(){
-        planets.append(contentsOf: loadstack.p!)
-        for p in loadstack.p!{
+        planets.append(contentsOf: sector.0)
+        for p in sector.0{
             let a = SKSpriteNode(imageNamed: "arrow")
             planetindicators.append(a)
             a.anchorPoint = CGPoint(x: 0.5, y: 1)
@@ -176,14 +146,13 @@ class PlayNetwork: PlayConvenience{
         for p in planetindicators{
             p.alpha = 0
         }
-        ready = true
         if view != nil{
             didMove(to: view!)
         }
     }
     func startData(){
-        istop()
-        istop = interval(0.1, { [self] in
+        datastop()
+        datastop = interval(0.1, { [self] in
             //send playerdata
             var data = Data([5])
             ship.encode(data: &data)
@@ -211,56 +180,34 @@ class PlayNetwork: PlayConvenience{
         })
     }
     func startHB(){
-        istop()
-        istop = interval(1, { [self] in
+        datastop()
+        datastop = interval(1, { [self] in
             send(Data([3]))
         })
     }
-    let physics = DispatchQueue.main
     func ping(){
-        a()
-        a = timeout(5){
+        stopPing()
+        stopPing = timeout(5){
             dmessage = "Lost connection!"
             self.end()
             Disconnected.renderTo(skview)
         }
     }
-    func didInit(){
-        DEBUG_TXT.fontSize = 15
-        DEBUG_TXT.position = pos(mx: -0.5, my: 0.5, x: 20, y: -20)
-        DEBUG_TXT.color = UIColor(red: 0, green: 0, blue: 0, alpha: 0.5)
-        DEBUG_TXT.fontColor = .white
-        DEBUG_TXT.horizontalAlignmentMode = .left
-        DEBUG_TXT.verticalAlignmentMode = .top
-        DEBUG_TXT.numberOfLines = 20
-        DEBUG_TXT.zPosition = .infinity
-        cam.addChild(DEBUG_TXT)
-        api.sector(completion: sectorpos)
-    }
-    var ended = false
     func end(){
         if !ended{send(Data([127]))}
         inlightSpeed.removeFromParent()
         //release texture objects
-        for p in loadstack.p ?? []{
+        for p in sector.0{
             p.texture = nil
             for c in p.children{
                 if c.name != nil{(c as? SKSpriteNode)?.texture = nil}
             }
         }
         send = {(_:Data) in}
-        a()
-        istop()
+        stopPing()
+        datastop()
         ended = true
     }
-    func didBuy(_ success: Bool){}
-    func didChangeItem(_ success: Bool){}
-    func didCollect(_ success: Bool){}
-    func didMake(_ success: Bool){}
-    var p = false
-    var last: DispatchTime = .now()
-    var authed = false
-    var ip: String = ""
     
     func recieved(_ d: Data){
         if ended{return}
@@ -270,10 +217,10 @@ class PlayNetwork: PlayConvenience{
         if code > 127{
             code -= 128
             if data.count < 1{return}
-            let s = data.readunsafe() as UInt8
+            let seq = data.readunsafe() as UInt8
 
-            if !crits.contains(s){return}
-            crits.remove(s)
+            if !crits.contains(seq){return}
+            crits.remove(seq)
         }
         if code == 1{
             ping()
@@ -281,8 +228,7 @@ class PlayNetwork: PlayConvenience{
             loaded -= 1
             if loaded == 0{didLoad()}
             startHB()
-            let a: UInt64 = data.readunsafe()
-            energyAmount = Double(a & 0x0000FFFFFFFFFFFF)
+            energyAmount = Double((data.readunsafe() as UInt64) & 0x0000FFFFFFFFFFFF)
             lastSentEnergy = energyAmount
         }else if code == 127{
             dmessage = data.read() ?? "Disconnected!"
@@ -295,43 +241,43 @@ class PlayNetwork: PlayConvenience{
         guard ship.controls else {return}
         if code == 6{
             ping()
-            delay = Double(data.readunsafe() as UInt8) / 100
-            last = (last + delay).clamp(.now(), .now().advanced(by: DispatchTimeInterval.milliseconds(MAX_DELAY)))
+            let delay = Double(data.readunsafe() as UInt8) / 100
+            last = (last + delay).clamp(.now(), .now().advanced(by: DispatchTimeInterval.milliseconds(300)))
             physics.asyncAfter(deadline: last){ [self] in
                 var i = 1
                 while data.count > 13{parseShip(&data, i);i += 1}
-                for e in objects.suffix(max(objects.count - i, 0)){
-                    if let i = tracked.firstIndex(of: e){
+                for obj in objects.suffix(max(objects.count - i, 0)){
+                    if let i = tracked.firstIndex(of: obj){
                         trackArrows[i].removeFromParent()
-                        for a in tracked[i].children{if a.zPosition == 9{a.removeFromParent()}}
+                        for child in tracked[i].children{if child.zPosition == 9{child.removeFromParent()}}
                         tracked.remove(at: i)
                         trackArrows.remove(at: i)
                     }
-                    kill(e)
-                    e.namelabel?.removeFromParent()
-                    e.namelabel = nil
-                    e.removeFromParent()
+                    kill(obj)
+                    obj.namelabel?.removeFromParent()
+                    obj.namelabel = nil
+                    obj.removeFromParent()
                 }
                 objects.removeLast(max(objects.count - i, 0))
             }
         }else if code == 7{
             ping()
-            delay = Double(data.readunsafe() as UInt8) / 100
-            last = (last + delay).clamp(.now(), .now().advanced(by: DispatchTimeInterval.milliseconds(MAX_DELAY)))
+            let delay = Double(data.readunsafe() as UInt8) / 100
+            last = (last + delay).clamp(.now(), .now().advanced(by: DispatchTimeInterval.milliseconds(300)))
             physics.asyncAfter(deadline: last){ [self] in
                 var i = 0
                 while data.count > 13{parseShip(&data, i);i += 1}
-                for e in objects.suffix(max(objects.count - i, 0)){
-                    if let i = tracked.firstIndex(of: e){
+                for obj in objects.suffix(max(objects.count - i, 0)){
+                    if let i = tracked.firstIndex(of: obj){
                         trackArrows[i].removeFromParent()
-                        for a in tracked[i].children{if a.zPosition == 9{a.removeFromParent()}}
+                        for child in tracked[i].children{if child.zPosition == 9{child.removeFromParent()}}
                         tracked.remove(at: i)
                         trackArrows.remove(at: i)
                     }
-                    kill(e)
-                    e.namelabel?.removeFromParent()
-                    e.namelabel = nil
-                    e.removeFromParent()
+                    kill(obj)
+                    obj.namelabel?.removeFromParent()
+                    obj.namelabel = nil
+                    obj.removeFromParent()
                 }
                 objects.removeLast(max(objects.count - i, 0))
             }
@@ -372,7 +318,7 @@ class PlayNetwork: PlayConvenience{
     }
     
     func gotIp(){
-        if !p{p = true;return}
+        if !step1Completed{step1Completed = true;return}
         let player = GKLocalPlayer.local
         if player.isAuthenticated && creds == nil{
             player.fetchItems(forIdentityVerificationSignature: { url, sig, salt, time, err in
@@ -387,7 +333,7 @@ class PlayNetwork: PlayConvenience{
         }else if creds == nil{
             creds = (url: URL(string: "http://example.com")!, sig: Data(), salt: Data(), time: 1, id: "")
         }
-        send = connect("192.168.1.248:65152", recieved)
+        send = connect("192.168.1.141:65152", recieved)
         var data = Data()
         data.write(critid(0))
         data.write(UInt16(VERSION))

@@ -1,0 +1,99 @@
+<html translate=no><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><style>
+	body{
+		background-color: black;
+		margin: 0;
+		color: white;
+	}
+	.container{
+		height: 100%;
+		perspective: 1px;
+		overflow-y: auto;
+		overflow-x: hidden;
+	}
+	.bg{
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		opacity: 0.35;
+	}
+	.bg .inside{
+		height: 100%;
+		image-rendering: pixelated;
+	}
+	.content{
+		height: 6000px
+	}
+	@font-face {
+  	font-family: a;
+  	src: url(../HalogenbyPixelSurplus-Regular.otf);
+	}
+	@keyframes rot {
+		from{transform: rotate()}
+		to{transform: rotate(360deg)}
+	}
+
+	.header{
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 50px;
+		background: #000;
+		z-index: 5;
+		box-shadow: 0 0 10px 10px black;
+	}
+	.header + img{
+		margin-left: 20px;
+		width: 100px;
+		height: 60px;
+		object-fit: cover;
+		position: fixed;
+		z-index: 6;
+		-webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0 83.33%, rgba(0,0,0,0));
+	}
+	#one{
+		font-size: 30px;
+		font-family: a;
+		color: gold;
+	}
+	#twothree{
+		font-size: 24px;
+		font-family: a;
+		color: silver;
+		display: flex;
+		justify-content: space-around;
+		margin-top: 50px;
+	}
+	m{
+		font-family: monospace;
+	}
+</style>
+<div class="header"></div>
+<img src="../game/Assets.xcassets/AppIcon.appiconset/1024px_1.png" /> <!--header image-->
+<div class="container">
+	<div class="bg" style="transform: translateY(-500px) translateZ(-1px) scale(4);"><div class="inside" style="background-image: url('BG_STARS');"></div></div>
+	<div class="bg" style="transform: translateY(-500px) translateZ(-0.625px) scale(3.25);"><div class="inside" style="background-image: url('FG_STARS_1');"></div></div>
+	<div class="bg" style="transform: translateY(-500px) translateZ(-0.333px) scale(2.666);"><div class="inside" style="background-image: url('FG_STARS_2');"></div></div>
+	
+	<img src="../game/Assets.xcassets/planets/planet35.imageset/planet35.png" style="width: 30%;margin-top: 50px;opacity: 0.5;float: right;margin-right: -150px;animation: rot 150s linear infinite reverse;" />
+	<img src="../game/Assets.xcassets/planets/destroyer9.imageset/destroyer9.png" style="width: 25%;margin-top: 650px;opacity: 0.5;animation: rot 300s linear infinite;float: left;" />
+	<img src="../game/Assets.xcassets/asteroids/asteroid4.imageset/asteroid4.png" style="width: 3%;margin-top: 100px;opacity: 0.5;animation: rot 30s linear infinite;float: left;margin-left: -10px;" />
+
+	<div class="bg" style="transform: translateZ(-0.625px) scale(1.625);opacity: 0.8;">
+		<div style="text-align: center;font-family: a;font-size: 50px;margin-top: 25%;">LOCUS</div>
+		<div style="text-align: center;font-family: monospace;font-size: 16px;margin-top: 2%;">Lorem ipsum dolor si amet</div>
+	</div>
+
+	<div class="inside" style="opacity: 0.8;">
+		<div style="text-align: center;font-family: a;font-size: 50px;margin-top: 100%;color:rgb(180, 80, 30)">Leaderboards</div>
+		<div style="text-align: center;font-family: monospace;font-size: 16px;margin-top: 2%;">
+			<div id="one"><m>1:</m> lorem</div>
+			<div id="twothree"><n><m>2:</m> ipsum</n><n style="color:#CD7F32"><m>3:</m> dolor</n></div>
+		</div>
+	</div>
+	<div class="content">
+
+	</div>
+</div></html>

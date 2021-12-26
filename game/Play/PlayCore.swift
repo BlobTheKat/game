@@ -24,19 +24,7 @@ enum impactType{
     case none
 }
 
-class PlayCore: PlayAmbient{
-    var energyCount = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
-    var energyNodes: [SKSpriteNode] = []
-    var latency = 0.0
-    var lastUpdate: TimeInterval? = nil
-    let border1 = SKSpriteNode(imageNamed: "tunnel1")
-    let border2 = SKSpriteNode(imageNamed: "tunnel1")
-    var started = false
-    var camOffset = CGPoint(x: 0, y: 0.2)
-    var vel: CGFloat = 0
-    
-    
-    
+extension Play{
     func vibratePhone(_ impact: impactType) {
          
     
@@ -72,12 +60,6 @@ class PlayCore: PlayAmbient{
                 
             }
     }
-   
-    
-    
-    let shipDirection = SKSpriteNode(imageNamed: "direction")
-    let speedLabel =  SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
-    let playerArrow = SKSpriteNode(imageNamed: "playerArrow")
     override func update(_ currentTime: TimeInterval){
         if view == nil{return}
         //this piece of code prevents speedhack and/or performance from slowing down gametime by running update more or less times based on delay (the currentTime parameter)
@@ -85,15 +67,15 @@ class PlayCore: PlayAmbient{
         if lastUpdate == nil{
             lastUpdate = currentTime - ti
         }
-        latency += currentTime - lastUpdate! - ti
+        framesQueued += currentTime - lastUpdate! - ti
         lastUpdate = currentTime
         
         
-        if latency > ti{
-            latency -= ti
+        if framesQueued > ti{
+            framesQueued -= ti
             update(currentTime)
-        }else if latency < -ti{
-            latency += ti
+        }else if framesQueued < -ti{
+            framesQueued += ti
             return
         }
         physics.async{
@@ -101,22 +83,44 @@ class PlayCore: PlayAmbient{
             self.spaceUpdate()
         }
     }
-    var prot: CGFloat = 0
-    var presence = false
-    func planetEditMode(){}
     func cameraUpdate(){
+        border1.position.x = cam.position.x
+        border2.position.y = cam.position.y
+        drawDebug()
+        stars1.position = CGPoint(x: cam.position.x / 2.6, y: cam.position.y / 2.6)
+        stars1.update()
+        stars2.position = CGPoint(x: cam.position.x / 2, y: cam.position.y / 2)
+        stars2.update()
+        stars3.position = CGPoint(x: cam.position.x / 1.6, y: cam.position.y / 1.6)
+        stars3.update()
+        stars4.update()
+        stars4.position = CGPoint(x: cam.position.x / 4, y: cam.position.y / 4)
+        if let planetLanded = planetLanded{
+            collectedLabel.text = "\(Int(NSDate().timeIntervalSince1970 - planetLanded.last) * Int(planetLanded.persec))"
+        }
         if presence{
             if planetLanded == nil{return planetEditMode()}
-            prot += planetLanded!.angularVelocity
+            planetLandedRot += planetLanded!.angularVelocity
             planetLanded!.zRotation -= planetLanded!.angularVelocity
             cam.position.x = (cam.position.x*9 + planetLanded!.position.x)/10
             cam.position.y = (cam.position.y*9 + planetLanded!.position.y + planetLanded!.radius - self.size.width / 15)/10
+            if dragRemainder.isInfinite{
+                var amount = sign(dragRemainder) * 2
+                while planetLanded!.items[(Int(itemRot) + Int(amount)) & 255] != nil{amount += sign(amount)}
+                let l = planetLanded!.children.first(where: {$0.userData?["rot"] as? UInt8 == itemRot})
+                planetLanded!.items[(Int(itemRot) + Int(amount)) & 255] = planetLanded!.items[Int(itemRot)]
+                planetLanded!.items[Int(itemRot)] = nil
+                itemRot &+= UInt8(Int(amount) & 255)
+                planetLanded!.run(.rotate(byAngle: amount * PI256, duration: abs(amount) / 10.0))
+                l?.run(.rotate(byAngle: -amount * PI256, duration: abs(amount) / 10.0))
+                l?.userData?["rot"] = itemRot
+            }
             return
         }
         let cx = cam.xScale * self.size.width / 2
         let cy = cam.yScale * self.size.height / 2
-        let bx = ((loadstack.size?.width ?? CGFloat.infinity) + border2.size.width) / 2 - 100
-        let by = ((loadstack.size?.height ?? CGFloat.infinity) + border1.size.width) / 2 - 100
+        let bx = ((sector.1.size.width) + border2.size.width) / 2 - 100
+        let by = ((sector.1.size.height) + border1.size.width) / 2 - 100
         
         let x = min(max(ship.position.x, cx - bx), bx - cx) - cam.position.x - camOffset.x * cx * 2
         let y = min(max(ship.position.y, cy - by), by - cy) - cam.position.y - camOffset.y * cy * 2
@@ -148,24 +152,7 @@ class PlayCore: PlayAmbient{
             border2.position.x *= -1
             border2.xScale *= -1
         }
-        border1.position.x = cam.position.x
-        border2.position.y = cam.position.y
-        drawDebug()
-        stars.position = CGPoint(x: cam.position.x / 2.6, y: cam.position.y / 2.6)
-        stars.update()
-        stars2.position = CGPoint(x: cam.position.x / 2, y: cam.position.y / 2)
-        stars2.update()
-        stars3.position = CGPoint(x: cam.position.x / 1.6, y: cam.position.y / 1.6)
-        stars3.update()
-        stars4.update()
-        stars4.position = CGPoint(x: cam.position.x / 4, y: cam.position.y / 4)
-        if let planetLanded = planetLanded{
-            collectedLabel.text = "\(Int(NSDate().timeIntervalSince1970 - planetLanded.last) * Int(planetLanded.persec))"
-        }
     }
-    var _a = 0
-    var planetLanded: Planet? = nil
-    let collectedLabel = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
     func spaceUpdate(){
       
         
@@ -265,9 +252,9 @@ class PlayCore: PlayAmbient{
             }
             a += 1
         }
-        let isX = abs(ship.position.x) > (loadstack.size?.width ?? CGFloat.infinity) / 2 - border2.size.width
-        let isY = abs(ship.position.y) > (loadstack.size?.height ?? CGFloat.infinity) / 2 - border1.size.width
-        if (abs(ship.position.x) > (loadstack.size?.width ?? CGFloat.infinity) / 2 || abs(ship.position.y) > (loadstack.size?.height ?? CGFloat.infinity) / 2) && ship.controls{
+        let isX = abs(ship.position.x) > sector.1.size.width / 2 - border2.size.width
+        let isY = abs(ship.position.y) > sector.1.size.height / 2 - border1.size.width
+        if (abs(ship.position.x) > sector.1.size.width / 2 || abs(ship.position.y) > sector.1.size.height / 2) && ship.controls{
             //move
             ship.controls = false
             ship.dynamic = false
@@ -284,28 +271,28 @@ class PlayCore: PlayAmbient{
             var sx = ship.position.x
             var sy = ship.position.y
             if isX{
-                sx = (sx < 0 ? -1 : 1) * (loadstack.size!.width / 2 + 2000)
+                sx = (sx < 0 ? -1 : 1) * (sector.1.size.width / 2 + 2000)
             }
             if isY{
-                sy = (sy < 0 ? -1 : 1) * (loadstack.size!.height / 2 + 2000)
+                sy = (sy < 0 ? -1 : 1) * (sector.1.size.height / 2 + 2000)
             }
-            secx = Int(sx + loadstack.pos!.x)
-            secy = Int(sy + loadstack.pos!.y)
-            ship.run(SKAction.move(by: CGVector(dx: ship.velocity.dx * CGFloat(gameFPS), dy: ship.velocity.dy * CGFloat(gameFPS)), duration: 1))
-        }else if (isX || isY) && ship.controls && _a == 0{
+            secx = Int(sx + sector.1.pos.x)
+            secy = Int(sy + sector.1.pos.y)
+            ship.run(SKAction.move(by: CGVector(dx: ship.velocity.dx * gameFPS, dy: ship.velocity.dy * gameFPS), duration: 1))
+        }else if (isX || isY) && ship.controls && clock20 == 0{
             //calculate which sector you're gonna go to
             var sx = ship.position.x
             var sy = ship.position.y
             if isX{
-                sx = (sx < 0 ? -1 : 1) * (loadstack.size!.width / 2 + 2000)
+                sx = (sx < 0 ? -1 : 1) * (sector.1.size.width / 2 + 2000)
             }
             if isY{
-                sy = (sy < 0 ? -1 : 1) * (loadstack.size!.height / 2 + 2000)
+                sy = (sy < 0 ? -1 : 1) * (sector.1.size.height / 2 + 2000)
             }
-            let x = loadstack.pos!.x + sx, y = loadstack.pos!.y + sy
+            let x = sector.1.pos.x + sx, y = sector.1.pos.y + sy
             let regionx = 0, regiony = 0//fdiv(Int(x), REGIONSIZE), regiony = fdiv(Int(y), REGIONSIZE)
             var d = false
-            for sector in sectors[CGPoint(x: regionx, y: regiony)]!{
+            for sector in regions[CGPoint(x: regionx, y: regiony)]!{
                 let (_, (pos: pos, size: size), (name: name, ip: _)) = sector
                 let w2 = size.width / 2
                 let h2 = size.height / 2
@@ -319,8 +306,8 @@ class PlayCore: PlayAmbient{
                 //THIS IS WHERE YOU HIDE THE LABEL
             }
         }
-        _a = (_a + 1) % 20
-        vel = CGFloat(sqrt(ship.velocity.dx*ship.velocity.dx + ship.velocity.dy*ship.velocity.dy)) * CGFloat(gameFPS)
+        clock20 = (clock20 + 1) % 20
+        vel = CGFloat(sqrt(ship.velocity.dx*ship.velocity.dx + ship.velocity.dy*ship.velocity.dy)) * gameFPS
         speedLabel.text = %Float(vel / 2)
     }
     func report_memory() -> UInt16{
@@ -338,11 +325,9 @@ class PlayCore: PlayAmbient{
             return 0
         }
     }
-    var lastComplete: UInt64 = SystemDataUsage.complete
-    var lastU: UInt64 = 0
-    var lastMem: UInt16 = 0
+    
     func drawDebug(){
-        if _a == 0{
+        if clock20 == 0{
             lastU = SystemDataUsage.complete &- lastComplete
             lastComplete = lastComplete &+ lastU
             lastMem = report_memory()
@@ -354,7 +339,6 @@ class PlayCore: PlayAmbient{
         var data = Data()
         data.write(critid(10))
         data.write(UInt32(planets.firstIndex(of: planet)!))
-        data.write(UInt32(1))
         critical(data, abandoned: {
             //Error: NOT_ACK'D
             self.didBuy(false)
@@ -398,4 +382,6 @@ class PlayCore: PlayAmbient{
             self.didCollect(false)
         })
     }
+    func didCollect(_ success: Bool){}
+    func didMake(_ success: Bool){}
 }

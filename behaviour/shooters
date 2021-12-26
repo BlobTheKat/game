@@ -1,0 +1,40 @@
+#cannons
+price: 50
+damage: 1
+time: 10s
+
+price: 500
+damage: 3
+time: 1m
+
+price: 2000
+damage: 8
+time: 3m
+
+price: 10k
+damage: 30
+time: 10m
+
+price: 40k
+damage: 60
+time: 40m
+
+price: 100k
+damage: 100
+time: 1.5h
+
+price: 300k
+damage: 150
+time: 3h
+
+price: 500k
+damage: 200
+time: 7h
+
+price: 1M
+damage: 280
+time: 12h
+
+price: 2M
+damage: 400
+time: 20h
