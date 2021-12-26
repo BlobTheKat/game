@@ -1,0 +1,16 @@
+
+price: 100
+time: 30m
+boost: 5%
+
+price: 5000
+time: 3h
+boost: 15%
+
+price: 100k
+time: 6h
+boost: 30%
+
+price: 500k
+time: 12h
+boost: 45%

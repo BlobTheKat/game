@@ -10,3 +10,6 @@ radius: 15
 speed: 1
 spin: 1
 texture: ship1
+shootspeed: 0.05
+shootpoints: -10 40, 10 40
+shootvecs: 0, 0

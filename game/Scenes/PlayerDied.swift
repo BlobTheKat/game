@@ -8,7 +8,7 @@
 import Foundation
 import SpriteKit
 
-class PlayerDied: PlayConvenience{
+class PlayerDied: SKScene{
     
     
     let charcter = SKSpriteNode(imageNamed: "characterDied")
@@ -24,9 +24,9 @@ class PlayerDied: PlayConvenience{
     let reconnectLabel = SKLabelNode()
     let tapToReconnect = SKLabelNode()
     override func didMove(to view: SKView) {
-        label(node: reconnectLabel, "", pos: pos(mx: 0.5, my: 0.6), size: fsmall, color: UIColor.white)
+        label(node: reconnectLabel, "", pos: pos(mx: 0.5, my: 0.6), size: 32, color: UIColor.white)
         
-        label(node: tapToReconnect, "-tap to respawn-", pos: pos(mx: 0.5, my: 0.3, y: -50), size: fsmall - 3.5, color: UIColor.white)
+        label(node: tapToReconnect, "-tap to respawn-", pos: pos(mx: 0.5, my: 0.3, y: -50), size: 28.5, color: UIColor.white)
         
         pulsate(node: tapToReconnect, amount: 0.6, duration: 3)
         
@@ -122,11 +122,10 @@ class PlayerDied: PlayConvenience{
         shadeLeft.zPosition = 5
          self.addChild(shadeLeft)
     }
-    var moved = false
-    
+    var touched: Bool = false
     override func touch(at _: CGPoint) {
-        if moved{return}
-        moved = true
+        if touched{return}
+        touched = true
         SKScene.transition = SKTransition.crossFade(withDuration: 1.5)
         Play.renderTo(skview)
         SKScene.transition = SKTransition.crossFade(withDuration: 0)

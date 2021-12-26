@@ -8,12 +8,11 @@
 import Foundation
 import SpriteKit
 
-let doorOpen = [SKTexture(imageNamed: "door7"), SKTexture(imageNamed: "door6"), SKTexture(imageNamed: "door5"), SKTexture(imageNamed: "door4"), SKTexture(imageNamed: "door3"), SKTexture(imageNamed: "door2"), SKTexture(imageNamed: "door1")]
-let doorClose: [SKTexture] = doorOpen.reversed()
 
-class DPlay:PlayConvenience, SKPhysicsContactDelegate{
+class DPlay: SKScene, SKPhysicsContactDelegate{
     
-    
+    static let doorOpen = [SKTexture(imageNamed: "door7"), SKTexture(imageNamed: "door6"), SKTexture(imageNamed: "door5"), SKTexture(imageNamed: "door4"), SKTexture(imageNamed: "door3"), SKTexture(imageNamed: "door2"), SKTexture(imageNamed: "door1")]
+    static let doorClose: [SKTexture] = DPlay.doorOpen.reversed()
     let Dship = SKSpriteNode(imageNamed: "Dship")
     let player = SKSpriteNode(imageNamed: "player0")
     let boxes = SKSpriteNode(imageNamed: "boxes")
@@ -23,21 +22,22 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
     let inCockpit = SKSpriteNode(imageNamed: "inCockpitOff")
     let star1 = SKSpriteNode(imageNamed: "stars")
     let star2 = SKSpriteNode(imageNamed: "stars")
-    let cam = SKCameraNode()
     let door = SKSpriteNode(imageNamed: "door7")
     //Sound
     
     let inShipSound = SKAudioNode(fileNamed: "inshipSound.wav")
     let playerWalking = SKAudioNode(fileNamed: "playerWalking.wav")
-    
+    var framesQueued = 0.0
+    var lastUpdate: TimeInterval? = nil
+    let dPad = SKSpriteNode(imageNamed: "dPad")
     struct physicscategory{
-        
         static let player: UInt32 = 0b1
         static let outline: UInt32 = 0b10
         static let hitBox: UInt32 = 0b100
-        
     }
-    
+    let cam = SKCameraNode()
+    var moved = false
+    var camOffset = CGPoint(x: 0, y: 0.2)
     func contact(_ body1: SKPhysicsBody, _ body2: SKPhysicsBody){}
     func didBegin(_ contact: SKPhysicsContact){
         var body1 = SKPhysicsBody()
@@ -50,15 +50,11 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
             body1 = contact.bodyB
             body2 = contact.bodyA
         }
-        
         if body1.categoryBitMask == physicscategory.player && body2.categoryBitMask == physicscategory.hitBox{
             inCockpit.alpha = 1
         }
-        
-        
     }
     override func didMove(to view: SKView) {
-
         self.addChild(inShipSound)
         playerWalking.autoplayLooped = true
         vibrateCamera(camera: cam, amount: 1)
@@ -129,12 +125,7 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
         toEnter.physicsBody!.affectedByGravity = false
         toEnter.physicsBody!.allowsRotation = false
         toEnter.physicsBody!.isDynamic = false
-        
         self.addChild(toEnter)
-        
-        
-        
-        
         
         player.setScale(0.2)
         player.position = pos(mx: 0, my: 0, y: 150)
@@ -160,12 +151,6 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
         door.zPosition = -262
         door.setScale(0.3)
     }
-    var latency = 0.0
-    var lastUpdate: TimeInterval? = nil
-    let border1 = SKSpriteNode(imageNamed: "tunnel1")
-    let border2 = SKSpriteNode(imageNamed: "tunnel1")
-    var started = false
-    var camOffset = CGPoint(x: 0, y: 0.2)
     
     func cameraUpdate(){
         let x = player.position.x - cam.position.x - camOffset.x
@@ -187,7 +172,6 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
     var movingRight = false
     var movingLeft = false
     var playerSpriteNumber = 0.0
-    let dPad = SKSpriteNode(imageNamed: "dPad")
     override func nodeDown(_ node: SKNode, at point: CGPoint) {
         if dPad == node{
             let T = dPad.size.width / 7
@@ -258,24 +242,20 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
             self.playerWalking.removeFromParent()
             playingWalkingSound = false
         }
-        
-        
-        
-        
         if view == nil{return}
         let ti = 1/gameFPS
         if lastUpdate == nil{
             lastUpdate = currentTime - ti
         }
-        latency += currentTime - lastUpdate! - ti
+        framesQueued += currentTime - lastUpdate! - ti
         lastUpdate = currentTime
         
         
-        if latency > ti{
-            latency -= ti
+        if framesQueued > ti{
+            framesQueued -= ti
             update(currentTime)
-        }else if latency < -ti{
-            latency += ti
+        }else if framesQueued < -ti{
+            framesQueued += ti
             return
         }
         DispatchQueue.main.async{
@@ -316,13 +296,13 @@ class DPlay:PlayConvenience, SKPhysicsContactDelegate{
             isOpen = true
             //open
             door.removeAction(forKey: "anim")
-            door.run(.animate(with: [SKTexture](doorOpen.dropFirst(doorOpen.firstIndex(of: door.texture!) ?? 0)), timePerFrame: 0.05), withKey: "anim")
+            door.run(.animate(with: [SKTexture](DPlay.doorOpen.dropFirst(DPlay.doorOpen.firstIndex(of: door.texture!) ?? 0)), timePerFrame: 0.05), withKey: "anim")
             cam.addChild(inCockpit)
         }else if isOpen && !inRange{
             isOpen = false
             //close
             door.removeAction(forKey: "anim")
-            door.run(.animate(with: [SKTexture](doorClose.dropFirst(doorClose.firstIndex(of: door.texture!) ?? 0)), timePerFrame: 0.05), withKey: "anim")
+            door.run(.animate(with: [SKTexture](DPlay.doorClose.dropFirst(DPlay.doorClose.firstIndex(of: door.texture!) ?? 0)), timePerFrame: 0.05), withKey: "anim")
             inCockpit.removeFromParent()
         }
         player.zPosition = -player.position.y

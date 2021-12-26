@@ -8,24 +8,22 @@
 import Foundation
 import SpriteKit
 
-let P20 = CGFloat.pi / 10
-
 let appear = { (_ pos: CGPoint) -> [Particle] in
-    var p = [Particle]()
+    var particleArr = [Particle]()
     for i in 1...20{
-        let dir = dir(CGFloat(i) * P20, random(min: 50, max: 100))
-        p.append(Particle[State(color: (r: 0, g: 0.2, b: 1), size: CGSize(width: 15, height: 15), zRot: 0, position: CGPoint(x: pos.x + dir.dx, y: pos.y + dir.dy), alpha: 0), State(color: (r: 1, g: 1, b: 1), size: CGSize(width: 10, height: 10), zRot: 0, position: CGPoint(x: pos.x, y: pos.y), alpha: 1, delay: 1)])
+        let dir = dir(CGFloat(i) * PI20, random(min: 50, max: 100))
+        particleArr.append(Particle[State(color: (r: 0, g: 0.2, b: 1), size: CGSize(width: 15, height: 15), zRot: 0, position: CGPoint(x: pos.x + dir.dx, y: pos.y + dir.dy), alpha: 0), State(color: (r: 1, g: 1, b: 1), size: CGSize(width: 10, height: 10), zRot: 0, position: CGPoint(x: pos.x, y: pos.y), alpha: 1, delay: 1)])
     }
-    return p
+    return particleArr
 }
 let disappear = { (_ pos: CGPoint) -> [Particle] in
-    var p = [Particle]()
+    var particleArr = [Particle]()
     for i in 1...20{
-        let dir = dir(CGFloat(i) * P20, random(min: 50, max: 100))
-        p.append(Particle[State(color: (r: 1, g: 1, b: 0), size: CGSize(width: 10, height: 10), zRot: 0, position: CGPoint(x: pos.x, y: pos.y), alpha: 1), State(color: (r: 1, g: 0, b: 0), size: CGSize(width: 15, height: 15), zRot: 0, position: CGPoint(x: pos.x + dir.dx, y: pos.y + dir.dy), alpha: 0, delay: 1)])
+        let dir = dir(CGFloat(i) * PI20, random(min: 50, max: 100))
+        particleArr.append(Particle[State(color: (r: 1, g: 1, b: 0), size: CGSize(width: 10, height: 10), zRot: 0, position: CGPoint(x: pos.x, y: pos.y), alpha: 1), State(color: (r: 1, g: 0, b: 0), size: CGSize(width: 15, height: 15), zRot: 0, position: CGPoint(x: pos.x + dir.dx, y: pos.y + dir.dy), alpha: 0, delay: 1)])
         
     }
-    return p
+    return particleArr
 }
 
 let particles: [(Object) -> Particle] = [
@@ -58,19 +56,27 @@ let particles: [(Object) -> Particle] = [
 ]
 
 
-
-let SHOOTPOINTS: [[CGPoint]] = [
-    [CGPoint(x: -10, y: 40), CGPoint(x: 10, y: 40)]
-]
-let SHOOTVECTORS: [[CGFloat]] = [
-    [0, 0]
-]
-let SHOOTFREQUENCIES: [CGFloat] = [
-    0.05
-]
-let SHOOTERDIRS: [[CGFloat]] = [ //for planet shooters (maps to shooter level)
-    [-0.5,0.5],
-    [-0.5,0.5],
-    [-0.6,0,0.6],
-    [-0.6,0,0.6]
-]
+let SHOOTPOINTS: [[CGPoint]] = ships.dropFirst().map { ship in
+    if case .string(let points) = ship["shootpoints"]{
+        return points.split(separator: ",").map{ a in
+            let point = String(a).trimmingCharacters(in: CharacterSet([" "])).split(separator: " ")
+            return CGPoint(x: CGFloat(Double(point[0])!), y: CGFloat(Double(point[1])!))
+        }
+    }else{
+        return []
+    }
+}
+let SHOOTVECTORS: [[CGFloat]] = ships.dropFirst().map { ship in
+    if case .string(let points) = ship["shootvecs"]{
+        return points.split(separator: ",").map{ a in CGFloat(Double(String(a).trimmingCharacters(in: CharacterSet([" "])))!) }
+    }else{
+        return []
+    }
+}
+let SHOOTDAMAGES: [[CGFloat]] = ships.dropFirst().map { ship in
+    if case .string(let points) = ship["shootdmgs"]{
+        return points.split(separator: ",").map{ a in CGFloat(Double(String(a).trimmingCharacters(in: CharacterSet([" "])))!) }
+    }else{
+        return []
+    }
+}

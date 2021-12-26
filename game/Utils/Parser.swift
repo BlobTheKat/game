@@ -1,85 +1,16 @@
 //
-//  Constants.swift
+//  Parser.swift
 //  game
 //
-//  Created by Matthew on 05/08/2021.
+//  Created by Matthew on 16/12/2021.
 //
 
 import Foundation
 import SpriteKit
-import Network
 
-let MAX_DELAY = 300 //in milliseconds, the maximum amount of time a packet can be delayed for smoothness
-let PI256: CGFloat = .pi / 128 //for converting radians to octians
-let ROT_STEP = Complex(r: cos(PI256), i: -sin(PI256))
-//more = smoother, more delayed
-//less = faster, rougher
-
-let G: CGFloat = 0.0001
-let fsmall: CGFloat = 32
-let fmed: CGFloat = 48
-let fbig: CGFloat = 72
-let gameFPS = 60.0
-let build = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "null"
-
-typealias byte = UInt8
-enum ColonizeItemType: UInt8{
-    case lab = 0
-    case shooter = 1
-    case dish = 2
-    case satellite = 3
-}
-let coloNames = ["lab", "shooter", "dish", "satellite"]
-typealias ColonizeItem = (type: ColonizeItemType, lvl: UInt8, capacity: UInt8)
-
-//star texture size * 2
-
-var stop: [() -> ()] = []
-
-func bg(_ a: @escaping () -> ()){DispatchQueue.global(qos: .background).async(execute: a)}
-
-extension SKTexture{
-    static func named(_ a: String) -> SKTexture{
-        return SKTexture(imageNamed: a)
-    }
-}
-enum JSON{
-    init(_ v: Any?){
-        guard let a = v else{self = .null;return}
-        if a is Double{
-            self = .number(a as! Double)
-        }else if a is String{
-            self = .string(a as! String)
-        }else if a is [Any]{
-            let arr = a as! [Any]
-            var res: [JSON] = []
-            for a in arr{
-                res.append(JSON(a))
-            }
-            self = .array(res)
-        }else if a is Bool{
-            self = .bool(a as! Bool)
-        }else if a is [String: Any]{
-            let arr = a as! [String: Any]
-            var res: [String: JSON] = [:]
-            for (k, a) in arr{
-                res[k] = JSON(a)
-            }
-            self = .map(res)
-        }else{
-            self = .null
-        }
-    }
-    
-    case map([String: JSON])
-    case array([JSON])
-    case number(Double)
-    case string(String)
-    case bool(Bool)
-    case null
-}
 typealias GameData = [[String: JSON]]
 extension GameData{
+    static let floatparser = try! NSRegularExpression(pattern: "^((?:\\d+\\.\\d*|\\.?\\d+)(?:e[+-]?\\d+)?)([a-z]*)$")
     init?(_ path: String){
         guard let dat = FileManager.default.contents(atPath: Bundle.main.path(forResource: path, ofType: nil) ?? ""), let s = String(data: dat, encoding: .utf8) else {
             return nil
@@ -98,8 +29,10 @@ extension GameData{
                 let t = text[i].split(separator: ":")
                 guard t.count > 1 else{self[self.count-1][String(t[0])] = .null;i+=1;continue}
                 let value = t[1].trimmingCharacters(in: CharacterSet([" ", "\u{0009}"]))
-                if let a = Double(value){
-                    self[self.count-1][String(t[0])] = .number(a)
+                let match = GameData.floatparser.firstMatch(in: value, range: NSRange(value.startIndex..<value.endIndex, in: value))
+                if match != nil, let a = Double(value[Range(match!.range(at: 1), in: value)!]){
+                    let prefixValue = PREFIXES[String(value[Range(match!.range(at: 1), in: value)!])] ?? 1
+                    self[self.count-1][String(t[0])] = .number(a * prefixValue)
                 }else if value.lowercased() == "yes" || value.lowercased() == "true"{
                     self[self.count-1][String(t[0])] = .bool(true)
                 }else if value.lowercased() == "no" || value.lowercased() == "false"{
@@ -120,25 +53,11 @@ extension GameData{
         }
     }
 }
-var smap = GameData("/map")!
-var ships = GameData("/ships")!
-var asteroids = GameData("/asteroids")!
-let VERSION = 1
-typealias SectorData = ([Planet], (pos: CGPoint, size: CGSize), (name:String,ip:String))
-extension CGPoint: Hashable{
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(self.x)
-        hasher.combine(self.y)
-    }
-}
-var sectors: [CGPoint: [SectorData]] = [:]
-var mapnodes: [CGPoint: SKNode] = [:]
-var loaded: Set<CGPoint> = []
-var images: [String: Data] = [:]
-var textures: [String: SKTexture] = [:]
 
+
+
+//Remove textures from all the planets of a sector, to save on memory
 func emptytextures(s: SectorData){
-    textures.removeAll()
     for p in s.0{
         p.texture = nil
         for c in p.children{
@@ -146,64 +65,34 @@ func emptytextures(s: SectorData){
         }
     }
 }
-/*func image(_ url: String, completion: @escaping (SKTexture) -> (), err: @escaping (String) -> ()){
-    if let i = textures[url]{
-        DispatchQueue.main.async{completion(i)}
-        return
-    }
-    if let i = images[url]{
-        DispatchQueue.main.async{
-            textures[url] = SKTexture(image: UIImage(data: i)!)
-            completion(textures[url]!)
-        }
-        return
-    }
-    
-    fetch(url) { (data: Data) in
-        if data[0] == 123{
-            err("Missing Image")
-            return
-        }
-        if let a = UIImage(data: data){
-            images[url] = data
-            textures[url] = SKTexture(image: a)
-            completion(textures[url]!)
-        }else{
-            err("Broken Image")
-            return
-        }
-    } _: {e in
-        err(e)
-    }
 
-}*/
-let REGIONSIZE = 500000
 func sectorExists(px: Int, py: Int) -> Bool{
     let delegated = CGPoint(x: 0, y: 0)//fdiv(px, REGIONSIZE), y: fdiv(py, REGIONSIZE))
-    if let a = sectors[delegated]{
-        if loaded.contains(delegated){
+    if let region = regions[delegated]{
+        if loadedRegions.contains(delegated){
             return true
         }
-        for i in a{
-            if i.1.pos.x == CGFloat(px) && i.1.pos.y == CGFloat(py){
+        for s in region{
+            if s.1.pos.x == CGFloat(px) && s.1.pos.y == CGFloat(py){
                 return true
             }
         }
     }
     return false
 }
-func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @escaping (String) -> (), ipget: @escaping (String) -> (), load: @escaping (CGFloat) -> (), _ a: [SectorData] = []){
+
+//Get a sector and load its entire region into memory. Call completion with the sector
+func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @escaping (String) -> (), load: @escaping (CGFloat) -> (), _ a: [SectorData] = []){
     let regionx = fdiv(x, REGIONSIZE)
     let regiony = fdiv(y, REGIONSIZE)
-    guard sectors[CGPoint(x: regionx, y: regiony)] == nil else {
+    guard regions[CGPoint(x: regionx, y: regiony)] == nil else {
         let x = CGFloat(x)
         let y = CGFloat(y)
-        for sector in sectors[CGPoint(x: regionx, y: regiony)]!{
-            let (_, (pos: pos, size: size), (name: _, ip: ip)) = sector
+        for sector in regions[CGPoint(x: regionx, y: regiony)]!{
+            let (_, (pos: pos, size: size), (name: _, ip: _)) = sector
             let w2 = size.width / 2
             let h2 = size.height / 2
             if x > pos.x - w2 && x < pos.x + w2 && y > pos.y - h2 && y < pos.y + h2{
-                ipget(ip)
                 //reinstate textures
                 for p in sector.0{
                     p.texture = SKTexture(imageNamed: p.name!)
@@ -219,16 +108,16 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                 return
             }
         }
-        if !loaded.contains(CGPoint(x: regionx, y: regiony)){
-            let a = sectors[CGPoint(x: regionx, y: regiony)]
-            sectors[CGPoint(x: regionx, y: regiony)] = nil
-            sector(x: Int(x), y: Int(y), completion: completion, err: err, ipget: ipget, load: load, a ?? [])
+        if !loadedRegions.contains(CGPoint(x: regionx, y: regiony)){
+            let a = regions[CGPoint(x: regionx, y: regiony)]
+            regions[CGPoint(x: regionx, y: regiony)] = nil
+            sector(x: Int(x), y: Int(y), completion: completion, err: err, load: load, a ?? [])
             return
         }
         err("Spacetime continuum ends here...")
         return
     }
-    sectors[CGPoint(x: regionx, y: regiony)] = a
+    regions[CGPoint(x: regionx, y: regiony)] = a
     fetch("https://raw.githubusercontent.com/BlobTheKat/data/master/\(regionx)_\(regiony).region") { (d: Data) in
         DispatchQueue.main.async {
             var data = d
@@ -253,7 +142,6 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                 var s = (planets, (pos: CGPoint(x: px, y: py), size: CGSize(width: w, height: h)),(name:name,ip:ip))
                 let current = x > px - w/2 && x < px + w/2 && y > py - h/2 && y < py + h/2
                 found = found || current
-                if current{ipget(ip)}
                 while(len > 0){
                     len -= 1
                     let id = data.readunsafe() as UInt16
@@ -313,16 +201,16 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                 s.0 = planets
                 if px < xx || px > xx + REGIONSIZE || py < yy || py > yy + REGIONSIZE{
                     let delegated = CGPoint(x: 0, y: 0)//fdiv(px, REGIONSIZE), y: fdiv(py, REGIONSIZE))
-                    if sectors[delegated] != nil{
-                        sectors[delegated]!.append(s)
+                    if regions[delegated] != nil{
+                        regions[delegated]!.append(s)
                     }else{
-                        sectors[delegated] = [s]
+                        regions[delegated] = [s]
                     }
-                }else{sectors[CGPoint(x: regionx, y: regiony)]!.append(s)}
+                }else{regions[CGPoint(x: regionx, y: regiony)]!.append(s)}
                 if current{completion(s)}
             }
             if !found{err("Spacetime continuum ends here...");return}
-            loaded.insert(CGPoint(x: regionx, y: regiony))
+            loadedRegions.insert(CGPoint(x: regionx, y: regiony))
         }
     } _: { e in
         err(e)

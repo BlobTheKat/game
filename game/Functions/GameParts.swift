@@ -1,12 +1,39 @@
 //
-//  PlayAmbient.swift
+//  GameParts.swift
 //  game
 //
-//  Created by Adam Reiner on 27/10/2021.
+//  Created by Matthew on 15/12/2021.
 //
 
 import Foundation
 import SpriteKit
+
+//Name of colonize items, ordered
+let coloNames = ["lab", "shooter", "dish", "satellite"]
+
+//a colonize item consists of a type, level and capacity
+typealias ColonizeItem = (type: ColonizeItemType, lvl: UInt8, capacity: UInt8)
+
+//All the different types and their respective IDs
+enum ColonizeItemType: UInt8{
+    case lab = 0
+    case shooter = 1
+    case dish = 2
+    case satellite = 3
+    case labupgrading = 128
+    case shooterupgrading = 129
+    case dishupgrading = 130
+    case satelliteupgrading = 131
+}
+
+enum OwnedState: UInt8{
+    case unownable = 0 //not owned //not ownable to you
+    case unowned = 64  //not owned //ownable to you
+    case owned = 128   //owned     //not ownable to you
+    case yours = 192   //owned     //ownable to you
+}
+
+
 
 class SKAmbientContainer: SKNode{
     let blocksize: CGFloat //higher = less updates but more memory
@@ -80,49 +107,5 @@ class SKAmbientContainer: SKNode{
             }
             sprites[key] = nil
         }
-    }
-}
-
-let BSTARS = [SKTexture(imageNamed: "bstars-1"),SKTexture(imageNamed: "bstars-2")]
-let STARS = [SKTexture(imageNamed: "stars1"), SKTexture(imageNamed: "stars2")]
-let BGASSETS = ["asteroid1","asteroid2","asteroid3","asteroid4","rock1", "rock2", "rock3", "planetA", "planetB"].map({a in return SKTexture(imageNamed: a)})
-
-
-class PlayAmbient: PlayNetwork{
-    var stars = SKAmbientContainer()
-    var stars2 = SKAmbientContainer()
-    var stars3 = SKAmbientContainer()
-    var stars4 = SKAmbientContainer()
-    func wasMoved() {
-        self.stars = SKAmbientContainer({ n in
-            n.texture = STARS.randomElement()
-            n.size = n.texture!.size()
-            n.setScale(2.5)
-            n.texture!.filteringMode = .nearest
-        }, frequency: 1, deriviation: 0, blocksize: 1250)
-        self.stars2 = SKAmbientContainer({ n in
-            n.texture = STARS.randomElement()
-            n.size = n.texture!.size()
-            n.setScale(1.5)
-            n.texture!.filteringMode = .nearest
-        }, frequency: 1, deriviation: 0, blocksize: 750)
-        self.stars3 = SKAmbientContainer({ n in
-            n.texture = BSTARS.randomElement()
-            n.size = n.texture!.size()
-            n.setScale(1)
-            //n.texture!.filteringMode = .nearest
-        }, frequency: 1, deriviation: 0, blocksize: 500)
-        self.stars4 = SKAmbientContainer({ n in
-            n.texture = BGASSETS.randomElement()
-            n.size = n.texture!.size()
-            n.setScale(0.2)
-            n.alpha = 0.2
-            n.position.x = random(min: 0, max: 1999)
-            n.position.y = random(min: 0, max: 1999)
-        }, frequency: 0.5, deriviation: 0.2, blocksize: 2000)
-        self.addChild(self.stars)
-        self.addChild(self.stars2)
-        self.addChild(self.stars3)
-        self.addChild(self.stars4)
     }
 }
