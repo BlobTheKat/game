@@ -11,7 +11,6 @@ import SpriteKit
 //Array of actions that need to be stopped once scene changes
 var stop: [() -> ()] = []
 //Execute task in background
-func bg(_ a: @escaping () -> ()){DispatchQueue.global(qos: .background).async(execute: a)}
 
 //Ship dictionaries
 var ships = GameData("/ships")!

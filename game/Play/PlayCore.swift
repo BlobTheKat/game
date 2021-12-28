@@ -96,7 +96,7 @@ extension Play{
         stars4.update()
         stars4.position = CGPoint(x: cam.position.x / 4, y: cam.position.y / 4)
         if let planetLanded = planetLanded{
-            collectedLabel.text = "\(Int(NSDate().timeIntervalSince1970 - planetLanded.last) * Int(planetLanded.persec))"
+            collectedLabel.text = "\(min(planetLanded.capacity, Int((NSDate().timeIntervalSince1970 - planetLanded.last) * planetLanded.persec)))"
         }
         if presence{
             if planetLanded == nil{return planetEditMode()}

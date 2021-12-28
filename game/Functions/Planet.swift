@@ -48,7 +48,7 @@ class Planet: Object{
     func populate(with item: ColonizeItem, rot: UInt8, node: SKSpriteNode = SKSpriteNode()) -> SKSpriteNode{
         if node.userData == nil{node.userData = NSMutableDictionary(capacity: 2)}
         let colo = (node.userData!["type"] as? ColonizeItem)
-        if colo?.type == item.type && colo?.lvl == item.lvl && colo?.capacity == item.capacity && node.userData?["rot"] as? UInt8 == rot{return node}
+        if colo?.type == item.type && colo?.lvl == item.lvl && colo?.capacity == item.capacity && colo?.upgradeEnd == item.upgradeEnd && node.userData?["rot"] as? UInt8 == rot{return node}
         node.userData!["type"] = item
         node.userData!["rot"] = rot
         node.removeAllActions()
@@ -94,17 +94,18 @@ class Planet: Object{
             guard let parent = parent as? Play else {return}
             for node in self.children.filter({a in return (a.userData?["type"] as? ColonizeItem)?.type == .shooter}){ //for each shooter
                 guard let node = node as? SKSpriteNode else { continue }
+                let item = shooters[Int((node.userData?["type"] as? ColonizeItem)?.lvl ?? 1)]
                 shootFrequency = 0.06
                 let p = CGPoint(x: -sin(node.zRotation) * (self.radius - 27), y: cos(node.zRotation) * (self.radius - 27))
                 let x = parent.ship.position.x - (self.position.x + -sin(node.zRotation + self.zRotation) * (self.radius / self.xScale - 27))
                 let y = parent.ship.position.y - (self.position.y + cos(node.zRotation + self.zRotation) * (self.radius / self.yScale - 27))
                 let dir = atan2(-x, y)
-                let r = (node.children[0].zRotation * 0.95 + (dir - node.zRotation - zRotation).remainder(dividingBy: .pi * 2) / 20).remainder(dividingBy: .pi * 2)
+                let r = (node.children[0].zRotation * 0.95 + (dir - node.zRotation - zRotation).remainder(dividingBy: .pi * 2) * (item["accuracy"]?.number ?? 0.05)).remainder(dividingBy: .pi * 2)
                 if abs(r) > 0.75{continue}
                 node.children[0].zRotation = r
                 shootPoints.append(p)
                 shootVectors.append(node.children[0].zRotation + node.zRotation)
-                shootDamages.append(shooters[Int((node.userData?["type"] as? ColonizeItem)?.lvl ?? 1)]["damage"]?.number ?? 2)
+                shootDamages.append(item["damage"]?.number ?? 2)
                 
             }
         }else{self.shootFrequency = 0}
@@ -294,7 +295,8 @@ class Planet: Object{
     }
     var items = [ColonizeItem?](repeating: nil, count: 256)
     var last = 0.0
-    var persec = CGFloat()
+    var persec: CGFloat = 0
+    var capacity = 0
     override func decode(data: inout Data) {
         //decode things on the planet
         self.last = Double(data.readunsafe() as UInt32)
@@ -317,14 +319,15 @@ class Planet: Object{
         }
         var i = 0, child_i = 0
         self.persec = 0
+        self.capacity = 0
         while(i < len){
             while (self.children.count > child_i ? self.children[child_i].name : nil) != nil{child_i += 1;continue}
             let id: UInt8 = data.readunsafe()
-            let item = (type: ColonizeItemType.init(rawValue: id & 127) ?? .lab, lvl: data.readunsafe() as UInt8, capacity: data.readunsafe() as UInt8)
+            var item = (type: ColonizeItemType.init(rawValue: id & 127) ?? .lab, lvl: data.readunsafe() as UInt8, capacity: data.readunsafe() as UInt8, upgradeEnd: UInt32())
             let rot = data.readunsafe() as UInt8
             if id > 127{
                 //ITS UPGRADING
-                let timeLeft = data.readunsafe() as UInt32
+                item.upgradeEnd = data.readunsafe() as UInt32
             }
             self.items[Int(rot)] = item
             let node = self.populate(with: item, rot: rot, node: self.children.count > child_i ? self.children[child_i] as! SKSpriteNode : SKSpriteNode())
@@ -343,7 +346,8 @@ class Planet: Object{
                 node.removeAllChildren()
             }
             if item.type == .lab{
-                self.persec += 1
+                self.persec += labs[Int(item.lvl)]["persec"]!.number!
+                self.capacity += Int(labs[Int(item.lvl)]["storage"]!.number!)
             }
             i += 1
             child_i += 1

@@ -29,7 +29,7 @@ let prefixes = {
 	"%": 0.01
 }
 function prefixify(a){
-	return parseFloat(a) * (prefixes[a.match(/[a-z]*$/i)[0]] || 1)
+	return parseFloat(a) * (prefixes[a.match(/[a-z%]*$/i)[0]] || 1)
 }
 try{fetch = require('node-fetch')}catch(e){
 	console.log("\x1b[31m[Error]\x1b[37m To run this server, you need to install node-fetch 2.6.2. Type this in the bash shell: \x1b[m\x1b[34mnpm i node-fetch@2.6.2\x1b[m")
@@ -70,8 +70,8 @@ function readfile(path){
 		arr.push({})
 		while(text[i]){
 			let t = text[i].split(':')
-			t[1] = t.slice(1).join(':')
-			if(!t[1])continue
+			t[1] = t.slice(1).join(':').split("#")[0]
+			if(!t[1]){i++;continue}
 			t[1] = t[1].trim()
 			let p = prefixify(t[1])
 			if(t[1] == "true" || t[1] == "yes")t[1] = true
@@ -154,6 +154,8 @@ setInterval(function(){
 }, 9e5)
 var ships = readfile('behaviour/ships')
 var asteroids = readfile('behaviour/asteroids')
+let itemMeta = readfile("behaviour/items")
+let ITEMS = itemMeta.map(a => readfile("behaviour"+a.path))
 var sector = {objects:[],planets:[],time:0,w:0,h:0}
 var meta = (readfile('meta')||[]).find(a=>(a.port||a.ip.split(":")[1])==process.argv[2]) || null
 let xy = (process.argv[3]||"_NaN_NaN").slice(1).split("_").map(a=>+a)
@@ -742,7 +744,7 @@ let msgs = {
 				let x = sector.planets[i].x - this.x
 				let y = sector.planets[i].y - this.y
 				if(x * x + y * y > this.range)continue
-				sector.planets[i].toBuf(buf, i)
+				sector.planets[i].toBuf(buf, i, this.playerid)
 			}
 			res.send(buf.toBuf())
 		}
@@ -771,23 +773,24 @@ let msgs = {
 	[CODE.COLLECT](data, res){
 		let planet = sector.planets[data.ushort()]
 		if(!planet || !planet.data || planet.data.owner != this.playerid || !planet.data.items)return res.code(ERR.COLLECT).send()
-		let earned = 0
+		let earned = 0, cap = 0
 		for(var i in planet.data.items){
 			let itm = planet.data.items[i]
 			if(itm.id == 0){
-				earned += 1
+				earned += ITEMS[0][itm.lvl].persec
+				cap += ITEMS[0][itm.lvl].storage
 			}
 		}
 		res.code(RESP.COLLECT)
 		planet.last = planet.last || Math.floor(Date.now()/1000 - 6)
 		let diff = Math.floor(Date.now()/1000 - planet.last)
-		this.data.bal += earned * diff
+		this.data.bal += Math.min(cap, earned * diff)
 		res.int((earned * diff) >>> 0)
 		planet.last += diff
 		unsaveds[planet.filename] = planet.data
 		res.send()
 	},
-    //Add an item to planet
+	//Add an item to planet
 	[CODE.MAKEITEM](data, res){
 		let planet = sector.planets[data.ushort()]
 		if(!planet || planet.data.owner != this.playerid)return res.code(ERR.MAKEITEM).send()

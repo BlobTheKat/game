@@ -173,6 +173,18 @@ class Play: SKScene{
     //GameCenter prompt
     var gkview: UIViewController? = nil
     let addItemIcons: [SKSpriteNode] = [SKSpriteNode(imageNamed: "campIcon"),SKSpriteNode(imageNamed: "cannonIcon"),SKSpriteNode(imageNamed: "researchLabIcon"),SKSpriteNode(imageNamed: "sataliteIcon")]
+    
+    // these are item upgrade variables
+    var upgradeNodes : [SKNode] = []
+    var upgradePrice = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+    var upgradeTime = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+    let upgradeArrow = SKSpriteNode(imageNamed: "upgradearrow")
+    var upgradeOld = SKSpriteNode()
+    var upgradeNew = SKSpriteNode()
+    var upgradeOld2 = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+    var upgradeNew2 = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+    var upgradebtn = SKSpriteNode(imageNamed: "upgradebtn")
+    
     var buyScreenShowing = false
     let colonizeBG = SKSpriteNode(imageNamed: "coloBG")
     let coloPlanet = SKSpriteNode(imageNamed: "coloPlanet")
@@ -211,7 +223,7 @@ class Play: SKScene{
     let thrustButton = SKSpriteNode(imageNamed: "thrustOff")
     let heatingLaser = SKSpriteNode(imageNamed: "heating0")
     let dPad = SKSpriteNode(imageNamed: "dPad")
-    //CCOUNT
+    //ACCOUNT
     let accountIcon = SKSpriteNode(imageNamed: "accountIcon")
     let accountBG = SKSpriteNode(imageNamed: "accountBG")
     var showAccount = false
@@ -231,6 +243,7 @@ class Play: SKScene{
     let lightSpeedIcon = SKSpriteNode(imageNamed: "lightSpeedOff")
     let cockpitIcon = SKSpriteNode(imageNamed: "cockpitOff")
     let removeTrackerIcon = SKSpriteNode(imageNamed: "removeTracker")
+    var hideControl = false
     //WARNINGS
     var isWarning = false
     let warning = SKSpriteNode(imageNamed: "warning")

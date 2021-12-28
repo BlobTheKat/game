@@ -12,7 +12,7 @@ import SpriteKit
 let coloNames = ["lab", "shooter", "dish", "satellite"]
 
 //a colonize item consists of a type, level and capacity
-typealias ColonizeItem = (type: ColonizeItemType, lvl: UInt8, capacity: UInt8)
+typealias ColonizeItem = (type: ColonizeItemType, lvl: UInt8, capacity: UInt8, upgradeEnd: UInt32)
 
 //All the different types and their respective IDs
 enum ColonizeItemType: UInt8{

@@ -287,6 +287,7 @@ extension Play{
                 let name = data.read() ?? "Player"
                 //guard needsNames.contains(id) else {continue}
                 needsNames.remove(id)
+                objects[id].namelabel?.removeFromParent()
                 objects[id].namelabel = SKLabelNode(text: "...")
                 label(node: objects[id].namelabel!, name, pos: CGPoint(x: objects[id].position.x, y: objects[id].position.y + 30), size: 20, color: .green, font: "Menlo")
                 
@@ -331,9 +332,9 @@ extension Play{
             })
             return
         }else if creds == nil{
-            creds = (url: URL(string: "http://example.com")!, sig: Data(), salt: Data(), time: 1, id: "")
+            creds = (url: URL(string: "http://apple.com")!, sig: Data(), salt: Data(), time: 1, id: "")
         }
-        send = connect("192.168.1.141:65152", recieved)
+        send = connect("192.168.1.248:65152", recieved)
         var data = Data()
         data.write(critid(0))
         data.write(UInt16(VERSION))

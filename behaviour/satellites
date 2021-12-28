@@ -2,15 +2,19 @@
 price: 100
 time: 30m
 boost: 5%
+researchboost: 0%
 
 price: 5000
 time: 3h
-boost: 15%
+boost: 10%
+researchboost: 1%
 
 price: 100k
 time: 6h
-boost: 30%
+boost: 20%
+researchboost: 3%
 
 price: 500k
 time: 12h
-boost: 45%
+boost: 30%
+researchboost: 5%

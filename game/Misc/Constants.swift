@@ -27,8 +27,8 @@ let gameFPS: CGFloat = 60.0
 //Size of a region
 let REGIONSIZE = 500000
 //Starting X and Y
-var secx = 2000
-var secy = 5000
+var secx = 7000
+var secy = 4000
 let PREFIXES = [
     "s": 1,
     "m": 60,

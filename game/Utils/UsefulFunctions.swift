@@ -77,11 +77,13 @@ func formatTime(_ seconds: Int) -> String {
     let m = (seconds / 60) % 60
     let h = (seconds / 3600) % 60
     let d = seconds / 86400
-    return "\(d>0 ? "\(d)d" : "")\(h>0 ? "\(h)h" : "")\(m>0 ? "\(m)m" : "")\(s>0 ? "\(s)s" : "")"
+    return "\(d>0 ? "\(d) days" : "")\(h>0 ? "\(h)hr" : "")\(m>0 ? "\(m)min" : "")\(s>0 ? "\(s)sec" : "")"
 }
 func formatNum(_ a: Double) -> String{
-    let p = floor(log10(a) / 3)
-    return "\(a / pow(1000, p))\(p == 0 ? "" : (p > 5 ? "e\(p*3)" : String("KMBTQ"[Int(p-1)])))"
+    if a == 0{return "0"}
+    let p = floor(log10(abs(a)) / 3)
+    let b = a / pow(1000, p)
+    return "\(b == trunc(b) ? "\(Int(b))" : "\(b)")\(p == 0 ? "" : (p > 5 ? "e\(p*3)" : String("kmbtq"[Int(p-1)])))"
 }
 
 func vibrateObject(sprite: SKSpriteNode){
@@ -119,3 +121,4 @@ func pulsate(node: SKNode, amount: CGFloat, duration: CGFloat){
         }
     })
 }
+func bg(_ a: @escaping () -> ()){DispatchQueue.global(qos: .background).async(execute: a)}

@@ -299,7 +299,7 @@ extension Play{
         self.tapToStart.run(SKAction.scale(by: 1.5, duration: 0.2))
     }
     
-    var upgradeStats: (price: Double, time: String, powers: [String: (old: Double, new: Double, max: Double)])?{
+    var upgradeStats: (price: Double, time: String, powers: [(name: String, old: Double, new: Double, max: Double)])?{
         guard let item = planetLanded?.items[Int(itemRot)] else {return nil}
         let id = Int(item.type.rawValue)
         if id > 127{
@@ -309,13 +309,13 @@ extension Play{
         let old = items[id][Int(item.lvl)]
         let new = items[id][Int(item.lvl)+1]
         let max = items[id].count > item.lvl + 2 ? items[id][Int(item.lvl)+2] : new
-        var pw = [String: (old: Double, new: Double, max: Double)]()
+        var pw = [(name: String, old: Double, new: Double, max: Double)]()
         for (k, v) in new{
             if k == "price" || k == "time"{continue}
             if old[k] == nil{continue}
-            pw[k] = (old: old[k]!.number!, new: v.number!, max: (max[k] ?? v).number!)
+            pw.append((name: k, old: old[k]!.number!, new: v.number!, max: (max[k] ?? v).number!))
         }
-        return (price: new["price"]!.number!, time: formatTime(Int(new["time"]!.number!)), powers: pw)
+        return (price: new["price"]!.number!, time: formatTime(Int(new["time"]!.number!)), powers: pw.sorted(by: {(a,b) in a.name.count < b.name.count}))
     }
     func startGame(){
         //IMPORTANT SIZE ALGORITHM
@@ -637,30 +637,152 @@ extension Play{
             warning.run(SKAction.fadeAlpha(to: 1, duration: 1).ease(.easeIn))
         }
     }
+    //This function renders the upgrading UI
     func renderUpgradeUI(){
-        //remove from parent
-        //set the properties
+        //remove upgrade nodes, and replace them with addItemIcons
+        for label in upgradeNodes{
+            label.removeFromParent()
+        }
+        upgradeTime.removeFromParent()
+        upgradePrice.removeFromParent()
+        upgradeArrow.removeFromParent()
+        upgradeOld.removeFromParent()
+        upgradeNew.removeFromParent()
+        upgradeOld2.removeFromParent()
+        upgradeNew2.removeFromParent()
+        upgradebtn.removeFromParent()
+        upgradeNodes = []
         guard let (price: price, time: time, powers: powers) = upgradeStats else {return}
-        time //string (ex: "3h")
-        formatNum(price) //price as a string (ex: "30K")
-        for (name, (old: old, new: new, max: max)) in powers{
-            name //string (ex: "Energy per second")
-            old //old value
-            new //new value
-            max //maximum value
+        let (type: id, lvl: lvl, capacity: _, upgradeEnd: _) = planetLanded!.items[Int(itemRot)]!
+        
+        upgradeTime.text = "Time: \(time)"
+        upgradePrice.text = "Price: \(formatNum(price))"
+        upgradeTime.position = pos(mx: 0.9, my: -0.9)
+        upgradeTime.horizontalAlignmentMode = .right
+        upgradeTime.fontSize = 60
+        buildBG.addChild(upgradeTime)
+        upgradePrice.position = pos(mx: 1, my: -0.9)
+        upgradePrice.horizontalAlignmentMode = .left
+        upgradePrice.fontSize = 60
+        buildBG.addChild(upgradePrice)
+        upgradeOld = SKSpriteNode(imageNamed: "\(coloNames[Int(id.rawValue)])\(lvl)")
+        upgradeNew = SKSpriteNode(imageNamed: "\(coloNames[Int(id.rawValue)])\(lvl+1)")
+        upgradeOld.position = pos(mx: 0.6, my: -0.3)
+        upgradeNew.position = pos(mx: 1.3, my: -0.3)
+        upgradeOld2.position = pos(mx: 0.6, my: -0.65)
+        upgradeNew2.position = pos(mx: 1.3, my: -0.65)
+        upgradeOld2.fontSize = 60
+        upgradeNew2.fontSize = 60
+        upgradeOld2.text = "Level \(lvl)"
+        upgradeNew2.text = "Level \(lvl+1)"
+        upgradeArrow.position = pos(mx: 0.95, my: -0.4)
+        upgradeArrow.setScale(0.3)
+        upgradebtn.position = pos(mx: 0.95, my: -1.07)
+        upgradebtn.setScale(0.7)
+        upgradeOld.setScale(1.5)
+        upgradeNew.setScale(1.5)
+        buildBG.addChild(upgradeArrow)
+        buildBG.addChild(upgradeOld)
+        buildBG.addChild(upgradeNew)
+        buildBG.addChild(upgradeOld2)
+        buildBG.addChild(upgradeNew2)
+        buildBG.addChild(upgradebtn)
+        var i = 0
+        var oldOutlineY = -125.0
+        for (name: name, old: old, new: new, max: max) in powers{
+            let progressLabel1 = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+            let progressLabel2 = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+            let progress1 = SKSpriteNode(imageNamed: "progress")
+            let progress2 = SKSpriteNode(imageNamed: "progress")
+            let progress3 = SKSpriteNode(imageNamed: "progressgreen")
+            let outline1 = SKSpriteNode(imageNamed: "progressOutline")
+            let outline2 = SKSpriteNode(imageNamed: "progressOutline")
+            outline1.zPosition = 100
+            outline1.setScale(0.7)
+            outline1.anchorPoint = CGPoint(x: 0 ,y: 0.5)
+            outline1.position = CGPoint(x: 400, y: oldOutlineY)
+            
+            //buildBG.addChild(outline1)
+            //from here is for the inside of the progress bar showing the actual progress
+            progress1.zPosition = 99
+            progress1.setScale(1)
+            progress1.anchorPoint = CGPoint(x: 0, y: 0.5)
+            progress1.xScale = old / max * 15
+            //outline1.addChild(progress1)
+            
+            progressLabel1.position = CGPoint(x: outline1.position.x ,y: outline1.position.y + 35)
+            progressLabel1.horizontalAlignmentMode = .left
+            progressLabel1.zPosition = 100
+            progressLabel1.fontSize = 60
+            progressLabel1.color = UIColor.white
+            //buildBG.addChild(progressLabel1)
             switch name{
             case "persec":
+                progressLabel1.text = "Production: \(formatNum(old*3600))/hr"
+                progressLabel2.text = "Production: \(formatNum(old*3600))/hr ➪ \(formatNum(new*3600))/hr"
                 break
             case "boost":
+                progressLabel1.text = "Boost: \(old*100)%"
+                progressLabel2.text = "Boost: \(Int(old*100))% ➪ \(Int(new*100))%"
+                break
+            case "researchboost":
+                progressLabel1.text = "Research Boost: \(Int(old*100))%"
+                progressLabel2.text = "Research Boost: \(Int(old*100))% ➪ \(Int(new*100))%"
                 break
             case "damage":
+                progressLabel1.text = "Damage: \(old)"
+                progressLabel2.text = "Damage: \(old) ➪ \(new)"
+                break
+            case "storage":
+                progressLabel1.text = "Storage: \(old)"
+                progressLabel2.text = "Storage: \(old) ➪ \(new)"
+                break
+            case "accuracy":
+                progressLabel1.text = "Accuracy: \(old*300)%"
+                progressLabel2.text = "Accuracy: \(Int(old*300))% ➪ \(Int(new*300))%"
                 break
             default:
+                progressLabel1.text = "\(name): \(old)"
+                progressLabel2.text = "\(name): \(old) ➪ \(new)"
                 break
             }
+            //from here is for the outline of the progress bar.
+            outline2.zPosition = 100
+            outline2.setScale(0.7)
+            outline2.anchorPoint = CGPoint(x: 0 ,y: 0.5)
+            outline2.position = pos(mx: 2.5, my: 0, x: -600, y: oldOutlineY)
+            oldOutlineY -= 150
+            buildBG.addChild(outline2)
+            progressLabel2.position = CGPoint(x: outline2.position.x ,y: outline2.position.y + 35)
+            progressLabel2.horizontalAlignmentMode = .left
+            progressLabel2.zPosition = 100
+            progressLabel2.fontSize = 60
+            progressLabel2.color = UIColor.white
+            buildBG.addChild(progressLabel2)
+            //from here is for the inside of the progress bar showing the actual progress
+            progress2.zPosition = 99
+            progress2.setScale(1)
+            progress2.anchorPoint = CGPoint(x: 0, y: 0.5)
+            progress2.xScale = old / max * 15
+            outline2.addChild(progress2)
+            progress3.zPosition = 98
+            progress3.setScale(1)
+            progress3.anchorPoint = CGPoint(x: 0, y: 0.5)
+            progress3.xScale = new / max * 15
+            outline2.addChild(progress3)
             
+            upgradeNodes.append(progressLabel1)
+            upgradeNodes.append(progressLabel2)
+            upgradeNodes.append(progress2)
+            upgradeNodes.append(progress3)
+            upgradeNodes.append(outline1)
+            upgradeNodes.append(outline2)
+            upgradeNodes.append(progress1)
+            i += 1
         }
-        //re-add
+       
+        
+        
     }
     func removeTrackers(){
         for t in tracked{
@@ -794,7 +916,7 @@ extension Play{
     func planetEditMode(){
         presence.toggle()
 
-        buildBG.anchorPoint = CGPoint(x: 0,y: 1)
+        buildBG.anchorPoint = CGPoint(x: 0, y: 1)
         buildBG.position = pos(mx: -0.5, my: 0, x: -50, y: 0)
         buildBG.alpha = 1
         buildBG.zPosition = 1000
@@ -809,6 +931,7 @@ extension Play{
             cam.addChild(buildBG)
             cam.addChild(coloArrow)
             cam.addChild(moveItemIcon)
+            ship.alpha = 0
             itemRot = 0
             cam.setScale(1)
             planetLandedRot = planetLanded!.zRotation
@@ -826,10 +949,10 @@ extension Play{
             }
             for i in 0...3{
                 addItemIcons[i].position = CGPoint(x: 600 + CGFloat(i) * 400, y: -240)
-                buildBG.addChild(addItemIcons[i])
             }
             renderUpgradeUI()
         }else{
+            ship.alpha = 1
             planetLanded!.zRotation = planetLandedRot
             dragRemainder = .nan
             coloArrow.removeFromParent()
@@ -855,6 +978,8 @@ extension Play{
         dragRemainder = .nan
         renderUpgradeUI()
     }
+    
+    
     override func nodeDown(_ node: SKNode, at point: CGPoint) {
         
         switch node{
@@ -886,6 +1011,14 @@ extension Play{
             break
         case editColoIcon:
             planetEditMode()
+            if !hideControl{
+                hideControl.toggle()
+                hideControls()
+            }else{
+                hideControl.toggle()
+                showControls()
+            }
+            
             break
         case collect:
             if planetLanded != nil{collectFrom(planetLanded!)}
@@ -935,6 +1068,7 @@ extension Play{
             itemRot = pos
             planetLanded!.run(.rotate(toAngle: CGFloat(pos) * PI256, duration: abs(CGFloat(pos)) / 180.0).ease(.easeInEaseOut))
             makeItem(planetLanded!, pos, .init(rawValue: UInt8(i))!)
+            renderUpgradeUI()
         }
         if removeTrackerIcon == node{
             removeTrackers()
@@ -1328,7 +1462,7 @@ extension Play{
         FakemapBG.position.y += b.y - a.y
     }
     override func touch(at p: CGPoint) {
-        showControls()
+        if !hideControl{showControls()}
         if mapPress1 == nil{
             mapPress1 = p
         }else if mapPress2 == nil{
