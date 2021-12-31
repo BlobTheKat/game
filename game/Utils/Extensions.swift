@@ -94,6 +94,64 @@ extension CGPoint{
         a.x += b.x
         a.y += b.y
     }
+    static func -(a: CGPoint, b: CGPoint) -> CGPoint{
+        return CGPoint(x: a.x - b.x, y: a.y - b.y)
+    }
+    static func -=(a: inout CGPoint, b: CGPoint){
+        a.x -= b.x
+        a.y -= b.y
+    }
+    static func *(a: CGPoint, b: CGFloat) -> CGPoint{
+        return CGPoint(x: a.x * b, y: a.y * b)
+    }
+    static func *=(a: inout CGPoint, b: CGFloat){
+        a.x *= b
+        a.y *= b
+    }
+    static func /(a: CGPoint, b: CGFloat) -> CGPoint{
+        return CGPoint(x: a.x / b, y: a.y / b)
+    }
+    static func /=(a: inout CGPoint, b: CGFloat){
+        a.x /= b
+        a.y /= b
+    }
+}
+
+extension CGVector{
+    func add(dx: CGFloat, dy: CGFloat = 0) -> CGVector{
+        return CGVector(dx: self.dx + dx, dy: self.dy + dy)
+    }
+    func add(y: CGFloat) -> CGVector{
+        return CGVector(dx: self.dx, dy: self.dy + y)
+    }
+    static func +(a: CGVector, b: CGVector) -> CGVector{
+        return CGVector(dx: a.dx + b.dx, dy: a.dy + b.dy)
+    }
+    static func +=(a: inout CGVector, b: CGVector){
+        a.dx += b.dx
+        a.dy += b.dy
+    }
+    static func -(a: CGVector, b: CGVector) -> CGVector{
+        return CGVector(dx: a.dx - b.dx, dy: a.dy - b.dy)
+    }
+    static func -=(a: inout CGVector, b: CGVector){
+        a.dx -= b.dx
+        a.dy -= b.dy
+    }
+    static func *(a: CGVector, b: CGFloat) -> CGVector{
+        return CGVector(dx: a.dx * b, dy: a.dy * b)
+    }
+    static func *=(a: inout CGVector, b: CGFloat){
+        a.dx *= b
+        a.dy *= b
+    }
+    static func /(a: CGVector, b: CGFloat) -> CGVector{
+        return CGVector(dx: a.dx / b, dy: a.dy / b)
+    }
+    static func /=(a: inout CGVector, b: CGFloat){
+        a.dx /= b
+        a.dy /= b
+    }
 }
 
 extension FloatingPoint{
@@ -203,9 +261,9 @@ extension Data{
     mutating func readunsafe<T>() -> T{
         let l = MemoryLayout<T>.size
         var d = Data(self.prefix(l))
-            let f: T = d.withUnsafeMutableBytes { a in
-                return a.load(as: T.self)
-            }
+        let f: T = d.withUnsafeMutableBytes { a in
+            return a.load(as: T.self)
+        }
         self.removeFirst(l)
         return f
     }

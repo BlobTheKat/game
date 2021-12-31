@@ -38,9 +38,10 @@
 		34DD98582771D7A300F391E2 /* items in Resources */ = {isa = PBXBuildFile; fileRef = 34DD98572771D7A300F391E2 /* items */; };
 		34E2B92327747EED007D3C6A /* ships in Resources */ = {isa = PBXBuildFile; fileRef = 34E2B92227747EED007D3C6A /* ships */; };
 		34E2B92527747F04007D3C6A /* asteroids in Resources */ = {isa = PBXBuildFile; fileRef = 34E2B92427747F04007D3C6A /* asteroids */; };
-		34E2B92727761AEB007D3C6A /* PlayFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E2B92627761AEB007D3C6A /* PlayFunctions.swift */; };
 		34E2B92927761DAC007D3C6A /* UsefulFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E2B92827761DAC007D3C6A /* UsefulFunctions.swift */; };
-		34EB9E4C27708DF0002C252B /* labs in Resources */ = {isa = PBXBuildFile; fileRef = 34EB9E4B27708DF0002C252B /* labs */; };
+		34E2B92C277F357E007D3C6A /* electro in Resources */ = {isa = PBXBuildFile; fileRef = 34E2B92B277F357E007D3C6A /* electro */; };
+		34E2B92E277F36D0007D3C6A /* townhalls in Resources */ = {isa = PBXBuildFile; fileRef = 34E2B92D277F36D0007D3C6A /* townhalls */; };
+		34EB9E4C27708DF0002C252B /* drills in Resources */ = {isa = PBXBuildFile; fileRef = 34EB9E4B27708DF0002C252B /* drills */; };
 		34EB9E4E27708E09002C252B /* satellites in Resources */ = {isa = PBXBuildFile; fileRef = 34EB9E4D27708E09002C252B /* satellites */; };
 		34EB9E5027708E50002C252B /* shooters in Resources */ = {isa = PBXBuildFile; fileRef = 34EB9E4F27708E50002C252B /* shooters */; };
 		34EB9E5227708E71002C252B /* dishes in Resources */ = {isa = PBXBuildFile; fileRef = 34EB9E5127708E71002C252B /* dishes */; };
@@ -86,9 +87,10 @@
 		34DD98572771D7A300F391E2 /* items */ = {isa = PBXFileReference; lastKnownFileType = text; path = items; sourceTree = "<group>"; };
 		34E2B92227747EED007D3C6A /* ships */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ships; sourceTree = "<group>"; };
 		34E2B92427747F04007D3C6A /* asteroids */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = asteroids; sourceTree = "<group>"; };
-		34E2B92627761AEB007D3C6A /* PlayFunctions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayFunctions.swift; sourceTree = "<group>"; };
 		34E2B92827761DAC007D3C6A /* UsefulFunctions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsefulFunctions.swift; sourceTree = "<group>"; };
-		34EB9E4B27708DF0002C252B /* labs */ = {isa = PBXFileReference; lastKnownFileType = text; path = labs; sourceTree = "<group>"; };
+		34E2B92B277F357E007D3C6A /* electro */ = {isa = PBXFileReference; lastKnownFileType = text; path = electro; sourceTree = "<group>"; };
+		34E2B92D277F36D0007D3C6A /* townhalls */ = {isa = PBXFileReference; lastKnownFileType = text; path = townhalls; sourceTree = "<group>"; };
+		34EB9E4B27708DF0002C252B /* drills */ = {isa = PBXFileReference; lastKnownFileType = text; path = drills; sourceTree = "<group>"; };
 		34EB9E4D27708E09002C252B /* satellites */ = {isa = PBXFileReference; lastKnownFileType = text; path = satellites; sourceTree = "<group>"; };
 		34EB9E4F27708E50002C252B /* shooters */ = {isa = PBXFileReference; lastKnownFileType = text; path = shooters; sourceTree = "<group>"; };
 		34EB9E5127708E71002C252B /* dishes */ = {isa = PBXFileReference; lastKnownFileType = text; path = dishes; sourceTree = "<group>"; };
@@ -138,7 +140,6 @@
 			isa = PBXGroup;
 			children = (
 				343E313D276A3C92007F753D /* Variables.swift */,
-				34E2B92627761AEB007D3C6A /* PlayFunctions.swift */,
 				3484BFD5270754DD00C06FFC /* PlayNetwork.swift */,
 				3484BFD72709C6C600C06FFC /* PlayCore.swift */,
 				343E313B276A3C03007F753D /* Play.swift */,
@@ -207,11 +208,13 @@
 			children = (
 				34E2B92227747EED007D3C6A /* ships */,
 				34E2B92427747F04007D3C6A /* asteroids */,
-				34EB9E4B27708DF0002C252B /* labs */,
+				34EB9E4B27708DF0002C252B /* drills */,
+				34E2B92B277F357E007D3C6A /* electro */,
 				34EB9E4D27708E09002C252B /* satellites */,
 				34EB9E4F27708E50002C252B /* shooters */,
 				34EB9E5127708E71002C252B /* dishes */,
 				34DD98572771D7A300F391E2 /* items */,
+				34E2B92D277F36D0007D3C6A /* townhalls */,
 			);
 			name = behaviour;
 			path = ../behaviour;
@@ -248,8 +251,8 @@
 				343E313A276A3B9D007F753D /* Play */,
 				343E3155276B48C9007F753D /* Scenes */,
 				34E2B91D27747E45007D3C6A /* behaviour */,
-				DC9F5284269249AB00DDF0AF /* Main.storyboard */,
 				DC9F5287269249AC00DDF0AF /* Assets.xcassets */,
+				DC9F5284269249AB00DDF0AF /* Main.storyboard */,
 				DC9F5289269249AC00DDF0AF /* Info.plist */,
 			);
 			path = game;
@@ -320,9 +323,10 @@
 				3340582727234ACC0068C811 /* LightSpeedOut.wav in Resources */,
 				3340582927234AD30068C811 /* Lazer.wav in Resources */,
 				34E2B92327747EED007D3C6A /* ships in Resources */,
+				34E2B92C277F357E007D3C6A /* electro in Resources */,
 				33C227AE273C679B00F83862 /* thrust.wav in Resources */,
 				3340582B27234E6C0068C811 /* InLightSpeed.wav in Resources */,
-				34EB9E4C27708DF0002C252B /* labs in Resources */,
+				34EB9E4C27708DF0002C252B /* drills in Resources */,
 				34E2B92527747F04007D3C6A /* asteroids in Resources */,
 				34DD98582771D7A300F391E2 /* items in Resources */,
 				33A879212725EC4B0096A6C4 /* inshipSound.wav in Resources */,
@@ -332,6 +336,7 @@
 				DC9F5288269249AC00DDF0AF /* Assets.xcassets in Resources */,
 				34EB9E4E27708E09002C252B /* satellites in Resources */,
 				34EB9E5027708E50002C252B /* shooters in Resources */,
+				34E2B92E277F36D0007D3C6A /* townhalls in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -346,7 +351,6 @@
 				33E378B726BD57780034B14E /* PlayerDied.swift in Sources */,
 				343E3144276A3EDE007F753D /* Extensions.swift in Sources */,
 				343E313E276A3C92007F753D /* Variables.swift in Sources */,
-				34E2B92727761AEB007D3C6A /* PlayFunctions.swift in Sources */,
 				34844AE026A9955900A3F790 /* Planet.swift in Sources */,
 				DC9F5283269249AB00DDF0AF /* GameViewController.swift in Sources */,
 				DC78185E26945B9200A19FE9 /* Connect.swift in Sources */,
@@ -527,7 +531,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.10;
+				MARKETING_VERSION = 0.1.17;
 				PRODUCT_BUNDLE_IDENTIFIER = locus.tunnelvision;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -559,7 +563,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.10;
+				MARKETING_VERSION = 0.1.17;
 				PRODUCT_BUNDLE_IDENTIFIER = locus.tunnelvision;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

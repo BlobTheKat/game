@@ -1,0 +1,25 @@
+
+price: 100k
+time: 2h
+damage: 5
+linereach: 200
+
+price: 300k
+time: 3h
+damage: 8
+linereach: 250
+
+price: 800k
+time: 5h
+damage: 12
+linereach: 350
+
+price: 1.5M
+time: 12h
+damage: 18
+linereach: 450
+
+price: 5M
+time: 1d
+damage: 30
+linereach: 600

@@ -51,16 +51,40 @@ class Planet: Object{
         if colo?.type == item.type && colo?.lvl == item.lvl && colo?.capacity == item.capacity && colo?.upgradeEnd == item.upgradeEnd && node.userData?["rot"] as? UInt8 == rot{return node}
         node.userData!["type"] = item
         node.userData!["rot"] = rot
+        if let parent = parent as? Play{
+            if rot == parent.itemRot && self == parent.planetLanded{
+                DispatchQueue.main.async(execute: parent.renderUpgradeUI)
+            }
+        }
         node.removeAllActions()
+        node.removeAllChildren()
+        
+        let id = Int(item.type.rawValue)
         let rot = CGFloat(rot) * PI256
         node.setScale(1)
-        let id = Int(item.type.rawValue)
-        node.texture = SKTexture(imageNamed: "\(coloNames[id&127])\(item.lvl)\(id>127 ? "-upgrading" : "")")
+        node.texture = item.lvl > 0 ? SKTexture(imageNamed: "\(coloNames[id])\(item.lvl)") : SKTexture(imageNamed: "blank")
         node.size = node.texture!.size()
-        node.setScale((self.xScale + self.yScale) / 4)
-        node.anchorPoint = CGPoint(x: 0.5, y: ((item.type == .satellite ? -170 : 10) - self.radius) / node.size.height)
-        if let p = parent as? Play, item.type == .satellite && !(p.planetLanded == self && p.presence){
+        node.setScale(0.5)
+        node.anchorPoint = CGPoint(x: 0.5, y: (10 - self.radius) / node.size.height)
+        if item.type == .shooter && item.upgradeEnd == 0{
+            let n = SKSpriteNode(imageNamed: "head\(item.lvl)")
+            node.addChild(n)
+            n.anchorPoint = CGPoint(x: 0.5, y: 0)
+            n.position.y = (self.radius * 2) - 50 + node.size.height / 5 + (shooters[Int(item.lvl)]["_head"]!.number!)
+            
+        }
+        if item.upgradeEnd > 0{
+           let n = SKSpriteNode(imageNamed: "upgradingoverlay")
+           node.addChild(n)
+           n.anchorPoint = CGPoint(x: 0.5, y: 0)
+           n.position.y = self.radius * 2 - 20
+           n.zPosition = 10
+           n.setScale(node.size.width / n.size.width * 2)
+        }else if let p = parent as? Play, item.type == .satellite && !(p.planetLanded == self && p.presence){
+            node.anchorPoint.y = (-170 - self.radius) / node.size.height
             node.run(.repeatForever(SKAction.rotate(byAngle: self.angularVelocity + 0.05, duration: 1)))
+        }else if parent as? Play != nil, item.type == .satellite{
+            node.anchorPoint.y = (-170 - self.radius) / node.size.height - 2
         }
         node.zRotation = -rot
         if node.parent == nil { self.addChild(node) }
@@ -92,20 +116,60 @@ class Planet: Object{
             shootVectors = []
             shootPoints = []
             guard let parent = parent as? Play else {return}
-            for node in self.children.filter({a in return (a.userData?["type"] as? ColonizeItem)?.type == .shooter}){ //for each shooter
+            for node in self.children{ //for each shooter
                 guard let node = node as? SKSpriteNode else { continue }
-                let item = shooters[Int((node.userData?["type"] as? ColonizeItem)?.lvl ?? 1)]
-                shootFrequency = 0.06
-                let p = CGPoint(x: -sin(node.zRotation) * (self.radius - 27), y: cos(node.zRotation) * (self.radius - 27))
-                let x = parent.ship.position.x - (self.position.x + -sin(node.zRotation + self.zRotation) * (self.radius / self.xScale - 27))
-                let y = parent.ship.position.y - (self.position.y + cos(node.zRotation + self.zRotation) * (self.radius / self.yScale - 27))
-                let dir = atan2(-x, y)
-                let r = (node.children[0].zRotation * 0.95 + (dir - node.zRotation - zRotation).remainder(dividingBy: .pi * 2) * (item["accuracy"]?.number ?? 0.05)).remainder(dividingBy: .pi * 2)
-                if abs(r) > 0.75{continue}
-                node.children[0].zRotation = r
-                shootPoints.append(p)
-                shootVectors.append(node.children[0].zRotation + node.zRotation)
-                shootDamages.append(item["damage"]?.number ?? 2)
+                guard let itm = (node.userData?["type"] as? ColonizeItem) else {continue}
+                if itm.upgradeEnd > 0{ continue }
+                switch itm.type{
+                case .shooter:
+                    let item = shooters[Int(itm.lvl)]
+                    let p = CGPoint(x: -sin(node.zRotation) * (self.radius - 27), y: cos(node.zRotation) * (self.radius - 27))
+                    let x = parent.ship.position.x - (self.position.x + -sin(node.zRotation + self.zRotation) * (self.radius / self.xScale - 27))
+                    let y = parent.ship.position.y - (self.position.y + cos(node.zRotation + self.zRotation) * (self.radius / self.yScale - 27))
+                    let dir = (atan2(-x, y) - node.zRotation - zRotation).remainder(dividingBy: .pi * 2)
+                    
+                    let acc = item["accuracy"]?.number ?? 0.05
+                    let r = (node.children[0].zRotation * (1-acc) + dir * acc).remainder(dividingBy: .pi * 2)
+                    if abs(r) > 0.75{continue}
+                    node.children[0].zRotation = r
+                    if abs(dir) > 0.75{continue}
+                    shootFrequency = 0.06
+                    node.children[0].zRotation = r
+                    shootPoints.append(p)
+                    shootVectors.append(node.children[0].zRotation + node.zRotation)
+                    shootDamages.append(item["damage"]?.number ?? 2)
+                    break
+                case .electro:
+                    if self.angry % 60 != 0{break}
+                    let item = electros[Int(itm.lvl)]
+                    var a = -sin(node.zRotation + self.zRotation)
+                    var b = cos(node.zRotation + self.zRotation)
+                    var x = parent.ship.position.x - (self.position.x + a * (self.radius / self.xScale + 60))
+                    var y = parent.ship.position.y - (self.position.y + b * (self.radius / self.yScale + 60))
+                    (a, b) = (b * 10, a * -10)
+                    var x0 = x - a, y0 = y - b, x1 = x + a, y1 = y + b
+                    (x, y) = x0 * x0 + y0 * y0 < x1 * x1 + y1 * y1 ? (x0, y0) : (x1, y1)
+                    let size = sqrt(x * x + y * y)
+                    if size > item["linereach"]?.number ?? 200{break}
+                    if x > 0{ x1 = parent.ship.position.x; x0 = x1 - x }
+                    else{ x0 = parent.ship.position.x; x1 = x0 - x }
+                    if y > 0{ y1 = parent.ship.position.y; y0 = y1 - y }
+                    else{ y0 = parent.ship.position.y; y1 = y0 - y }
+                    let z = atan2(-x, y)
+                    x = (x0 + x1) / 2
+                    y = (y0 + y1) / 2
+                    let ray = SKSpriteNode(imageNamed: "ray\(random(min: 1, max: 4))")
+                    ray.position = CGPoint(x: x, y: y)
+                    ray.yScale = size / 220
+                    ray.zRotation = z
+                    ray.zPosition = node.zPosition - 1
+                    parent.addChild(ray)
+                    parent.dealDamage(item["damage"]?.number ?? 1)
+                    let _ = timeout(0.2){ray.removeFromParent()}
+                    break
+                default:
+                    break
+                }
                 
             }
         }else{self.shootFrequency = 0}
@@ -279,7 +343,7 @@ class Planet: Object{
                     let y = i.position.y - n.position.y
                     if x * x + y * y < r{
                         //collect
-                        energyAmount += 10
+                        lastSentEnergy += 10
                         self.collectibles.remove(i)
                         i.run(.fadeOut(withDuration: 0.4).ease(.easeOut))
                         i.run(.sequence([.scale(to: 1.5, duration: 0.7),.run{i.removeFromParent()}]))
@@ -297,11 +361,34 @@ class Planet: Object{
     var last = 0.0
     var persec: CGFloat = 0
     var capacity = 0
+    var inbank = 0
+    var persec2: CGFloat = 0
+    var capacity2 = 0
+    var inbank2 = 0
     override func decode(data: inout Data) {
         //decode things on the planet
         self.last = Double(data.readunsafe() as UInt32)
+        self.inbank = Int(data.readunsafe() as Float)
+        self.inbank2 = Int(data.readunsafe() as Float)
+        self.namelabel?.removeFromParent()
+        self.namelabel = SKLabelNode(text: "...")
+        (parent as? Play)?.label(node: self.namelabel!, data.read(lentype: UInt8.self) ?? "", pos: CGPoint(x: position.x, y: position.y - 15), size: 30, color: .green, font: "Menlo", zPos: 3)
         let bits = data.readunsafe() as UInt8
-        self.ownedState = .init(rawValue: bits & 192)!
+        let ownedState = OwnedState(rawValue: bits & 192)!
+        if self.ownedState != ownedState{
+            self.ownedState = ownedState
+            if let parent = parent as? Play{
+                parent.editColoIcon.removeFromParent()
+                parent.collectedLabel.removeFromParent()
+                parent.collect.removeFromParent()
+                parent.coloArrow.removeFromParent()
+                parent.buildBG.removeFromParent()
+                if parent.presence{parent.planetEditMode()}
+                parent.planetLanded = nil
+                parent.landed()
+                
+            }
+        }
         if bits & 32 == 32{return}
         var len = data.readunsafe() as UInt8 + 1
         if !((parent as? Play)?.dragRemainder.isNaN ?? true){
@@ -320,34 +407,25 @@ class Planet: Object{
         var i = 0, child_i = 0
         self.persec = 0
         self.capacity = 0
+        self.persec2 = 0
+        self.capacity2 = 0
         while(i < len){
             while (self.children.count > child_i ? self.children[child_i].name : nil) != nil{child_i += 1;continue}
             let id: UInt8 = data.readunsafe()
-            var item = (type: ColonizeItemType.init(rawValue: id & 127) ?? .lab, lvl: data.readunsafe() as UInt8, capacity: data.readunsafe() as UInt8, upgradeEnd: UInt32())
+            var item = (type: ColonizeItemType.init(rawValue: id & 127) ?? .drill, lvl: data.readunsafe() as UInt8, capacity: data.readunsafe() as UInt8, upgradeEnd: UInt32())
             let rot = data.readunsafe() as UInt8
             if id > 127{
                 //ITS UPGRADING
                 item.upgradeEnd = data.readunsafe() as UInt32
             }
+            let _ = self.populate(with: item, rot: rot, node: self.children.count > child_i ? self.children[child_i] as! SKSpriteNode : SKSpriteNode())
             self.items[Int(rot)] = item
-            let node = self.populate(with: item, rot: rot, node: self.children.count > child_i ? self.children[child_i] as! SKSpriteNode : SKSpriteNode())
-            if item.type == .shooter{
-                let n: SKSpriteNode
-                if node.children.count == 0{
-                    n = SKSpriteNode()
-                    node.addChild(n)
-                }else{n = (node.children.first as! SKSpriteNode)}
-                n.texture = SKTexture(imageNamed: "head\(item.lvl)")
-                n.size = n.texture!.size()
-                n.anchorPoint = CGPoint(x: 0.5, y: 0)
-                n.position.y = (self.radius * 4 / (self.xScale + self.yScale)) - (item.lvl == 2 ? 50 : 40)
-                
-            }else{
-                node.removeAllChildren()
-            }
-            if item.type == .lab{
-                self.persec += labs[Int(item.lvl)]["persec"]!.number!
-                self.capacity += Int(labs[Int(item.lvl)]["storage"]!.number!)
+            if item.type == .drill && id < 128{
+                self.persec += drills[Int(item.lvl)]["persec"]?.number ?? 0
+                self.capacity += Int(drills[Int(item.lvl)]["storage"]?.number ?? 0)
+            }else if item.type == .dish && id < 128{
+                self.persec2 += dishes[Int(item.lvl)]["persec"]?.number ?? 0
+                self.capacity2 += Int(dishes[Int(item.lvl)]["storage"]?.number ?? 0)
             }
             i += 1
             child_i += 1
@@ -357,6 +435,7 @@ class Planet: Object{
             if child.name == nil{child.removeFromParent()}
             else {child_i += 1}
         }
+        
     }
     override func encode(data: inout Data) {
         //not needed

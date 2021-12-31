@@ -29,7 +29,7 @@ class Object: SKSpriteNode, DataCodable{
     var thrustRight = false
     
     //Whether the object can be controlled by thrust, thrustLeft, thrustRight, etc...
-    var controls = false
+    var controls = true
     
     //Is the object landed on a Planet? (only applicable to ships)
     var landed = false
@@ -62,6 +62,7 @@ class Object: SKSpriteNode, DataCodable{
     var death: UInt16 = 0
     //floating name
     var namelabel: SKLabelNode? = nil
+    var target: (pos: CGPoint, vel: CGVector, z: CGFloat, dz: CGFloat)? = nil
     //Default particle (the red-yellow one)
     class func defaultParticle(_ ship: Object) -> Particle{
         let start = State(color: (r: 1, g: 1, b: 0), size: CGSize(width: 10, height: 10), zRot: 0, position: ship.position, alpha: 0.9)
@@ -77,13 +78,7 @@ class Object: SKSpriteNode, DataCodable{
         self.asteroid = asteroid
     }
     func update(){
-        if !asteroid{ //asteroids don't slow down
-            self.angularVelocity *= 0.95
-            if abs(velocity.dx) > 10{velocity.dx *= 0.997}
-            if abs(velocity.dy) > 10{velocity.dy *= 0.997}
-        }
         let parent = self.parent as? Play
-        
         if let cam = parent?.camera{
             //calculate cam position so we only create a particle if it's in the scene
             let cw = parent!.size.width * cam.xScale / 2
@@ -102,6 +97,17 @@ class Object: SKSpriteNode, DataCodable{
             }else{particleQueue = 1}
         }
         
+        if target != nil{
+            (position, target!.pos) = (target!.pos, position)
+            (velocity, target!.vel) = (target!.vel, velocity)
+            (zRotation, target!.z) = (target!.z, zRotation)
+            (angularVelocity, target!.dz) = (target!.dz, angularVelocity)
+        }
+        if !asteroid{ //asteroids don't slow down
+            self.angularVelocity *= 0.95
+            if abs(velocity.dx) > 10{velocity.dx *= 0.997}
+            if abs(velocity.dy) > 10{velocity.dy *= 0.997}
+        }
         if controls{
             producesParticles = false
             if thrust{
@@ -129,6 +135,18 @@ class Object: SKSpriteNode, DataCodable{
             }
         }
         shoot()
+        if target != nil{
+            (position, target!.pos) = (target!.pos, position)
+            (velocity, target!.vel) = (target!.vel, velocity)
+            (zRotation, target!.z) = (target!.z, zRotation)
+            (angularVelocity, target!.dz) = (target!.dz, angularVelocity)
+            position = (position * 9 + target!.pos) / 10
+            velocity = (velocity * 9 + target!.vel) / 10
+            let zdif = (target!.z - zRotation)
+            zRotation += zdif.remainder(dividingBy: .pi * 2) / 4
+            angularVelocity = (angularVelocity * 9 + target!.dz) / 10
+            
+        }
     }
     //checks whether it should shoot, and shoots if yes
     func shoot(){
@@ -170,44 +188,7 @@ class Object: SKSpriteNode, DataCodable{
                     if i < shootDamages.count{damage = shootDamages[i]}
                     if obj == parent.ship{
                         let _ = timeout((len - 10) / 1500){
-                            if parent.health > damage{
-                                parent.health -= damage
-                                let ratio = parent.health / parent.maxHealth
-                                if ratio < 0.25{
-                                    if parent.warningLabel.parent == nil{
-                                        parent.DisplayWARNING("warning: low health",1,true)
-                                    }
-                                }
-                                parent.healthBar.texture = SKTexture(imageNamed: "health\(Int8(round(ratio * 13)))")
-                                self.run(SKAction.sequence([
-                                    SKAction.run{
-                                        let cam = parent.cam
-                                        vibrateCamera(camera: cam, amount: 5)
-                                    },
-                                    SKAction.wait(forDuration: 0.5),
-                                    SKAction.run {
-                                        parent.cam.removeAction(forKey: "vibratingCamera")
-                                        parent.cam.removeAction(forKey: "vibratingCameras")
-                                    }
-                                ]))
-                            }else if parent.ship.dynamic{
-                                parent.health = 0
-                                parent.healthBar.texture = SKTexture(imageNamed: "health0")
-                                self.death = 200
-                                parent.kill(parent.ship)
-                                parent.ship.removeFromParent()
-                                parent.ship.controls = false
-                                parent.ship.dynamic = false
-                                let _ = timeout(1){
-                                    parent.end()
-                                    parent.stars1.removeFromParent()
-                                    parent.stars2.removeFromParent()
-                                    parent.stars3.removeFromParent()
-                                    SKScene.transition = .crossFade(withDuration: 0.5)
-                                    PlayerDied.renderTo(skview)
-                                    SKScene.transition = .crossFade(withDuration: 0)
-                                }
-                            }
+                            parent.dealDamage(damage)
                         }
                         //code above DIE if you get hit
                     }else{
@@ -267,15 +248,14 @@ class Object: SKSpriteNode, DataCodable{
         //See server protocol for more insight
         if self.id == 0{
             data.write(Int64(0))
-            data.write(Int32(0))
-            data.write(Int16(0))
+            data.write(Int64(0))
             return
         }
         data.write(Float(self.position.x))
         data.write(Float(self.position.y))
-        data.write(Int8(round(self.velocity.dx * gameFPS / 16).clamp(-128, 127)))
-        data.write(Int8(round(self.velocity.dy * gameFPS / 16).clamp(-128, 127)))
-        data.write(Int8(round(self.zRotation.remainder(dividingBy: .pi*2) * 40)))
+        data.write(Int16(round(self.velocity.dx * gameFPS).clamp(-32768, 32767)))
+        data.write(Int16(round(self.velocity.dy * gameFPS).clamp(-32768, 32767)))
+        data.write(UInt8(Int(round(self.zRotation / PI256)) & 255))
         data.write(Int8(round(self.angularVelocity * 768)))
         let new = (parent as? Play)?.newShoot ?? false
         data.write(UInt16(thrust ? 1 : 0) + UInt16(thrustLeft ? 2 : 0) + UInt16(thrustRight ? 4 : 0) + UInt16(((parent as? Play)?.usedShoot ?? false) && !new ? 8 : 0) + UInt16(new ? 16 : 0) + UInt16(self.id * 32))
@@ -283,10 +263,7 @@ class Object: SKSpriteNode, DataCodable{
     
     func decode(data: inout Data){
         //See server protocol for more insight
-        let pos = CGPoint(x: CGFloat(data.readunsafe() as Float), y: CGFloat(data.readunsafe() as Float))
-        self.velocity = CGVector(dx: CGFloat(data.readunsafe() as Int8) / gameFPS * 16, dy: CGFloat(data.readunsafe() as Int8) / gameFPS * 16)
-        self.zRotation = CGFloat(data.readunsafe() as Int8) / 40
-        self.angularVelocity = CGFloat(data.readunsafe() as Int8) / 768
+        target = (pos: CGPoint(x: CGFloat(data.readunsafe() as Float), y: CGFloat(data.readunsafe() as Float)), vel: CGVector(dx: CGFloat(data.readunsafe() as Int16) / gameFPS, dy: CGFloat(data.readunsafe() as Int16) / gameFPS), z: CGFloat(data.readunsafe() as Int8) * PI256, dz: CGFloat(data.readunsafe() as Int8) / 768)
         let bits: UInt16 = data.readunsafe()
         let oa = asteroid
         thrust = bits & 1 != 0
@@ -312,8 +289,15 @@ class Object: SKSpriteNode, DataCodable{
             }
         }
         let id = Int(bits / 32)
-        if id != 0{self.position = pos}
-        if id != self.id || oa != asteroid{
+        let changed = id != self.id || oa != asteroid
+        if changed || id == 0 || self == (parent as? Play)?.ship{
+            self.position = target!.pos
+            self.velocity = target!.vel
+            self.zRotation = target!.z
+            self.angularVelocity = target!.dz
+            target = nil
+        }
+        if changed{
             self.id = id
             (skview.scene as? Play)?.needsName = id != 0 && !asteroid && namelabel == nil
             let ship = (asteroid ? asteroids : ships)[id]

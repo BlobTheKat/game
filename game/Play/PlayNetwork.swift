@@ -154,7 +154,8 @@ extension Play{
         datastop()
         datastop = interval(0.1, { [self] in
             //send playerdata
-            var data = Data([5])
+            myseq += 1
+            var data = Data([5, UInt8(myseq & 255)])
             ship.encode(data: &data)
             if hits.count > 7{
                 hits.removeLast(hits.count - 7)
@@ -166,14 +167,16 @@ extension Play{
             for hit in hits{
                 data.write(hit)
             }
-            if shotObj != nil, let i = objects.firstIndex(of: shotObj!){
+            if shotObj != nil{
+                let i = objects.firstIndex(of: shotObj!) ?? 0
                 data.write(UInt32(i))
             }
             for i in needsNames.prefix(15){
                 data.write(UInt32(i))
             }
-            data.write(Int64(energyAmount))
-            lastSentEnergy = energyAmount
+            data.write(Int32(lastSentEnergy))
+            energyAmount += lastSentEnergy
+            lastSentEnergy = 0
             shotObj = nil
             hits = []
             send(data)
@@ -228,8 +231,10 @@ extension Play{
             loaded -= 1
             if loaded == 0{didLoad()}
             startHB()
-            energyAmount = Double((data.readunsafe() as UInt64) & 0x0000FFFFFFFFFFFF)
-            lastSentEnergy = energyAmount
+            energyAmount = data.readunsafe()
+            researchAmount = data.readunsafe()
+            gemCount = data.readunsafe()
+            
         }else if code == 127{
             dmessage = data.read() ?? "Disconnected!"
             end()
@@ -240,12 +245,18 @@ extension Play{
         }
         guard ship.controls else {return}
         if code == 6{
+            
             ping()
-            let delay = Double(data.readunsafe() as UInt8) / 100
-            last = (last + delay).clamp(.now(), .now().advanced(by: DispatchTimeInterval.milliseconds(300)))
+            var seq = Int(data.readunsafe() as UInt8) + (netseq & -256)
+            if seq < netseq{seq += 256}
+            let diff = seq - netseq
+            if diff > 127{return}
+            netseq = seq
+            let now = DispatchTime.now()
+            last = (last + Double(diff / 10)).clamp(now, now.advanced(by: DispatchTimeInterval.milliseconds(300)))
             physics.asyncAfter(deadline: last){ [self] in
                 var i = 1
-                while data.count > 13{parseShip(&data, i);i += 1}
+                while data.count > 15{parseShip(&data, i);i += 1}
                 for obj in objects.suffix(max(objects.count - i, 0)){
                     if let i = tracked.firstIndex(of: obj){
                         trackArrows[i].removeFromParent()
@@ -262,11 +273,18 @@ extension Play{
             }
         }else if code == 7{
             ping()
-            let delay = Double(data.readunsafe() as UInt8) / 100
-            last = (last + delay).clamp(.now(), .now().advanced(by: DispatchTimeInterval.milliseconds(300)))
+            var seq = Int(data.readunsafe() as UInt8) + (netseq & -256)
+            if seq < netseq{seq += 256}
+            let diff = netseq - seq
+            if diff > 127{return}
+            netseq = seq
+            let now = DispatchTime.now()
+            last = (last + Double(diff / 10)).clamp(now, now.advanced(by: DispatchTimeInterval.milliseconds(300)))
+            energyAmount = data.readunsafe()
+            researchAmount = data.readunsafe()
             physics.asyncAfter(deadline: last){ [self] in
                 var i = 0
-                while data.count > 13{parseShip(&data, i);i += 1}
+                while data.count > 15{parseShip(&data, i);i += 1}
                 for obj in objects.suffix(max(objects.count - i, 0)){
                     if let i = tracked.firstIndex(of: obj){
                         trackArrows[i].removeFromParent()
@@ -290,9 +308,10 @@ extension Play{
                 objects[id].namelabel?.removeFromParent()
                 objects[id].namelabel = SKLabelNode(text: "...")
                 label(node: objects[id].namelabel!, name, pos: CGPoint(x: objects[id].position.x, y: objects[id].position.y + 30), size: 20, color: .green, font: "Menlo")
-                
             }
         }else if code == 11{
+            energyAmount = data.readunsafe()
+            researchAmount = data.readunsafe()
             self.didBuy(true)
         }else if code == 12{
             while data.count > 0{
@@ -301,30 +320,37 @@ extension Play{
             }
         }else if code == 13{
             self.didBuy(false)
-        }else if code == 15 || code == 16{
-            didChangeItem(code == 15)
+        }else if code == 15{
+            energyAmount = data.readunsafe()
+            researchAmount = data.readunsafe()
+            didChangeItem(true)
+        }else if code == 16{
+            didChangeItem(false)
         }else if code == 18{
-            let a = Double(data.readunsafe() as UInt32)
-            energyAmount += a
-            lastSentEnergy += a
-            
+            energyAmount = data.readunsafe()
+            researchAmount = data.readunsafe()
             didCollect(true)
-            
         }else if code == 19{
             didCollect(false)
-            
-        }else if code == 21 || code == 22{
-            didMake(code == 22)
+        }else if code == 21{
+            didMake(false)
+        }else if code == 22{
+            energyAmount = data.readunsafe()
+            researchAmount = data.readunsafe()
+            didMake(true)
+        }else if code == 24{
+            gemCount = data.readunsafe()
         }
     }
     
     func gotIp(){
+        
         if !step1Completed{step1Completed = true;return}
         let player = GKLocalPlayer.local
         if player.isAuthenticated && creds == nil{
             player.fetchItems(forIdentityVerificationSignature: { url, sig, salt, time, err in
                 if err != nil || url == nil || sig == nil{
-                    creds = (url: URL(string: "http://example.com")!, sig: Data(), salt: Data(), time: 1, id: "")
+                    creds = (url: URL(string: "http://apple.com")!, sig: Data(), salt: Data(), time: 1, id: ID)
                 }else{
                     creds = (url: url!, sig: sig!, salt: salt ?? Data(), time: time, id: GKLocalPlayer.local.teamPlayerID)
                 }
@@ -332,9 +358,9 @@ extension Play{
             })
             return
         }else if creds == nil{
-            creds = (url: URL(string: "http://apple.com")!, sig: Data(), salt: Data(), time: 1, id: "")
+            creds = (url: URL(string: "http://apple.com")!, sig: Data(), salt: Data(), time: 1, id: ID)
         }
-        send = connect("192.168.1.248:65152", recieved)
+        send = connect(IPOVERRIDE ?? ip, recieved)
         var data = Data()
         data.write(critid(0))
         data.write(UInt16(VERSION))
@@ -345,7 +371,7 @@ extension Play{
         data.write(creds!.time)
         var local = GKLocalPlayer.local.alias
         if local == "Unknown"{
-            let id = UIDevice.current.identifierForVendor?.uuidString.prefix(2) ?? "00"
+            let id = ID.prefix(2)
             local = "Guest \(%(UInt8(id, radix: 16) ?? 0))"
         }
         data.write(local, lentype: UInt8.self)

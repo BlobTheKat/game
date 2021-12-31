@@ -74,8 +74,6 @@ class Play: SKScene{
     var SEQ = UInt8(255)
     //Set of sequence numbers for which we are waiting a response
     var crits = Set<UInt8>()
-    //The last energy value that we sent to the server
-    var lastSentEnergy = 0.0
     //Local variable that had to be descoped because it's accessed from Object.swift
     //Indicates whether the current node peing processed will need a name tag
     var needsName = false
@@ -98,8 +96,13 @@ class Play: SKScene{
     var stars4 = SKAmbientContainer()
     //Node showing how much energy we have
     var energyCount = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+    var researchCount = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+    var researchIconBecauseAdamWasTooLazy = SKSpriteNode(imageNamed: "researchPoint")
+    var gemIcon = SKSpriteNode(imageNamed: "gem")
+    var gemLabel = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
     //Squares for the energy bar
     var energyNodes: [SKSpriteNode] = []
+    var researchNodes: [SKSpriteNode] = []
     //Queue for spaceUpdate() and cameraUpdate()
     var framesQueued = 0.0
     //last Update
@@ -133,6 +136,7 @@ class Play: SKScene{
     var planetTouched: Planet? = nil
     //Label that indicated how much energy is on the planet ready to be collected
     let collectedLabel = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+    let collectedLabel2 = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
     //Real rotation of planetLanded (used to keep track of rotation when planet is being edited)
     var planetLandedRot: CGFloat = 0
     //Rotation index of current item being edited
@@ -172,8 +176,17 @@ class Play: SKScene{
     var playingThrustSound = false
     //GameCenter prompt
     var gkview: UIViewController? = nil
-    let addItemIcons: [SKSpriteNode] = [SKSpriteNode(imageNamed: "campIcon"),SKSpriteNode(imageNamed: "cannonIcon"),SKSpriteNode(imageNamed: "researchLabIcon"),SKSpriteNode(imageNamed: "sataliteIcon")]
-    
+    let addItemIcons: [SKSpriteNode] = [SKSpriteNode(imageNamed: "drillIcon"),SKSpriteNode(imageNamed: "shooterIcon"),SKSpriteNode(imageNamed: "dishIcon"),SKSpriteNode(imageNamed: "satelliteIcon"), SKSpriteNode(imageNamed: "electroIcon")]
+    let addItemPrices: [SKLabelNode] = items.map{a in
+        let n = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+        if a.count < 2{
+            n.text = "Unavailable"
+            return n
+        }
+        n.text = formatPrice(a[1])
+        return n
+    }
+    var upgradingHintInterval = {}
     // these are item upgrade variables
     var upgradeNodes : [SKNode] = []
     var upgradePrice = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
@@ -211,6 +224,7 @@ class Play: SKScene{
     let buildBG = SKSpriteNode(imageNamed: "buildBG")
     let coloArrow = SKSpriteNode(imageNamed: "coloArrow")
     let moveItemIcon = SKSpriteNode(imageNamed: "moveitem")
+    let addItemIcon = SKSpriteNode(imageNamed: "addicon")
     
     
     let tapToStart =  SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
@@ -252,4 +266,7 @@ class Play: SKScene{
     let tunnel1 = SKSpriteNode(imageNamed: "tunnel1")
     let tunnel2 = SKSpriteNode(imageNamed: "tunnel2")
     let loadingbg = SKShapeNode(rect: CGRect(x: -150, y: 0, width: 300, height: 3))
+    
+    var netseq = 0
+    var myseq = 0
 }

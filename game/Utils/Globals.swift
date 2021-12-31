@@ -8,6 +8,16 @@
 import Foundation
 import SpriteKit
 
+var energyAmount = 0.0
+var lastSentEnergy = 0.0
+var energySpace = 100.0
+var energyPercent = 0.0
+var researchAmount: Float = 0.0
+var researchSpace: Float = 10.0
+var gemCount: Float = 0
+
+
+
 //Array of actions that need to be stopped once scene changes
 var stop: [() -> ()] = []
 //Execute task in background
@@ -22,7 +32,7 @@ var items = GameData("/items")!.map { json -> GameData in
     return GameData(json["path"]!.string ?? "/null")!
 }
 
-let (labs, shooters, dishes, satellites) = (items[0], items[1], items[2], items[3])
+let (drills, shooters, dishes, satellites, electros, townhalls) = (items[0], items[1], items[2], items[3], items[4], items[5])
 
 //A sector consists of...
 typealias SectorData = ([Planet], (pos: CGPoint, size: CGSize), (name:String,ip:String))
@@ -46,3 +56,12 @@ var second: String{
 }
 
 var logs: [String] = []
+
+func uuidstore(_ a: String) -> String{
+    var u = UserDefaults.standard.string(forKey: a)
+    if u == nil{
+        u = UUID().uuidString
+        UserDefaults.standard.set(u, forKey: a)
+    }
+    return u!
+}

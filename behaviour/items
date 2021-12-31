@@ -1,11 +1,11 @@
-path: /labs
-pricepow: 150%
+path: /drills
 
 path: /shooters
-pricepow: 150%
 
 path: /dishes
-pricepow: 200%
 
 path: /satellites
-pricepow: 200%
+
+path: /electro
+
+path: /townhalls

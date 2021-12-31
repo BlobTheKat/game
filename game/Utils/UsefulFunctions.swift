@@ -46,8 +46,7 @@ func interval(_ every: Double, _ a: @escaping () -> (), label: String = "") -> (
     var x = {}
     if label != ""{print("start \(label)")}
     x = {
-        a()
-        if !cancelled{if label != ""{print("exec \(label)")};DispatchQueue.main.asyncAfter(deadline: fromNow(every), execute: x)}
+        if !cancelled{a();if label != ""{print("exec \(label)")};DispatchQueue.main.asyncAfter(deadline: fromNow(every), execute: x)}
     }
     x()
     var i = 0
@@ -75,9 +74,9 @@ func formatTime(_ seconds: Int) -> String {
     if seconds <= 0{return "0s"}
     let s = seconds % 60
     let m = (seconds / 60) % 60
-    let h = (seconds / 3600) % 60
+    let h = (seconds / 3600) % 24
     let d = seconds / 86400
-    return "\(d>0 ? "\(d) days" : "")\(h>0 ? "\(h)hr" : "")\(m>0 ? "\(m)min" : "")\(s>0 ? "\(s)sec" : "")"
+    return String("\(d>0 ? "\(d)d " : "")\(h>0 ? "\(h)h " : "")\(m>0 ? "\(m)m " : "")\(s>0 ? "\(s)s " : "")".dropLast())
 }
 func formatNum(_ a: Double) -> String{
     if a == 0{return "0"}
@@ -122,3 +121,17 @@ func pulsate(node: SKNode, amount: CGFloat, duration: CGFloat){
     })
 }
 func bg(_ a: @escaping () -> ()){DispatchQueue.global(qos: .background).async(execute: a)}
+
+func formatPrice(_ thing: [String: JSON]) -> String{
+    var price = "FREE"
+    
+    if let a = thing["price2"]?.number{
+        if let b = thing["price"]?.number{
+            price = "k$ \(formatNum(b))"
+        }else{price=""}
+        price += " r$ \(formatNum(a))"
+    }else if let b = thing["price"]?.number{
+        price = "k$ \(formatNum(b))"
+    }
+    return price
+}

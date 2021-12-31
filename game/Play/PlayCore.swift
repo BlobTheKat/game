@@ -9,11 +9,6 @@ import Foundation
 import SpriteKit
 
 
-var energyAmount = 2147483648.0
-var energySpace = 100.0
-var energyPercent = 0.0
-
-
 enum impactType{
     case light
     case medium
@@ -96,7 +91,9 @@ extension Play{
         stars4.update()
         stars4.position = CGPoint(x: cam.position.x / 4, y: cam.position.y / 4)
         if let planetLanded = planetLanded{
-            collectedLabel.text = "\(min(planetLanded.capacity, Int((NSDate().timeIntervalSince1970 - planetLanded.last) * planetLanded.persec)))"
+            let dif: Double = NSDate().timeIntervalSince1970 - planetLanded.last
+            collectedLabel.text = "\(min(planetLanded.capacity, Int(dif * planetLanded.persec)) + planetLanded.inbank)"
+            collectedLabel2.text = "\(min(planetLanded.capacity2, Int(dif * planetLanded.persec2)) + planetLanded.inbank2)"
         }
         if presence{
             if planetLanded == nil{return planetEditMode()}
@@ -156,13 +153,21 @@ extension Play{
     func spaceUpdate(){
       
         
-        energyCount.text = "k$ \(energyAmount)"
+        energyCount.text = "k$ \(Int(energyAmount))"
+        researchCount.text = "r$ \(Int(researchAmount))"
+        gemLabel.text = "\(Int(gemCount))"
         
-        energyPercent = floor((energyAmount / energySpace) * 8)
+        let energyPercent = floor((energyAmount / energySpace) * 8)
+        let researchPercent = floor((researchAmount / researchSpace) * 8)
         
         var i = 0.0
         for node in energyNodes{
             node.texture = i < energyPercent ? SKTexture(imageNamed: "energyOn") : SKTexture(imageNamed: "energyOff")
+            i += 1
+        }
+        i = 0
+        for node in researchNodes{
+            node.texture = Float(i) < researchPercent ? SKTexture(imageNamed: "energyOn") : SKTexture(imageNamed: "energyOff")
             i += 1
         }
         
@@ -299,7 +304,7 @@ extension Play{
                 if x > pos.x - w2 && x < pos.x + w2 && y > pos.y - h2 && y < pos.y + h2 && !d{
                     d = true
                     //THIS IS WHERE YOU SHOW THE LABEL
-                    name //this is the label's text
+                    let _ = name //this is the label's text
                 }
             }
             if !d{
@@ -371,6 +376,14 @@ extension Play{
             self.didChangeItem(false)
         })
     }
+    func skipBuild(_ planet: Planet, _ rot: UInt8){
+        
+        var dat = Data()
+        dat.write(critid(23))
+        dat.write(UInt16(planets.firstIndex(of: planet)!))
+        dat.write(UInt8(rot))
+        critical(dat)
+    }
     
     //USED FOR COLLECTING ALL THE ITEMS FROM PLANET
     func collectFrom(_ planet: Planet){
@@ -383,5 +396,45 @@ extension Play{
         })
     }
     func didCollect(_ success: Bool){}
-    func didMake(_ success: Bool){}
+    func didMake(_ success: Bool){renderUpgradeUI()}
+    func dealDamage(_ damage: Double){
+        if health > damage{
+            health -= damage
+            let ratio = health / maxHealth
+            if ratio < 0.25{
+                if warningLabel.parent == nil{
+                    DisplayWARNING("warning: low health",.warning,true)
+                }
+            }
+            healthBar.texture = SKTexture(imageNamed: "health\(Int8(round(ratio * 13)))")
+            self.run(SKAction.sequence([
+                SKAction.run{
+                    let cam = self.cam
+                    vibrateCamera(camera: cam, amount: 5)
+                },
+                SKAction.wait(forDuration: 0.5),
+                SKAction.run {
+                    self.cam.removeAction(forKey: "vibratingCamera")
+                    self.cam.removeAction(forKey: "vibratingCameras")
+                }
+            ]))
+        }else if ship.dynamic{
+            health = 0
+            healthBar.texture = SKTexture(imageNamed: "health0")
+            ship.death = 200
+            kill(ship)
+            ship.removeFromParent()
+            ship.controls = false
+            ship.dynamic = false
+            let _ = timeout(1){ [self] in
+                end()
+                stars1.removeFromParent()
+                stars2.removeFromParent()
+                stars3.removeFromParent()
+                SKScene.transition = .crossFade(withDuration: 0.5)
+                PlayerDied.renderTo(skview)
+                SKScene.transition = .crossFade(withDuration: 0)
+            }
+        }
+    }
 }

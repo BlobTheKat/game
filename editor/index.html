@@ -51,7 +51,7 @@
     background: #111;
     display: flex;
     z-index: 12;
-    padding-left: 15px
+    padding-left: 15px;
   }
   .header label{
     line-height: 50px;
@@ -68,6 +68,7 @@
   }
   gap{
     flex-grow: 1;
+	-webkit-app-region: drag;
   }
   img.btn{
     cursor: pointer;
@@ -468,6 +469,30 @@
   .scale_no #layer_slider{
     display: none;
   }
+traffic light{
+			width: 12px;
+			height: 12px;
+			margin: 14px 5px;
+			background-color: var(--a);
+			border-radius: 6px;
+			color: transparent;
+			--c: none;
+		}
+		traffic{
+			display: none;
+			margin: 5px;
+			flex-direction: row-reverse;
+		}
+		traffic:hover light{
+			background: var(--b) 50%/100%, var(--c);
+			background-color: var(--a) !important;
+		}
+		traffic light:active{
+			--c: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAADZJREFUSEtj/P//vzEDDQHjqAWEQnc0iAiFEMNoEI0GEcEQIKhgNBWNBhHBECCoYDQVjYAgAgBBqkyZcmRsZwAAAABJRU5ErkJgggAA');
+		}
+		.blurred traffic light{
+			background-color: #555;
+		}
   </style>
 </head>
 <canv id="canvas" class="peditor">
@@ -582,6 +607,9 @@
     <img src="edit.png" class="editor btn" id="sidebtn" />
     <!--img src="layer.png" class="peditor btn" id="layerbtn" style="padding: 5px" /-->
     <input class="peditor" type="range" min=0 max=300 value="100" oninput="vars.perspective = 300-this.value+'px';redo_size()" />
+	<traffic><light style="--a:#e64;--b:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAJBJREFUSEvtVEEOwCAI019z9MizF8wwhjBgh24XPRmtrbRib+DRwfztCKQO/2rRkOsRUWPmObeDiAYz67KLiSpYBzwRQy4i7wQswS4S7dkqwww8IiHYbAktFGwasmPFumSUj4JSgTvoPcx5tkJeqgAuALUIGvIXzxTbaNqZyK8i/SkrgFIfVIieMEcgdQ9u0QXVemwZS28XFAAAAABJRU5ErkJgggAA')" onclick="window.close()"></light>
+		 <light style="--a:#fb3;--b:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAEtJREFUSEtjZKAxYKSx+QyjFhAM4dEgGolBVFFR0UDQ33gUdHR0oOjHlooosoCBgWGALaBHEFESBRh6R3MyweAcDaLRICIYAgQVAADSZwoZYuCHNQAAAABJRU5ErkJgggAA')" onclick="IPC.invoke('min')"></light>
+		 <light style="--a:#5c3;--b:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAHpJREFUSEvtlEEOwCAIBPXnfXpjT02kzAIhvehR7Qxu0Tmax2zmjyPAhH+P6IISad39yfQxrT+1eRF5AAmeFVjwNWdKoyf4gq9iywIPXhYQvCRQ4GmBCk8JrDsWbt3IU0G9H+6i9wlScLpo+FIqGyIRKbxtzxFgbO0R3RiSEhlNDol0AAAAAElFTkSuQmCC')" onclick="this.style.setProperty('--b','url(&quot;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAHpJREFUSEvtlEEOwCAIBPXnfXpjT02kzAIhvehR7Qxu0Tmax2zmjyPAhH+P6IISad39yfQxrT+1eRF5AAmeFVjwNWdKoyf4gq9iywIPXhYQvCRQ4GmBCk8JrDsWbt3IU0G9H+6i9wlScLpo+FIqGyIRKbxtzxFgbO0R3RiSEhlNDol0AAAAAElFTkSuQmCC&quot;)');document.exitFullscreen().catch(() => document.body.requestFullscreen(void this.style.setProperty('--b','url(&quot;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAIFJREFUSEvdlUsKwCAMRMeb9+jFRYv/iWYCpQFXwffUJJgQHCmYj88JLgB5mWPnBg84RFBC5YIWKBWMYDLBDCQRrCBuAQOwfNXCbZuyzSzfzcfOHJSbmejNnwjM8HwitaCTKwXDm6kE02dTCJY18QpYwV1FpnBPF5ngpwLzb/YPwQ0YkhIZ4F5ApAAAAABJRU5ErkJgggAA&quot;)')))"></light></traffic>
 </header>
 <layer id="layer"></layer>
 <cont class="editor"><div id="scene"></div></cont>
@@ -590,6 +618,11 @@
   <p>Hello there!</p>
 </home>
 <script>
+  window.onfocus = () => document.body.classList.remove("blurred")
+	window.onblur = () => document.body.classList.add("blurred")
+	
+	if(typeof require != "undefined"){window.IPC = require("electron").ipcRenderer;document.querySelector("traffic").style.display = "flex"}
+
   function link(element, cb){
     if(typeof element == "string"){
       element = id(element)
@@ -711,7 +744,7 @@
   }
   let ANIMS = true
   let asteroids = []
-  readfile("/parent/asteroids").then(a => asteroids = a)
+  readfile("/parent/behaviour/asteroids").then(a => asteroids = a)
   async function srcFor(name){
     let {images: [{filename}]} = await fetch("/parent/game/Assets.xcassets/" + name + ".imageset/Contents.json").then(a=>a.json())
     return "/parent/game/Assets.xcassets/" + name + ".imageset/" + filename
@@ -1530,7 +1563,7 @@
   }
   //initialise planet editor
   async function make(key, txt = fetch("super/planets/"+key).then(a=>a.text())){
-    let [radius, mass, particle, spin, ...texture] = (await txt).split(" ")
+    let [radius, mass, particle, spin, resource, ...texture] = (await txt).split(" ")
     let superhot = false
     if(radius<0)radius = -radius, superhot = true
     let textureshort = texture.join(" ")
@@ -1583,7 +1616,7 @@
       make(name, a)
     }).catch(a=>alert("Failed Saving :("))
   })
-  fetch("/dirlist/game/Assets.xcassets/planets").then(a=>a.text()).then(a=>{a=a.split("\n").slice(1).map(a=>a.replace(".imageset",""));
+  fetch("/dirlist/game/Assets.xcassets/planets").then(a=>a.text()).then(a=>{a=a.split("\n").filter(a=>a.endsWith(".imageset")).map(a=>a.replace(".imageset",""));
     a.map(name=>srcFor("planets/" + name).then(src => {
       let planet = document.createElement("planet")
       let cur = 0;

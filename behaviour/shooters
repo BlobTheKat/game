@@ -1,50 +1,54 @@
-#cannons
-price: 50
-damage: 1
-accuracy: 2%
-time: 10s
 
-price: 500
-damage: 3
+price: 100
+damage: 1
 accuracy: 3%
 time: 1m
+_head: 2
+
+price: 500
+damage: 2
+accuracy: 5%
+time: 20m
+_head: 3
 
 price: 2000
-damage: 8
-accuracy: 4%
-time: 3m
+damage: 5
+accuracy: 7%
+time: 1h
+_head: 3
 
 price: 10k
-damage: 30
-accuracy: 6%
-time: 10m
+damage: 10
+accuracy: 10%
+time: 4h
+_head: -3
 
 price: 40k
-damage: 60
-accuracy: 8%
-time: 40m
+damage: 15
+accuracy: 13%
+timne: 8h
+_head: -3
 
 price: 100k
-damage: 100
-accuracy: 10%
-time: 1.5h
+damage: 20
+accuracy: 16%
+time: 12h
+_head: -1
 
-price: 300k
-damage: 150
-accuracy: 15%
-time: 3h
+price: 200k
+damage: 30
+accuracy: 19%
+time: 18h
+_head: -17
 
 price: 500k
-damage: 200
-accuracy: 20%
-time: 7h
+damage: 40
+accuracy: 22%
+time: 1d
+_head: -13
 
-price: 1M
-damage: 280
+price: 750k
+damage: 50
 accuracy: 25%
-time: 12h
-
-price: 2M
-damage: 400
-accuracy: 33.333333333333333%
-time: 20h
+time: 1.5d
+_head: 5

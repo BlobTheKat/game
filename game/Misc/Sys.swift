@@ -46,7 +46,7 @@ class SystemDataUsage {
     }
     private class func getDataUsageInfo(from infoPointer: UnsafeMutablePointer<ifaddrs>) -> DataUsageInfo? {
         let pointer = infoPointer
-        let name: String! = String(cString: pointer.pointee.ifa_name)
+        let name: String = String(cString: pointer.pointee.ifa_name)
         let addr = pointer.pointee.ifa_addr.pointee
         guard addr.sa_family == UInt8(AF_LINK) else { return nil }
         return dataUsageInfo(from: pointer, name: name)

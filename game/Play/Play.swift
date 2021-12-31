@@ -77,6 +77,7 @@ extension Play{
         tunnel2.setScale(0.4)
         cam.addChild(tunnel2)
         ship.death = 100
+        ship.controls = false
         self.addChild(ship)
         vibrateCamera(camera: cam)
         //ACCOUNT
@@ -171,8 +172,10 @@ extension Play{
         self.addChild(border1)
         self.addChild(border2)
         
-        moveItemIcon.position = pos(mx: 0.5, my: 0, x: -180, y: 100)
+        moveItemIcon.position = pos(mx: 0.5, my: 0, x: -170, y: 120)
         moveItemIcon.size = CGSize(width: 50, height: 50)
+        addItemIcon.position = pos(mx: 0.5, my: 0, x: -170, y: 50)
+        addItemIcon.size = CGSize(width: 50, height: 50)
         
         tapToStart.removeAction(forKey: "dotdotdot")
         //setting tapToStart label relative to camera (static)
@@ -299,23 +302,21 @@ extension Play{
         self.tapToStart.run(SKAction.scale(by: 1.5, duration: 0.2))
     }
     
-    var upgradeStats: (price: Double, time: String, powers: [(name: String, old: Double, new: Double, max: Double)])?{
+    var upgradeStats: (price: String, time: String, powers: [(name: String, old: Double, new: Double, max: Double)])?{
         guard let item = planetLanded?.items[Int(itemRot)] else {return nil}
         let id = Int(item.type.rawValue)
-        if id > 127{
-            return nil
-        }
-        if items[id].count < item.lvl + 2{return nil}
+        
+        if item.upgradeEnd > 0 || items[id].count < item.lvl + 2{return nil}
         let old = items[id][Int(item.lvl)]
         let new = items[id][Int(item.lvl)+1]
         let max = items[id].count > item.lvl + 2 ? items[id][Int(item.lvl)+2] : new
         var pw = [(name: String, old: Double, new: Double, max: Double)]()
         for (k, v) in new{
-            if k == "price" || k == "time"{continue}
+            if k[0] == "_" || k == "price" || k == "price2" || k == "time"{continue}
             if old[k] == nil{continue}
             pw.append((name: k, old: old[k]!.number!, new: v.number!, max: (max[k] ?? v).number!))
         }
-        return (price: new["price"]!.number!, time: formatTime(Int(new["time"]!.number!)), powers: pw.sorted(by: {(a,b) in a.name.count < b.name.count}))
+        return (price: formatPrice(new), time: formatTime(Int(new["time"]!.number!)), powers: pw.sorted(by: {(a,b) in a.name.count < b.name.count}))
     }
     func startGame(){
         //IMPORTANT SIZE ALGORITHM
@@ -399,13 +400,13 @@ extension Play{
         dPad.setScale(1.5)
         cam.addChild(dPad)
         avatar.anchorPoint.x = 0
-        avatar.position = pos(mx: -0.5, my: 0.3, x: 20)
+        avatar.position = pos(mx: -0.5, my: 0.3, x: 50)
         avatar.alpha = 1
         avatar.zPosition = 10
         avatar.setScale(0.3)
         cam.addChild(avatar)
         for i in 0...7 {
-            let  energyNode = SKSpriteNode(imageNamed: "energyOff")
+            var energyNode = SKSpriteNode(imageNamed: "energyOff")
             energyNodes.append(energyNode)
             if i == 0{
                 energyNodes[i].position = CGPoint(x: 180, y: -43)
@@ -415,14 +416,46 @@ extension Play{
             energyNodes[i].zPosition = avatar.zPosition + 1
             energyNodes[i].setScale(1)
             avatar.addChild(energyNodes[i])
+            
+            energyNode = SKSpriteNode(imageNamed: "energyOff")
+            researchNodes.append(energyNode)
+            if i == 0{
+                researchNodes[i].position = CGPoint(x: 300, y: 41)
+            }else{
+                researchNodes[i].position = CGPoint(x: researchNodes[i - 1].position.x + researchNodes[0].size.width*0.95, y: 41)
+            }
+            researchNodes[i].zPosition = avatar.zPosition + 1
+            researchNodes[i].setScale(1)
+            avatar.addChild(researchNodes[i])
         }
-        energyCount.text = "K$ 0"
+        energyCount.text = "k$ 0"
         energyCount.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
         energyCount.zPosition = avatar.zPosition + 1
-        energyCount.position = CGPoint(x: 165 , y: -100)
+        energyCount.position = CGPoint(x: 165, y: -100)
         energyCount.fontColor = UIColor.white
         energyCount.fontSize = 36
         avatar.addChild(energyCount)
+        researchCount.text = "r$ 0"
+        researchCount.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
+        researchCount.zPosition = avatar.zPosition + 1
+        researchCount.position = CGPoint(x: 300, y: 73)
+        researchCount.fontColor = UIColor.white
+        researchCount.fontSize = 36
+        avatar.addChild(researchCount)
+        researchIconBecauseAdamWasTooLazy.zPosition = avatar.zPosition + 1
+        researchIconBecauseAdamWasTooLazy.setScale(0.3)
+        researchIconBecauseAdamWasTooLazy.position = CGPoint(x: 180, y: 60)
+        avatar.addChild(researchIconBecauseAdamWasTooLazy)
+        gemIcon.position = CGPoint(x: 180, y: 170)
+        gemIcon.zPosition = avatar.zPosition + 1
+        gemIcon.setScale(0.4)
+        avatar.addChild(gemIcon)
+        gemLabel.zPosition = avatar.zPosition + 1
+        gemLabel.position = CGPoint(x: 220, y: 160)
+        gemLabel.horizontalAlignmentMode = .left
+        gemLabel.fontSize = 36
+        gemLabel.text = "0"
+        avatar.addChild(gemLabel)
         //NAVIGATION
         navArrow.position = pos(mx: 0.43, my: 0.5)
         navArrow.alpha = 1
@@ -513,7 +546,7 @@ extension Play{
         coloStatsPrice.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
         coloStatsPrice.position = colonizeBG.pos(mx: 0, my: 0, x: -230, y: -330)
         coloStatsPrice.fontSize = 20
-        coloStatsPrice.text = "price: 10,000 K$"
+        coloStatsPrice.text = "price: K$ 10,000"
         colonizeBG.addChild(coloStatsPrice)
         
         collect.anchorPoint = CGPoint(x: 0 ,y:0.5)
@@ -527,9 +560,15 @@ extension Play{
         collectedLabel.zPosition = 100
         collectedLabel.alpha = 1
         collectedLabel.horizontalAlignmentMode = .left
-        collectedLabel.text = "500 / 20000"
+        collectedLabel.text = "0"
         collectedLabel.fontSize = 100
-        collectedLabel.color = UIColor.white
+        collectedLabel2.position = collect.pos(mx: 1.6666666667, my: 0, x: 0, y: 100)
+        collectedLabel2.zPosition = 100
+        collectedLabel2.alpha = 1
+        collectedLabel2.horizontalAlignmentMode = .right
+        collectedLabel2.text = "0"
+        collectedLabel2.fontSize = 100
+        collectedLabel2.fontColor = .purple
         
         
         coloIcon.position = CGPoint(x: repairIcon.position.x + (repairIcon.size.width * 1.5) ,y: repairIcon.position.y)
@@ -615,11 +654,14 @@ extension Play{
         tunnel2.removeFromParent()
        
     }
-    func DisplayWARNING(_ label: String, _ warningType: Int, _ blink: Bool){
-        if warningType == 1{
+    func DisplayWARNING(_ label: String, _ warningType: WarningTypes, _ blink: Bool){
+        switch warningType{
+        case .warning:
             warning.texture = SKTexture(imageNamed: "warning")
-        }else if warningType == 2 {
+            break
+        case .achieved:
             warning.texture = SKTexture(imageNamed: "achieved")
+            break
         }
         warningLabel.text = "\(label)"
         
@@ -637,11 +679,15 @@ extension Play{
             warning.run(SKAction.fadeAlpha(to: 1, duration: 1).ease(.easeIn))
         }
     }
-    //This function renders the upgrading UI
-    func renderUpgradeUI(){
-        //remove upgrade nodes, and replace them with addItemIcons
+    func hideUpgradeUI(){
         for label in upgradeNodes{
             label.removeFromParent()
+        }
+        for icon in addItemIcons{
+            icon.removeFromParent()
+        }
+        for icon in addItemPrices{
+            icon.removeFromParent()
         }
         upgradeTime.removeFromParent()
         upgradePrice.removeFromParent()
@@ -652,11 +698,42 @@ extension Play{
         upgradeNew2.removeFromParent()
         upgradebtn.removeFromParent()
         upgradeNodes = []
-        guard let (price: price, time: time, powers: powers) = upgradeStats else {return}
-        let (type: id, lvl: lvl, capacity: _, upgradeEnd: _) = planetLanded!.items[Int(itemRot)]!
-        
+        upgradingHintInterval()
+        upgradingHintInterval = {}
+    }
+    //This function renders the upgrading UI
+    
+    func renderUpgradeUI(){
+        //remove upgrade nodes, and replace them with addItemIcons
+        hideUpgradeUI()
+        guard let (type: id, lvl: lvl, capacity: _, upgradeEnd: u) = planetLanded!.items[Int(itemRot)] else {return}
+        guard let (price: price, time: time, powers: powers) = upgradeStats else {
+            
+            if u > 0{
+                var time = Int(u) - Int(NSDate().timeIntervalSince1970)
+                upgradeTime.text = "Time: \(formatTime(time))"
+                upgradeTime.fontSize = 120
+                buildBG.addChild(upgradeTime)
+                upgradeTime.position = pos(mx: 1.5, my: -0.5)
+                upgradeTime.horizontalAlignmentMode = .center
+                upgradePrice.fontSize = 80
+                buildBG.addChild(upgradePrice)
+                upgradePrice.position = pos(mx: 1.5, my: -0.8)
+                upgradePrice.horizontalAlignmentMode = .center
+                upgradePrice.text = "Finish now (\(formatNum(ceil(Double(time) / 300))) gems)"
+                upgradePrice.fontColor = .green
+                upgradingHintInterval = interval(1, {
+                    time -= 1
+                    self.upgradePrice.text = "Finish now (\(formatNum(ceil(Double(time) / 300))) gems)"
+                    self.upgradeTime.text = "Time: \(formatTime(time))"
+                    
+                })
+            }
+            return
+        }
+        upgradePrice.fontColor = .white
         upgradeTime.text = "Time: \(time)"
-        upgradePrice.text = "Price: \(formatNum(price))"
+        upgradePrice.text = "Price: \(price)"
         upgradeTime.position = pos(mx: 0.9, my: -0.9)
         upgradeTime.horizontalAlignmentMode = .right
         upgradeTime.fontSize = 60
@@ -690,60 +767,31 @@ extension Play{
         var i = 0
         var oldOutlineY = -125.0
         for (name: name, old: old, new: new, max: max) in powers{
-            let progressLabel1 = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
             let progressLabel2 = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
-            let progress1 = SKSpriteNode(imageNamed: "progress")
             let progress2 = SKSpriteNode(imageNamed: "progress")
             let progress3 = SKSpriteNode(imageNamed: "progressgreen")
-            let outline1 = SKSpriteNode(imageNamed: "progressOutline")
             let outline2 = SKSpriteNode(imageNamed: "progressOutline")
-            outline1.zPosition = 100
-            outline1.setScale(0.7)
-            outline1.anchorPoint = CGPoint(x: 0 ,y: 0.5)
-            outline1.position = CGPoint(x: 400, y: oldOutlineY)
-            
-            //buildBG.addChild(outline1)
-            //from here is for the inside of the progress bar showing the actual progress
-            progress1.zPosition = 99
-            progress1.setScale(1)
-            progress1.anchorPoint = CGPoint(x: 0, y: 0.5)
-            progress1.xScale = old / max * 15
-            //outline1.addChild(progress1)
-            
-            progressLabel1.position = CGPoint(x: outline1.position.x ,y: outline1.position.y + 35)
-            progressLabel1.horizontalAlignmentMode = .left
-            progressLabel1.zPosition = 100
-            progressLabel1.fontSize = 60
-            progressLabel1.color = UIColor.white
-            //buildBG.addChild(progressLabel1)
             switch name{
             case "persec":
-                progressLabel1.text = "Production: \(formatNum(old*3600))/hr"
-                progressLabel2.text = "Production: \(formatNum(old*3600))/hr ➪ \(formatNum(new*3600))/hr"
+                progressLabel2.text = "Energy: \(formatNum(old*3600))/hr ➪ \(formatNum(new*3600))/hr"
                 break
             case "boost":
-                progressLabel1.text = "Boost: \(old*100)%"
                 progressLabel2.text = "Boost: \(Int(old*100))% ➪ \(Int(new*100))%"
                 break
-            case "researchboost":
-                progressLabel1.text = "Research Boost: \(Int(old*100))%"
+            case "boost2":
                 progressLabel2.text = "Research Boost: \(Int(old*100))% ➪ \(Int(new*100))%"
                 break
             case "damage":
-                progressLabel1.text = "Damage: \(old)"
-                progressLabel2.text = "Damage: \(old) ➪ \(new)"
+                progressLabel2.text = "Damage: \(formatNum(old)) ➪ \(formatNum(new))"
                 break
             case "storage":
-                progressLabel1.text = "Storage: \(old)"
-                progressLabel2.text = "Storage: \(old) ➪ \(new)"
+                progressLabel2.text = "Storage: \(formatNum(old)) ➪ \(formatNum(new))"
                 break
             case "accuracy":
-                progressLabel1.text = "Accuracy: \(old*300)%"
-                progressLabel2.text = "Accuracy: \(Int(old*300))% ➪ \(Int(new*300))%"
+                progressLabel2.text = "Accuracy: \(Int(old*200))% ➪ \(Int(new*200))%"
                 break
             default:
-                progressLabel1.text = "\(name): \(old)"
-                progressLabel2.text = "\(name): \(old) ➪ \(new)"
+                progressLabel2.text = "\(name): \(formatNum(old)) ➪ \(formatNum(new))"
                 break
             }
             //from here is for the outline of the progress bar.
@@ -771,13 +819,10 @@ extension Play{
             progress3.xScale = new / max * 15
             outline2.addChild(progress3)
             
-            upgradeNodes.append(progressLabel1)
             upgradeNodes.append(progressLabel2)
             upgradeNodes.append(progress2)
             upgradeNodes.append(progress3)
-            upgradeNodes.append(outline1)
             upgradeNodes.append(outline2)
-            upgradeNodes.append(progress1)
             i += 1
         }
        
@@ -870,6 +915,7 @@ extension Play{
             if editColoIcon.parent == nil{
                 navBG.addChild(editColoIcon)
                 collect.addChild(collectedLabel)
+                collect.addChild(collectedLabel2)
                 avatar.addChild(collect)
             }
         }
@@ -877,13 +923,13 @@ extension Play{
     func takeoff(){
         editColoIcon.removeFromParent()
         collectedLabel.removeFromParent()
+        collectedLabel2.removeFromParent()
         collect.removeFromParent()
         coloArrow.removeFromParent()
         buildBG.removeFromParent()
         if !presence{planetLanded = nil}
-        else{planetEditMode()}
+        else{let _ = timeout(0.5){if self.planetLanded==nil&&self.presence{self.planetEditMode()}}}
     }
-    
     func increseEnergy(){
     }
     func hideControls(){
@@ -903,11 +949,11 @@ extension Play{
     func didBuy(_ success: Bool){
         guard success else{
             //FAILED TO COLONIZE HERE
-            DisplayWARNING("error: try again later", 1, false)
+            DisplayWARNING("error: try again later", .warning, false)
             return
         }
         cam.run(SKAction.sequence([
-            .run{ self.DisplayWARNING("colonized successfuly",2,false)},
+            .run{ self.DisplayWARNING("colonized successfuly",.achieved,false)},
             .wait(forDuration: 2),
             .run{self.cam.removeAction(forKey: "warningAlpha")},
             .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
@@ -931,14 +977,16 @@ extension Play{
             cam.addChild(buildBG)
             cam.addChild(coloArrow)
             cam.addChild(moveItemIcon)
+            cam.addChild(addItemIcon)
             ship.alpha = 0
             itemRot = 0
             cam.setScale(1)
             planetLandedRot = planetLanded!.zRotation
             planetLanded!.zRotation = 0
             for n in planetLanded!.children{
-                if n.name == nil && (n.userData?["type"] as? ColonizeItem)?.type == .satellite{
-                    (n as? SKSpriteNode)?.anchorPoint.y += 1.9
+                let itm = (n.userData?["type"] as? ColonizeItem)
+                if n.name == nil && itm?.type == .satellite && itm?.upgradeEnd == 0{
+                    (n as? SKSpriteNode)?.anchorPoint.y += 2
                     n.removeAllActions()
                     n.zRotation = -CGFloat(n.userData?["rot"] as! UInt8) * PI256
                 }
@@ -947,8 +995,11 @@ extension Play{
                 planetLanded!.zRotation += PI256
                 itemRot += 1
             }
-            for i in 0...3{
-                addItemIcons[i].position = CGPoint(x: 600 + CGFloat(i) * 400, y: -240)
+            for i in 0...addItemIcons.count-1{
+                addItemIcons[i].position = CGPoint(x: 600 + CGFloat(i) * 400, y: -220)
+                addItemPrices[i].position = addItemIcons[i].position
+                addItemPrices[i].position.y -= 250
+                addItemPrices[i].fontSize = 60
             }
             renderUpgradeUI()
         }else{
@@ -958,15 +1009,18 @@ extension Play{
             coloArrow.removeFromParent()
             buildBG.removeFromParent()
             moveItemIcon.removeFromParent()
+            addItemIcon.removeFromParent()
             for n in planetLanded!.children{
-                if n.name == nil && (n.userData?["type"] as? ColonizeItem)?.type == .satellite{
+                let itm = (n.userData?["type"] as? ColonizeItem)
+                if n.name == nil && itm?.type == .satellite && itm?.upgradeEnd == 0{
                     n.run(.repeatForever(SKAction.rotate(byAngle: planetLanded!.angularVelocity + 0.05, duration: 1)))
-                    (n as? SKSpriteNode)?.anchorPoint.y -= 1.9
+                    (n as? SKSpriteNode)?.anchorPoint.y -= 2
                 }
             }
             if planetTouched == nil{planetLanded = nil}
-            for i in 0...3{
+            for i in 0...addItemIcons.count-1{
                 addItemIcons[i].removeFromParent()
+                addItemPrices[i].removeFromParent()
             }
         }
     }
@@ -976,14 +1030,22 @@ extension Play{
             return
         }
         dragRemainder = .nan
-        renderUpgradeUI()
     }
     
     
     override func nodeDown(_ node: SKNode, at point: CGPoint) {
         
         switch node{
-            
+        case addItemIcon:
+            hideUpgradeUI()
+            //render additem ui
+            for icon in addItemIcons{
+                buildBG.addChild(icon)
+            }
+            for icon in addItemPrices{
+                buildBG.addChild(icon)
+            }
+            break
         case backIcon:
             if buyScreenShowing{
                 colonizeBG.removeFromParent()
@@ -993,7 +1055,6 @@ extension Play{
             break
         case buyIcon:
             if energyAmount >= 10{
-                energyAmount -= 10
                 if buyScreenShowing{
                     colonizeBG.removeFromParent()
                     showControls()
@@ -1002,7 +1063,7 @@ extension Play{
                 colonize(planetLanded!)
             }else if energyAmount < 10{
                 cam.run(SKAction.sequence([
-                    .run{ self.DisplayWARNING("not enough energy",1,false)},
+                    .run{ self.DisplayWARNING("not enough energy",.warning,false)},
                     .wait(forDuration: 2),
                     .run{self.cam.removeAction(forKey: "warningAlpha")},
                     .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
@@ -1022,6 +1083,38 @@ extension Play{
             break
         case collect:
             if planetLanded != nil{collectFrom(planetLanded!)}
+            break
+        case upgradebtn:
+            guard let item = planetLanded?.items[Int(itemRot)] else {break}
+            let itm = items[Int(item.type.rawValue)][Int(item.lvl + 1)]
+            let price = itm["price"]?.number ?? 0
+            let price2 = Float(itm["price2"]?.number ?? 0)
+            if energyAmount < price || researchAmount < price2{
+                cam.run(SKAction.sequence([
+                    .run{ self.DisplayWARNING("not enough energy",.warning,false)},
+                    .wait(forDuration: 2),
+                    .run{self.cam.removeAction(forKey: "warningAlpha")},
+                    .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
+                ]))
+            }
+            changeItem(planetLanded!, Int(itemRot))
+            hideUpgradeUI()
+            break
+        case upgradePrice:
+            if upgradePrice.fontColor == .white{break}
+            //skip time
+            guard let end = planetLanded?.items[Int(itemRot)]?.upgradeEnd else {break}
+            let price = ceil(Double(Int(end) - Int(NSDate().timeIntervalSince1970)) / 300)
+            if Double(gemCount) < price{
+                cam.run(SKAction.sequence([
+                    .run{ self.DisplayWARNING("not enough gems",.warning,false)},
+                    .wait(forDuration: 2),
+                    .run{self.cam.removeAction(forKey: "warningAlpha")},
+                    .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
+                ]))
+                break
+            }
+            skipBuild(planetLanded!, itemRot)
             break
         case coloArrow:
             var a: CGFloat = 0
@@ -1043,6 +1136,12 @@ extension Play{
             break
         }
         if node.parent == buildBG, let i = addItemIcons.firstIndex(of: node as? SKSpriteNode ?? ship){
+            let price = items[i][1]["price"]?.number ?? 0
+            let price2 = Float(items[i][1]["price2"]?.number ?? 0)
+            if energyAmount < price || researchAmount < price2{
+                DisplayWARNING("Not enough energy!", .warning, true)
+                return
+            }
             var pos = UInt8()
             var gap = 0
             var curGap = 0
@@ -1051,7 +1150,7 @@ extension Play{
                 if planetLanded!.items[i] == nil{
                     curGap += 1
                 }else{
-                    if curGap > gap{
+                    if curGap >= gap{
                         if start == -1{start = curGap;curGap = 0;continue}
                         gap = curGap
                         pos = UInt8((i - curGap / 2) & 255)
@@ -1068,7 +1167,6 @@ extension Play{
             itemRot = pos
             planetLanded!.run(.rotate(toAngle: CGFloat(pos) * PI256, duration: abs(CGFloat(pos)) / 180.0).ease(.easeInEaseOut))
             makeItem(planetLanded!, pos, .init(rawValue: UInt8(i))!)
-            renderUpgradeUI()
         }
         if removeTrackerIcon == node{
             removeTrackers()
@@ -1087,8 +1185,6 @@ extension Play{
         }
         if cockpitIcon == node{
             cockpitIcon.texture = SKTexture(imageNamed: "cockpitOn")
-            
-            
         }
         if let n = node as? Object{
             guard n != ship else {return}
@@ -1124,7 +1220,7 @@ extension Play{
                 warning.alpha = 0
                 isWarning = false
             }else{
-                DisplayWARNING("emptyWarning",1,true)
+                DisplayWARNING("Placeholder",.warning,true)
                 isWarning = true
             }
         }
@@ -1179,7 +1275,9 @@ extension Play{
                 usingConstantLazer = false
                 ship.thrust = true
                 if !playingThrustSound{
-                    thrustSound.run(SKAction.changeVolume(to: 1.5, duration: 0.01))
+                    thrustSound.removeAllActions()
+                    thrustSound.removeFromParent()
+                    thrustSound.run(SKAction.changeVolume(to: 1.5, duration: 0.1))
                     self.addChild(thrustSound)
                     playingThrustSound = true
                 }
@@ -1265,6 +1363,7 @@ extension Play{
                     self.playingThrustSound = false
                 }
             ]))
+            self.playingThrustSound = false
             self.removeAction(forKey: "constantLazer")
             ship.shootFrequency = 0
             self.heatLevel = 0
@@ -1331,7 +1430,7 @@ extension Play{
         if key == .keyboardN{
             ship.encode(data: &shipStates)
         }else if key == .keyboardB{
-            guard shipStates.count >= 14 else{return}
+            guard shipStates.count >= 16 else{return}
             ship.decode(data: &shipStates)
         }else if key == .keyboardEqualSign{
             send(Data([127]))

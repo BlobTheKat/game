@@ -1,0 +1,45 @@
+
+price: 150
+persec: 0.004
+storage: 500
+time: 1m
+
+price: 300
+persec: 0.01
+storage: 2000
+time: 5m
+
+price: 1000
+persec: 0.03
+storage: 8000
+time: 15m
+
+price: 5000
+persec: 0.1
+storage: 15k
+time: 1h
+
+price: 20k
+persec: 0.15
+storage: 20k
+time: 3h
+
+price: 50k
+persec: 0.3
+storage: 50k
+time: 6h
+
+price: 200k
+persec: 0.6
+storage: 100k
+time: 12h
+
+price: 400k
+persec: 1
+storage: 200k
+time: 24h
+
+price: 1M
+persec: 1.5
+storage: 300k
+time: 35h
