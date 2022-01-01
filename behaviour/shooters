@@ -26,7 +26,7 @@ _head: -3
 price: 40k
 damage: 15
 accuracy: 13%
-timne: 8h
+time: 8h
 _head: -3
 
 price: 100k

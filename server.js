@@ -52,7 +52,9 @@ function fetchdata(i){
 
 
 function prefixify(a){
-	return parseFloat(a) * (prefixes[a.match(/[a-z%]*$/i)[0]] || 1)
+	a = a.match(/^(-?(?:\d+\.\d*|\.?\d+)(?:e[+-]?\d+)?)([a-zA-Z%]*)$/)
+	if(!a)return NaN
+	return a[1] * (prefixes[a[2]] || 1)
 }
 
 Object.fallback = function(a, ...b){
@@ -403,8 +405,8 @@ class Planet{
 		this.dz = dict.spin
 		this.superhot = dict.superhot
 		this.filename = "pdata/" + (sector.x + this.x) + "_" + (sector.y + this.y) + ".json"
-		let dat
-		try{if(!dict.resource)throw null;dat = JSON.parse(fs.readFileSync(this.filename))}catch(e){dat = null}
+		let dat = null
+		if(dict.resource)try{dat = JSON.parse(fs.readFileSync(this.filename))}catch(e){dat = null}
 		this.resource = dict.resource
 		this.data = dat
 	}
@@ -704,7 +706,7 @@ server.on('message', async function(m, remote) {
 			len = message.ubyte()
 			let salt = Buffer.from(message.buffer(len)).toString("base64")
 			len = message.ubyte()
-			let playerId = message.str(len).toLowerCase()
+			let playerId = message.str(len)
 			let timestamp = message.uint() + message.uint() * 4294967296
 			len = message.ubyte()
 			let name = message.str(len)
@@ -715,7 +717,7 @@ server.on('message', async function(m, remote) {
 				if(err){
 					if(timestamp > 1)return send(Buffer.from(Buffer.concat([Buffer.of(127), strbuf("Invalid identity")])))
 					playerId = playerId.toUpperCase()
-				}
+				}else playerId = playerId.toLowerCase()
 				//fetch DB stuff
 				let cli = new ClientData(name, playerId, address)
 				fetchdata(playerId).then(a => {
