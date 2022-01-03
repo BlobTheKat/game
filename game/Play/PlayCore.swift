@@ -149,6 +149,8 @@ extension Play{
             border2.position.x *= -1
             border2.xScale *= -1
         }
+        vel = CGFloat(sqrt(ship.velocity.dx*ship.velocity.dx + ship.velocity.dy*ship.velocity.dy)) * gameFPS
+        speedLabel.text = %Float(vel / 2)
     }
     func spaceUpdate(){
       
@@ -188,13 +190,22 @@ extension Play{
         }
         a = 0
         for s in objects{s.landed = false}
+        var d = CGFloat.infinity, closestStar: Planet? = nil
         for planet in planets{
             for s in objects{
                 if s.landed{continue}
                 planet.gravity(s)
             }
             planet.update(a < planetindicators.count ? planetindicators[a] : nil)
+            let x = planet.position.x - ship.position.x
+            let y = planet.position.y - ship.position.y
+            let d2 = sqrt(x * x + y * y)
+            if d2 < d && planet.superhot{d = d2;closestStar = planet}
             a += 1
+        }
+        if closestStar != nil{
+            let v = 1 / (0.001 * d).clamp(1, 2) - 0.35
+            ambient.run(.changeVolume(to: Float(v), duration: 0))
         }
         a = 0
         for t in tracked{
@@ -312,8 +323,6 @@ extension Play{
             }
         }
         clock20 = (clock20 + 1) % 20
-        vel = CGFloat(sqrt(ship.velocity.dx*ship.velocity.dx + ship.velocity.dy*ship.velocity.dy)) * gameFPS
-        speedLabel.text = %Float(vel / 2)
     }
     func report_memory() -> UInt16{
         var taskInfo = mach_task_basic_info()

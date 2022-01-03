@@ -202,8 +202,12 @@ extension Play{
         //release texture objects
         for p in sector.0{
             p.texture = nil
+            p.namelabel?.removeFromParent()
+            p.namelabel = nil
+            p.angry = 0
             for c in p.children{
                 if c.name != nil{(c as? SKSpriteNode)?.texture = nil}
+                else {c.removeFromParent()}
             }
         }
         send = {(_:Data) in}

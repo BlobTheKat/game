@@ -18,6 +18,7 @@ class Play: SKScene{
     }
     required init?(coder _:NSCoder){abort()}
     //Debug Menu LabelNode
+    var swiping = false
     var DEBUG_TXT = SKLabelNode(fontNamed: "Menlo")
     //Minimum Number of nodes to start the game (to detect when textures have all loaded)
     var MIN_NODES_TO_START = 70
@@ -28,6 +29,12 @@ class Play: SKScene{
     //Sounds for lightspeed and thrust
     let inlightSpeed = SKAudioNode(fileNamed: "InLightSpeed.wav")
     var thrustSound = SKAudioNode(fileNamed: "thrust.wav")
+    //ambient sound
+    var waitForSound = TimeInterval()
+   //playing impact sound
+    var impactSound = false
+    
+   
     //Loading bar (the one that expands)
     let loading = SKShapeNode(rect: CGRect(x: -150, y: 0, width: 300, height: 3))
     //List of all planets, objects and particles on the scene
@@ -121,6 +128,7 @@ class Play: SKScene{
     //direction indicator
     let shipDirection = SKSpriteNode(imageNamed: "direction")
     //Velocity indicator
+    var ambient = SKAudioNode()
     let speedLabel =  SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
     //Red player arrow on the map
     let playerArrow = SKSpriteNode(imageNamed: "playerArrow")

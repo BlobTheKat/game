@@ -49,11 +49,11 @@ class Particle: SKSpriteNode{
         fatalError("init(coder:) has not been implemented")
     }
 }
-
+typealias Color = (r: CGFloat, g: CGFloat, b: CGFloat)
 //A specific state of a particle. Includes position, rotation, color, size, etc...
 struct State{
     static let zero = State(color: (r: 0, g: 0, b: 0), size: CGSize.zero, zRot: 0, position: CGPoint.zero, alpha: 0)
-    var color: (r: CGFloat, g: CGFloat, b: CGFloat)
+    var color: Color
     var size: CGSize
     var zRot: CGFloat
     var position: CGPoint

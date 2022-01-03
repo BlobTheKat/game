@@ -82,7 +82,7 @@ func formatNum(_ a: Double) -> String{
     if a == 0{return "0"}
     let p = floor(log10(abs(a)) / 3)
     let b = a / pow(1000, p)
-    return "\(b == trunc(b) ? "\(Int(b))" : "\(b)")\(p == 0 ? "" : (p > 5 ? "e\(p*3)" : String("kmbtq"[Int(p-1)])))"
+    return "\(b == trunc(b) ? "\(Int(b))" : "\(b)")\(p == 0 ? "" : (p > 5 || p < 1 ? "e\(Int(p)*3)" : String("kmbtq"[Int(p-1)])))"
 }
 
 func vibrateObject(sprite: SKSpriteNode){

@@ -7,7 +7,7 @@
 
 import SpriteKit
 import GameKit
-
+var waitForSound = Int()
 
 let stopSound = SKAction.stop()
 let playSound = SKAction.play()
@@ -211,46 +211,41 @@ extension Play{
             let trail = SKSpriteNode(imageNamed: "trail\((i%5)+1)")
             trails.append(trail)
             delay += 0.1
-            let _ = timeout(delay) {
-                self.moveTrail(trail: trail)
-                vibrateObject(sprite: trail)
-                self.cam.addChild(trail)
-            }
+            self.moveTrail(trail: trail, delay)
         }
         for i in 1...3{
             let longTrail = SKSpriteNode(imageNamed: "longTrail\(i)")
             trails.append(longTrail)
             delay += 0.1
-            let _ = timeout(delay) {
-                self.moveTrail(trail: longTrail)
-                vibrateObject(sprite: longTrail)
-                self.cam.addChild(longTrail)
-            }
+            self.moveTrail(trail: longTrail, delay)
         }
         vibrateObject(sprite: tunnel1)
         vibrateObject(sprite: tunnel2)
         vibrateObject(sprite: border1)
         vibrateObject(sprite: border2)
     }
-    func moveTrail(trail: SKSpriteNode){
+    func moveTrail(trail: SKSpriteNode, _ delay: Double){
         var stop = {}
-        //var stopped = false // to be removed in final built once debugged is true
-        stop = interval(0.5){ [self] in
-            //if stopped{return} // to be removed in final built once debugged is true
-            if startPressed{
-                trail.removeFromParent()
-                stop()
-                //stopped = true // to be removed in final built once debugged is true
-                trails.remove(at: trails.firstIndex(of: trail)!)
-                if trails.count == 0{
-                    started = true
+        var d = delay + 0.1
+        stop = interval(0.1){ [self] in
+            d -= 0.1
+            if d < 0.05{
+                d += 0.5
+                if trail.parent == nil{vibrateObject(sprite: trail);self.cam.addChild(trail)}
+                if startPressed{
+                    trail.removeFromParent()
+                    stop()
+                    trails.remove(at: trails.firstIndex(of: trail)!)
+                    if trails.count == 0{
+                        started = true
+                    }
+                }else{
+                    let randomPosition = random(min: -25, max: 25)
+                    trail.position = pos(mx: randomPosition/100 , my: 0.5)
+                    trail.zPosition = 2
+                    trail.setScale(0.2)
+                    trail.run(SKAction.moveBy(x: 0, y: -self.size.height - trail.size.height/2, duration: 0.2))
                 }
-            }else{
-                let randomPosition = random(min: -25, max: 25)
-                trail.position = pos(mx: randomPosition/100 , my: 0.5)
-                trail.zPosition = 2
-                trail.setScale(0.2)
-                trail.run(SKAction.moveBy(x: 0, y: -self.size.height - trail.size.height/2, duration: 0.2))
             }
         }
     }
@@ -652,8 +647,72 @@ extension Play{
         tunnel2.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeOut))
     
         tunnel2.removeFromParent()
-       
+        
+        
+        
+        /*
+        self.run(SKAction.repeatForever(.sequence([
+            
+            SKAction.playSoundFileNamed("extras/ambient\(Int(random(min: 1, max: 6))).wav", waitForCompletion: true),
+            SKAction.wait(forDuration: 0.5)
+        ])))
+        
+         
+         switch randomSound{
+         case 1: self.waitForSound = 180
+             break
+         case 2: self.waitForSound = 144
+             break
+         case 3: self.waitForSound = 89
+             break
+         case 4: self.waitForSound = 120
+             break
+         case 5: self.waitForSound = 57
+             break
+         default: print("wrong sound")
+         }
+        */
+        
+        
+            
+            
+        self.ambientSound()
+        
     }
+    func ambientSound(){
+        
+        
+        
+        let randomSound = Int(random(min: 1, max: 4))
+                    ambient = SKAudioNode(fileNamed: "extras/ambient\(randomSound).wav")
+                    
+                    switch randomSound{
+                    case 1: self.waitForSound = 180
+                        break
+                    case 2: self.waitForSound = 144
+                        break
+                    case 3: self.waitForSound = 89
+                        break
+                    case 4: self.waitForSound = 120
+                        break
+                    case 5: self.waitForSound = 57
+                        break
+                    default: print("wrong sound")
+                    }
+                    
+        ambient.run(SKAction.changeVolume(to: 0.15, duration: 0))
+                        ambient.autoplayLooped = false
+                        self.addChild(ambient)
+                        ambient.run(.play())
+        let _ = timeout(self.waitForSound){
+            self.ambient.removeFromParent()
+            self.ambientSound()
+        }
+        
+    }
+
+    
+    
     func DisplayWARNING(_ label: String, _ warningType: WarningTypes, _ blink: Bool){
         switch warningType{
         case .warning:
@@ -919,6 +978,15 @@ extension Play{
                 avatar.addChild(collect)
             }
         }
+        if vel > 50 {
+            let impactSound = SKAudioNode(fileNamed: "extras/impact.wav")
+            impactSound.run(SKAction.changeVolume(to: 0.3, duration: 0))
+            self.addChild(impactSound)
+            let _ = timeout(1){
+                impactSound.removeFromParent()
+            }
+        }
+        vibratePhone(.light)
     }
     func takeoff(){
         editColoIcon.removeFromParent()
@@ -959,6 +1027,7 @@ extension Play{
             .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
         ]))
     }
+    
     func planetEditMode(){
         presence.toggle()
 
@@ -995,12 +1064,6 @@ extension Play{
                 planetLanded!.zRotation += PI256
                 itemRot += 1
             }
-            for i in 0...addItemIcons.count-1{
-                addItemIcons[i].position = CGPoint(x: 600 + CGFloat(i) * 400, y: -220)
-                addItemPrices[i].position = addItemIcons[i].position
-                addItemPrices[i].position.y -= 250
-                addItemPrices[i].fontSize = 60
-            }
             renderUpgradeUI()
         }else{
             ship.alpha = 1
@@ -1034,16 +1097,17 @@ extension Play{
     
     
     override func nodeDown(_ node: SKNode, at point: CGPoint) {
-        
         switch node{
         case addItemIcon:
             hideUpgradeUI()
             //render additem ui
-            for icon in addItemIcons{
-                buildBG.addChild(icon)
-            }
-            for icon in addItemPrices{
-                buildBG.addChild(icon)
+            for i in 0...addItemIcons.count-1{
+                addItemIcons[i].position = CGPoint(x: 600 + CGFloat(i) * 400, y: -220)
+                addItemPrices[i].position = addItemIcons[i].position
+                addItemPrices[i].position.y -= 250
+                addItemPrices[i].fontSize = 60
+                buildBG.addChild(addItemIcons[i])
+                buildBG.addChild(addItemPrices[i])
             }
             break
         case backIcon:
@@ -1082,7 +1146,7 @@ extension Play{
             
             break
         case collect:
-            if planetLanded != nil{collectFrom(planetLanded!)}
+            if planetLanded != nil{collectFrom(planetLanded!);planetLanded!.last=NSDate().timeIntervalSince1970}
             break
         case upgradebtn:
             guard let item = planetLanded?.items[Int(itemRot)] else {break}
@@ -1134,39 +1198,6 @@ extension Play{
             break
         default:
             break
-        }
-        if node.parent == buildBG, let i = addItemIcons.firstIndex(of: node as? SKSpriteNode ?? ship){
-            let price = items[i][1]["price"]?.number ?? 0
-            let price2 = Float(items[i][1]["price2"]?.number ?? 0)
-            if energyAmount < price || researchAmount < price2{
-                DisplayWARNING("Not enough energy!", .warning, true)
-                return
-            }
-            var pos = UInt8()
-            var gap = 0
-            var curGap = 0
-            var start = -1
-            for i in 0...255{
-                if planetLanded!.items[i] == nil{
-                    curGap += 1
-                }else{
-                    if curGap >= gap{
-                        if start == -1{start = curGap;curGap = 0;continue}
-                        gap = curGap
-                        pos = UInt8((i - curGap / 2) & 255)
-                        curGap = 0
-                    }else{
-                        curGap = 0
-                    }
-                }
-            }
-            if start + curGap > gap{
-                gap = start + curGap
-                pos = UInt8((start - (start + curGap) / 2) & 255)
-            }
-            itemRot = pos
-            planetLanded!.run(.rotate(toAngle: CGFloat(pos) * PI256, duration: abs(CGFloat(pos)) / 180.0).ease(.easeInEaseOut))
-            makeItem(planetLanded!, pos, .init(rawValue: UInt8(i))!)
         }
         if removeTrackerIcon == node{
             removeTrackers()
@@ -1355,6 +1386,44 @@ extension Play{
     }
     
     override func nodeUp(_ node: SKNode, at _: CGPoint) {
+        if !swiping && node.parent == buildBG, let i = addItemIcons.firstIndex(of: node as? SKSpriteNode ?? ship){
+            let price = items[i][1]["price"]?.number ?? 0
+            let price2 = Float(items[i][1]["price2"]?.number ?? 0)
+            if energyAmount < price || researchAmount < price2{
+                cam.run(SKAction.sequence([
+                    .run{ self.DisplayWARNING("not enough energy",.warning,false)},
+                    .wait(forDuration: 2),
+                    .run{self.cam.removeAction(forKey: "warningAlpha")},
+                    .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
+                ]))
+                return
+            }
+            var pos = UInt8()
+            var gap = 0
+            var curGap = 0
+            var start = -1
+            for i in 0...255{
+                if planetLanded!.items[i] == nil{
+                    curGap += 1
+                }else{
+                    if curGap >= gap{
+                        if start == -1{start = curGap;curGap = 0;continue}
+                        gap = curGap
+                        pos = UInt8((i - curGap / 2) & 255)
+                        curGap = 0
+                    }else{
+                        curGap = 0
+                    }
+                }
+            }
+            if start + curGap > gap{
+                gap = start + curGap
+                pos = UInt8((start - (start + curGap) / 2) & 255)
+            }
+            itemRot = pos
+            planetLanded!.run(.rotate(toAngle: CGFloat(pos) * PI256, duration: abs(CGFloat(pos)) / 180.0).ease(.easeInEaseOut))
+            makeItem(planetLanded!, pos, .init(rawValue: UInt8(i))!)
+        }
         if thrustButton == node{
             thrustSound.run(SKAction.sequence([
                 SKAction.changeVolume(to: 0, duration: 0.2),
@@ -1534,6 +1603,21 @@ extension Play{
             l?.run(.rotate(byAngle: -amount * PI256, duration: abs(amount) / 10.0))
             l?.userData?["rot"] = itemRot
             return
+        }else if addItemIcons[0].parent != nil{
+            swiping = true
+            var x = (b.x - a.x) * 2.5
+            var correct = addItemIcons[0].position.x + x - 600
+            if correct > 0{x -= correct}else{
+                correct = addItemIcons.last!.position.x + x - (self.size.width * 2.5 - 300)
+                if correct < 0{x -= correct}
+            }
+            for n in addItemIcons{
+                n.position.x += x
+            }
+            for n in addItemPrices{
+                n.position.x += x
+            }
+            return
         }
         guard showMap else {return}
         if dPad.contains(b) || thrustButton.contains(b){return}
@@ -1614,6 +1698,7 @@ extension Play{
         }
     }
     override func release(at point: CGPoint){
+        swiping = false
         if mapPress2 != nil{
             //both
             if closest(point, mapPress1!, mapPress2!){

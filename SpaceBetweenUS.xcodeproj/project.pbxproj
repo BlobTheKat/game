@@ -11,6 +11,7 @@
 		3340582927234AD30068C811 /* Lazer.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3340582827234AD30068C811 /* Lazer.wav */; };
 		3340582B27234E6C0068C811 /* InLightSpeed.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3340582A27234E6C0068C811 /* InLightSpeed.wav */; };
 		3346242D26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 3346242C26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf */; };
+		33592F6A278065B50010EF7E /* extras in Resources */ = {isa = PBXBuildFile; fileRef = 33592F69278065B50010EF7E /* extras */; };
 		33A8791F2725EC460096A6C4 /* playerWalking.wav in Resources */ = {isa = PBXBuildFile; fileRef = 33A8791E2725EC460096A6C4 /* playerWalking.wav */; };
 		33A879212725EC4B0096A6C4 /* inshipSound.wav in Resources */ = {isa = PBXBuildFile; fileRef = 33A879202725EC4B0096A6C4 /* inshipSound.wav */; };
 		33C227AE273C679B00F83862 /* thrust.wav in Resources */ = {isa = PBXBuildFile; fileRef = 33C227AD273C679B00F83862 /* thrust.wav */; };
@@ -57,6 +58,7 @@
 		3340582827234AD30068C811 /* Lazer.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = Lazer.wav; sourceTree = "<group>"; };
 		3340582A27234E6C0068C811 /* InLightSpeed.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = InLightSpeed.wav; sourceTree = "<group>"; };
 		3346242C26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "HalogenbyPixelSurplus-Regular.otf"; sourceTree = SOURCE_ROOT; };
+		33592F69278065B50010EF7E /* extras */ = {isa = PBXFileReference; lastKnownFileType = folder; path = extras; sourceTree = "<group>"; };
 		33A8791E2725EC460096A6C4 /* playerWalking.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = playerWalking.wav; sourceTree = "<group>"; };
 		33A879202725EC4B0096A6C4 /* inshipSound.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = inshipSound.wav; sourceTree = "<group>"; };
 		33C227AD273C679B00F83862 /* thrust.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = thrust.wav; sourceTree = "<group>"; };
@@ -115,15 +117,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		3340582427234A910068C811 /* sound */ = {
+		3340582527234A9C0068C811 /* sound */ = {
 			isa = PBXGroup;
 			children = (
-				3340582527234A9C0068C811 /* soundEffect  */,
+				33592F6E2780717D0010EF7E /* soundEffect */,
 			);
 			path = sound;
 			sourceTree = "<group>";
 		};
-		3340582527234A9C0068C811 /* soundEffect  */ = {
+		33592F6E2780717D0010EF7E /* soundEffect */ = {
 			isa = PBXGroup;
 			children = (
 				33A879202725EC4B0096A6C4 /* inshipSound.wav */,
@@ -132,8 +134,9 @@
 				3340582627234ACC0068C811 /* LightSpeedOut.wav */,
 				3340582A27234E6C0068C811 /* InLightSpeed.wav */,
 				33C227AD273C679B00F83862 /* thrust.wav */,
+				33592F69278065B50010EF7E /* extras */,
 			);
-			path = "soundEffect ";
+			path = soundEffect;
 			sourceTree = "<group>";
 		};
 		343E313A276A3B9D007F753D /* Play */ = {
@@ -242,7 +245,7 @@
 			isa = PBXGroup;
 			children = (
 				34C5BC2D271ED52400997B1D /* game.entitlements */,
-				3340582427234A910068C811 /* sound */,
+				3340582527234A9C0068C811 /* sound */,
 				3346242C26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf */,
 				343E3149276A4F4F007F753D /* Shorthand.md */,
 				343E3150276B4349007F753D /* Misc */,
@@ -332,6 +335,7 @@
 				33A879212725EC4B0096A6C4 /* inshipSound.wav in Resources */,
 				33A8791F2725EC460096A6C4 /* playerWalking.wav in Resources */,
 				34EB9E5227708E71002C252B /* dishes in Resources */,
+				33592F6A278065B50010EF7E /* extras in Resources */,
 				DC9F5286269249AB00DDF0AF /* Main.storyboard in Resources */,
 				DC9F5288269249AC00DDF0AF /* Assets.xcassets in Resources */,
 				34EB9E4E27708E09002C252B /* satellites in Resources */,

@@ -949,7 +949,7 @@ let msgs = {
 		let item = planet.data.items[x]
 		if(!item)return res.code(ERR.SKIPBUILD).send()
 		let price = Math.ceil((item.finish - Math.floor(Date.now() / 1000)) / 300)
-		if(this.data.gems < price)return res.code(ERR.SKIPBUILD).send()
+		if(this.data.gems < price || price < 1)return res.code(ERR.SKIPBUILD).send()
 		this.data.gems -= price
 		planet.collect()
 		item.finish = 1 //skip

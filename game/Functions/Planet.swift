@@ -32,6 +32,9 @@ class Planet: Object{
     var emitf = 0.1
 
     var ownedState: OwnedState = .unowned
+    
+    //playing impact sound
+     var impactSound = false
 
     var collectibles = Set<SKSpriteNode>()
     func cook(_ point: CGPoint, to radius: CGFloat = .nan) -> CGVector{
@@ -45,14 +48,15 @@ class Planet: Object{
         y *= d
         return CGVector(dx: x, dy: y)
     }
-    func populate(with item: ColonizeItem, rot: UInt8, node: SKSpriteNode = SKSpriteNode()) -> SKSpriteNode{
+    func populate(with item: ColonizeItem, rot r: UInt8, node: SKSpriteNode = SKSpriteNode()) -> SKSpriteNode{
         if node.userData == nil{node.userData = NSMutableDictionary(capacity: 2)}
         let colo = (node.userData!["type"] as? ColonizeItem)
-        if colo?.type == item.type && colo?.lvl == item.lvl && colo?.capacity == item.capacity && colo?.upgradeEnd == item.upgradeEnd && node.userData?["rot"] as? UInt8 == rot{return node}
+        let oldr = node.userData?["rot"] as? UInt8
+        if colo?.type == item.type && colo?.lvl == item.lvl && colo?.capacity == item.capacity && colo?.upgradeEnd == item.upgradeEnd && oldr == r{return node}
         node.userData!["type"] = item
-        node.userData!["rot"] = rot
+        node.userData!["rot"] = r
         if let parent = parent as? Play{
-            if rot == parent.itemRot && self == parent.planetLanded{
+            if r == parent.itemRot && self == parent.planetLanded{
                 DispatchQueue.main.async(execute: parent.renderUpgradeUI)
             }
         }
@@ -60,7 +64,7 @@ class Planet: Object{
         node.removeAllChildren()
         
         let id = Int(item.type.rawValue)
-        let rot = CGFloat(rot) * PI256
+        let rot = CGFloat(r) * PI256
         node.setScale(1)
         node.texture = item.lvl > 0 ? SKTexture(imageNamed: "\(coloNames[id])\(item.lvl)") : SKTexture(imageNamed: "blank")
         node.size = node.texture!.size()
@@ -73,7 +77,16 @@ class Planet: Object{
             n.position.y = (self.radius * 2) - 50 + node.size.height / 5 + (shooters[Int(item.lvl)]["_head"]!.number!)
             
         }
-        if item.upgradeEnd > 0{
+        if item.upgradeEnd != 0{
+            if colo?.upgradeEnd ?? 1 == 0 && r == oldr, let p = parent as? Play{
+                //start
+                let x = self.position.x + -sin(self.zRotation - rot) * (self.radius / self.xScale + 10)
+                let y = self.position.y + cos(self.zRotation - rot) * (self.radius / self.yScale + 10)
+                for i in boom(CGPoint(x: x, y: y), (r: 0, g: 0.2, b: 1)){
+                    p.particles.append(i)
+                    p.addChild(i)
+                }
+            }
            let n = SKSpriteNode(imageNamed: "upgradingoverlay")
            node.addChild(n)
            n.anchorPoint = CGPoint(x: 0.5, y: 0)
@@ -85,6 +98,14 @@ class Planet: Object{
             node.run(.repeatForever(SKAction.rotate(byAngle: self.angularVelocity + 0.05, duration: 1)))
         }else if parent as? Play != nil, item.type == .satellite{
             node.anchorPoint.y = (-170 - self.radius) / node.size.height - 2
+        }
+        if item.upgradeEnd == 0 && colo?.upgradeEnd ?? 0 != 0 && r == oldr, let p = parent as? Play{
+            let x = self.position.x + -sin(self.zRotation - rot) * (self.radius / self.xScale + 10)
+            let y = self.position.y + cos(self.zRotation - rot) * (self.radius / self.yScale + 10)
+            for i in boom(CGPoint(x: x, y: y), (r: 0.2, g: 1, b: 0)){
+                p.particles.append(i)
+                p.addChild(i)
+            }
         }
         node.zRotation = -rot
         if node.parent == nil { self.addChild(node) }
@@ -105,7 +126,6 @@ class Planet: Object{
         let d2 = (self.radius + random(min: 30, max: 120)) / (self.radius - 50) - 1
         n.run(.sequence([.move(by: CGVector(dx: p.dx * d2, dy: p.dy * d2), duration: 1.5).ease({t in return (2-t)*t}),.wait(forDuration: 18),.fadeOut(withDuration: 1),.run{n.removeFromParent();self.collectibles.remove(n)}]))
         collectibles.insert(n)
-        angry = 1800
     }
     override func update() {}
     func update(_ node: SKSpriteNode?){
@@ -166,6 +186,16 @@ class Planet: Object{
                     parent.addChild(ray)
                     parent.dealDamage(item["damage"]?.number ?? 1)
                     let _ = timeout(0.2){ray.removeFromParent()}
+                    //parent.run(.playSoundFileNamed("extras/lightning\(Int(random(min: 1, max: 4))).wav", waitForCompletion: false))
+                    let lightStrike = SKAudioNode(fileNamed: "extras/lightning\(Int(random(min: 1, max: 4))).wav")
+                    lightStrike.run(.changePlaybackRate(to: 1.5, duration: 0))
+                    lightStrike.autoplayLooped = false
+                    parent.addChild(lightStrike)
+                    lightStrike.run(.play())
+                    let _ = timeout(1){
+                        lightStrike.removeFromParent()
+                    }
+                    
                     break
                 default:
                     break
@@ -260,7 +290,8 @@ class Planet: Object{
             n.angularVelocity = 0
             if n == (n.parent as? Play)?.ship{n.zRotation = atan2(y, x) - .pi/2}
             n.landed = true
-        }else if d <= r + radius && !n.asteroid && !deathzone && !superhot{
+        }
+        if d <= r + radius && !n.asteroid && !deathzone && !superhot{
             if n == (n.parent as? Play)?.ship{
                 if n.landed{
                     n.zRotation += angularVelocity
@@ -274,7 +305,7 @@ class Planet: Object{
             n.landed = true
             let parent = parent as? Play
             if parent != nil && n == parent!.ship{
-                
+                //WHEN THE PLAYER HAS LANDED ON A PLANET
                 let circle = parent!.planetsMap[parent!.planets.firstIndex(of: self)!]
                 circle.fillColor = UIColor.green
                 parent?.playerArrow.removeFromParent()
@@ -284,11 +315,13 @@ class Planet: Object{
                     parent!.navArrow.texture = SKTexture(imageNamed: "navArrow2")
                     parent!.navBG.addChild(parent!.coloIcon)
                 }
-                
                 if parent?.planetTouched == nil{parent?.planetTouched = self;parent?.landed()}
                 else{parent?.planetTouched = self}
             }
         }else{
+            
+           
+           
             let parent = parent as? Play
             if parent != nil && n == parent!.ship{
                 
@@ -343,7 +376,7 @@ class Planet: Object{
                     let y = i.position.y - n.position.y
                     if x * x + y * y < r{
                         //collect
-                        lastSentEnergy += 10
+                        lastSentEnergy += random(min: 10, max: 20)
                         self.collectibles.remove(i)
                         i.run(.fadeOut(withDuration: 0.4).ease(.easeOut))
                         i.run(.sequence([.scale(to: 1.5, duration: 0.7),.run{i.removeFromParent()}]))

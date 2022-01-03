@@ -203,6 +203,7 @@ class Object: SKSpriteNode, DataCodable{
                     planet.emitq += planet.emitf * 2
                     while planet.emitq > 1{
                         planet.emit(randDir(planet.radius - 50))
+                        if self == parent.ship{planet.angry = 1800}
                         planet.emitq -= 1
                         let cam = parent.cam
                         vibrateCamera(camera: cam, amount: 5)

@@ -8,6 +8,16 @@
 import Foundation
 import SpriteKit
 
+func boom(_ pos: CGPoint, _ end: Color) -> [Particle]{
+    var particleArr = [Particle]()
+    for i in 1...20{
+        let dir = dir(CGFloat(i) * PI20, random(min: 60, max: 100))
+        let a = Particle[State(color: (r: 1, g: 1, b: 1), size: CGSize(width: 6, height: 6), zRot: 0, position: CGPoint(x: pos.x, y: pos.y), alpha: 1), State(color: end, size: CGSize(width: 12, height: 12), zRot: 0, position: CGPoint(x: pos.x + dir.dx, y: pos.y + dir.dy), alpha: 0, delay: 1)]
+        particleArr.append(a)
+    }
+    return particleArr
+}
+
 let appear = { (_ pos: CGPoint) -> [Particle] in
     var particleArr = [Particle]()
     for i in 1...20{
