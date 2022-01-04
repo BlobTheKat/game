@@ -176,6 +176,8 @@ extension Play{
         moveItemIcon.size = CGSize(width: 50, height: 50)
         addItemIcon.position = pos(mx: 0.5, my: 0, x: -170, y: 50)
         addItemIcon.size = CGSize(width: 50, height: 50)
+        moveItemIcon.zPosition = 10
+        addItemIcon.zPosition = 10
         
         tapToStart.removeAction(forKey: "dotdotdot")
         //setting tapToStart label relative to camera (static)
@@ -300,7 +302,9 @@ extension Play{
     var upgradeStats: (price: String, time: String, powers: [(name: String, old: Double, new: Double, max: Double)])?{
         guard let item = planetLanded?.items[Int(itemRot)] else {return nil}
         let id = Int(item.type.rawValue)
-        
+        var lvl = 0
+        for itm in planetLanded!.items{if itm?.type == .camp{lvl = Int(itm!.lvl);break}}
+        if item.lvl > lvl - Int(items[Int(item.type.rawValue)][0]["available"]?.number ?? 1){return nil}
         if item.upgradeEnd > 0 || items[id].count < item.lvl + 2{return nil}
         let old = items[id][Int(item.lvl)]
         let new = items[id][Int(item.lvl)+1]
@@ -308,8 +312,7 @@ extension Play{
         var pw = [(name: String, old: Double, new: Double, max: Double)]()
         for (k, v) in new{
             if k[0] == "_" || k == "price" || k == "price2" || k == "time"{continue}
-            if old[k] == nil{continue}
-            pw.append((name: k, old: old[k]!.number!, new: v.number!, max: (max[k] ?? v).number!))
+            pw.append((name: k, old: old[k]?.number ?? 0, new: v.number!, max: (max[k] ?? v).number!))
         }
         return (price: formatPrice(new), time: formatTime(Int(new["time"]!.number!)), powers: pw.sorted(by: {(a,b) in a.name.count < b.name.count}))
     }
@@ -768,7 +771,7 @@ extension Play{
         guard let (type: id, lvl: lvl, capacity: _, upgradeEnd: u) = planetLanded!.items[Int(itemRot)] else {return}
         guard let (price: price, time: time, powers: powers) = upgradeStats else {
             
-            if u > 0{
+            if u > 1{
                 var time = Int(u) - Int(NSDate().timeIntervalSince1970)
                 upgradeTime.text = "Time: \(formatTime(time))"
                 upgradeTime.fontSize = 120
@@ -787,6 +790,30 @@ extension Play{
                     self.upgradeTime.text = "Time: \(formatTime(time))"
                     
                 })
+            }else if u == 1{
+                upgradeTime.text = "Item Destroyed!"
+                upgradeTime.fontSize = 120
+                buildBG.addChild(upgradeTime)
+                upgradeTime.position = pos(mx: 1.5, my: -0.5)
+                upgradeTime.horizontalAlignmentMode = .center
+                upgradePrice.fontSize = 80
+                buildBG.addChild(upgradePrice)
+                upgradePrice.position = pos(mx: 1.5, my: -0.8)
+                upgradePrice.horizontalAlignmentMode = .center
+                upgradePrice.text = "Repair (\(formatPrice(items[Int(id.rawValue)][Int(lvl)], 1.5)))"
+                upgradePrice.fontColor = .orange
+            }else{
+                upgradeTime.text = "Level \(lvl)"
+                upgradeTime.fontSize = 120
+                buildBG.addChild(upgradeTime)
+                upgradeTime.position = pos(mx: 1.5, my: -0.5)
+                upgradeTime.horizontalAlignmentMode = .center
+                upgradePrice.fontSize = 80
+                buildBG.addChild(upgradePrice)
+                upgradePrice.position = pos(mx: 1.5, my: -0.8)
+                upgradePrice.horizontalAlignmentMode = .center
+                upgradePrice.text = "Upgrade camp to unlock more levels"
+                upgradePrice.fontColor = .white
             }
             return
         }
@@ -807,6 +834,9 @@ extension Play{
         upgradeNew.position = pos(mx: 1.3, my: -0.3)
         upgradeOld2.position = pos(mx: 0.6, my: -0.65)
         upgradeNew2.position = pos(mx: 1.3, my: -0.65)
+        let avg = upgradeOld.size.height + upgradeNew.size.height
+        upgradeOld.setScale(300 / avg)
+        upgradeNew.setScale(300 / avg)
         upgradeOld2.fontSize = 60
         upgradeNew2.fontSize = 60
         upgradeOld2.text = "Level \(lvl)"
@@ -815,8 +845,6 @@ extension Play{
         upgradeArrow.setScale(0.3)
         upgradebtn.position = pos(mx: 0.95, my: -1.07)
         upgradebtn.setScale(0.7)
-        upgradeOld.setScale(1.5)
-        upgradeNew.setScale(1.5)
         buildBG.addChild(upgradeArrow)
         buildBG.addChild(upgradeOld)
         buildBG.addChild(upgradeNew)
@@ -826,6 +854,22 @@ extension Play{
         var i = 0
         var oldOutlineY = -125.0
         for (name: name, old: old, new: new, max: max) in powers{
+            if name == "unlocksitem"{
+                //unlocks item
+                let unlockslabel = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+                let unlocksIcon = SKSpriteNode(imageNamed: coloNames[Int(new)]+"1")
+                unlockslabel.text = "Unlocks:"
+                unlockslabel.fontSize = 60
+                unlockslabel.position = pos(mx: 2.5, my: 0, x: -300, y: oldOutlineY + 30)
+                unlocksIcon.position = pos(mx: 2.5, my: 0, x: -300, y: oldOutlineY - 110)
+                unlocksIcon.setScale(200 / unlocksIcon.size.height)
+                upgradeNodes.append(unlockslabel)
+                upgradeNodes.append(unlocksIcon)
+                buildBG.addChild(unlockslabel)
+                buildBG.addChild(unlocksIcon)
+                oldOutlineY -= 400
+                continue
+            }
             let progressLabel2 = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
             let progress2 = SKSpriteNode(imageNamed: "progress")
             let progress3 = SKSpriteNode(imageNamed: "progressgreen")
@@ -1054,7 +1098,7 @@ extension Play{
             planetLanded!.zRotation = 0
             for n in planetLanded!.children{
                 let itm = (n.userData?["type"] as? ColonizeItem)
-                if n.name == nil && itm?.type == .satellite && itm?.upgradeEnd == 0{
+                if n.name == nil && itm?.type == .satellite && itm?.upgradeEnd ?? 0 < 2{
                     (n as? SKSpriteNode)?.anchorPoint.y += 2
                     n.removeAllActions()
                     n.zRotation = -CGFloat(n.userData?["rot"] as! UInt8) * PI256
@@ -1075,7 +1119,7 @@ extension Play{
             addItemIcon.removeFromParent()
             for n in planetLanded!.children{
                 let itm = (n.userData?["type"] as? ColonizeItem)
-                if n.name == nil && itm?.type == .satellite && itm?.upgradeEnd == 0{
+                if n.name == nil && itm?.type == .satellite && itm?.upgradeEnd ?? 0 < 2{
                     n.run(.repeatForever(SKAction.rotate(byAngle: planetLanded!.angularVelocity + 0.05, duration: 1)))
                     (n as? SKSpriteNode)?.anchorPoint.y -= 2
                 }
@@ -1101,13 +1145,26 @@ extension Play{
         case addItemIcon:
             hideUpgradeUI()
             //render additem ui
+            var used = [Int8](repeating: 0, count: 128)
+            var lvl = 0
+            for itm in planetLanded!.items{
+                guard itm != nil else {continue}
+                used[Int(itm!.type.rawValue)] += 1
+                if itm!.type == .camp{lvl = Int(itm!.lvl)}
+            }
             for i in 0...addItemIcons.count-1{
                 addItemIcons[i].position = CGPoint(x: 600 + CGFloat(i) * 400, y: -220)
                 addItemPrices[i].position = addItemIcons[i].position
                 addItemPrices[i].position.y -= 250
                 addItemPrices[i].fontSize = 60
+                if used[i+1] > lvl - Int(items[i+1][0]["available"]?.number ?? 1){
+                    addItemIcons[i].alpha = 0.5
+                }else{
+                    addItemIcons[i].alpha = 1
+                    buildBG.addChild(addItemPrices[i])
+                }
                 buildBG.addChild(addItemIcons[i])
-                buildBG.addChild(addItemPrices[i])
+                
             }
             break
         case backIcon:
@@ -1165,20 +1222,38 @@ extension Play{
             hideUpgradeUI()
             break
         case upgradePrice:
-            if upgradePrice.fontColor == .white{break}
-            //skip time
-            guard let end = planetLanded?.items[Int(itemRot)]?.upgradeEnd else {break}
-            let price = ceil(Double(Int(end) - Int(NSDate().timeIntervalSince1970)) / 300)
-            if Double(gemCount) < price{
-                cam.run(SKAction.sequence([
-                    .run{ self.DisplayWARNING("not enough gems",.warning,false)},
-                    .wait(forDuration: 2),
-                    .run{self.cam.removeAction(forKey: "warningAlpha")},
-                    .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
-                ]))
-                break
+            if upgradePrice.fontColor == .green{
+                //skip time
+                guard let end = planetLanded?.items[Int(itemRot)]?.upgradeEnd else {break}
+                guard end > 1 else {return}
+                let price = ceil(Double(Int(end) - Int(NSDate().timeIntervalSince1970)) / 300)
+                if Double(gemCount) < price{
+                    cam.run(SKAction.sequence([
+                        .run{ self.DisplayWARNING("not enough gems",.warning,false)},
+                        .wait(forDuration: 2),
+                        .run{self.cam.removeAction(forKey: "warningAlpha")},
+                        .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
+                    ]))
+                    break
+                }
+                skipBuild(planetLanded!, itemRot)
+            }else if upgradePrice.fontColor == .orange{
+                //repair
+                guard let item = planetLanded?.items[Int(itemRot)] else {break}
+                let price = (items[Int(item.type.rawValue)][Int(item.lvl)]["price"]?.number ?? 0) * 1.5
+                let price2 = (items[Int(item.type.rawValue)][Int(item.lvl)]["price2"]?.number ?? 0) * 1.5
+                if energyAmount < price || Double(researchAmount) < price2{
+                    cam.run(SKAction.sequence([
+                        .run{ self.DisplayWARNING("not enough energy",.warning,false)},
+                        .wait(forDuration: 2),
+                        .run{self.cam.removeAction(forKey: "warningAlpha")},
+                        .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
+                    ]))
+                    break
+                }
+                repair(planetLanded!, itemRot)
             }
-            skipBuild(planetLanded!, itemRot)
+            
             break
         case coloArrow:
             var a: CGFloat = 0
@@ -1387,6 +1462,15 @@ extension Play{
     
     override func nodeUp(_ node: SKNode, at _: CGPoint) {
         if !swiping && node.parent == buildBG, let i = addItemIcons.firstIndex(of: node as? SKSpriteNode ?? ship){
+            guard node.alpha == 1 else{
+                cam.run(SKAction.sequence([
+                    .run{ self.DisplayWARNING("upgrade camp to build more",.warning,false)},
+                    .wait(forDuration: 2),
+                    .run{self.cam.removeAction(forKey: "warningAlpha")},
+                    .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
+                ]))
+                return
+            }
             let price = items[i][1]["price"]?.number ?? 0
             let price2 = Float(items[i][1]["price2"]?.number ?? 0)
             if energyAmount < price || researchAmount < price2{
@@ -1422,7 +1506,7 @@ extension Play{
             }
             itemRot = pos
             planetLanded!.run(.rotate(toAngle: CGFloat(pos) * PI256, duration: abs(CGFloat(pos)) / 180.0).ease(.easeInEaseOut))
-            makeItem(planetLanded!, pos, .init(rawValue: UInt8(i))!)
+            makeItem(planetLanded!, pos, .init(rawValue: UInt8(i+1))!)
         }
         if thrustButton == node{
             thrustSound.run(SKAction.sequence([

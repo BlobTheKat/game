@@ -1,11 +1,11 @@
+path: /townhalls
+
 path: /drills
 
 path: /shooters
 
-path: /dishes
-
 path: /satellites
 
-path: /electro
+path: /dishes
 
-path: /townhalls
+path: /electro

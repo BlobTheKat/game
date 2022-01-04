@@ -394,6 +394,15 @@ extension Play{
         critical(dat)
     }
     
+    func repair(_ planet: Planet, _ rot: UInt8){
+        
+        var dat = Data()
+        dat.write(critid(26))
+        dat.write(UInt16(planets.firstIndex(of: planet)!))
+        dat.write(UInt8(rot))
+        critical(dat)
+    }
+    
     //USED FOR COLLECTING ALL THE ITEMS FROM PLANET
     func collectFrom(_ planet: Planet){
         

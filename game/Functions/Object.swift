@@ -198,12 +198,12 @@ class Object: SKSpriteNode, DataCodable{
                 }
                 let sdx = parent.ship.position.x - (planet?.position.x ?? .infinity)
                 let sdy = parent.ship.position.y - (planet?.position.y ?? .infinity)
-                if let planet = planet, !planet.superhot && sdx * sdx + sdy * sdy < planet.radius * planet.radius * 16{
+                if let planet = planet, !planet.superhot && sdx * sdx + sdy * sdy < planet.radius * planet.radius * 16 && planet.ownedState != .yours{
                     //planet was shot, it's not a star and we're in range
                     planet.emitq += planet.emitf * 2
                     while planet.emitq > 1{
                         planet.emit(randDir(planet.radius - 50))
-                        if self == parent.ship{planet.angry = 1800}
+                        if self == parent.ship{planet.angry = 1800;parent.planetShot = planet}
                         planet.emitq -= 1
                         let cam = parent.cam
                         vibrateCamera(camera: cam, amount: 5)

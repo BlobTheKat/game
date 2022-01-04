@@ -1,3 +1,4 @@
+available: -1 #basically never
 
 price: 0
 time: 0
@@ -14,10 +15,12 @@ storage: 20k
 price: 18k
 time: 5h
 storage: 100k
+unlocksitem: 3
 
 price: 85k
 time: 14h
 storage: 500k
+unlocksitem: 4
 
 price: 400k
 time: 1d
@@ -26,6 +29,7 @@ storage: 800k
 price: 750k
 time: 3d
 storage: 1M
+unlocksitem: 5
 
 price: 900k
 time: 5d

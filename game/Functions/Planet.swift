@@ -48,13 +48,14 @@ class Planet: Object{
         y *= d
         return CGVector(dx: x, dy: y)
     }
-    func populate(with item: ColonizeItem, rot r: UInt8, node: SKSpriteNode = SKSpriteNode()) -> SKSpriteNode{
+    func populate(with item: ColonizeItem, rot r: UInt8, node: SKSpriteNode = SKSpriteNode(), destroyed: Bool = false){
         if node.userData == nil{node.userData = NSMutableDictionary(capacity: 2)}
         let colo = (node.userData!["type"] as? ColonizeItem)
         let oldr = node.userData?["rot"] as? UInt8
-        if colo?.type == item.type && colo?.lvl == item.lvl && colo?.capacity == item.capacity && colo?.upgradeEnd == item.upgradeEnd && oldr == r{return node}
+        if colo?.type == item.type && colo?.lvl == item.lvl && colo?.capacity == item.capacity && colo?.upgradeEnd == item.upgradeEnd && oldr == r && node.userData?["d"] as? Bool == destroyed{return}
         node.userData!["type"] = item
         node.userData!["rot"] = r
+        node.userData!["d"] = destroyed
         if let parent = parent as? Play{
             if r == parent.itemRot && self == parent.planetLanded{
                 DispatchQueue.main.async(execute: parent.renderUpgradeUI)
@@ -66,18 +67,17 @@ class Planet: Object{
         let id = Int(item.type.rawValue)
         let rot = CGFloat(r) * PI256
         node.setScale(1)
-        node.texture = item.lvl > 0 ? SKTexture(imageNamed: "\(coloNames[id])\(item.lvl)") : SKTexture(imageNamed: "blank")
+        node.texture = item.lvl > 0 ? SKTexture(imageNamed: "\(coloNames[id])\(destroyed ? 0 : item.lvl)") : SKTexture(imageNamed: "blank")
         node.size = node.texture!.size()
         node.setScale(0.5)
         node.anchorPoint = CGPoint(x: 0.5, y: (10 - self.radius) / node.size.height)
-        if item.type == .shooter && item.upgradeEnd == 0{
+        if item.type == .shooter && item.upgradeEnd == 0 && !destroyed{
             let n = SKSpriteNode(imageNamed: "head\(item.lvl)")
             node.addChild(n)
             n.anchorPoint = CGPoint(x: 0.5, y: 0)
             n.position.y = (self.radius * 2) - 50 + node.size.height / 5 + (shooters[Int(item.lvl)]["_head"]!.number!)
-            
         }
-        if item.upgradeEnd != 0{
+        if item.upgradeEnd > 1{
             if colo?.upgradeEnd ?? 1 == 0 && r == oldr, let p = parent as? Play{
                 //start
                 let x = self.position.x + -sin(self.zRotation - rot) * (self.radius / self.xScale + 10)
@@ -93,13 +93,13 @@ class Planet: Object{
            n.position.y = self.radius * 2 - 20
            n.zPosition = 10
            n.setScale(node.size.width / n.size.width * 2)
-        }else if let p = parent as? Play, item.type == .satellite && !(p.planetLanded == self && p.presence){
+        }else if let p = parent as? Play, item.type == .satellite && !(p.planetLanded == self && p.presence) && !destroyed{
             node.anchorPoint.y = (-170 - self.radius) / node.size.height
             node.run(.repeatForever(SKAction.rotate(byAngle: self.angularVelocity + 0.05, duration: 1)))
-        }else if parent as? Play != nil, item.type == .satellite{
-            node.anchorPoint.y = (-170 - self.radius) / node.size.height - 2
+        }else if parent as? Play != nil, item.type == .satellite && !destroyed{
+            node.anchorPoint.y = (-170 - self.radius) / node.size.height + 2
         }
-        if item.upgradeEnd == 0 && colo?.upgradeEnd ?? 0 != 0 && r == oldr, let p = parent as? Play{
+        if item.upgradeEnd == 0 && colo?.upgradeEnd ?? 0 != 0 && r == oldr && !destroyed, let p = parent as? Play{
             let x = self.position.x + -sin(self.zRotation - rot) * (self.radius / self.xScale + 10)
             let y = self.position.y + cos(self.zRotation - rot) * (self.radius / self.yScale + 10)
             for i in boom(CGPoint(x: x, y: y), (r: 0.2, g: 1, b: 0)){
@@ -109,7 +109,6 @@ class Planet: Object{
         }
         node.zRotation = -rot
         if node.parent == nil { self.addChild(node) }
-        return node
     }
     func emit(_ p: CGVector){
         //we can make a particle node that will be added to the planet
@@ -398,18 +397,40 @@ class Planet: Object{
     var persec2: CGFloat = 0
     var capacity2 = 0
     var inbank2 = 0
+    var health: CGFloat = 1
+    let healthNode1 = SKShapeNode(rectOf: CGSize(width: 64, height: 3))
+    let healthNode2 = SKShapeNode(rectOf: CGSize(width: 64, height: 3))
     override func decode(data: inout Data) {
         //decode things on the planet
         self.last = Double(data.readunsafe() as UInt32)
+        self.health = CGFloat(data.readunsafe() as UInt8) / 255
+        //update health
+        if health >= 1{healthNode1.removeFromParent();healthNode2.removeFromParent()}else{
+            if healthNode1.parent == nil{
+                parent?.addChild(healthNode1)
+                parent?.addChild(healthNode2)
+                healthNode1.position = position.add(y: 50)
+                healthNode1.zPosition = self.zPosition + 1
+                healthNode2.zPosition = self.zPosition + 1
+                healthNode1.lineWidth = 0
+                healthNode2.lineWidth = 0
+                healthNode1.fillColor = .gray
+            }
+            healthNode2.position = position.add(x: -32 + health * 32, y: 50)
+            healthNode2.xScale = health
+            healthNode2.fillColor = UIColor(red: (2-health*2).clamp(0, 1), green: (health*2).clamp(0, 1), blue: 0, alpha: 1)
+        }
         self.inbank = Int(data.readunsafe() as Float)
         self.inbank2 = Int(data.readunsafe() as Float)
         self.namelabel?.removeFromParent()
         self.namelabel = SKLabelNode(text: "...")
-        (parent as? Play)?.label(node: self.namelabel!, data.read(lentype: UInt8.self) ?? "", pos: CGPoint(x: position.x, y: position.y - 15), size: 30, color: .green, font: "Menlo", zPos: 3)
+        (parent as? Play)?.label(node: self.namelabel!, data.read(lentype: UInt8.self) ?? "", pos: position.add(y: -15), size: 30, color: .green, font: "Menlo", zPos: 3)
         let bits = data.readunsafe() as UInt8
         let ownedState = OwnedState(rawValue: bits & 192)!
         if self.ownedState != ownedState{
+            if self.ownedState == .owned && ownedState == .yours{boom2(self.position, self.radius)}
             self.ownedState = ownedState
+            if self.ownedState == .yours{self.angry = 0}
             if let parent = parent as? Play{
                 parent.editColoIcon.removeFromParent()
                 parent.collectedLabel.removeFromParent()
@@ -450,8 +471,9 @@ class Planet: Object{
             if id > 127{
                 //ITS UPGRADING
                 item.upgradeEnd = data.readunsafe() as UInt32
+                if item.upgradeEnd == 0{item.upgradeEnd = 1}
             }
-            let _ = self.populate(with: item, rot: rot, node: self.children.count > child_i ? self.children[child_i] as! SKSpriteNode : SKSpriteNode())
+            self.populate(with: item, rot: rot, node: self.children.count > child_i ? self.children[child_i] as! SKSpriteNode : SKSpriteNode(), destroyed: id > 127 && item.upgradeEnd == 1)
             self.items[Int(rot)] = item
             if item.type == .drill && id < 128{
                 self.persec += drills[Int(item.lvl)]["persec"]?.number ?? 0
@@ -468,7 +490,6 @@ class Planet: Object{
             if child.name == nil{child.removeFromParent()}
             else {child_i += 1}
         }
-        
     }
     override func encode(data: inout Data) {
         //not needed

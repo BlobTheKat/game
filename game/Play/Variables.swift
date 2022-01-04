@@ -63,6 +63,7 @@ class Play: SKScene{
     var coolingDown = false
     //Which object (if any) was shot since last packet?
     var shotObj: Object? = nil
+    var planetShot: Planet? = nil
     //Is using shoot right now?
     var usingConstantLazer = false
     //List of tracked objects
@@ -185,7 +186,7 @@ class Play: SKScene{
     //GameCenter prompt
     var gkview: UIViewController? = nil
     let addItemIcons: [SKSpriteNode] = [SKSpriteNode(imageNamed: "drillIcon"),SKSpriteNode(imageNamed: "shooterIcon"),SKSpriteNode(imageNamed: "dishIcon"),SKSpriteNode(imageNamed: "satelliteIcon"), SKSpriteNode(imageNamed: "electroIcon")]
-    let addItemPrices: [SKLabelNode] = items.map{a in
+    let addItemPrices: [SKLabelNode] = items.dropFirst().map{a in
         let n = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
         if a.count < 2{
             n.text = "Unavailable"

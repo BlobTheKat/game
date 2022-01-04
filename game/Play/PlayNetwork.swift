@@ -161,7 +161,9 @@ extension Play{
                 hits.removeLast(hits.count - 7)
             }
             if shotObj != nil && objects.firstIndex(of: shotObj!) == nil{shotObj = nil}
-            data.write(UInt8(hits.count + (shotObj != nil ? 8 : 0) + min(needsNames.count, 15) * 16))
+            if planetShot?.angry ?? 0 < 1770{planetShot = nil} //resend for half a second
+            let a = min(needsNames.count, 7) * 16 + Int(planetShot != nil ? 128 : 0)
+            data.write(UInt8(hits.count + Int(shotObj != nil ? 8 : 0) + a))
             if !usingConstantLazer || coolingDown{usedShoot = false}
             newShoot = false
             for hit in hits{
@@ -171,9 +173,10 @@ extension Play{
                 let i = objects.firstIndex(of: shotObj!) ?? 0
                 data.write(UInt32(i))
             }
-            for i in needsNames.prefix(15){
+            for i in needsNames.prefix(7){
                 data.write(UInt32(i))
             }
+            if planetShot != nil{data.write(UInt16(planets.firstIndex(of: planetShot!) ?? 65535))}
             data.write(Int32(lastSentEnergy))
             energyAmount += lastSentEnergy
             lastSentEnergy = 0
@@ -344,6 +347,9 @@ extension Play{
             didMake(true)
         }else if code == 24{
             gemCount = data.readunsafe()
+        }else if code == 27{
+            energyAmount = data.readunsafe()
+            researchAmount = data.readunsafe()
         }
     }
     

@@ -73,6 +73,7 @@ try{verify = require("gamecenter-identity-verifier").verify}catch(e){
 	console.log("\x1b[31m[Error]\x1b[37m To run this server, you need to install gamcecenter-identity-verifier. Type this in the bash shell: \x1b[m\x1b[34mnpm i gamecenter-identity-verifier\x1b[m")
 	process.exit(1)
 }
+let NOW = Date.now()
 let clients = new Map()
 let clientKeys = []
 let clientI = 0
@@ -304,6 +305,7 @@ if(!meta || xy){
 			sector.h = h
 			sector.w2 = w / 2
 			sector.h2 = h / 2
+			sector.time = 0
 			let len = dat.readUint32LE(i + 4)
 			i += dat.readUint16LE(i) + dat.readUint16LE(i + 2) + 8
 			let arr = []
@@ -369,6 +371,7 @@ if(!meta || xy){
 		sector.y = meta.y + meta.h / 2
 		sector.w2 = sector.w / 2
 		sector.h2 = sector.h / 2
+		sector.time = 0
 		let data = readfile(meta.path.replace(/^\//,""))
 		data.forEach(function(item){
 			if(item.id)sector.objects.push(new Asteroid(item))
@@ -393,6 +396,7 @@ function tick(sector){
 		o.z += o.dz
 	}
 	sector.time++
+	NOW = Date.now()
 }
 
 class Planet{
@@ -407,16 +411,17 @@ class Planet{
 		this.filename = "pdata/" + (sector.x + this.x) + "_" + (sector.y + this.y) + ".json"
 		let dat = null
 		if(dict.resource)try{dat = JSON.parse(fs.readFileSync(this.filename))}catch(e){dat = null}
-		this.resource = dict.resource
+		this.resource = dict.resource ? dict.resource.split(":") : []
 		this.data = dat
 	}
 	toBuf(buf, id, pid){
 		if(!this.data)return
 		let it = this.data.items
 		buf.short(id)
-		buf.int(this.data.last || (this.data.last = Date.now()/1000 - 6))
-		buf.float(this.inbank || 0)
-		buf.float(this.inbank2 || 0)
+		buf.int(this.data.last || (this.data.last = NOW/1000 - 60))
+		buf.byte((this.data.health || 4095) >> 4)
+		buf.float(this.data.inbank || 0)
+		buf.float(this.data.inbank2 || 0)
 		buf.byte((this.data.name || "").length)
 		buf.buffer(Buffer.from(this.data.name || ""))
 		let k = Object.keys(it)
@@ -424,17 +429,18 @@ class Planet{
 		buf.byte((this.data.owner ? 128 : 0) + ((!this.data.owner && !this.superhot) || this.data.owner == pid ? 64 : 0))
 		buf.byte(k.length - 1)
 		for(var i of k){
-			if(it[i].finish * 1000 < Date.now()){
+			if(it[i].finish * 1000 < NOW){
 				this.collect()
 				it[i].finish = undefined
 				it[i].lvl++
+				if(it[i].id == 0)this.data.camplvl++
 			}
 			buf.byte((it[i].finish ? 128 : 0) + it[i].id)
 			buf.byte(it[i].lvl)
 			buf.byte(it[i].cap)
 			buf.byte(i)
-			if(it[i].finish){
-				buf.int(it[i].finish)
+			if(it[i].finish || it[i].id > 127){
+				buf.int(it[i].finish || 0)
 			}
 		}
 	}
@@ -444,18 +450,18 @@ class Planet{
 			let itm = this.data.items[i]
 			if(itm.finish)continue
 				switch(itm.id){
-						case 0:
-						earned += ITEMS[0][itm.lvl].persec || 0
-						cap += ITEMS[0][itm.lvl].storage || 0
+						case 1:
+						earned += ITEMS[1][itm.lvl].persec || 0
+						cap += ITEMS[1][itm.lvl].storage || 0
 						break
-						case 2:
-						earned2 += ITEMS[2][itm.lvl].persec || 0
-						cap2 += ITEMS[2][itm.lvl].storage || 0
+						case 3:
+						earned2 += ITEMS[3][itm.lvl].persec || 0
+						cap2 += ITEMS[3][itm.lvl].storage || 0
 						break
 				}
 		}
-		this.data.last = this.data.last || Math.floor(Date.now()/1000 - 6)
-		let diff = Math.floor(Date.now()/1000 - this.data.last)
+		this.data.last = this.data.last || Math.floor(NOW/1000 - 60)
+		let diff = Math.floor(NOW/1000 - this.data.last)
 		let shouldEarn = earned2 * diff
 		diff -= (shouldEarn%1)/earned
 		this.data.last += diff
@@ -598,7 +604,7 @@ class ClientData{
 		this.range = w * w
 	}
 	validate(buffer){
-		//let delay = -0.001 * FPS * (this.u - (this.u=Date.now()))
+		//let delay = -0.001 * FPS * (this.u - (this.u=NOW))
 		let x = buffer.float()
 		let y = buffer.float()
 		let dx = buffer.short() / FPS
@@ -762,7 +768,8 @@ const CODE = {
 	CHANGEITEM: 14,
 	COLLECT: 17,
 	MAKEITEM: 20,
-	SKIPBUILD: 23
+	SKIPBUILD: 23,
+	REPAIR: 26
 }
 
 const RESP = {
@@ -774,14 +781,16 @@ const RESP = {
 	CHANGEITEM: 15,
 	COLLECT: 18,
 	MAKEITEM: 22,
-	SKIPBUILD: 24
+	SKIPBUILD: 24,
+	REPAIR: 27
 }
 const ERR = {
 	PLANETBUY: 13,
 	MAKEITEM: 21,
 	COLLECT: 19,
 	CHANGEITEM: 16,
-	SKIPBUILD: 25
+	SKIPBUILD: 25,
+	REPAIR: 28
 }
 //res = response
 //data = data input
@@ -804,7 +813,7 @@ function processData(data, res){
 			this.shoots = obj
 		}
 	}
-	hitc = cc >> 4
+	hitc = (cc >> 4) & 7
 	if(hitc){
 		let buf = new BufWriter()
 		buf.byte(8)
@@ -816,6 +825,26 @@ function processData(data, res){
 			buf.buffer(strbuf(name))
 		}
 		res.send(buf.toBuf())
+	}
+	if(cc & 128){
+		//planet shot
+		let p = sector.planets[data.ushort()]
+		if(p && !(this.seq & 3) && p.data && p.data.owner){
+			p.data.health = (p.data.health || 4095) - 2
+			if(p.data.health < 1){
+				//destroyed
+				p.data.health = 2048
+				p.data.owner = this.playerid
+				p.data.name = this.name
+				p.collect()
+				p.inbank = Math.floor(p.inbank / 2)
+				p.inbank2 = Math.floor(p.inbank2 / 2)
+				for(let i in p.data.items){
+					p.data.items[i].finish = undefined
+					p.data.items[i].id += 128
+				}
+			}
+		}
 	}
 	
 	let energy = data.int()
@@ -858,7 +887,7 @@ let msgs = {
 		const planet = sector.planets[data.int()]
 		if(!planet || !planet.resource || (planet.data && planet.data.owner) || planet.superhot)return res.code(ERR.PLANETBUY).send()
 		if(!this.take(10))return res.code(ERR.PLANETBUY).send()
-		planet.data = {owner: this.playerid, name: this.name, items: {0: {id: 5, lvl: 1, cap: 0}}}
+		planet.data = {owner: this.playerid, name: this.name, items: {0: {id: 0, lvl: 1, cap: 0}}, health: 4095, camplvl: 1}
 		unsaveds[planet.filename] = planet.data
 		res.double(this.data.bal)
 		res.float(this.data.bal2)
@@ -879,9 +908,8 @@ let msgs = {
 		let diff = seq2 - this.seq2
 		if(diff > 127)return
 		this.seq2 = seq2
-		let now = Date.now()
-		this.last = Math.min(now + 300, Math.max(now, this.last + diff * 100))
-		diff = this.last - now
+		this.last = Math.min(NOW + 300, Math.max(NOW, this.last + diff * 100))
+		diff = this.last - NOW
 		if(diff <= 0)processData.call(this, data, res)
 		else setTimeout(processData.bind(this, data, res), diff - 2)
 	},
@@ -895,16 +923,18 @@ let msgs = {
 			//rotate
 			let y = data.ubyte()
 			if(planet.data.items[y])return res.code(ERR.CHANGEITEM).send()
-				planet.data.items[y] = planet.data.items[x]
-				delete planet.data.items[x]
+			planet.data.items[y] = planet.data.items[x]
+			delete planet.data.items[x]
+			if(planet.data.items[y].id == 0)planet.data.camp = y
 		}else{
 			//lvlup
 			let item = planet.data.items[x]
 			if(!item)return res.code(ERR.CHANGEITEM).send()
 			let dat = ITEMS[item.id][item.lvl+1]
+			if(item.lvl > planet.data.camplvl - ITEMS[item.id][0].available)return res.code(ERR.CHANGEITEM).send()
 			if(!this.take(dat.price, dat.price2))return res.code(ERR.CHANGEITEM).send()
 			planet.collect()
-			item.finish = (Date.now() / 1000 + dat.time) >>> 0
+			item.finish = (NOW / 1000 + dat.time) >>> 0
 			unsaveds[planet.filename] = planet.data
 		}
 		res.double(this.data.bal)
@@ -931,10 +961,13 @@ let msgs = {
 		if(!planet || planet.data.owner != this.playerid)return res.code(ERR.MAKEITEM).send()
 		let x = data.ubyte()
 		let i = data.ubyte()
-		if((planet.data.items = planet.data.items || E)[x])return res.code(ERR.MAKEITEM).send()
+		if(!i || (planet.data.items = planet.data.items || E)[x])return res.code(ERR.MAKEITEM).send()
+		let num = 0
+		for(itm in planet.data.items)if(planet.data.items[itm].id == i)num++
+		if(num > planet.data.camplvl - ITEMS[i][0].available)return res.code(ERR.MAKEITEM).send()
 		let dat = ITEMS[i][1]
 		if(!this.take(dat.price, dat.price2))return res.code(ERR.MAKEITEM).send()
-		planet.data.items[x] = {id: i, lvl: 0, cap: 0, finish: (Date.now() / 1000 + dat.time) >>> 0}
+		planet.data.items[x] = {id: i, lvl: 0, cap: 0, finish: (NOW / 1000 + dat.time) >>> 0}
 		unsaveds[planet.filename] = planet.data
 		res.double(this.data.bal)
 		res.float(this.data.bal2)
@@ -947,8 +980,7 @@ let msgs = {
 		x = data.ubyte()
 		if(!planet.data.items || !planet.data.items[x])return res.code(ERR.SKIPBUILD).send()
 		let item = planet.data.items[x]
-		if(!item)return res.code(ERR.SKIPBUILD).send()
-		let price = Math.ceil((item.finish - Math.floor(Date.now() / 1000)) / 300)
+		let price = Math.ceil((item.finish - Math.floor(NOW / 1000)) / 300)
 		if(this.data.gems < price || price < 1)return res.code(ERR.SKIPBUILD).send()
 		this.data.gems -= price
 		planet.collect()
@@ -956,5 +988,22 @@ let msgs = {
 		unsaveds[planet.filename] = planet.data
 		res.float(this.data.gems)
 		res.code(RESP.SKIPBUILD).send()
+	},
+	[CODE.REPAIR](data, res){
+		let x = data.ushort()
+		let planet = sector.planets[x]
+		if(!planet || !planet.data || planet.data.owner != this.playerid)return res.code(ERR.REPAIR).send()
+		x = data.ubyte()
+		if(!planet.data.items || !planet.data.items[x] || planet.data.items[x].id < 128)return res.code(ERR.REPAIR).send()
+		let item = planet.data.items[x]
+		let {price, price2, time} = ITEMS[item.id-128][item.lvl]
+		if(!this.take((price||0) * 1.5, (price2||0) * 1.5))return res.code(ERR.REPAIR).send()
+		item.id -= 128 //repair
+		item.lvl--
+		item.finish = Math.floor(NOW/1000 + (time || 0) * 0.5)
+		unsaveds[planet.filename] = planet.data
+		res.double(this.data.bal)
+		res.float(this.data.bal2)
+		res.code(RESP.REPAIR).send()
 	}
 }

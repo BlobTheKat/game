@@ -32,7 +32,7 @@ var items = GameData("/items")!.map { json -> GameData in
     return GameData(json["path"]!.string ?? "/null")!
 }
 
-let (drills, shooters, dishes, satellites, electros, townhalls) = (items[0], items[1], items[2], items[3], items[4], items[5])
+let (camps, drills, shooters, satellites, dishes, electros) = (items[0], items[1], items[2], items[3], items[4], items[5])
 
 //A sector consists of...
 typealias SectorData = ([Planet], (pos: CGPoint, size: CGSize), (name:String,ip:String))

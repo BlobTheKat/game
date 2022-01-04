@@ -9,19 +9,19 @@ import Foundation
 import SpriteKit
 
 //Name of colonize items, ordered
-let coloNames = ["drill", "canon", "lab", "satellite", "electro", "camp"]
+let coloNames = ["camp", "drill", "canon", "satellite", "lab", "electro"]
 
 //a colonize item consists of a type, level and capacity
 typealias ColonizeItem = (type: ColonizeItemType, lvl: UInt8, capacity: UInt8, upgradeEnd: UInt32)
 
 //All the different types and their respective IDs
 enum ColonizeItemType: UInt8{
-    case drill = 0
-    case shooter = 1
-    case dish = 2
+    case camp = 0
+    case drill = 1
+    case shooter = 2
     case satellite = 3
-    case electro = 4
-    case camp = 5
+    case dish = 4
+    case electro = 5
 }
 
 enum OwnedState: UInt8{
