@@ -267,7 +267,7 @@ class Play: SKScene{
     let mapIcon = SKSpriteNode(imageNamed: "map")
     let repairIcon = SKSpriteNode(imageNamed: "repairOff")
     let lightSpeedIcon = SKSpriteNode(imageNamed: "lightSpeedOff")
-    let cockpitIcon = SKSpriteNode(imageNamed: "cockpitOff")
+    let cockpitIcon = SKSpriteNode(imageNamed: "inCockpitOff")
     let removeTrackerIcon = SKSpriteNode(imageNamed: "removeTracker")
     var hideControl = false
     //WARNINGS
@@ -281,4 +281,8 @@ class Play: SKScene{
     
     var netseq = 0
     var myseq = 0
+    
+    
+    //for statsWall
+    let statsWall = SKSpriteNode(imageNamed: "statsWall")
 }

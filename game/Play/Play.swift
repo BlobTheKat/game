@@ -456,6 +456,12 @@ extension Play{
         gemLabel.fontSize = 36
         gemLabel.text = "0"
         avatar.addChild(gemLabel)
+        
+        // for stats Wall
+        statsWall.anchorPoint = CGPoint(x: 0.5 ,y: 0)
+        statsWall.zPosition = 100
+        statsWall.setScale(0.5)
+        
         //NAVIGATION
         navArrow.position = pos(mx: 0.43, my: 0.5)
         navArrow.alpha = 1
@@ -1290,7 +1296,7 @@ extension Play{
             tapToStartPressed = true
         }
         if cockpitIcon == node{
-            cockpitIcon.texture = SKTexture(imageNamed: "cockpitOn")
+          //  cockpitIcon.texture = SKTexture(imageNamed: "cockpitOn")
         }
         if let n = node as? Object{
             guard n != ship else {return}
@@ -1535,12 +1541,8 @@ extension Play{
         if mapIcon == node{
             mapIcon.texture = SKTexture(imageNamed: "map")
         }
-        if cockpitIcon == node{
-            cockpitIcon.texture = SKTexture(imageNamed: "cockpitOff")
-            self.end()
-            SKScene.transition = SKTransition.crossFade(withDuration: 1.5)
-            DPlay.renderTo(skview)
-            SKScene.transition = SKTransition.crossFade(withDuration: 0)
+        if cockpitIcon == node && statsWall.parent == nil{
+            cam.addChild(statsWall)
         }
     }
     override func keyDown(_ key: UIKeyboardHIDUsage) {
