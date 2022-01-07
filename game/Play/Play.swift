@@ -1543,6 +1543,7 @@ extension Play{
         }
         if cockpitIcon == node && statsWall.parent == nil{
             cam.addChild(statsWall)
+            statsWall.position.y = 0
         }
     }
     override func keyDown(_ key: UIKeyboardHIDUsage) {
@@ -1701,20 +1702,26 @@ extension Play{
             }
             return
         }else if addItemIcons[0].parent != nil{
-            swiping = true
-            var x = (b.x - a.x) * 2.5
-            var correct = addItemIcons[0].position.x + x - 600
-            if correct > 0{x -= correct}else{
-                correct = addItemIcons.last!.position.x + x - (self.size.width * 2.5 - 300)
-                if correct < 0{x -= correct}
+            if statsWall.parent == nil || b.y < -50{
+                swiping = true
+                var x = (b.x - a.x) * 2.5
+                var correct = addItemIcons[0].position.x + x - 600
+                if correct > 0{x -= correct}else{
+                    correct = addItemIcons.last!.position.x + x - (self.size.width * 2.5 - 300)
+                    if correct < 0{x -= correct}
+                }
+                for n in addItemIcons{
+                    n.position.x += x
+                }
+                for n in addItemPrices{
+                    n.position.x += x
+                }
+                return
             }
-            for n in addItemIcons{
-                n.position.x += x
-            }
-            for n in addItemPrices{
-                n.position.x += x
-            }
-            return
+        }
+        if statsWall.parent != nil{
+            statsWall.removeAllActions()
+            statsWall.position.y = max(statsWall.position.y + b.y - a.y, 0)
         }
         guard showMap else {return}
         if dPad.contains(b) || thrustButton.contains(b){return}
@@ -1807,6 +1814,14 @@ extension Play{
         }
     }
     override func release(at point: CGPoint){
+        
+        if statsWall.parent != nil{
+            if statsWall.position.y > size.height / 4{
+                statsWall.run(SKAction.sequence([SKAction.moveTo(y: self.size.height / 2, duration: 0.5).ease(.easeOut),SKAction.removeFromParent()]))
+            }else{
+                statsWall.run(SKAction.moveTo(y: 0, duration: 0.5).ease(.easeOut))
+            }
+        }
         swiping = false
         if mapPress2 != nil{
             //both
