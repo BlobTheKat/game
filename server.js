@@ -146,7 +146,6 @@ function send(buffer, ip){
 	ip = ip.split(/[: ]/g)
 	server.send(buffer, ip[1], ip[0])
 }
-
 let FUNCS = {
 	tp(player, x, y){
 		if(player=="*"){let a = [];for(let i in clientKeys)a.push(FUNCS.tp(i,x,y));return a.join("\n")}
@@ -179,6 +178,15 @@ let FUNCS = {
 		player = clientKeys[player]
 		if(!player)return "\x1b[31mNo such player"
 		send(Buffer.concat([Buffer.of(127), strbuf(reason)]), player.remote)
+		player.wasDestroyed()
+		return "\x1b[90m[Kicked "+player.name+" with reason '"+reason+"']"
+	},
+	ban(player, reason="You have been banned"){
+		player = clientKeys[player]
+		if(!player)return "\x1b[31mNo such player"
+		player.data.ban = reason
+		send(Buffer.concat([Buffer.of(127), strbuf(reason)]), player.remote)
+		player.wasDestroyed()
 		return "\x1b[90m[Kicked "+player.name+" with reason '"+reason+"']"
 	},
 	debug(player){
@@ -222,7 +230,6 @@ let FUNCS = {
 	},
 	clear(){setImmediate(console.clear);return ""}
 }
-
 function _(_){
 	let __ = (_.match(/"[^"]*"|'[^']*'|\S+/g)||[]).map(a => a[0]=="'"||a[0]=='"'?a.slice(1,-1):a)
 	if(__[0] && FUNCS[__[0]])return FUNCS[__[0]](...__.slice(1))
@@ -245,7 +252,6 @@ var sector = {objects:[],planets:[],time:0,w:0,h:0}
 var meta = (readfile('meta')||[]).find(a=>(a.port||a.ip.split(":")[1])==process.argv[2]) || null
 let xy = (process.argv[3]||"_NaN_NaN").slice(1).split("_").map(a=>+a)
 if(xy[0] != xy[0] || xy[1] != xy[1])xy=null
-
 if(process.argv[2] && !xy && !meta){process.exit(0)}
 if(!meta || xy){
 	if(typeof RESPONSE == "undefined")console.log("\x1b[31m[Error]\x1b[37m To set up this server, you need to install basic-repl. Type this in the bash shell: \x1b[m\x1b[34mnpm i basic-repl\x1b[m"),process.exit(0)
@@ -411,8 +417,11 @@ class Planet{
 		this.filename = "pdata/" + (sector.x + this.x) + "_" + (sector.y + this.y) + ".json"
 		let dat = null
 		if(dict.resource)try{dat = JSON.parse(fs.readFileSync(this.filename))}catch(e){dat = null}
-		this.resource = dict.resource ? dict.resource.split(":") : []
+		[this.name, this.price, this.price2] = dict.resource ? dict.resource.split(":") : []
 		this.data = dat
+		if(this.data){
+			this.data.health &= 4095
+		}
 	}
 	toBuf(buf, id, pid){
 		if(!this.data)return
@@ -432,8 +441,8 @@ class Planet{
 			if(it[i].finish * 1000 < NOW){
 				this.collect()
 				it[i].finish = undefined
-				it[i].lvl++
-				if(it[i].id == 0)this.data.camplvl++
+				if(it[i].id < 128)it[i].lvl++
+				if(it[i].id == 0)this.data.camplvl = it[i].lvl
 			}
 			buf.byte((it[i].finish ? 128 : 0) + it[i].id)
 			buf.byte(it[i].lvl)
@@ -530,7 +539,6 @@ class Asteroid{
 	}
 }
 let A = {toBuf(a){a.int(0);a.int(0);a.int(0);a.int(0)},updatep(){},update(){}}
-
 
 class ClientData{
 	constructor(name = "", id = "", remote = ""){
@@ -756,9 +764,6 @@ server.on('message', async function(m, remote) {
 	Object.fallback(ship.data, SHIP)
 	try{ship.ping();msgs[code]&&msgs[code].call(ship,message,res)}catch(e){console.log(e);send(Buffer.concat([Buffer.of(127), strbuf("Bad Packet")]))}
 });
-
-
-
 const CODE = {
 	HELLO: 0,
 	PING: 3,
@@ -769,9 +774,9 @@ const CODE = {
 	COLLECT: 17,
 	MAKEITEM: 20,
 	SKIPBUILD: 23,
-	REPAIR: 26
+	REPAIR: 26,
+	RESTORE: 29,
 }
-
 const RESP = {
 	PONG: 4,
 	PLANETBUY: 11,
@@ -782,7 +787,8 @@ const RESP = {
 	COLLECT: 18,
 	MAKEITEM: 22,
 	SKIPBUILD: 24,
-	REPAIR: 27
+	REPAIR: 27,
+	RESTORE: 30,
 }
 const ERR = {
 	PLANETBUY: 13,
@@ -790,11 +796,11 @@ const ERR = {
 	COLLECT: 19,
 	CHANGEITEM: 16,
 	SKIPBUILD: 25,
-	REPAIR: 28
+	REPAIR: 28,
+	RESTORE: 31,
 }
 //res = response
 //data = data input
-
 function processData(data, res){
 	let a = this.rubber > 0 ? (data.int(),data.int(),data.int(),data.int(),this.rubber--) : this.validate(data)
 	let cc = data.ubyte()
@@ -826,22 +832,26 @@ function processData(data, res){
 		}
 		res.send(buf.toBuf())
 	}
+	
 	if(cc & 128){
 		//planet shot
 		let p = sector.planets[data.ushort()]
 		if(p && !(this.seq & 3) && p.data && p.data.owner){
-			p.data.health = (p.data.health || 4095) - 2
+			p.data.health = (p.data.health || 4095) - 200
 			if(p.data.health < 1){
 				//destroyed
 				p.data.health = 2048
 				p.data.owner = this.playerid
 				p.data.name = this.name
 				p.collect()
-				p.inbank = Math.floor(p.inbank / 2)
-				p.inbank2 = Math.floor(p.inbank2 / 2)
+				p.inbank = Math.floor((p.inbank || 0) / 2)
+				p.inbank2 = Math.floor((p.inbank2 || 0) / 2)
 				for(let i in p.data.items){
-					p.data.items[i].finish = undefined
-					p.data.items[i].id += 128
+					if(p.data.items[i].finish){
+						p.data.items[i].lvl++
+						p.data.items[i].finish = undefined
+					}
+					if(p.data.items[i].id < 128)p.data.items[i].id += 128
 				}
 			}
 		}
@@ -874,8 +884,6 @@ function processData(data, res){
 		res.send(buf.toBuf())
 	}
 }
-
-
 let msgs = {
 	[CODE.PING](data, res){
 		res.code(RESP.PONG).send()
@@ -885,8 +893,8 @@ let msgs = {
 	},
 	[CODE.PLANETBUY](data, res){
 		const planet = sector.planets[data.int()]
-		if(!planet || !planet.resource || (planet.data && planet.data.owner) || planet.superhot)return res.code(ERR.PLANETBUY).send()
-		if(!this.take(10))return res.code(ERR.PLANETBUY).send()
+		if(!planet || !planet.name || (planet.data && planet.data.owner) || planet.superhot)return res.code(ERR.PLANETBUY).send()
+		if(!this.take(planet.price, planet.price2))return res.code(ERR.PLANETBUY).send()
 		planet.data = {owner: this.playerid, name: this.name, items: {0: {id: 0, lvl: 1, cap: 0}}, health: 4095, camplvl: 1}
 		unsaveds[planet.filename] = planet.data
 		res.double(this.data.bal)
@@ -931,7 +939,7 @@ let msgs = {
 			let item = planet.data.items[x]
 			if(!item)return res.code(ERR.CHANGEITEM).send()
 			let dat = ITEMS[item.id][item.lvl+1]
-			if(item.lvl > planet.data.camplvl - ITEMS[item.id][0].available)return res.code(ERR.CHANGEITEM).send()
+			if(item.lvl > (planet.data.camplvl - ITEMS[item.id][0].available)/ITEMS[i][0].every)return res.code(ERR.CHANGEITEM).send()
 			if(!this.take(dat.price, dat.price2))return res.code(ERR.CHANGEITEM).send()
 			planet.collect()
 			item.finish = (NOW / 1000 + dat.time) >>> 0
@@ -964,7 +972,7 @@ let msgs = {
 		if(!i || (planet.data.items = planet.data.items || E)[x])return res.code(ERR.MAKEITEM).send()
 		let num = 0
 		for(itm in planet.data.items)if(planet.data.items[itm].id == i)num++
-		if(num > planet.data.camplvl - ITEMS[i][0].available)return res.code(ERR.MAKEITEM).send()
+		if(num > (planet.data.camplvl - ITEMS[i][0].available)/ITEMS[i][0].every)return res.code(ERR.MAKEITEM).send()
 		let dat = ITEMS[i][1]
 		if(!this.take(dat.price, dat.price2))return res.code(ERR.MAKEITEM).send()
 		planet.data.items[x] = {id: i, lvl: 0, cap: 0, finish: (NOW / 1000 + dat.time) >>> 0}
@@ -998,12 +1006,24 @@ let msgs = {
 		let item = planet.data.items[x]
 		let {price, price2, time} = ITEMS[item.id-128][item.lvl]
 		if(!this.take((price||0) * 1.5, (price2||0) * 1.5))return res.code(ERR.REPAIR).send()
-		item.id -= 128 //repair
+		item.id -= 128
 		item.lvl--
 		item.finish = Math.floor(NOW/1000 + (time || 0) * 0.5)
 		unsaveds[planet.filename] = planet.data
 		res.double(this.data.bal)
 		res.float(this.data.bal2)
 		res.code(RESP.REPAIR).send()
+	},
+	[CODE.RESTORE](data, res){
+		let x = data.ushort()
+		let planet = sector.planets[x]
+		if(!planet || !planet.data || planet.data.owner != this.playerid)return res.code(ERR.RESTORE).send()
+		if(planet.data.health > 4095)return
+		if(!this.take(Math.floor(10000 - (planet.data.health>>4)*39.0625)))return res.code(ERR.RESTORE).send()
+		planet.data.health += 4096
+		let a = setInterval(function(){planet.data.health += 128;if(planet.data.health > 8190){planet.data.health = 4095;clearInterval(a)}}, 1000)
+		unsaveds[planet.filename] = planet.data
+		res.double(this.data.bal)
+		res.code(RESP.RESTORE).send()
 	}
 }

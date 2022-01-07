@@ -59,7 +59,6 @@ extension GameData{
 //Remove textures from all the planets of a sector, to save on memory
 func emptytextures(s: SectorData){
     for p in s.0{
-        p.texture = nil
         for c in p.children{
             if c.name != nil{(c as? SKSpriteNode)?.texture = nil}
         }
@@ -95,7 +94,6 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
             if x > pos.x - w2 && x < pos.x + w2 && y > pos.y - h2 && y < pos.y + h2{
                 //reinstate textures
                 for p in sector.0{
-                    p.texture = SKTexture(imageNamed: p.name!)
                     p.size = p.texture!.size()
                     for c in p.children{
                         if let c = c as? SKSpriteNode, let n = c.name{
@@ -170,7 +168,10 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                         p.emitf = CGFloat(data.readunsafe() as UInt8) / 100
                     }
                     if id & 32 != 0{
-                        let _ = data.read(lentype: UInt8.self) ?? ""
+                        let resource = (data.read(lentype: UInt8.self) ?? "").split(separator: ":")
+                        p.name = resource.count > 0 ? String(resource[0]) : nil
+                        p.price = resource.count > 1 ? Double(resource[1])! : 0
+                        p.price2 = resource.count > 2 ? Float(resource[2])! : 0
                     }
                     var i = 0
                     for img in img{
@@ -178,23 +179,14 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                         if img.count < 2{img.append("1")}
                         let scale = CGFloat((img[1] as NSString).floatValue)
                         let t = String(img[0])
-                        if i == 0{
-                            if current && !exists{
-                                p.texture = SKTexture(imageNamed: t)
-                                p.size = p.texture!.size()
-                            }
-                            p.setScale(scale)
-                            p.name = t
-                        }else{
-                            let node = SKSpriteNode()
-                            p.addChild(node)
-                            if current && !exists{
-                                node.texture = SKTexture(imageNamed: t)
-                                node.size = node.texture!.size()
-                            }
-                            node.setScale(scale)
-                            node.name = t
+                        let node = SKSpriteNode()
+                        p.addChild(node)
+                        if current && !exists{
+                            node.texture = SKTexture(imageNamed: t)
+                            node.size = node.texture!.size()
                         }
+                        node.setScale(scale)
+                        node.name = t
                         i += 1
                     }
                 }

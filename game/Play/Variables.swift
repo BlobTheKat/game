@@ -223,6 +223,9 @@ class Play: SKScene{
     var coloRecsource = String()
     var coloName = String()
     
+    let collectImg = SKTexture(imageNamed: "collect")
+    let restoreImg = SKTexture(imageNamed: "restore")
+    
     let coloIcon = SKSpriteNode(imageNamed: "colonizeOff")
     let editColoIcon = SKSpriteNode(imageNamed: "editPlanet")
     let collect = SKSpriteNode(imageNamed: "collect")

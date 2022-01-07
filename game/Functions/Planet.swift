@@ -49,13 +49,12 @@ class Planet: Object{
         return CGVector(dx: x, dy: y)
     }
     func populate(with item: ColonizeItem, rot r: UInt8, node: SKSpriteNode = SKSpriteNode(), destroyed: Bool = false){
-        if node.userData == nil{node.userData = NSMutableDictionary(capacity: 2)}
+        if node.userData == nil{node.userData = NSMutableDictionary(capacity: 3)}
         let colo = (node.userData!["type"] as? ColonizeItem)
         let oldr = node.userData?["rot"] as? UInt8
         if colo?.type == item.type && colo?.lvl == item.lvl && colo?.capacity == item.capacity && colo?.upgradeEnd == item.upgradeEnd && oldr == r && node.userData?["d"] as? Bool == destroyed{return}
         node.userData!["type"] = item
         node.userData!["rot"] = r
-        node.userData!["d"] = destroyed
         if let parent = parent as? Play{
             if r == parent.itemRot && self == parent.planetLanded{
                 DispatchQueue.main.async(execute: parent.renderUpgradeUI)
@@ -67,7 +66,10 @@ class Planet: Object{
         let id = Int(item.type.rawValue)
         let rot = CGFloat(r) * PI256
         node.setScale(1)
-        node.texture = item.lvl > 0 ? SKTexture(imageNamed: "\(coloNames[id])\(destroyed ? 0 : item.lvl)") : SKTexture(imageNamed: "blank")
+        if !(node.userData?["d"] as? Bool ?? false && item.upgradeEnd > 1){
+            node.texture = item.lvl > 0 ? SKTexture(imageNamed: "\(coloNames[id])\(destroyed ? 0 : item.lvl)") : SKTexture(imageNamed: "blank")
+        }
+        node.userData!["d"] = destroyed
         node.size = node.texture!.size()
         node.setScale(0.5)
         node.anchorPoint = CGPoint(x: 0.5, y: (10 - self.radius) / node.size.height)
@@ -93,10 +95,10 @@ class Planet: Object{
            n.position.y = self.radius * 2 - 20
            n.zPosition = 10
            n.setScale(node.size.width / n.size.width * 2)
-        }else if let p = parent as? Play, item.type == .satellite && !(p.planetLanded == self && p.presence) && !destroyed{
+        }else if let p = parent as? Play, item.type == .satellite && !(p.planetLanded == self && p.presence){
             node.anchorPoint.y = (-170 - self.radius) / node.size.height
             node.run(.repeatForever(SKAction.rotate(byAngle: self.angularVelocity + 0.05, duration: 1)))
-        }else if parent as? Play != nil, item.type == .satellite && !destroyed{
+        }else if parent as? Play != nil, item.type == .satellite{
             node.anchorPoint.y = (-170 - self.radius) / node.size.height + 2
         }
         if item.upgradeEnd == 0 && colo?.upgradeEnd ?? 0 != 0 && r == oldr && !destroyed, let p = parent as? Play{
@@ -389,6 +391,8 @@ class Planet: Object{
             n.zRotation += angularVelocity * r / d
         }
     }
+    var price: Double = 0
+    var price2: Float = 0
     var items = [ColonizeItem?](repeating: nil, count: 256)
     var last = 0.0
     var persec: CGFloat = 0
@@ -410,8 +414,8 @@ class Planet: Object{
                 parent?.addChild(healthNode1)
                 parent?.addChild(healthNode2)
                 healthNode1.position = position.add(y: 50)
-                healthNode1.zPosition = self.zPosition + 1
-                healthNode2.zPosition = self.zPosition + 1
+                healthNode1.zPosition = self.zPosition + 2
+                healthNode2.zPosition = self.zPosition + 2
                 healthNode1.lineWidth = 0
                 healthNode2.lineWidth = 0
                 healthNode1.fillColor = .gray
@@ -428,19 +432,12 @@ class Planet: Object{
         let bits = data.readunsafe() as UInt8
         let ownedState = OwnedState(rawValue: bits & 192)!
         if self.ownedState != ownedState{
-            if self.ownedState == .owned && ownedState == .yours{boom2(self.position, self.radius)}
+            if self.ownedState == .owned && ownedState == .yours, let p = parent as? Play{for i in boom2(self.position, self.radius){p.particles.append(i);p.addChild(i)}}
             self.ownedState = ownedState
             if self.ownedState == .yours{self.angry = 0}
             if let parent = parent as? Play{
-                parent.editColoIcon.removeFromParent()
-                parent.collectedLabel.removeFromParent()
-                parent.collect.removeFromParent()
-                parent.coloArrow.removeFromParent()
-                parent.buildBG.removeFromParent()
-                if parent.presence{parent.planetEditMode()}
-                parent.planetLanded = nil
-                parent.landed()
-                
+                parent.hideLandedUI()
+                parent.showLandedUI()
             }
         }
         if bits & 32 == 32{return}

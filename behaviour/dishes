@@ -1,4 +1,5 @@
 available: 5
+every: 2
 
 price: 10k
 persec: 0.001

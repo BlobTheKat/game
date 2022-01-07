@@ -19,9 +19,9 @@ func boom(_ pos: CGPoint, _ end: Color) -> [Particle]{
 }
 func boom2(_ pos: CGPoint, _ radius: CGFloat = 100) -> [Particle]{
     var particleArr = [Particle]()
-    for i in 1...Int(ceil(radius / 10) * 20){
-        let dir = dir(CGFloat(i) * PI20, random(min: radius * 0.8, max: radius * 1.5))
-        particleArr.append(Particle[State(color: (r: 1, g: 1, b: 0), size: CGSize(width: 15, height: 15), zRot: 0, position: CGPoint(x: pos.x, y: pos.y), alpha: 1), State(color: (r: 1, g: 0, b: 0), size: CGSize(width: 30, height: 30), zRot: 0, position: CGPoint(x: pos.x + dir.dx, y: pos.y + dir.dy), alpha: 0, delay: 1)])
+    for _ in 1...Int(ceil(radius / 10) * 7){
+        let dir = randDir(random(min: radius, max: radius * 2))
+        particleArr.append(Particle[State(color: (r: 1, g: 1, b: 0), size: CGSize(width: 15, height: 15), zRot: 0, position: CGPoint(x: pos.x + dir.dx * 0.5, y: pos.y + dir.dy * 0.5), alpha: 1), State(color: (r: 1, g: 0, b: 0), size: CGSize(width: 30, height: 30), zRot: 0, position: CGPoint(x: pos.x + dir.dx, y: pos.y + dir.dy), alpha: 0, delay: 1)])
         
     }
     return particleArr

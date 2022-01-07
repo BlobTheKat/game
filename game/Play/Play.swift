@@ -304,7 +304,8 @@ extension Play{
         let id = Int(item.type.rawValue)
         var lvl = 0
         for itm in planetLanded!.items{if itm?.type == .camp{lvl = Int(itm!.lvl);break}}
-        if item.lvl > lvl - Int(items[Int(item.type.rawValue)][0]["available"]?.number ?? 1){return nil}
+        let dat = items[Int(item.type.rawValue)][0]
+        if item.lvl > (lvl - Int(dat["available"]?.number ?? 1)) / Int(dat["every"]?.number ?? 1){return nil}
         if item.upgradeEnd > 0 || items[id].count < item.lvl + 2{return nil}
         let old = items[id][Int(item.lvl)]
         let new = items[id][Int(item.lvl)+1]
@@ -447,6 +448,7 @@ extension Play{
         gemIcon.position = CGPoint(x: 180, y: 170)
         gemIcon.zPosition = avatar.zPosition + 1
         gemIcon.setScale(0.4)
+        gemIcon.texture?.filteringMode = .linear
         avatar.addChild(gemIcon)
         gemLabel.zPosition = avatar.zPosition + 1
         gemLabel.position = CGPoint(x: 220, y: 160)
@@ -716,7 +718,7 @@ extension Play{
 
     
     
-    func DisplayWARNING(_ label: String, _ warningType: WarningTypes, _ blink: Bool){
+    func DisplayWARNING(_ label: String, _ warningType: WarningTypes = .warning, _ blink: Bool = false){
         switch warningType{
         case .warning:
             warning.texture = SKTexture(imageNamed: "warning")
@@ -739,6 +741,10 @@ extension Play{
             ])), withKey: "warningAlpha")
         }else{
             warning.run(SKAction.fadeAlpha(to: 1, duration: 1).ease(.easeIn))
+        }
+        let _ = timeout(3){
+            self.cam.removeAction(forKey: "warningAlpha")
+            self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn))
         }
     }
     func hideUpgradeUI(){
@@ -1012,8 +1018,7 @@ extension Play{
             }
         ]), withKey: "constantLazer")
     }
-    func landed(){
-        planetLanded = planetTouched
+    func showLandedUI(){
         if planetLanded?.ownedState == .yours{
             if editColoIcon.parent == nil{
                 navBG.addChild(editColoIcon)
@@ -1022,6 +1027,18 @@ extension Play{
                 avatar.addChild(collect)
             }
         }
+    }
+    func hideLandedUI(){
+        editColoIcon.removeFromParent()
+        collectedLabel.removeFromParent()
+        collectedLabel2.removeFromParent()
+        collect.removeFromParent()
+        coloArrow.removeFromParent()
+        buildBG.removeFromParent()
+    }
+    func landed(){
+        planetLanded = planetTouched
+        showLandedUI()
         if vel > 50 {
             let impactSound = SKAudioNode(fileNamed: "extras/impact.wav")
             impactSound.run(SKAction.changeVolume(to: 0.3, duration: 0))
@@ -1042,10 +1059,7 @@ extension Play{
         if !presence{planetLanded = nil}
         else{let _ = timeout(0.5){if self.planetLanded==nil&&self.presence{self.planetEditMode()}}}
     }
-    func increseEnergy(){
-    }
     func hideControls(){
-        
         navArrow.removeFromParent()
         thrustButton.removeFromParent()
         dPad.removeFromParent()
@@ -1064,12 +1078,7 @@ extension Play{
             DisplayWARNING("error: try again later", .warning, false)
             return
         }
-        cam.run(SKAction.sequence([
-            .run{ self.DisplayWARNING("colonized successfuly",.achieved,false)},
-            .wait(forDuration: 2),
-            .run{self.cam.removeAction(forKey: "warningAlpha")},
-            .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
-        ]))
+        DisplayWARNING("colonized successfuly",.achieved,false)
     }
     
     func planetEditMode(){
@@ -1157,7 +1166,7 @@ extension Play{
                 addItemPrices[i].position = addItemIcons[i].position
                 addItemPrices[i].position.y -= 250
                 addItemPrices[i].fontSize = 60
-                if used[i+1] > lvl - Int(items[i+1][0]["available"]?.number ?? 1){
+                if used[i+1] > (lvl - Int(items[i+1][0]["available"]?.number ?? 1)) / Int(items[i+1][0]["every"]?.number ?? 1){
                     addItemIcons[i].alpha = 0.5
                 }else{
                     addItemIcons[i].alpha = 1
@@ -1175,20 +1184,16 @@ extension Play{
             }
             break
         case buyIcon:
-            if energyAmount >= 10{
+            if energyAmount >= planetLanded!.price && researchAmount >= planetLanded!.price2{
                 if buyScreenShowing{
                     colonizeBG.removeFromParent()
+                    coloIcon.removeFromParent()
                     showControls()
                     buyScreenShowing = false
                 }
                 colonize(planetLanded!)
-            }else if energyAmount < 10{
-                cam.run(SKAction.sequence([
-                    .run{ self.DisplayWARNING("not enough energy",.warning,false)},
-                    .wait(forDuration: 2),
-                    .run{self.cam.removeAction(forKey: "warningAlpha")},
-                    .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
-                ]))
+            }else{
+                DisplayWARNING("not enough energy",.warning,false)
             }
             break
         case editColoIcon:
@@ -1203,7 +1208,17 @@ extension Play{
             
             break
         case collect:
-            if planetLanded != nil{collectFrom(planetLanded!);planetLanded!.last=NSDate().timeIntervalSince1970}
+            if planetLanded == nil{break}
+            if collectedLabel2.text != ""{
+                collectFrom(planetLanded!);planetLanded!.last=NSDate().timeIntervalSince1970
+            }else{
+                if energyAmount < Double(Int(10000 - planetLanded!.health*10000)){
+                    DisplayWARNING("not enough energy",.warning,false)
+                    break
+                }
+                //restore
+                restore(planetLanded!)
+            }
             break
         case upgradebtn:
             guard let item = planetLanded?.items[Int(itemRot)] else {break}
@@ -1211,12 +1226,7 @@ extension Play{
             let price = itm["price"]?.number ?? 0
             let price2 = Float(itm["price2"]?.number ?? 0)
             if energyAmount < price || researchAmount < price2{
-                cam.run(SKAction.sequence([
-                    .run{ self.DisplayWARNING("not enough energy",.warning,false)},
-                    .wait(forDuration: 2),
-                    .run{self.cam.removeAction(forKey: "warningAlpha")},
-                    .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
-                ]))
+                DisplayWARNING("not enough energy",.warning,false)
             }
             changeItem(planetLanded!, Int(itemRot))
             hideUpgradeUI()
@@ -1228,12 +1238,7 @@ extension Play{
                 guard end > 1 else {return}
                 let price = ceil(Double(Int(end) - Int(NSDate().timeIntervalSince1970)) / 300)
                 if Double(gemCount) < price{
-                    cam.run(SKAction.sequence([
-                        .run{ self.DisplayWARNING("not enough gems",.warning,false)},
-                        .wait(forDuration: 2),
-                        .run{self.cam.removeAction(forKey: "warningAlpha")},
-                        .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
-                    ]))
+                    DisplayWARNING("not enough gems",.warning,false)
                     break
                 }
                 skipBuild(planetLanded!, itemRot)
@@ -1243,12 +1248,7 @@ extension Play{
                 let price = (items[Int(item.type.rawValue)][Int(item.lvl)]["price"]?.number ?? 0) * 1.5
                 let price2 = (items[Int(item.type.rawValue)][Int(item.lvl)]["price2"]?.number ?? 0) * 1.5
                 if energyAmount < price || Double(researchAmount) < price2{
-                    cam.run(SKAction.sequence([
-                        .run{ self.DisplayWARNING("not enough energy",.warning,false)},
-                        .wait(forDuration: 2),
-                        .run{self.cam.removeAction(forKey: "warningAlpha")},
-                        .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
-                    ]))
+                    self.DisplayWARNING("not enough energy",.warning,false)
                     break
                 }
                 repair(planetLanded!, itemRot)
@@ -1463,23 +1463,13 @@ extension Play{
     override func nodeUp(_ node: SKNode, at _: CGPoint) {
         if !swiping && node.parent == buildBG, let i = addItemIcons.firstIndex(of: node as? SKSpriteNode ?? ship){
             guard node.alpha == 1 else{
-                cam.run(SKAction.sequence([
-                    .run{ self.DisplayWARNING("upgrade camp to build more",.warning,false)},
-                    .wait(forDuration: 2),
-                    .run{self.cam.removeAction(forKey: "warningAlpha")},
-                    .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
-                ]))
+                DisplayWARNING("upgrade camp to build more",.warning,false)
                 return
             }
             let price = items[i][1]["price"]?.number ?? 0
             let price2 = Float(items[i][1]["price2"]?.number ?? 0)
             if energyAmount < price || researchAmount < price2{
-                cam.run(SKAction.sequence([
-                    .run{ self.DisplayWARNING("not enough energy",.warning,false)},
-                    .wait(forDuration: 2),
-                    .run{self.cam.removeAction(forKey: "warningAlpha")},
-                    .run{  self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn)) },
-                ]))
+                DisplayWARNING("not enough energy",.warning,false)
                 return
             }
             var pos = UInt8()
@@ -1504,8 +1494,14 @@ extension Play{
                 gap = start + curGap
                 pos = UInt8((start - (start + curGap) / 2) & 255)
             }
+            
+            if gap < Int(min(32, ceil(10 / planetLanded!.radius))) * 2 + 1{
+                //yell at the user
+                DisplayWARNING("create more space", .warning, true)
+                return
+            }
             itemRot = pos
-            planetLanded!.run(.rotate(toAngle: CGFloat(pos) * PI256, duration: abs(CGFloat(pos)) / 180.0).ease(.easeInEaseOut))
+            planetLanded!.run(.rotate(toAngle: CGFloat(pos) * PI256, duration: 0.5).ease(.easeInEaseOut))
             makeItem(planetLanded!, pos, .init(rawValue: UInt8(i+1))!)
         }
         if thrustButton == node{
@@ -1676,16 +1672,31 @@ extension Play{
             dragRemainder += (b.x - a.x) / 12
             let d = dragRemainder
             dragRemainder.formRemainder(dividingBy: 1)
-            var amount = floor(d - dragRemainder + 0.1)
+            var amount = round(d - dragRemainder + 0.1)
             guard amount != 0 else {return} //shortcut
             while planetLanded!.items[(Int(itemRot) + Int(amount)) & 255] != nil{amount += sign(amount)}
-            let l = planetLanded!.children.first(where: {$0.userData?["rot"] as? UInt8 == itemRot})
+            let newRot = UInt8((Int(itemRot) + Int(amount)) & 255)
+            let box = UInt8(min(32, ceil(3000 / planetLanded!.radius)))
+            var red = false
+            var i = newRot &- box &+ 1
+            while i != newRot &+ box{
+                if planetLanded!.items[Int(i)] != nil && i != itemRot{ red = true }
+                i &+= 1
+            }
+            guard let l = planetLanded!.children.first(where: {$0.userData?["rot"] as? UInt8 == itemRot}) as? SKSpriteNode else {return}
             planetLanded!.items[(Int(itemRot) + Int(amount)) & 255] = planetLanded!.items[Int(itemRot)]
             planetLanded!.items[Int(itemRot)] = nil
             itemRot &+= UInt8(Int(amount) & 255)
             planetLanded!.run(.rotate(byAngle: amount * PI256, duration: abs(amount) / 10.0))
-            l?.run(.rotate(byAngle: -amount * PI256, duration: abs(amount) / 10.0))
-            l?.userData?["rot"] = itemRot
+            l.run(.rotate(byAngle: -amount * PI256, duration: abs(amount) / 10.0))
+            l.userData?["rot"] = itemRot
+            if red{
+                l.colorBlendFactor = 0.5
+                l.color = .red
+            }else{
+                l.colorBlendFactor = 0
+                l.color = .clear
+            }
             return
         }else if addItemIcons[0].parent != nil{
             swiping = true
@@ -1776,6 +1787,18 @@ extension Play{
         if presence && moveItemIcon.contains(p){
             if dragRemainder.isNaN{dragRemainder = 0;oldItemRot = itemRot;coloArrow.removeFromParent()}
             else{
+                guard let l = planetLanded!.children.first(where: {$0.userData?["rot"] as? UInt8 == itemRot}) as? SKSpriteNode else {return}
+                if l.color == .red{
+                    let amount = CGFloat(Int8(bitPattern: oldItemRot &- itemRot))
+                    planetLanded!.items[(Int(itemRot) + Int(amount)) & 255] = planetLanded!.items[Int(itemRot)]
+                    planetLanded!.items[Int(itemRot)] = nil
+                    itemRot &+= UInt8(Int(amount) & 255)
+                    planetLanded!.run(.rotate(byAngle: amount * PI256, duration: abs(amount) / 180.0))
+                    l.run(.rotate(byAngle: -amount * PI256, duration: abs(amount) / 180.0))
+                    l.userData?["rot"] = itemRot
+                    l.color = .clear
+                    l.colorBlendFactor = 0
+                }
                 if coloArrow.parent == nil{cam.addChild(coloArrow)}
                 changeItem(planetLanded!, Int(oldItemRot), Int(itemRot))
             }

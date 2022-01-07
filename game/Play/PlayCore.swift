@@ -91,9 +91,16 @@ extension Play{
         stars4.update()
         stars4.position = CGPoint(x: cam.position.x / 4, y: cam.position.y / 4)
         if let planetLanded = planetLanded{
-            let dif: Double = NSDate().timeIntervalSince1970 - planetLanded.last
-            collectedLabel.text = "\(min(planetLanded.capacity, Int(dif * planetLanded.persec)) + planetLanded.inbank)"
-            collectedLabel2.text = "\(min(planetLanded.capacity2, Int(dif * planetLanded.persec2)) + planetLanded.inbank2)"
+            if planetLanded.health >= 1{
+                collect.texture = collectImg
+                let dif: Double = NSDate().timeIntervalSince1970 - planetLanded.last
+                collectedLabel.text = "\(min(planetLanded.capacity, Int(dif * planetLanded.persec)) + planetLanded.inbank)"
+                collectedLabel2.text = "\(min(planetLanded.capacity2, Int(dif * planetLanded.persec2)) + planetLanded.inbank2)"
+            }else{
+                collect.texture = restoreImg
+                collectedLabel2.text = ""
+                collectedLabel.text = "Heal (k$ \(Int(10000 - planetLanded.health*10000)))"
+            }
         }
         if presence{
             if planetLanded == nil{return planetEditMode()}
@@ -104,13 +111,28 @@ extension Play{
             if dragRemainder.isInfinite{
                 var amount = sign(dragRemainder) * 2
                 while planetLanded!.items[(Int(itemRot) + Int(amount)) & 255] != nil{amount += sign(amount)}
-                let l = planetLanded!.children.first(where: {$0.userData?["rot"] as? UInt8 == itemRot})
-                planetLanded!.items[(Int(itemRot) + Int(amount)) & 255] = planetLanded!.items[Int(itemRot)]
+                let newRot = UInt8((Int(itemRot) + Int(amount)) & 255)
+                let box = UInt8(min(32, ceil(10 / planetLanded!.radius)))
+                var red = false
+                var i = newRot &- box &+ 1
+                while i != itemRot &+ box{
+                    if planetLanded!.items[Int(i)] != nil{ red = true }
+                    i &+= 1
+                }
+                guard let l = planetLanded!.children.first(where: {$0.userData?["rot"] as? UInt8 == itemRot}) as? SKSpriteNode else {return}
+                planetLanded!.items[Int(newRot)] = planetLanded!.items[Int(itemRot)]
                 planetLanded!.items[Int(itemRot)] = nil
                 itemRot &+= UInt8(Int(amount) & 255)
                 planetLanded!.run(.rotate(byAngle: amount * PI256, duration: abs(amount) / 10.0))
-                l?.run(.rotate(byAngle: -amount * PI256, duration: abs(amount) / 10.0))
-                l?.userData?["rot"] = itemRot
+                l.run(.rotate(byAngle: -amount * PI256, duration: abs(amount) / 10.0))
+                l.userData?["rot"] = itemRot
+                if red{
+                    l.colorBlendFactor = 0.5
+                    l.color = .red
+                }else{
+                    l.colorBlendFactor = 0
+                    l.color = .clear
+                }
             }
             return
         }
@@ -408,6 +430,15 @@ extension Play{
         
         var dat = Data()
         dat.write(critid(17))
+        dat.write(UInt16(planets.firstIndex(of: planet)!))
+        critical(dat, abandoned: {
+            self.didCollect(false)
+        })
+    }
+    func restore(_ planet: Planet){
+        
+        var dat = Data()
+        dat.write(critid(29))
         dat.write(UInt16(planets.firstIndex(of: planet)!))
         critical(dat, abandoned: {
             self.didCollect(false)

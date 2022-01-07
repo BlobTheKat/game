@@ -204,7 +204,6 @@ extension Play{
         inlightSpeed.removeFromParent()
         //release texture objects
         for p in sector.0{
-            p.texture = nil
             p.namelabel?.removeFromParent()
             p.namelabel = nil
             p.angry = 0
@@ -313,8 +312,15 @@ extension Play{
                 //guard needsNames.contains(id) else {continue}
                 needsNames.remove(id)
                 objects[id].namelabel?.removeFromParent()
-                objects[id].namelabel = SKLabelNode(text: "...")
-                label(node: objects[id].namelabel!, name, pos: CGPoint(x: objects[id].position.x, y: objects[id].position.y + 30), size: 20, color: .green, font: "Menlo")
+                let label = SKLabelNode(text: "...")
+                let badge = SKSpriteNode(imageNamed: "badge")
+                objects[id].namelabel = label
+                self.label(node: label, name, pos: objects[id].position.add(y: 30), size: 20, color: .green, font: "Menlo", zPos: 2)
+                badge.position = CGPoint(x: -label.frame.width/2 - 5, y: 10)
+                badge.anchorPoint.x = 1
+                badge.zPosition = 2
+                badge.setScale(0.07)
+                label.addChild(badge)
             }
         }else if code == 11{
             energyAmount = data.readunsafe()
@@ -350,6 +356,8 @@ extension Play{
         }else if code == 27{
             energyAmount = data.readunsafe()
             researchAmount = data.readunsafe()
+        }else if code == 30{
+            energyAmount = data.readunsafe()
         }
     }
     
