@@ -41,3 +41,12 @@ let PREFIXES = [
     "ms": 0.001,
     "%": 0.01
 ]
+
+let BADGES = ["badge1", "badge2", "badge3", "badge4", "badge5", "badge6", "badge7", "badge8", "badge9", "badge10", "badge11", "badge12", "badge13", "badge14", "badge15", "badge16"].map({ badge -> SKSpriteNode in
+    let node = SKSpriteNode(imageNamed: "boxlock")
+    let child = SKSpriteNode(imageNamed: badge)
+    child.zPosition = -1
+    node.addChild(child)
+    node.zPosition = 1
+    return node
+})

@@ -305,7 +305,7 @@ extension Play{
         var lvl = 0
         for itm in planetLanded!.items{if itm?.type == .camp{lvl = Int(itm!.lvl);break}}
         let dat = items[Int(item.type.rawValue)][0]
-        if item.lvl > (lvl - Int(dat["available"]?.number ?? 1)) / Int(dat["every"]?.number ?? 1){return nil}
+        if Double(item.lvl) >= Double(Double(lvl) - (dat["available"]?.number ?? 1)) / (dat["every"]?.number ?? 1) + 1{return nil}
         if item.upgradeEnd > 0 || items[id].count < item.lvl + 2{return nil}
         let old = items[id][Int(item.lvl)]
         let new = items[id][Int(item.lvl)+1]
@@ -459,8 +459,79 @@ extension Play{
         
         // for stats Wall
         statsWall.anchorPoint = CGPoint(x: 0.5 ,y: 0)
-        statsWall.zPosition = 100
+        statsWall.zPosition = 300
         statsWall.setScale(0.5)
+        
+        statsEdge1.anchorPoint = CGPoint(x: 0.5 ,y: 0)
+        statsEdge1.position = pos(mx: -0.4, my: 0.1, x: 0, y: 0)
+        statsEdge1.zPosition = 101
+        statsEdge1.setScale(1)
+        statsEdge1.alpha = 0.3
+        statsWall.addChild(statsEdge1)
+        
+        statsEdge2.anchorPoint = CGPoint(x: 0.5 ,y: 0)
+        statsEdge2.position = pos(mx: 0.4, my: 0.1, x: 0, y: 0)
+        statsEdge2.zPosition = 101
+        statsEdge2.setScale(1)
+        statsEdge2.alpha = 0.3
+        statsWall.addChild(statsEdge2)
+        
+        for i in 0...4{
+            
+            statsLabel.append(SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular"))
+            statsLabel2.append(SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular"))
+            
+            statsLabel[i].fontSize = 40
+            statsLabel[i].color = UIColor.white
+            statsLabel[i].horizontalAlignmentMode = .left
+            if i > 0{
+                statsLabel[i].position = CGPoint(x: statsLabel[i - 1].position.x ,y: statsLabel[i - 1].position.y + 60)
+            }else{
+                statsLabel[i].position = pos(mx: 0.45, my: 0.2, x: 0, y: 0)
+            }
+            statsWall.addChild(statsLabel[i])
+            
+            
+            
+            //BREAK
+            statsLabel2.append(SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular"))
+            
+            statsLabel2[i].fontSize = 40
+            statsLabel2[i].color = UIColor.white
+            statsLabel2[i].horizontalAlignmentMode = .left
+            if i > 0{
+                statsLabel2[i].position = CGPoint(x: statsLabel2[i - 1].position.x ,y: statsLabel2[i - 1].position.y + 60)
+            }else{
+                statsLabel2[i].position = CGPoint(x: statsLabel[i].position.x + 200, y: statsLabel[i].position.y)
+            }
+            statsWall.addChild(statsLabel2[i])
+        }
+        statsLabel[0].text = "kill:"
+        statsLabel[1].text = "deaths:"
+        statsLabel[2].text = "kdr:"
+        statsLabel[3].text = "planets:"
+        statsLabel[4].text = "travel:"
+        
+        statsLabel2[0].text = "980"
+        statsLabel2[1].text = "902"
+        statsLabel2[2].text = "1.09"
+        statsLabel2[3].text = "19"
+        statsLabel2[4].text = "224Ly"
+        
+        for i in 0...2{
+            
+            statsIcons[i].anchorPoint = CGPoint(x: 0.5 ,y: 0)
+            statsIcons[i].zPosition = 101
+            statsIcons[i].setScale(0.4)
+            
+            if i > 0{
+                statsIcons[i].position = CGPoint( x: statsIcons[i - 1].position.x , y: statsIcons[i - 1].position.y + (40 + statsIcons[i].size.height) )
+            }else{
+                statsIcons[i].position = pos(mx: -0.7, my: 0.1, x: 0, y: 0)
+            }
+            
+            statsWall.addChild(statsIcons[i])
+        }
         
         //NAVIGATION
         navArrow.position = pos(mx: 0.43, my: 0.5)
@@ -468,6 +539,7 @@ extension Play{
         navArrow.zPosition = 11
         navArrow.setScale(0.3)
         cam.addChild(navArrow)
+        
         
         navBG.position = CGPoint(x: navArrow.position.x,y: navArrow.position.y + navArrow.size.height)
         navBG.alpha = 1
@@ -556,8 +628,8 @@ extension Play{
         colonizeBG.addChild(coloStatsPrice)
         
         collect.anchorPoint = CGPoint(x: 0 ,y:0.5)
-        collect.position = avatar.pos(mx: 0, my: 0, x: 0, y: -300)
-        collect.zPosition = 10000
+        collect.position = avatar.pos(mx: 0, my: 0, x: 0, y: -260)
+        collect.zPosition = 100
         collect.alpha = 1
         collect.setScale(0.6)
         
@@ -933,16 +1005,12 @@ extension Play{
             progress3.anchorPoint = CGPoint(x: 0, y: 0.5)
             progress3.xScale = new / max * 15
             outline2.addChild(progress3)
-            
             upgradeNodes.append(progressLabel2)
             upgradeNodes.append(progress2)
             upgradeNodes.append(progress3)
             upgradeNodes.append(outline2)
             i += 1
         }
-       
-        
-        
     }
     func removeTrackers(){
         for t in tracked{
@@ -957,7 +1025,6 @@ extension Play{
         trackArrows.removeAll()
     }
     func constantLazer(){
-
         usedShoot = true
         newShoot = true
         usingConstantLazer = true
@@ -965,6 +1032,12 @@ extension Play{
             ship.shootFrequency = f
         }
         ship.shootQueue = 1 - ship.shootFrequency
+        if let action = self.action(forKey: "constantLazer"), action.speed == 0{
+            action.speed = 1
+            heatingLaser.alpha = 1
+            return
+        }
+        self.heatingLaser.texture = SKTexture(imageNamed: "heating0")
         self.run(SKAction.sequence([
             SKAction.repeat(SKAction.sequence([
             
@@ -978,8 +1051,14 @@ extension Play{
                 } },
             ]), count: 4 - self.heatLevel),
             SKAction.repeat(SKAction.sequence([
-            
                 SKAction.run {
+                    let _ = timeout(5){
+                        if !self.usingConstantLazer{
+                            self.heatLevel = 0
+                            self.coolingDown = false
+                            self.removeAction(forKey: "constantLazer")
+                        }
+                    }
                     if !self.actionStopped{
                     self.coolingDown = true
                     self.heatLevel += 1
@@ -1156,6 +1235,37 @@ extension Play{
     
     
     override func nodeDown(_ node: SKNode, at point: CGPoint) {
+        if statsWall.parent != nil{
+            switch node{
+            case statsIcons[1]:
+                if badgeCropNode.parent == nil{
+                    //REMOVE OTHER WALLICONS HERE
+                    var i = 0
+                    
+                    let w = 0.4 * self.size.width, h = 0.5 * self.size.height
+                    badgeCropNode.position.y = h
+                    badgeCropNode.position.x = -w
+                    let n = SKShapeNode(rect: CGRect(origin: CGPoint(x: 0, y: -h), size: CGSize(width: w * 2, height: h * 2)))
+                    n.fillColor = .white
+                    n.lineWidth = 0
+                    badgeCropNode.maskNode = n
+                    for b in BADGES{
+                        b.removeFromParent()
+                        badgeCropNode.addChild(b)
+                        b.position.y = self.size.height / (i & 1 == 0 ? 4 : -4)
+                        b.position.x = CGFloat(i >> 1) * 200 + 150
+                        i += 1
+                    }
+                    statsWall.addChild(badgeCropNode)
+                }else{
+                    badgeCropNode.removeFromParent()
+                    //READD WALLICONS HERE
+                }
+                break
+            default:break
+            }
+            return
+        }
         switch node{
         case addItemIcon:
             hideUpgradeUI()
@@ -1172,7 +1282,7 @@ extension Play{
                 addItemPrices[i].position = addItemIcons[i].position
                 addItemPrices[i].position.y -= 250
                 addItemPrices[i].fontSize = 60
-                if used[i+1] > (lvl - Int(items[i+1][0]["available"]?.number ?? 1)) / Int(items[i+1][0]["every"]?.number ?? 1){
+                if Double(used[i+1]) >= (Double(lvl) - (items[i+1][0]["available"]?.number ?? 1)) / (items[i+1][0]["every"]?.number ?? 1) + 1{
                     addItemIcons[i].alpha = 0.5
                 }else{
                     addItemIcons[i].alpha = 1
@@ -1377,13 +1487,10 @@ extension Play{
                 }
             }else{
                 thrustButton.texture = SKTexture(imageNamed: "thrustOn")
-                self.removeAction(forKey: "constantLazer")
+                self.action(forKey: "constantLazer")?.speed = 0
                 ship.shootFrequency = 0
-                self.heatLevel = 0
                 self.heatingLaser.alpha = 0
                 self.actionStopped = true
-                self.coolingDown = false
-                self.heatingLaser.texture = SKTexture(imageNamed: "heating0")
                 usingConstantLazer = false
                 ship.thrust = true
                 if !playingThrustSound{
@@ -1452,13 +1559,10 @@ extension Play{
                 
             }else{
                 thrustButton.texture = SKTexture(imageNamed: "thrustOn")
-                self.removeAction(forKey: "constantLazer")
+                self.action(forKey: "constantLazer")?.speed = 0
                 ship.shootFrequency = 0
-                self.heatLevel = 0
                 self.heatingLaser.alpha = 0
                 self.actionStopped = true
-                self.coolingDown = false
-                self.heatingLaser.texture = SKTexture(imageNamed: "heating0")
                 usingConstantLazer = false
                 ship.thrust = true
             }
@@ -1519,16 +1623,13 @@ extension Play{
                 }
             ]))
             self.playingThrustSound = false
-            self.removeAction(forKey: "constantLazer")
+            self.action(forKey: "constantLazer")?.speed = 0
             ship.shootFrequency = 0
-            self.heatLevel = 0
             self.heatingLaser.alpha = 0
             self.actionStopped = true
-            self.coolingDown = false
             usingConstantLazer = false
             ship.thrust = false
             thrustButton.texture = SKTexture(imageNamed: "thrustOff")
-            self.heatingLaser.texture = SKTexture(imageNamed: "heating0")
             usingConstantLazer = false
         }
         if dPad == node{
@@ -1543,7 +1644,10 @@ extension Play{
         }
         if cockpitIcon == node && statsWall.parent == nil{
             cam.addChild(statsWall)
-            statsWall.position.y = 0
+            statsWall.position.y = self.size.height / 2
+            statsWall.run(.moveTo(y: 0, duration: 0.5))
+            statsWall.alpha = 0.99
+            let _ = timeout(0.5){self.statsWall.alpha = 1}
         }
     }
     override func keyDown(_ key: UIKeyboardHIDUsage) {
@@ -1649,14 +1753,11 @@ extension Play{
         }else if key == .keyboardLeftArrow || key == .keyboardA{
             ship.thrustLeft = false
         }else if key == .keyboardDownArrow || key == .keyboardS || key == .keyboardK{
-            self.removeAction(forKey: "constantLazer")
+            self.action(forKey: "constantLazer")?.speed = 0
             ship.shootFrequency = 0
-            self.heatLevel = 0
             self.heatingLaser.alpha = 0
             self.actionStopped = true
-            self.coolingDown = false
             usingConstantLazer = false
-            self.heatingLaser.texture = SKTexture(imageNamed: "heating0")
         }else if key == .keyboardC{
             self.end()
             SKScene.transition = SKTransition.crossFade(withDuration: 1.5)
@@ -1665,6 +1766,7 @@ extension Play{
         }
     }
     override func swipe(from a: CGPoint, to b: CGPoint) {
+        swiping = true
         if !dragRemainder.isNaN{
             if abs(a.x) > self.size.width / 5{
                 dragRemainder = sign(a.x) * .infinity
@@ -1703,7 +1805,6 @@ extension Play{
             return
         }else if addItemIcons[0].parent != nil{
             if statsWall.parent == nil || b.y < -50{
-                swiping = true
                 var x = (b.x - a.x) * 2.5
                 var correct = addItemIcons[0].position.x + x - 600
                 if correct > 0{x -= correct}else{
@@ -1719,9 +1820,22 @@ extension Play{
                 return
             }
         }
-        if statsWall.parent != nil{
+        if statsWall.parent != nil && statsWall.alpha == 1 && abs(b.y-a.y) > abs(b.x-a.x){
             statsWall.removeAllActions()
             statsWall.position.y = max(statsWall.position.y + b.y - a.y, 0)
+        }else if statsWall.parent != nil && statsWall.alpha == 1{
+            if badgeCropNode.parent != nil{
+                appleSwipe = (b.x - a.x)
+                var x = appleSwipe * 2
+                var correct = badgeCropNode.children.first!.position.x + x - 150
+                if correct > 0{x -= correct}else{
+                    correct = badgeCropNode.children.last!.position.x + x - (self.size.width * 0.8) + 150
+                    if correct < 0{x -= correct}
+                }
+                for node in badgeCropNode.children{
+                    node.position.x += x
+                }
+            }
         }
         guard showMap else {return}
         if dPad.contains(b) || thrustButton.contains(b){return}
@@ -1814,12 +1928,15 @@ extension Play{
         }
     }
     override func release(at point: CGPoint){
-        
-        if statsWall.parent != nil{
+        if statsWall.parent != nil && statsWall.alpha == 1{
             if statsWall.position.y > size.height / 4{
                 statsWall.run(SKAction.sequence([SKAction.moveTo(y: self.size.height / 2, duration: 0.5).ease(.easeOut),SKAction.removeFromParent()]))
+                statsWall.alpha = 0.99
+                let _ = timeout(0.5){self.statsWall.alpha = 1}
             }else{
                 statsWall.run(SKAction.moveTo(y: 0, duration: 0.5).ease(.easeOut))
+                statsWall.alpha = 0.99
+                let _ = timeout(0.5){self.statsWall.alpha = 1}
             }
         }
         swiping = false

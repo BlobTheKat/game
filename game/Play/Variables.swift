@@ -281,8 +281,14 @@ class Play: SKScene{
     
     var netseq = 0
     var myseq = 0
-    
-    
+        
     //for statsWall
     let statsWall = SKSpriteNode(imageNamed: "statsWall")
+    let statsEdge1 = SKSpriteNode(imageNamed: "statsEdge")
+    let statsEdge2 = SKSpriteNode(imageNamed: "statsEdge")
+    var statsLabel: [SKLabelNode] = []
+    var statsLabel2: [SKLabelNode] = []
+    let badgeCropNode = SKCropNode()
+    var appleSwipe: CGFloat = 0
+    var statsIcons: [SKSpriteNode] = [SKSpriteNode(imageNamed: "shop"),SKSpriteNode(imageNamed: "badge"),SKSpriteNode(imageNamed: "ship")]
 }

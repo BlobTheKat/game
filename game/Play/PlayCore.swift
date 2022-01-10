@@ -79,6 +79,18 @@ extension Play{
         }
     }
     func cameraUpdate(){
+        if !swiping && badgeCropNode.parent != nil{
+            var x = appleSwipe * 2
+            var correct = badgeCropNode.children.first!.position.x + x - 150
+            if correct > 0{x -= correct}else{
+                correct = badgeCropNode.children.last!.position.x + x - (self.size.width * 0.8) + 150
+                if correct < 0{x -= correct}
+            }
+            for node in badgeCropNode.children{
+                node.position.x += x
+            }
+            appleSwipe *= 0.95
+        }else{appleSwipe *= 0.7}
         border1.position.x = cam.position.x
         border2.position.y = cam.position.y
         drawDebug()

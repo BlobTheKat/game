@@ -471,12 +471,10 @@ class Planet{
 		}
 		this.data.last = this.data.last || Math.floor(NOW/1000 - 60)
 		let diff = Math.floor(NOW/1000 - this.data.last)
-		let shouldEarn = earned2 * diff
-		diff -= (shouldEarn%1)/earned
 		this.data.last += diff
 		unsaveds[this.filename] = this.data
 		this.data.inbank = Math.min(cap, (this.data.inbank || 0) + Math.round(diff * earned))
-		this.data.inbank2 = Math.min(cap2, (this.data.inbank2 || 0) + Math.floor(shouldEarn))
+		this.data.inbank2 = Math.min(cap2, (this.data.inbank2 || 0) + Math.round(earned2 * diff))
 	}
 }
 const PI2 = Math.PI * 2
@@ -939,7 +937,7 @@ let msgs = {
 			let item = planet.data.items[x]
 			if(!item)return res.code(ERR.CHANGEITEM).send()
 			let dat = ITEMS[item.id][item.lvl+1]
-			if(item.lvl > (planet.data.camplvl - ITEMS[item.id][0].available)/ITEMS[i][0].every)return res.code(ERR.CHANGEITEM).send()
+			if(item.lvl >= (planet.data.camplvl - ITEMS[item.id][0].available)/ITEMS[item.id][0].every + 1)return res.code(ERR.CHANGEITEM).send()
 			if(!this.take(dat.price, dat.price2))return res.code(ERR.CHANGEITEM).send()
 			planet.collect()
 			item.finish = (NOW / 1000 + dat.time) >>> 0
@@ -972,7 +970,7 @@ let msgs = {
 		if(!i || (planet.data.items = planet.data.items || E)[x])return res.code(ERR.MAKEITEM).send()
 		let num = 0
 		for(itm in planet.data.items)if(planet.data.items[itm].id == i)num++
-		if(num > (planet.data.camplvl - ITEMS[i][0].available)/ITEMS[i][0].every)return res.code(ERR.MAKEITEM).send()
+		if(num >= (planet.data.camplvl - ITEMS[i][0].available)/ITEMS[i][0].every + 1)return res.code(ERR.MAKEITEM).send()
 		let dat = ITEMS[i][1]
 		if(!this.take(dat.price, dat.price2))return res.code(ERR.MAKEITEM).send()
 		planet.data.items[x] = {id: i, lvl: 0, cap: 0, finish: (NOW / 1000 + dat.time) >>> 0}
