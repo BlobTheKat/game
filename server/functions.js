@@ -23,4 +23,4 @@ function sign(doc){ //RSA-sign document
 
 //Works well, don't touch
 BufWriter.prototype.code = function(a){this.buf[0][0]=a+(this.critical?128:0);return this}
-BufWriter.prototype.send = function snd(remote,c,buf=this){if(buf.toBuf)buf=buf.toBuf();buf.critical&&(ship.crits[buf[1]]=buf,ship.crits[(buf[1]-3)&255]=undefined);server.send(buf,this.remote.port,this.remote.address)}
+BufWriter.prototype.send = function snd(buf=this){if(buf.toBuf)buf=buf.toBuf();buf.critical&&(ship.crits[buf[1]]=buf,ship.crits[(buf[1]-3)&255]=undefined);server.send(buf,this.remote.port,this.remote.address)}

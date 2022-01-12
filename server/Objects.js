@@ -11,7 +11,9 @@ class Planet{
     this.filename = "pdata/" + (sector.x + this.x) + "_" + (sector.y + this.y) + ".json"
     let dat = null
     if(dict.resource)try{dat = JSON.parse(fs.readFileSync(this.filename))}catch(e){dat = null}
-    [this.name, this.price, this.price2] = dict.resource ? dict.resource.split(":") : []
+    [this.name, this.price = 0, this.price2 = 0] = dict.resource ? dict.resource.split(":") : []
+    this.price *= 1
+    this.price2 *= 1
     this.data = dat
     if(this.data){
       this.data.health &= 4095

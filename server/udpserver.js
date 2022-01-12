@@ -75,10 +75,10 @@ server.on('message', async function(m, remote) {
 			e.stack.replace(/<anonymous>:(\d+):(\d+)/g,(_,line,pos)=>{
 				msg += m
 				line -= 2
-				m = process._[line-1]
+				m = process.linesOfCode[line-1]
 				m = "\x1b[;37m"+m.slice(0,pos-1).trim() + "\x1b[33;4m" + m.slice(pos-1).match(/(\w*)(.*)/).slice(1).join("\x1b[m\x1b[37m")
 				let name = ""
-				for(let i of process._f){
+				for(let i of process.fileIndex){
 					if(i[1] > line)break
 					name = i[0]
 				}
