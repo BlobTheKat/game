@@ -186,6 +186,37 @@ extension SKSpriteNode{
         return CGPoint(x: self.size.width * mx + x, y: self.size.height * my + y)
     }
 }
+extension SKNode{
+    func fiddle(_ refsize: CGSize? = nil){
+        var x = CGFloat(), y = CGFloat(), mx = CGFloat(0.5), my = CGFloat(0.5)
+        var r = 1.0, g = 1.0, b = 1.0
+        reg.x{a in
+            x = a
+            self.position.x = mx * (refsize ?? self.scene?.frame.size ?? .zero).width + x
+        }
+        reg.y{a in
+            y = a
+            self.position.y = my * (refsize ?? self.scene?.frame.size ?? .zero).height + y
+        }
+        reg.mx{a in
+            mx = a
+            self.position.x = mx * (refsize ?? self.scene?.frame.size ?? .zero).width + x
+        }
+        reg.my{a in
+            my = a
+            self.position.y = my * (refsize ?? self.scene?.frame.size ?? .zero).height + y
+        }
+        reg.sx{a in (self as? SKSpriteNode)?.anchorPoint.x = a;(self as? SKLabelNode)?.horizontalAlignmentMode = a < 0.45 ? .left : (a > 0.55 ? .right : .center)}
+        reg.sy{a in (self as? SKSpriteNode)?.anchorPoint.y = a;(self as? SKLabelNode)?.verticalAlignmentMode = a < 0.45 ? .bottom : (a > 0.55 ? .top : .center)}
+        reg.s{s in self.setScale(s)}
+        reg.z{z in self.zPosition = z}
+        reg.r{a in r = Double(a)/255; let col = UIColor(red: r, green: g, blue: b, alpha: 1); if let s = self as? SKLabelNode{s.fontColor = col}else if let s = self as? SKSpriteNode{s.color = col}}
+        reg.g{a in g = Double(a)/255; let col = UIColor(red: r, green: g, blue: b, alpha: 1); if let s = self as? SKLabelNode{s.fontColor = col}else if let s = self as? SKSpriteNode{s.color = col}}
+        reg.b{a in b = Double(a)/255; let col = UIColor(red: r, green: g, blue: b, alpha: 1); if let s = self as? SKLabelNode{s.fontColor = col}else if let s = self as? SKSpriteNode{s.color = col}}
+        reg.o{o in self.alpha = o}
+        fiddlenode = self
+    }
+}
 
 extension Data{
     func hexEncodedString(uppercase: Bool = false) -> String {
@@ -398,8 +429,7 @@ extension SKScene{
 }
 
 
-
-extension Dictionary {
+extension Dictionary{
     mutating func merge(dict: [Key: Value]){
         for (k, v) in dict {
             updateValue(v, forKey: k)

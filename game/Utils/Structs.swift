@@ -121,3 +121,32 @@ struct Complex<T> where T: Numeric{
         return CGPoint(x: r, y: i)
     }
 }
+
+let zero = CGFloat.zero
+let one = CGFloat(1)
+class Fiddle<T>{
+    var cb: (T) -> () = {_ in }
+    var value: T
+    init(_ t: T){value = t}
+    func __conversion() -> T{return value}
+    func callAsFunction(_ a: @escaping (T) -> ()){cb = a;cb(value)}
+    func setTo(_ a: T){
+        value = a
+        cb(a)
+    }
+    var str: String{return "\(value)"}
+}
+
+let reg = (mx: Fiddle(zero), my: Fiddle(zero), x: Fiddle(zero), y: Fiddle(zero), sx: Fiddle(one / 2), sy: Fiddle(one / 2), s: Fiddle(one), z: Fiddle(zero), i: Fiddle(false), o: Fiddle(one), p: Fiddle(false), r: Fiddle(UInt8(255)), g: Fiddle(UInt8(255)), b: Fiddle(UInt8(255)))
+var floatfiddle: Fiddle<CGFloat>? = nil
+var boolfiddle: Fiddle<Bool>? = nil
+var bytefiddle: Fiddle<UInt8>? = nil
+var fiddlenode: SKNode? = SKNode()
+
+func pickfiddle(){
+    SKNode().fiddle()
+    fiddlenode = nil
+    floatfiddle = nil
+    boolfiddle = nil
+    bytefiddle = nil
+}

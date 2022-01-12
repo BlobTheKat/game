@@ -143,6 +143,7 @@ extension Play{
         DEBUG_TXT.numberOfLines = 20
         DEBUG_TXT.zPosition = .infinity
         cam.addChild(DEBUG_TXT)
+        avatar.alpha = 0.2
         api.position(completion: sectorpos)
     }
     override func didMove(to view: SKView) {
@@ -204,6 +205,7 @@ extension Play{
             })
         }
         DEBUG_TXT.removeFromParent()
+        avatar.alpha = 1
     }
     func startAnimation(){
         if animated{return}
@@ -305,7 +307,7 @@ extension Play{
         var lvl = 0
         for itm in planetLanded!.items{if itm?.type == .camp{lvl = Int(itm!.lvl);break}}
         let dat = items[Int(item.type.rawValue)][0]
-        if Double(item.lvl) >= Double(Double(lvl) - (dat["available"]?.number ?? 1)) / (dat["every"]?.number ?? 1) + 1{return nil}
+        if Double(item.lvl) >= Double(Double(lvl) - (dat["available"]?.number ?? 1.0)) / (dat["every"]?.number ?? 1.0) + 1.0{return nil}
         if item.upgradeEnd > 0 || items[id].count < item.lvl + 2{return nil}
         let old = items[id][Int(item.lvl)]
         let new = items[id][Int(item.lvl)+1]
@@ -319,7 +321,7 @@ extension Play{
     }
     func startGame(){
         //IMPORTANT SIZE ALGORITHM
-        colonizeBG.anchorPoint = CGPoint(x: 1 ,y: 1)
+        colonizeBG.anchorPoint = CGPoint(x: 1, y: 1)
         let dify = (self.size.height + 40) / colonizeBG.size.height
         colonizeBG.size.height = self.size.height + 40
         colonizeBG.size.width *= dify
@@ -516,7 +518,7 @@ extension Play{
         statsLabel2[1].text = "902"
         statsLabel2[2].text = "1.09"
         statsLabel2[3].text = "19"
-        statsLabel2[4].text = "224Ly"
+        statsLabel2[4].text = "224ly"
         
         for i in 0...2{
             
@@ -695,19 +697,18 @@ extension Play{
         shipDirection.setScale(1.5)
         cam.addChild(shipDirection)
         
+        thrustButton.position = pos(mx: -0.4, my: -0.4, x: 50, y: 80)
+        thrustButton.alpha = 1
+        thrustButton.zPosition = 10
+        thrustButton.setScale(1.4)
+        cam.addChild(thrustButton)
         
-            thrustButton.position = pos(mx: -0.4, my: -0.4, x: 50, y: 80)
-            thrustButton.alpha = 1
-            thrustButton.zPosition = 10
-            thrustButton.setScale(1.4)
-            cam.addChild(thrustButton)
-            
-            heatingLaser.position = CGPoint(x: 0, y: thrustButton.size.width/2.2)
-            heatingLaser.alpha = 0
-            heatingLaser.anchorPoint = CGPoint(x: 0.5, y: 0.5)
-            heatingLaser.zPosition = 10
-            heatingLaser.setScale(0.12)
-            thrustButton.addChild(heatingLaser)
+        heatingLaser.position = CGPoint(x: 0, y: thrustButton.size.width/2.2)
+        heatingLaser.alpha = 0
+        heatingLaser.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+        heatingLaser.zPosition = 10
+        heatingLaser.setScale(0.12)
+        thrustButton.addChild(heatingLaser)
             
         healthBar.position = pos(mx: 0, my: 0.47)
         healthBar.alpha = 1
@@ -728,39 +729,9 @@ extension Play{
         tunnel1.removeFromParent()
         tunnel2.run(SKAction.moveBy(x: 200, y: 30, duration: 0.6).ease(.easeOut))
         tunnel2.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeOut))
-    
         tunnel2.removeFromParent()
-        
-        
-        
-        /*
-        self.run(SKAction.repeatForever(.sequence([
-            
-            SKAction.playSoundFileNamed("extras/ambient\(Int(random(min: 1, max: 6))).wav", waitForCompletion: true),
-            SKAction.wait(forDuration: 0.5)
-        ])))
-        
-         
-         switch randomSound{
-         case 1: self.waitForSound = 180
-             break
-         case 2: self.waitForSound = 144
-             break
-         case 3: self.waitForSound = 89
-             break
-         case 4: self.waitForSound = 120
-             break
-         case 5: self.waitForSound = 57
-             break
-         default: print("wrong sound")
-         }
-        */
-        
-        
-            
-            
+        wallIcons()
         self.ambientSound()
-        
     }
     func ambientSound(){
         
@@ -1024,6 +995,55 @@ extension Play{
         tracked.removeAll()
         trackArrows.removeAll()
     }
+    func startLazer(){
+        usedShoot = true
+        newShoot = true
+        usingConstantLazer = true
+        heatingLaser.alpha = 1
+        stopInterval()
+        if heatLevel <= 40{
+            goingDown = false
+            ship.shootQueue = 1
+            heatingLaser.texture = SKTexture(imageNamed: "heating\(heatLevel / 10)")
+        }
+        stopInterval = interval(0.1){ [self] in
+            heatLevel += goingDown ? -1 : 1
+            if heatLevel == 50{
+                goingDown = true
+            }
+            if heatLevel < 1{
+                heatingLaser.texture = SKTexture(imageNamed: "heating0")
+                if usingConstantLazer{goingDown = false}
+                heatLevel = 0
+                return
+            }
+            if heatLevel <= 40 && !goingDown{
+                if case .number(let f) = ships[ship.id]["shootspeed"]{
+                    ship.shootFrequency = f
+                }
+                heatingLaser.texture = SKTexture(imageNamed: "heating\(heatLevel / 10)")
+            }else if heatLevel > 40{
+                ship.shootFrequency = 0
+                let stage = (heatLevel - 41) / 2
+                if stage % 2 == 0{
+                    heatingLaser.alpha = 0
+                }else{
+                    heatingLaser.alpha = 1
+                }
+            }else{
+                ship.shootFrequency = 0
+                heatingLaser.alpha = 1
+                heatingLaser.texture = SKTexture(imageNamed: "heating\(heatLevel / 10)")
+            }
+        }
+    }
+    func pauseLazer(){
+        usingConstantLazer = false
+        if heatLevel < 40{
+            goingDown = true
+        }
+        ship.shootFrequency = 0
+    }
     func constantLazer(){
         usedShoot = true
         newShoot = true
@@ -1233,15 +1253,110 @@ extension Play{
         dragRemainder = .nan
     }
     
+    func wallIcons(){
+        let mustard = UIColor(red: 1, green: 0.7, blue: 0, alpha: 1)
+        stats.levelbg.position.y = self.size.height * 0.9 - 20
+        stats.levelLabel.text = "level 1"
+        stats.levelLabel.fontColor = mustard
+        stats.levelLabel.position.y = self.size.height * 0.9 - 40
+        stats.levelLabel.fontSize = 40
+        stats.xpBox.position.y = self.size.height * 0.7
+        stats.xpBox.setScale(0.5)
+        stats.xpLabel.text = "100xp"
+        stats.xpLabel.position = pos(mx: 0, my: 0.7, x: -218, y: -12)
+        stats.xpLabel.horizontalAlignmentMode = .left
+        stats.xpLabel.zPosition = 2
+        stats.xpLabel.fontSize = 30
+        stats.xpFill.anchorPoint.x = 0
+        stats.xpFill.position = pos(mx: 0, my: 0.7, x: -220, y: 0)
+        stats.xpFill.setScale(0.5)
+        statsWall.addChild(stats.xpBox)
+        statsWall.addChild(stats.levelbg)
+        statsWall.addChild(stats.levelLabel)
+        statsWall.addChild(stats.xpLabel)
+        statsWall.addChild(stats.xpFill)
+        for i in 0...2{
+            let box = SKSpriteNode(imageNamed: "progressOutline")
+            let fill = SKSpriteNode(imageNamed: "progressgreen")
+            let text = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+            let rewardsbox = SKSpriteNode(imageNamed: "rewards")
+            let xpReward = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+            let gemReward = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+            rewardsbox.position = pos(mx: 0.4, my: 0.5, x: -10.0, y: CGFloat(i * -60) + 2)
+            rewardsbox.setScale(1.3)
+            rewardsbox.anchorPoint = CGPoint(x: 1.0, y: 0.5)
+            xpReward.text = "1000"
+            xpReward.position = pos(mx: 0.4, my: 0.5, x: -218.0, y: CGFloat(i * -60))
+            xpReward.fontSize = 28
+            xpReward.horizontalAlignmentMode = .left
+            xpReward.verticalAlignmentMode = .center
+            xpReward.fontColor = mustard
+
+            gemReward.text = "10"
+            gemReward.position = pos(mx: 0.4, my: 0.5, x: -70.0, y: CGFloat(i * -60))
+            gemReward.fontSize = 28.8
+            gemReward.fontColor = .green
+            gemReward.verticalAlignmentMode = .center
+            
+            fill.position = pos(mx: -0.4, my: 0.5, x: 22.0, y: CGFloat(i * -60))
+            fill.anchorPoint.x = 0
+            fill.setScale(0.4)
+            box.position = pos(mx: -0.4, my: 0.5, x: 20.0, y: CGFloat(i * -60))
+            box.setScale(0.4)
+            box.anchorPoint.x = 0
+            let label = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+            label.text = "Destroy 300 asteroids"
+            label.position = pos(mx: -0.4, my: 0.5, x: 18.0, y: 20.0 + CGFloat(i * -60))
+            label.fontSize = 25
+            label.horizontalAlignmentMode = .left
+            label.zPosition = 2
+            text.text = "51 / 300"
+            text.position = pos(mx: -0.4, my: 0.5, x: 22.0, y: CGFloat(i * -60))
+            text.fontSize = 20
+            text.horizontalAlignmentMode = .left
+            text.verticalAlignmentMode = .center
+            text.zPosition = 2
+            stats.missions.append((label: label, box: box, fill: fill, text: text, rewardsbox: rewardsbox, xpReward: xpReward, gemReward: gemReward))
+            statsWall.addChild(box)
+            statsWall.addChild(fill)
+            statsWall.addChild(label)
+            statsWall.addChild(text)
+            statsWall.addChild(rewardsbox)
+            statsWall.addChild(gemReward)
+            statsWall.addChild(xpReward)
+        }
+        
+    }
+    func removeWallIcons(){
+        stats.levelbg.removeFromParent()
+        stats.levelLabel.removeFromParent()
+        stats.xpLabel.removeFromParent()
+        stats.xpBox.removeFromParent()
+        stats.xpFill.removeFromParent()
+        for m in stats.missions{
+            m.label.removeFromParent()
+            m.box.removeFromParent()
+            m.fill.removeFromParent()
+            m.text.removeFromParent()
+            m.rewardsbox.removeFromParent()
+            m.xpReward.removeFromParent()
+            m.gemReward.removeFromParent()
+        }
+        stats.missions.removeAll()
+    }
     
     override func nodeDown(_ node: SKNode, at point: CGPoint) {
-        if statsWall.parent != nil{
+        if fiddlenode == nil{node.fiddle()}
+        if statsWall.parent != nil && !swiping{
             switch node{
             case statsIcons[1]:
-                if badgeCropNode.parent == nil{
-                    //REMOVE OTHER WALLICONS HERE
+                if badgeCropNode.name != "badge"{
+                    removeWallIcons()
                     var i = 0
-                    
+                    statsIcons[0].texture = SKTexture(imageNamed: "shop")
+                    statsIcons[1].texture = SKTexture(imageNamed: "statsbtn")
+                    statsIcons[2].texture = SKTexture(imageNamed: "ship")
+                    badgeCropNode.name = "badge"
                     let w = 0.4 * self.size.width, h = 0.5 * self.size.height
                     badgeCropNode.position.y = h
                     badgeCropNode.position.x = -w
@@ -1249,6 +1364,7 @@ extension Play{
                     n.fillColor = .white
                     n.lineWidth = 0
                     badgeCropNode.maskNode = n
+                    badgeCropNode.removeAllChildren()
                     for b in BADGES{
                         b.removeFromParent()
                         badgeCropNode.addChild(b)
@@ -1256,10 +1372,99 @@ extension Play{
                         b.position.x = CGFloat(i >> 1) * 200 + 150
                         i += 1
                     }
+                    badgeCropNode.removeFromParent()
                     statsWall.addChild(badgeCropNode)
                 }else{
                     badgeCropNode.removeFromParent()
-                    //READD WALLICONS HERE
+                    badgeCropNode.name = nil
+                    wallIcons()
+                    statsIcons[1].texture = SKTexture(imageNamed: "badge")
+                }
+                break
+            case statsIcons[0]:
+                if badgeCropNode.name != "shop"{
+                    removeWallIcons()
+                    statsIcons[0].texture = SKTexture(imageNamed: "statsbtn")
+                    statsIcons[1].texture = SKTexture(imageNamed: "badge")
+                    statsIcons[2].texture = SKTexture(imageNamed: "ship")
+                    let w = 0.4 * self.size.width, h = 0.5 * self.size.height
+                    badgeCropNode.position.y = h
+                    badgeCropNode.position.x = -w
+                    let n = SKShapeNode(rect: CGRect(origin: CGPoint(x: 0, y: -h), size: CGSize(width: w * 2, height: h * 2)))
+                    n.fillColor = .white
+                    n.lineWidth = 0
+                    badgeCropNode.maskNode = n
+                    badgeCropNode.removeAllChildren()
+                    badgeCropNode.name = "shop"
+                    
+                    //DISPLAY SHOP
+                    let cheapPass = SKSpriteNode(imageNamed: "cheap_pass")
+                    let pass = SKSpriteNode(imageNamed: "pass")
+                    let cheapPrice = SKSpriteNode(imageNamed: "price300")
+                    let price = SKSpriteNode(imageNamed: "price1000")
+                    let gems1 = SKSpriteNode(imageNamed: "gems60")
+                    let gems2 = SKSpriteNode(imageNamed: "gems300")
+                    let gems3 = SKSpriteNode(imageNamed: "gems1000")
+                    let gems4 = SKSpriteNode(imageNamed: "gems5000")
+                    let dummy = SKSpriteNode(imageNamed: "blank")
+                    dummy.setScale(0)
+                    cheapPass.position = CGPoint(x: w, y: 80)
+                    cheapPrice.position = CGPoint(x: w, y: -100)
+                    pass.position = CGPoint(x: w * 2.5 + 50, y: 80)
+                    price.position = CGPoint(x: w * 2.5 + 50, y: -100)
+                    gems1.position = CGPoint(x: w * 4, y: 80)
+                    gems2.position = CGPoint(x: w * 4 + 160, y: 80)
+                    gems3.position = CGPoint(x: w * 4, y: -80)
+                    gems4.position = CGPoint(x: w * 4 + 160, y: -80)
+                    dummy.position.x = w * 5 + 80
+                    badgeCropNode.addChild(cheapPass)
+                    badgeCropNode.addChild(cheapPrice)
+                    badgeCropNode.addChild(pass)
+                    badgeCropNode.addChild(price)
+                    badgeCropNode.addChild(gems1)
+                    badgeCropNode.addChild(gems2)
+                    badgeCropNode.addChild(gems3)
+                    badgeCropNode.addChild(gems4)
+                    badgeCropNode.addChild(dummy)
+                    pass.setScale(1.2)
+                    price.setScale(1.2)
+                    cheapPass.setScale(1.2)
+                    cheapPrice.setScale(1.2)
+                    
+                    badgeCropNode.removeFromParent()
+                    statsWall.addChild(badgeCropNode)
+                }else{
+                    badgeCropNode.name = nil
+                    badgeCropNode.removeFromParent()
+                    wallIcons()
+                    statsIcons[0].texture = SKTexture(imageNamed: "shop")
+                }
+                break
+            case statsIcons[2]:
+                if badgeCropNode.name != "ship"{
+                    removeWallIcons()
+                    statsIcons[0].texture = SKTexture(imageNamed: "shop")
+                    statsIcons[1].texture = SKTexture(imageNamed: "badge")
+                    statsIcons[2].texture = SKTexture(imageNamed: "statsbtn")
+                    let w = 0.4 * self.size.width, h = 0.5 * self.size.height
+                    badgeCropNode.position.y = h
+                    badgeCropNode.position.x = -w
+                    let n = SKShapeNode(rect: CGRect(origin: CGPoint(x: 0, y: -h), size: CGSize(width: w * 2, height: h * 2)))
+                    n.fillColor = .white
+                    n.lineWidth = 0
+                    badgeCropNode.maskNode = n
+                    badgeCropNode.removeAllChildren()
+                    badgeCropNode.name = "ship"
+                    
+                    //DISPLAY SHIPS
+                    
+                    badgeCropNode.removeFromParent()
+                    statsWall.addChild(badgeCropNode)
+                }else{
+                    badgeCropNode.name = nil
+                    badgeCropNode.removeFromParent()
+                    wallIcons()
+                    statsIcons[2].texture = SKTexture(imageNamed: "ship")
                 }
                 break
             default:break
@@ -1282,7 +1487,7 @@ extension Play{
                 addItemPrices[i].position = addItemIcons[i].position
                 addItemPrices[i].position.y -= 250
                 addItemPrices[i].fontSize = 60
-                if Double(used[i+1]) >= (Double(lvl) - (items[i+1][0]["available"]?.number ?? 1)) / (items[i+1][0]["every"]?.number ?? 1) + 1{
+                if Double(used[i+1]) >= Double(Double(lvl) - (items[i+1][0]["available"]?.number ?? 1.0)) / (items[i+1][0]["every"]?.number ?? 1.0) + 1.0{
                     addItemIcons[i].alpha = 0.5
                 }else{
                     addItemIcons[i].alpha = 1
@@ -1481,17 +1686,11 @@ extension Play{
         if thrustButton == node{
             if point.y > thrustButton.position.y + 50{
                 thrustButton.texture = SKTexture(imageNamed: "shooting2")
-                if !usingConstantLazer{
-                    self.actionStopped = false
-                    constantLazer()
-                }
+                startLazer()
             }else{
                 thrustButton.texture = SKTexture(imageNamed: "thrustOn")
-                self.action(forKey: "constantLazer")?.speed = 0
-                ship.shootFrequency = 0
-                self.heatingLaser.alpha = 0
-                self.actionStopped = true
-                usingConstantLazer = false
+                
+                pauseLazer()
                 ship.thrust = true
                 if !playingThrustSound{
                     thrustSound.removeAllActions()
@@ -1552,18 +1751,13 @@ extension Play{
         if thrustButton == node{
             if point.y > thrustButton.position.y + 50{
                 if !usingConstantLazer{
-                    thrustButton.texture = SKTexture(imageNamed: "shooting1")
-                    self.actionStopped = false
-                    constantLazer()
+                    startLazer()
                 }
                 
             }else{
                 thrustButton.texture = SKTexture(imageNamed: "thrustOn")
                 self.action(forKey: "constantLazer")?.speed = 0
-                ship.shootFrequency = 0
-                self.heatingLaser.alpha = 0
-                self.actionStopped = true
-                usingConstantLazer = false
+                pauseLazer()
                 ship.thrust = true
             }
             
@@ -1623,14 +1817,9 @@ extension Play{
                 }
             ]))
             self.playingThrustSound = false
-            self.action(forKey: "constantLazer")?.speed = 0
-            ship.shootFrequency = 0
-            self.heatingLaser.alpha = 0
-            self.actionStopped = true
-            usingConstantLazer = false
+            pauseLazer()
             ship.thrust = false
             thrustButton.texture = SKTexture(imageNamed: "thrustOff")
-            usingConstantLazer = false
         }
         if dPad == node{
             dPad.texture = SKTexture(imageNamed: "dPad")
@@ -1652,6 +1841,64 @@ extension Play{
     }
     override func keyDown(_ key: UIKeyboardHIDUsage) {
         hideControls()
+        if let b = boolfiddle, key == .keyboardComma || key == .keyboardPeriod{b.setTo(!b.value);return}
+        if let b = bytefiddle{if key == .keyboardComma{b.setTo(b.value&-1);return}else if key == .keyboardPeriod{b.setTo(b.value&+1);return}else if key == .keyboardN{b.setTo(b.value&-10);return}else if key == .keyboardM{b.setTo(b.value&+10);return}}
+        if let f = floatfiddle{if key == .keyboardComma{f.setTo(f.value-1);return}else if key == .keyboardPeriod{f.setTo(f.value+1);return}else if key == .keyboardN{f.setTo(f.value-10);return}else if key == .keyboardM{f.setTo(f.value+10);return}else if key == .keyboardSemicolon{f.setTo(f.value-0.1);return}else if key == .keyboardQuote{f.setTo(f.value+0.1);return}}
+        boolfiddle = nil
+        floatfiddle = nil
+        bytefiddle = nil
+        switch key{
+        case .keyboardX:
+            floatfiddle = reg.x
+            break
+        case .keyboardY:
+            floatfiddle = reg.y
+            break
+        case .keyboardZ:
+            floatfiddle = reg.z
+            break
+        case .keyboardS:
+            floatfiddle = reg.s
+            break
+        case .keyboardI:
+            boolfiddle = reg.i
+            break
+        case .keyboardO:
+            floatfiddle = reg.o
+            break
+        case .keyboardP:
+            boolfiddle = reg.p
+            break
+        case .keyboardOpenBracket:
+            floatfiddle = reg.mx
+            break
+        case .keyboardCloseBracket:
+            floatfiddle = reg.my
+            break
+        case .keyboardHyphen:
+            floatfiddle = reg.sx
+            break
+        case .keyboardEqualSign:
+            floatfiddle = reg.sy
+            break
+        case .keyboardR:
+            bytefiddle = reg.r
+            break
+        case .keyboardG:
+            bytefiddle = reg.g
+            break
+        case .keyboardB:
+            bytefiddle = reg.b
+            break
+        case .keyboardGraveAccentAndTilde:
+            let node = "<#node#" + ">"
+            let label = fiddlenode as? SKLabelNode != nil
+            UIPasteboard.general.string = "\(node).position = pos(mx: \(rnd(reg.mx.value)), my: \(rnd(reg.my.value))\(reg.x.value != 0 || reg.y.value != 0 ? ", x: \(rnd(reg.x.value)), y: \(rnd(reg.y.value))":""))\n\(reg.o.value < 1 ? "\(node).alpha = \(rnd(reg.o.value))\n":"")\(reg.s.value != 1 ? (label ? "\(node).fontSize = \(rnd(reg.s.value*32))\n":"\(node).setScale(\(rnd(reg.s.value)))\n"):"")\(reg.z.value != 0 ? "\(node).zPosition = \(rnd(reg.z.value))\n":"")\( reg.sx.value != 0.5 || reg.sy.value != 0.5 ? (label ? "\(reg.sx.value > 0.55 ? "\(node).horizontalAlignmentMode = .right\n" : (reg.sx.value < 0.45 ? "\(node).horizontalAlignmentMode = .left\n" : ""))\(reg.sy.value > 0.55 ? "\(node).verticalAlignmentMode = .top\n" : (reg.sy.value >= 0.45 ? "\(node).verticalAlignmentMode = .center\n" : ""))" : "\(node).anchorPoint = CGPoint(x: \(rnd(reg.sx.value)), y: \(rnd(reg.sy.value)))\n"):"")\(reg.r.value != 255 || reg.g.value != 255 || reg.b.value != 255 && (label || fiddlenode as? SKSpriteNode != nil) ? "\(node).\(label ? "fontColor" : "color") = UIColor(red: \(rnd(Double(reg.r.value) / 255)), green: \(rnd(Double(reg.g.value) / 255)), blue: \(rnd(Double(reg.b.value) / 255))\n":"")"
+        case .keyboardF:
+            if fiddlenode == nil{fiddlenode = SKNode();fiddlenode!.name="!"}
+            else if fiddlenode!.name != "!"{fiddlenode = nil}
+        default:break
+        }
         if key == .keyboardUpArrow || key == .keyboardW{
             ship.thrust = true
             if !playingThrustSound{
@@ -1665,12 +1912,9 @@ extension Play{
             ship.thrustRight = true
         }else if key == .keyboardLeftArrow || key == .keyboardA{
             ship.thrustLeft = true
-        }else if key == .keyboardDownArrow || key == .keyboardS || key == .keyboardK{
-            if !usingConstantLazer{
-                self.actionStopped = false
-                constantLazer()
-            }
-        }else if key == .keyboardM{
+        }else if key == .keyboardDownArrow || key == .keyboardK{
+            startLazer()
+        }else if key == .keyboardTab{
             if showMap == false{
                 mapBG.alpha = 1
                 FakemapBG.alpha = 1
@@ -1683,20 +1927,21 @@ extension Play{
                 showMap = false
             }
         }
-        if key == .keyboardN{
+        if key == .keyboardC{
             ship.encode(data: &shipStates)
-        }else if key == .keyboardB{
+        }else if key == .keyboardV{
             guard shipStates.count >= 16 else{return}
             ship.decode(data: &shipStates)
-        }else if key == .keyboardEqualSign{
+        }else if key == .keyboardBackslash{
             send(Data([127]))
             dmessage = "Disconnected :O"
             end()
             Disconnected.renderTo(skview)
-        }else if key == .keyboardF3 || key == .keyboardTab{
+        }else if key == .keyboardF3 || key == .keyboardSlash{
             if DEBUG_TXT.parent == nil{
                 cam.addChild(DEBUG_TXT)
-            }else{DEBUG_TXT.removeFromParent()}
+                avatar.alpha = 0.1
+            }else{DEBUG_TXT.removeFromParent();avatar.alpha = 1}
         }
         if key == .keyboardSpacebar{
             if  !showAccount && !startPressed && !tapToStartPressed && children.count > MIN_NODES_TO_START{
@@ -1753,12 +1998,8 @@ extension Play{
         }else if key == .keyboardLeftArrow || key == .keyboardA{
             ship.thrustLeft = false
         }else if key == .keyboardDownArrow || key == .keyboardS || key == .keyboardK{
-            self.action(forKey: "constantLazer")?.speed = 0
-            ship.shootFrequency = 0
-            self.heatingLaser.alpha = 0
-            self.actionStopped = true
-            usingConstantLazer = false
-        }else if key == .keyboardC{
+            pauseLazer()
+        }else if key == .keyboardL{
             self.end()
             SKScene.transition = SKTransition.crossFade(withDuration: 1.5)
             DPlay.renderTo(skview)
@@ -1824,12 +2065,12 @@ extension Play{
             statsWall.removeAllActions()
             statsWall.position.y = max(statsWall.position.y + b.y - a.y, 0)
         }else if statsWall.parent != nil && statsWall.alpha == 1{
-            if badgeCropNode.parent != nil{
+            if badgeCropNode.parent != nil && badgeCropNode.children.count > 0{
                 appleSwipe = (b.x - a.x)
                 var x = appleSwipe * 2
-                var correct = badgeCropNode.children.first!.position.x + x - 150
+                var correct = badgeCropNode.children.first!.position.x + x - badgeCropNode.children.first!.frame.width
                 if correct > 0{x -= correct}else{
-                    correct = badgeCropNode.children.last!.position.x + x - (self.size.width * 0.8) + 150
+                    correct = badgeCropNode.children.last!.position.x + x - (self.size.width * 0.8) + badgeCropNode.children.last!.frame.width
                     if correct < 0{x -= correct}
                 }
                 for node in badgeCropNode.children{

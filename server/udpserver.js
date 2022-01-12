@@ -1,0 +1,128 @@
+//8
+server.on('listening', function() {
+    console.log('\x1b[32mUDP Server listening on port '+(server.address().port)+'\x1b[m');
+})
+
+server.on('message', async function(m, remote) {
+    let send = a=>server.send(a,remote.port,remote.address)
+    let address = remote.address + ':' + remote.port
+    let message = new Buf(m.buffer)
+    let code = message.ubyte()
+    let ship = clients.get(address)
+    message.critical = 0
+    if(code > 127){
+        code -= 128
+        message.critical = message.ubyte() + 256 //when its encoded again it will be put in the 0-255 range again
+        //With this you can now reliably check if its critical without having to use a comparing operator
+    }
+    if(message.critical && ship && ship.crits && ship.crits[message.critical-256])return send(ship.crits[message.critical-256])
+    if(code === CODE.HELLO && message.critical){if(ship === 0)return
+        try{
+            let version = message.ushort()
+            if(version < VERSION)return send(Buffer.concat([Buffer.of(127), strbuf('Please Update')]))
+            let len = message.ubyte()
+            let publicKeyUrl = message.str(len)
+            len = message.ushort()
+            let signature = Buffer.from(message.buffer(len)).toString("base64")
+            len = message.ubyte()
+            let salt = Buffer.from(message.buffer(len)).toString("base64")
+            len = message.ubyte()
+            let playerId = message.str(len)
+            let timestamp = message.uint() + message.uint() * 4294967296
+            len = message.ubyte()
+            let name = message.str(len)
+            let w = message.ushort()
+            clients.set(address, 0)
+            verify({publicKeyUrl, signature, salt, playerId, timestamp, bundleId}, async function(err){
+                playerId = playerId.slice(3)
+                if(err){
+                    if(timestamp > 1)return send(Buffer.from(Buffer.concat([Buffer.of(127), strbuf("Invalid identity")])))
+                    playerId = playerId.toUpperCase()
+                }else playerId = playerId.toLowerCase()
+                //fetch DB stuff
+                let cli = new ClientData(name, playerId, address)
+                fetchdata(playerId).then(a => {
+                    Object.fallback(a, PLAYERDATA)
+                    cli.ready(0, 0, a.id || 1, w)
+                    cli.data = a
+                    clients.set(address, cli)
+                    let buf = Buffer.alloc(18)
+                    buf[0] = 129
+                    buf[1] = message.critical
+                    buf.writeDoubleLE(cli.data.bal || 0, 2)
+                    buf.writeFloatLE(cli.data.bal2 || 0, 10)
+                    buf.writeFloatLE(cli.data.gems || 0, 14)
+                    send(buf)
+                    cli.crits[message.critical-256] = buf
+                })
+            })
+        }catch(e){
+            console.log(e)
+            send(Buffer.from(Buffer.concat([Buffer.of(127), strbuf('Connection failed')])))
+        }
+        return
+    }
+    if(typeof ship != "object")return
+    let res = new BufWriter()
+    res.remote = remote
+    res.ship = ship
+    res.byte(0)
+    message.critical && res.byte(message.critical)
+    Object.fallback(ship.data, PLAYERDATA)
+    try{ship.ping();msgs[code]&&msgs[code].call(ship,message,res)}catch(e){
+			let msg = "\x1b[31m"+e.name+": "+e.message
+			let m = ""
+			e.stack.replace(/<anonymous>:(\d+):(\d+)/g,(_,line,pos)=>{
+				msg += m
+				line -= 2
+				m = process._[line-1]
+				m = "\x1b[;37m"+m.slice(0,pos-1).trim() + "\x1b[33;4m" + m.slice(pos-1).match(/(\w*)(.*)/).slice(1).join("\x1b[m\x1b[37m")
+				let name = ""
+				for(let i of process._f){
+					if(i[1] > line)break
+					name = i[0]
+				}
+				m = "\n\x1b[34;4m" + name + ":" + line + ":" + pos + "\n" + m
+			});
+			console.log(msg)
+			send(Buffer.concat([Buffer.of(127), strbuf("Bad Packet")]))}
+});
+
+
+//Codes
+const CODE = {
+    HELLO: 0,
+    PING: 3,
+    DISCONNECT: 127,
+    PLANETBUY: 10,
+    DATA: 5,
+    CHANGEITEM: 14,
+    COLLECT: 17,
+    MAKEITEM: 20,
+    SKIPBUILD: 23,
+    REPAIR: 26,
+    RESTORE: 29,
+}
+const RESP = {
+    PONG: 4,
+    PLANETBUY: 11,
+    DATA: 6,
+    DATA2: 7,
+    PLANETDATA: 12,
+    CHANGEITEM: 15,
+    COLLECT: 18,
+    MAKEITEM: 22,
+    SKIPBUILD: 24,
+    REPAIR: 27,
+    RESTORE: 30,
+}
+const ERR = {
+    PLANETBUY: 13,
+    MAKEITEM: 21,
+    COLLECT: 19,
+    CHANGEITEM: 16,
+    SKIPBUILD: 25,
+    REPAIR: 28,
+    RESTORE: 31,
+}
+

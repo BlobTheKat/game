@@ -31,8 +31,8 @@ extension GameData{
                 let value = t[1].trimmingCharacters(in: CharacterSet([" ", "\u{0009}"]))
                 let match = GameData.floatparser.firstMatch(in: value, range: NSRange(value.startIndex..<value.endIndex, in: value))
                 if match != nil, let a = Double(value[Range(match!.range(at: 1), in: value)!]){
-                    let prefixValue = PREFIXES[String(value[Range(match!.range(at: 2), in: value)!])] ?? 1
-                    self[self.count-1][String(t[0])] = .number(a * prefixValue)
+                    let suffixValue = SUFFIXES[String(value[Range(match!.range(at: 2), in: value)!])] ?? 1
+                    self[self.count-1][String(t[0])] = .number(a * suffixValue)
                 }else if value.lowercased() == "yes" || value.lowercased() == "true"{
                     self[self.count-1][String(t[0])] = .bool(true)
                 }else if value.lowercased() == "no" || value.lowercased() == "false"{

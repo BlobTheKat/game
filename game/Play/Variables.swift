@@ -291,4 +291,16 @@ class Play: SKScene{
     let badgeCropNode = SKCropNode()
     var appleSwipe: CGFloat = 0
     var statsIcons: [SKSpriteNode] = [SKSpriteNode(imageNamed: "shop"),SKSpriteNode(imageNamed: "badge"),SKSpriteNode(imageNamed: "ship")]
+    var goingDown: Bool = false
+    var stopInterval = {}
+    
+    
+    var stats = (
+        levelbg: SKSpriteNode(imageNamed: "levelbg"),
+        levelLabel: SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular"),
+        xpLabel: SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular"),
+        xpBox: SKSpriteNode(imageNamed: "progressOutline"),
+        xpFill: SKSpriteNode(imageNamed: "progressyellow"),
+        missions: [(label: SKLabelNode, box: SKSpriteNode, fill: SKSpriteNode, text: SKLabelNode, rewardsbox: SKSpriteNode, xpReward: SKLabelNode, gemReward: SKLabelNode)]()
+    )
 }

@@ -18,7 +18,7 @@ let ID = (UIDevice.current.identifierForVendor?.uuidString ?? uuidstore("ID")).r
 //Configurable constants//
 
 //ip override
-let IPOVERRIDE: String? = "192.168.1.248:65152"
+let IPOVERRIDE: String? = "192.168.1.141:65152"
 //Game version
 let VERSION = 1
 //Universal gravitational constant
@@ -30,7 +30,7 @@ let REGIONSIZE = 500000
 //Starting X and Y
 var secx = 7000
 var secy = 4000
-let PREFIXES = [
+let SUFFIXES = [
     "s": 1,
     "m": 60,
     "h": 3600,
@@ -42,7 +42,7 @@ let PREFIXES = [
     "%": 0.01
 ]
 
-let BADGES = ["badge1", "badge2", "badge3", "badge4", "badge5", "badge6", "badge7", "badge8", "badge9", "badge10", "badge11", "badge12", "badge13", "badge14", "badge15", "badge16"].map({ badge -> SKSpriteNode in
+let BADGES = ["badge1", "badge2", "badge3", "badge4", "badge5", "badge6", "badge7", "badge8", "badge9", "badge10", "badge11", "badge12", "badge13", "badge14", "badge15", "badge16", "badge17", "badge18", "badge19", "badge20", "badge21", "badge22", "badge23", "badge24", "badge25", "badge26", "badge27", "badge28", "badge29", "badge30"].map({ badge -> SKSpriteNode in
     let node = SKSpriteNode(imageNamed: "boxlock")
     let child = SKSpriteNode(imageNamed: badge)
     child.zPosition = -1

@@ -79,11 +79,11 @@ extension Play{
         }
     }
     func cameraUpdate(){
-        if !swiping && badgeCropNode.parent != nil{
+        if !swiping && badgeCropNode.parent != nil && badgeCropNode.children.count > 0{
             var x = appleSwipe * 2
-            var correct = badgeCropNode.children.first!.position.x + x - 150
+            var correct = badgeCropNode.children.first!.position.x + x - badgeCropNode.children.first!.frame.width
             if correct > 0{x -= correct}else{
-                correct = badgeCropNode.children.last!.position.x + x - (self.size.width * 0.8) + 150
+                correct = badgeCropNode.children.last!.position.x + x - (self.size.width * 0.8) + badgeCropNode.children.last!.frame.width
                 if correct < 0{x -= correct}
             }
             for node in badgeCropNode.children{
@@ -380,7 +380,7 @@ extension Play{
             lastComplete = lastComplete &+ lastU
             lastMem = report_memory()
         }
-        DEBUG_TXT.text = "X: \(%ship.position.x) / Y: \(%ship.position.y)\nDX: \(%ship.velocity.dx) / DY: \(%ship.velocity.dy)\nA: \(%ship.zRotation), AV: \(%ship.angularVelocity)\nVEL: \(%vel) VER: \(build)\nMEM: \(lastMem)MB NET: \(Int(Double(lastU) * gameFPS / 20480.0))KB/s\n\(logs.joined(separator: "\n"))"
+        DEBUG_TXT.text = "X: \(%ship.position.x) / Y: \(%ship.position.y)\nDX: \(%ship.velocity.dx) / DY: \(%ship.velocity.dy)\nA: \(%ship.zRotation), AV: \(%ship.angularVelocity)\nVEL: \(%vel) IP: \(IPOVERRIDE ?? ip)\nMEM: \(lastMem)MB NET: \(Int(Double(lastU) * gameFPS / 20480.0))KB/s\n\(logs.joined(separator: "\n"))\nx: \(Float(reg.x.value)), y: \(rnd(reg.y.value)), s: \(rnd(reg.s.value))\nmx: \(rnd(reg.mx.value)), my: \(rnd(reg.my.value)), z: \(rnd(reg.z.value))\nsx: \(rnd(reg.sx.value)), sy: \(rnd(reg.sy.value)), o: \(rnd(reg.o.value))\nr: \(reg.r.str), g: \(reg.g.str), b: \(reg.b.str)\ni: \(reg.i.str) p: \(reg.p.str)"
     }
     // USED FOR COLONIZING A PLANET
     func colonize(_ planet: Planet){
