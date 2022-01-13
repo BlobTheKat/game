@@ -38,7 +38,7 @@ server.on('message', async function(m, remote) {
             //w = width of their screen
             let w = Math.min(4000, message.ushort())
             clients.set(address, 0)
-            let err = await new Promise(r => verify({publicKeyUrl, signature, salt, playerId, timestamp, bundleId}, r)
+            let err = await new Promise(r => verify({publicKeyUrl, signature, salt, playerId, timestamp, bundleId}, r))
             playerId = playerId.slice(3)
             if(err){
                 //if(notGuest)
