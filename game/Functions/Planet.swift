@@ -312,7 +312,7 @@ class Planet: Object{
                 parent?.playerArrow.removeFromParent()
                 //TO DO WITH COLONISING
                 if self.ownedState == .unowned{
-                    parent!.coloPlanet.texture = self.texture
+                    parent!.coloPlanet.texture = (self.children.first as? SKSpriteNode)?.texture
                     parent!.navArrow.texture = SKTexture(imageNamed: "navArrow2")
                     parent!.navBG.addChild(parent!.coloIcon)
                 }

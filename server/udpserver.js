@@ -72,6 +72,7 @@ server.on('message', async function(m, remote) {
     let res = new BufWriter()
     res.remote = remote
     res.ship = ship
+    res.critical = message.critical
     res.byte(0)
     message.critical && res.byte(message.critical)
     Object.fallback(ship.data, PLAYERDATA)
