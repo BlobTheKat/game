@@ -65,3 +65,31 @@ func uuidstore(_ a: String) -> String{
     }
     return u!
 }
+
+enum tutorial: Int{
+    case welcome = 0
+    case thrust = 1
+    case dpad = 2
+    case shoot = 3
+    case followPlanet = 4
+    case land = 5
+    case buyPlanet = 6
+    case buyDrill = 7
+    case done = 8
+}
+var tutorialProgress: tutorial{
+    get{
+        return .init(rawValue: UserDefaults.standard.integer(forKey: "tutorial")) ?? .welcome
+    }
+    set{
+        UserDefaults.standard.set(newValue.rawValue, forKey: "tutorial")
+    }
+}
+
+let tutorials: [(SKLabelHorizontalAlignmentMode, SKLabelVerticalAlignmentMode, mx: CGFloat, my: CGFloat, x: CGFloat, y: CGFloat, String)] = [
+    (.left, .bottom, mx: 0, my: 0, x: -40, y: -15, "welcome!"),
+    (.left, .bottom, mx: -0.4, my: -0.4, x: 110, y: 110, "hold to accelerate"),
+    (.right, .bottom, mx: 0.4, my: -0.4, x: -120, y: 120, "use left/right to\nRotate your ship"),
+    (.left, .top, mx: -0.4, my: -0.4, x: 105, y: 120, "press to\nshoot")
+]
+

@@ -320,6 +320,7 @@ extension Play{
         return (price: formatPrice(new), time: formatTime(Int(new["time"]!.number!)), powers: pw.sorted(by: {(a,b) in a.name.count < b.name.count}))
     }
     func startGame(){
+        nextStep(nil)
         //IMPORTANT SIZE ALGORITHM
         colonizeBG.anchorPoint = CGPoint(x: 1, y: 1)
         let dify = (self.size.height + 40) / colonizeBG.size.height
@@ -1038,6 +1039,7 @@ extension Play{
         }
     }
     func pauseLazer(){
+        if usingConstantLazer && tutorialProgress == .shoot { nextStep() }
         usingConstantLazer = false
         if heatLevel < 40{
             goingDown = true
@@ -1819,13 +1821,14 @@ extension Play{
             self.playingThrustSound = false
             pauseLazer()
             ship.thrust = false
+            if tutorialProgress == .thrust{ nextStep() }
             thrustButton.texture = SKTexture(imageNamed: "thrustOff")
         }
         if dPad == node{
             dPad.texture = SKTexture(imageNamed: "dPad")
             ship.thrustLeft = false
             ship.thrustRight = false
-            
+            if tutorialProgress == .dpad { nextStep() }
         }
         if dragRemainder.isInfinite{dragRemainder = 0}
         if mapIcon == node{
@@ -1985,6 +1988,7 @@ extension Play{
     override func keyUp(_ key: UIKeyboardHIDUsage) {
         if key == .keyboardUpArrow || key == .keyboardW{
             ship.thrust = false
+            if tutorialProgress == .thrust{ nextStep() }
             thrustSound.run(SKAction.sequence([
                 SKAction.changeVolume(to: 0, duration: 0.2),
                 SKAction.run{
@@ -1995,8 +1999,10 @@ extension Play{
             self.playingThrustSound = false
         }else if key == .keyboardRightArrow || key == .keyboardD{
             ship.thrustRight = false
+            if tutorialProgress == .dpad { nextStep() }
         }else if key == .keyboardLeftArrow || key == .keyboardA{
             ship.thrustLeft = false
+            if tutorialProgress == .dpad { nextStep() }
         }else if key == .keyboardDownArrow || key == .keyboardS || key == .keyboardK{
             pauseLazer()
         }else if key == .keyboardL{
@@ -2104,6 +2110,7 @@ extension Play{
         FakemapBG.position.y += b.y - a.y
     }
     override func touch(at p: CGPoint) {
+        if tutorialProgress == .welcome { nextStep() }
         if !hideControl{showControls()}
         if mapPress1 == nil{
             mapPress1 = p
@@ -2192,6 +2199,37 @@ extension Play{
         }else if mapPress1 != nil{
             //1
             mapPress1 = nil
+        }
+    }
+    
+    func nextStep(_ next: Bool? = true){
+        if next == nil{tutorialProgress = .welcome}
+        let i = tutorialProgress.rawValue + (next != nil ? (next! ? 1 : -1) : 0)
+        tutorialProgress = .init(rawValue: i)!
+        if tutInfo.parent != nil{tutInfo.run(SKAction.sequence([.fadeOut(withDuration: 0.2), .removeFromParent()]))}
+        if tutArrow.parent != nil{tutArrow.run(SKAction.sequence([.fadeOut(withDuration: 0.2), .removeFromParent()]))}
+        if tutorialProgress == .done{return}
+        tutArrow.anchorPoint = CGPoint(x: 0.15, y: 0.3)
+        tutInfo.fontSize = 30
+        tutInfo.zPosition = 999
+        tutArrow.zPosition = 999
+        tutInfo.numberOfLines = 10
+        let _ = timeout(0.3){ [self] in
+            let (hori, verti, mx: mx, my: my, x: x, y: y, text) = tutorials[i]
+            tutArrow.xScale = hori == .right ? -0.5 : 0.5
+            tutArrow.yScale = verti == .top ? -0.5 : 0.5
+            tutInfo.horizontalAlignmentMode = hori
+            tutInfo.verticalAlignmentMode = verti
+            tutArrow.position = pos(mx: mx, my: my, x: x, y: y)
+            tutInfo.position = tutArrow.position
+            tutInfo.text = text
+            tutArrow.alpha = 0.8
+            tutInfo.alpha = 0.8
+            
+            cam.addChild(tutArrow)
+            cam.addChild(tutInfo)
+            tutInfo.run(.fadeIn(withDuration: 0.2))
+            tutArrow.run(.fadeIn(withDuration: 0.2))
         }
     }
 }
