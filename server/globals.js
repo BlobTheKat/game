@@ -53,15 +53,16 @@ const G = 0.0001
 const REGIONSIZE = 500000
 //Object representing an object that doesn't exist (a bit like null)
 const EMPTY = {toBuf(a){a.int(0);a.int(0);a.int(0);a.int(0)},updatep(thing){},update(){}}
+//Sector
+let sector = {objects:[],planets:[],time:0,w:0,h:0}
 
-
+//behaviour files
 const ships = readfile('behaviour/ships')
 const asteroids = readfile('behaviour/asteroids')
 const itemMeta = readfile("behaviour/items")
 const ITEMS = itemMeta.map(a => readfile("behaviour"+a.path))
-let sector = {objects:[],planets:[],time:0,w:0,h:0}
 
-
+//performance variables
 const {performance} = require('perf_hooks')
 let lidle = performance.eventLoopUtilization().idle
 let lactive = performance.eventLoopUtilization().active

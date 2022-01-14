@@ -4,10 +4,11 @@ server.on('listening', function() {
 })
 
 server.on('message', async function(m, remote) {
-    let send = a=>server.send(a,remote.port,remote.address)
-    let address = remote.address + ':' + remote.port
     let message = new Buf(m.buffer)
+    let send = data => server.send(data,remote.port,remote.address)
+    let address = remote.address + ':' + remote.port
     let code = message.ubyte()
+    //Get ship from map
     let ship = clients.get(address)
     message.critical = 0
     if(code > 127){
@@ -15,11 +16,14 @@ server.on('message', async function(m, remote) {
         message.critical = message.ubyte() + 256 //when its encoded again it will be put in the 0-255 range again
         //With this you can now reliably check if its critical without having to use a comparing operator
     }
+    //If it's a critical and we already recieved it
     if(message.critical && ship && ship.crits && ship.crits[message.critical-256])return send(ship.crits[message.critical-256])
     if(code === CODE.HELLO && message.critical){if(ship === 0)return
+        //Auth packet
         try{
             let version = message.ushort()
             if(version < VERSION)return send(Buffer.concat([Buffer.of(127), strbuf('Please Update')]))
+            //sig, salt, url, id, ...
             let len = message.ubyte()
             let publicKeyUrl = message.str(len)
             len = message.ushort()
@@ -31,30 +35,32 @@ server.on('message', async function(m, remote) {
             let timestamp = message.uint() + message.uint() * 4294967296
             len = message.ubyte()
             let name = message.str(len)
-            let w = message.ushort()
+            //w = width of their screen
+            let w = Math.min(4000, message.ushort())
             clients.set(address, 0)
-            verify({publicKeyUrl, signature, salt, playerId, timestamp, bundleId}, async function(err){
-                playerId = playerId.slice(3)
-                if(err){
-                    if(timestamp > 1)return send(Buffer.from(Buffer.concat([Buffer.of(127), strbuf("Invalid identity")])))
-                    playerId = playerId.toUpperCase()
-                }else playerId = playerId.toLowerCase()
-                //fetch DB stuff
-                let cli = new ClientData(name, playerId, address)
-                fetchdata(playerId).then(a => {
-                    Object.fallback(a, PLAYERDATA)
-                    cli.ready(0, 0, a.id || 1, w)
-                    cli.data = a
-                    clients.set(address, cli)
-                    let buf = Buffer.alloc(18)
-                    buf[0] = 129
-                    buf[1] = message.critical
-                    buf.writeDoubleLE(cli.data.bal || 0, 2)
-                    buf.writeFloatLE(cli.data.bal2 || 0, 10)
-                    buf.writeFloatLE(cli.data.gems || 0, 14)
-                    send(buf)
-                    cli.crits[message.critical-256] = buf
-                })
+            let err = await new Promise(r => verify({publicKeyUrl, signature, salt, playerId, timestamp, bundleId}, r))
+            playerId = playerId.slice(3)
+            if(err){
+                //if(notGuest)
+                if(timestamp > 1)return send(Buffer.from(Buffer.concat([Buffer.of(127), strbuf("Invalid identity")])))
+                //is guest, uppercase
+                playerId = playerId.toUpperCase()
+            }else playerId = playerId.toLowerCase() //not guest, lowercase
+            //fetch DB stuff
+            let cli = new ClientData(name, playerId, address)
+            fetchdata(playerId).then(a => {
+                Object.fallback(a, PLAYERDATA)
+                cli.ready(0, 0, a.id || 1, w)
+                cli.data = a
+                clients.set(address, cli)
+                let buf = Buffer.alloc(18)
+                buf[0] = 129
+                buf[1] = message.critical
+                buf.writeDoubleLE(cli.data.bal || 0, 2)
+                buf.writeFloatLE(cli.data.bal2 || 0, 10)
+                buf.writeFloatLE(cli.data.gems || 0, 14)
+                send(buf)
+                cli.crits[message.critical-256] = buf
             })
         }catch(e){
             console.log(e)

@@ -1,7 +1,5 @@
 //3
 //It aint broke so dont fix it
-
-
 function _(_){
     let __ = (_.match(/"[^"]*"|'[^']*'|\S+/g)||[]).map(a => a[0]=="'"||a[0]=='"'?a.slice(1,-1):a)
     if(__[0] && FUNCS[__[0]])return FUNCS[__[0]](...__.slice(1))
