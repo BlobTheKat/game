@@ -92,3 +92,4 @@ let tutorials: [(SKLabelHorizontalAlignmentMode, SKLabelVerticalAlignmentMode, m
     (.right, .bottom, mx: 0.4, my: -0.4, x: -120, y: 120, "use left/right to\nRotate your ship"),
     (.left, .top, mx: -0.4, my: -0.4, x: 105, y: 120, "press to\nshoot")
 ]
+
