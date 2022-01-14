@@ -303,4 +303,7 @@ class Play: SKScene{
         xpFill: SKSpriteNode(imageNamed: "progressyellow"),
         missions: [(label: SKLabelNode, box: SKSpriteNode, fill: SKSpriteNode, text: SKLabelNode, rewardsbox: SKSpriteNode, xpReward: SKLabelNode, gemReward: SKLabelNode)]()
     )
+    
+    var tutArrow = SKSpriteNode(imageNamed: "tut")
+    var tutInfo = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
 }
