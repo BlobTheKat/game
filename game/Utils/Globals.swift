@@ -72,10 +72,15 @@ enum tutorial: Int{
     case dpad = 2
     case shoot = 3
     case followPlanet = 4
-    case land = 5
-    case buyPlanet = 6
-    case buyDrill = 7
-    case done = 8
+    case shootPlanet = 5
+    case openNavigations = 6
+    case planetIcon = 7
+    case buyPlanet = 8
+    case editPlanet = 9
+    case addItem = 10
+    case buyDrill = 11
+    case gemFinish = 12
+    case done = 13
 }
 var tutorialProgress: tutorial{
     get{
@@ -85,11 +90,20 @@ var tutorialProgress: tutorial{
         UserDefaults.standard.set(newValue.rawValue, forKey: "tutorial")
     }
 }
-
 let tutorials: [(SKLabelHorizontalAlignmentMode, SKLabelVerticalAlignmentMode, mx: CGFloat, my: CGFloat, x: CGFloat, y: CGFloat, String)] = [
     (.left, .bottom, mx: 0, my: 0, x: -40, y: -15, "welcome!"),
     (.left, .bottom, mx: -0.4, my: -0.4, x: 110, y: 110, "hold to accelerate"),
     (.right, .bottom, mx: 0.4, my: -0.4, x: -120, y: 120, "use left/right to\nRotate your ship"),
-    (.left, .top, mx: -0.4, my: -0.4, x: 105, y: 120, "press to\nshoot")
+    (.left, .top, mx: -0.4, my: -0.4, x: 105, y: 120, "press to\nshoot"),
+    (.center, .bottom, mx: 0, my: 0.3, x: 0, y: -40, "follow a green arrow\n to land on a planet"),
+    (.left, .top, mx: -0.4, my: -0.4, x: 105, y: 120, "shoot the planet\nto gain energy"),
+    (.right, .top, mx: 0.43, my: 0.5, x: -50, y: -80, "open the navigation\nmenu"),
+    (.right, .top, mx: 0.43, my: 0.1, x: -40, y: 0, "buy the planet"),
+    (.left, .bottom, mx: -0.3, my: -0.3, x: 50, y: -10, "buy the planet"),
+    (.right, .top, mx: 0.43, my: 0.1, x: -40, y: 0, "edit the planet"),
+    (.right, .bottom, mx: 0.5, my: 0, x: -205, y: 80, "add an item"),
+    (.left, .bottom, mx: -0.5, my: -0.1, x: 250, y: 0, "buy a drill\nto earn energy\nautomatically"),
+    (.left, .bottom, mx: 0, my: -0.3, x: 185, y: 30, "")
 ]
 
+var animating: Bool = false

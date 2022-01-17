@@ -142,7 +142,7 @@ var floatfiddle: Fiddle<CGFloat>? = nil
 var boolfiddle: Fiddle<Bool>? = nil
 var bytefiddle: Fiddle<UInt8>? = nil
 var fiddlenode: SKNode? = SKNode()
-
+var nodeToFiddle: SKNode? = nil
 func pickfiddle(){
     SKNode().fiddle()
     fiddlenode = nil

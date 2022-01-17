@@ -49,10 +49,11 @@ class Planet: Object{
         return CGVector(dx: x, dy: y)
     }
     func populate(with item: ColonizeItem, rot r: UInt8, node: SKSpriteNode = SKSpriteNode(), destroyed: Bool = false){
+        
         if node.userData == nil{node.userData = NSMutableDictionary(capacity: 3)}
         let colo = (node.userData!["type"] as? ColonizeItem)
         let oldr = node.userData?["rot"] as? UInt8
-        if colo?.type == item.type && colo?.lvl == item.lvl && colo?.capacity == item.capacity && colo?.upgradeEnd == item.upgradeEnd && oldr == r && node.userData?["d"] as? Bool == destroyed{return}
+        if colo?.type == item.type && colo?.lvl == item.lvl && colo?.capacity == item.capacity && colo?.upgradeEnd == item.upgradeEnd && (!((parent as? Play)?.dragRemainder.isNaN ?? true) || oldr == r) && node.userData?["d"] as? Bool == destroyed{return}
         node.userData!["type"] = item
         node.userData!["rot"] = r
         if let parent = parent as? Play{
@@ -108,6 +109,8 @@ class Planet: Object{
                 p.particles.append(i)
                 p.addChild(i)
             }
+            
+            if tutorialProgress == .gemFinish && self.ownedState == .yours{p.nextStep()}
         }
         node.zRotation = -rot
         if node.parent == nil { self.addChild(node) }
@@ -441,19 +444,11 @@ class Planet: Object{
             }
         }
         if bits & 32 == 32{return}
-        var len = data.readunsafe() as UInt8 + 1
-        if !((parent as? Play)?.dragRemainder.isNaN ?? true){
-            //if is dragging, read rest of data but don't apply it
-            while len > 0{
-                len -= 1
-                if (data.readunsafe() as UInt32) & 128 != 0{
-                    let _ = data.readunsafe() as UInt32
-                }
+        let len = data.readunsafe() as UInt8 + 1
+        if (parent as? Play)?.dragRemainder.isNaN ?? true{
+            for i in 0..<self.items.count{ //remove items
+                self.items[i] = nil
             }
-            return
-        }
-        for i in 0..<self.items.count{ //remove items
-            self.items[i] = nil
         }
         var i = 0, child_i = 0
         self.persec = 0
@@ -471,7 +466,9 @@ class Planet: Object{
                 if item.upgradeEnd == 0{item.upgradeEnd = 1}
             }
             self.populate(with: item, rot: rot, node: self.children.count > child_i ? self.children[child_i] as! SKSpriteNode : SKSpriteNode(), destroyed: id > 127 && item.upgradeEnd == 1)
-            self.items[Int(rot)] = item
+            if (parent as? Play)?.dragRemainder.isNaN ?? true{
+                self.items[Int(rot)] = item
+            }
             if item.type == .drill && id < 128{
                 self.persec += drills[Int(item.lvl)]["persec"]?.number ?? 0
                 self.capacity += Int(drills[Int(item.lvl)]["storage"]?.number ?? 0)

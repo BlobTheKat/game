@@ -220,6 +220,7 @@ extension Play{
     
     func recieved(_ d: Data){
         if ended{return}
+        ping()
         guard view == skview else{return}
         var data = d
         var code: UInt8 = data.readunsafe()
@@ -232,7 +233,6 @@ extension Play{
             crits.remove(seq)
         }
         if code == 1{
-            ping()
             authed = true
             loaded -= 1
             if loaded == 0{didLoad()}
@@ -246,13 +246,9 @@ extension Play{
             end()
             DispatchQueue.main.async{Disconnected.renderTo(skview)}
         }else if code == 4{
-            ping()
             last = .now()
         }
-        guard ship.controls else {return}
         if code == 6{
-            
-            ping()
             var seq = Int(data.readunsafe() as UInt8) + (netseq & -256)
             if seq < netseq{seq += 256}
             let diff = seq - netseq
@@ -278,7 +274,6 @@ extension Play{
                 objects.removeLast(max(objects.count - i, 0))
             }
         }else if code == 7{
-            ping()
             var seq = Int(data.readunsafe() as UInt8) + (netseq & -256)
             if seq < netseq{seq += 256}
             let diff = netseq - seq

@@ -127,8 +127,8 @@ extension Play{
                 let box = UInt8(min(32, ceil(10 / planetLanded!.radius)))
                 var red = false
                 var i = newRot &- box &+ 1
-                while i != itemRot &+ box{
-                    if planetLanded!.items[Int(i)] != nil{ red = true }
+                while i != newRot &+ box{
+                    if planetLanded!.items[Int(i)] != nil && i != itemRot{ red = true }
                     i &+= 1
                 }
                 guard let l = planetLanded!.children.first(where: {$0.userData?["rot"] as? UInt8 == itemRot}) as? SKSpriteNode else {return}
@@ -187,11 +187,14 @@ extension Play{
         speedLabel.text = %Float(vel / 2)
     }
     func spaceUpdate(){
-      
         
         energyCount.text = "k$ \(Int(energyAmount))"
         researchCount.text = "r$ \(Int(researchAmount))"
         gemLabel.text = "\(Int(gemCount))"
+        
+        if tutorialProgress == .shootPlanet && energyAmount > 99{
+            nextStep()
+        }
         
         let energyPercent = floor((energyAmount / energySpace) * 8)
         let researchPercent = floor((researchAmount / researchSpace) * 8)
@@ -225,6 +228,7 @@ extension Play{
         a = 0
         for s in objects{s.landed = false}
         var d = CGFloat.infinity, closestStar: Planet? = nil
+        var canSave = ship.controls
         for planet in planets{
             for s in objects{
                 if s.landed{continue}
@@ -235,7 +239,14 @@ extension Play{
             let y = planet.position.y - ship.position.y
             let d2 = sqrt(x * x + y * y)
             if d2 < d && planet.superhot{d = d2;closestStar = planet}
+            if d2 < planet.radius + self.size.width{canSave = false}
             a += 1
+        }
+        if canSave{
+            secx = Int(ship.position.x + sector.1.pos.x)
+            secy = Int(ship.position.y + sector.1.pos.y)
+            UserDefaults.standard.set(secx, forKey: "sx")
+            UserDefaults.standard.set(secy, forKey: "sy")
         }
         if closestStar != nil{
             let v = 1 / (0.001 * d).clamp(1, 2) - 0.35

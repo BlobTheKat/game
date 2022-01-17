@@ -31,6 +31,10 @@ extension Play{
         ship.shootVectors = SHOOTVECTORS[id-1]
     }
     func construct() {
+        let x = UserDefaults.standard.integer(forKey: "sx")
+        let y = UserDefaults.standard.integer(forKey: "sy")
+        if x != 0{secx = x}
+        if y != 0{secy = y}
         if creds != nil{
             gotIp()
         }else{
@@ -752,7 +756,7 @@ extension Play{
                         break
                     case 5: self.waitForSound = 57
                         break
-                    default: print("wrong sound")
+                    default:break
                     }
                     
         ambient.run(SKAction.changeVolume(to: 0.15, duration: 0))
@@ -1154,9 +1158,22 @@ extension Play{
                 impactSound.removeFromParent()
             }
         }
+        if tutorialProgress == .followPlanet && (planetLanded!.ownedState == .yours || planetLanded!.ownedState == .unowned){
+            ship.controls = false
+            for a in planetLanded!.items{if a?.type == .drill{tutorialProgress = .gemFinish;ship.controls = true}}
+            nextStep()
+            
+        }else if tutorialProgress == .followPlanet{
+            tutInfo.text = "this planet is\nalready owned"
+            tutInfo.fontColor = UIColor(red: 0.8, green: 0.1, blue: 0.1, alpha: 1)
+        }
         vibratePhone(.light)
     }
     func takeoff(){
+        if tutorialProgress == .followPlanet{
+            tutInfo.text = "follow a green arrow to\nland on an unowned planet"
+            tutInfo.fontColor = .white
+        }
         editColoIcon.removeFromParent()
         collectedLabel.removeFromParent()
         collectedLabel2.removeFromParent()
@@ -1348,7 +1365,7 @@ extension Play{
     }
     
     override func nodeDown(_ node: SKNode, at point: CGPoint) {
-        if fiddlenode == nil{node.fiddle()}
+        if fiddlenode == nil && nodeToFiddle?.zPosition ?? -.infinity < node.zPosition {nodeToFiddle = node}
         if statsWall.parent != nil && !swiping{
             switch node{
             case statsIcons[1]:
@@ -1475,7 +1492,9 @@ extension Play{
         }
         switch node{
         case addItemIcon:
+            if tutorialProgress == .gemFinish{return}
             hideUpgradeUI()
+            if tutorialProgress == .addItem{ nextStep(); lastSentEnergy += 150 }
             //render additem ui
             var used = [Int8](repeating: 0, count: 128)
             var lvl = 0
@@ -1507,19 +1526,27 @@ extension Play{
             }
             break
         case buyIcon:
-            if energyAmount >= planetLanded!.price && researchAmount >= planetLanded!.price2{
+            if tutorialProgress == .buyPlanet{
+                nextStep()
+            }
+            if energyAmount >= planetLanded!.price {
                 if buyScreenShowing{
                     colonizeBG.removeFromParent()
                     coloIcon.removeFromParent()
                     showControls()
                     buyScreenShowing = false
                 }
+                
                 colonize(planetLanded!)
             }else{
                 DisplayWARNING("not enough energy",.warning,false)
             }
             break
         case editColoIcon:
+            if tutorialProgress == .editPlanet{ nextStep() }
+            else if tutorialProgress.rawValue > 9 && tutorialProgress != .done{
+                return
+            }
             planetEditMode()
             if !hideControl{
                 hideControl.toggle()
@@ -1564,6 +1591,7 @@ extension Play{
                     DisplayWARNING("not enough gems",.warning,false)
                     break
                 }
+                if tutorialProgress == .gemFinish && planetLanded?.items[Int(itemRot)]?.type == .drill{ nextStep(); ship.controls = true; planetEditMode() }
                 skipBuild(planetLanded!, itemRot)
             }else if upgradePrice.fontColor == .orange{
                 //repair
@@ -1579,6 +1607,7 @@ extension Play{
             
             break
         case coloArrow:
+            if tutorialProgress == .gemFinish{return}
             var a: CGFloat = 0
             if point.x > coloArrow.position.x{
                 repeat{
@@ -1673,6 +1702,12 @@ extension Play{
             
         }
         if navArrow == node{
+            if tutorialProgress == .openNavigations{
+                if editColoIcon.parent != nil{
+                    tutorialProgress = .buyPlanet
+                }
+                nextStep()
+            }
             if showNav == false{
             navArrow.run(SKAction.move(to: pos(mx: 0.43, my: 0 ), duration: 0.35).ease(.easeOut))
             navArrow.run(SKAction.rotate(toAngle: 3.18, duration: 0.35).ease(.easeOut))
@@ -1731,6 +1766,9 @@ extension Play{
             }
         }
         if coloIcon == node{
+            if tutorialProgress == .planetIcon{
+                nextStep()
+            }
             if !buyScreenShowing{
                 buyScreenShowing = true
                 cam.addChild(colonizeBG)
@@ -1767,11 +1805,13 @@ extension Play{
     }
     
     override func nodeUp(_ node: SKNode, at _: CGPoint) {
-        if !swiping && node.parent == buildBG, let i = addItemIcons.firstIndex(of: node as? SKSpriteNode ?? ship){
+        if !swiping && node.parent == buildBG, var i = addItemIcons.firstIndex(of: node as? SKSpriteNode ?? ship){
             guard node.alpha == 1 else{
                 DisplayWARNING("upgrade camp to build more",.warning,false)
                 return
             }
+            i += 1
+            if tutorialProgress == .buyDrill && i != 1{ return }
             let price = items[i][1]["price"]?.number ?? 0
             let price2 = Float(items[i][1]["price2"]?.number ?? 0)
             if energyAmount < price || researchAmount < price2{
@@ -1808,7 +1848,8 @@ extension Play{
             }
             itemRot = pos
             planetLanded!.run(.rotate(toAngle: CGFloat(pos) * PI256, duration: 0.5).ease(.easeInEaseOut))
-            makeItem(planetLanded!, pos, .init(rawValue: UInt8(i+1))!)
+            makeItem(planetLanded!, pos, .init(rawValue: UInt8(i))!)
+            if tutorialProgress == .buyDrill{ nextStep() }
         }
         if thrustButton == node{
             thrustSound.run(SKAction.sequence([
@@ -2110,7 +2151,9 @@ extension Play{
         FakemapBG.position.y += b.y - a.y
     }
     override func touch(at p: CGPoint) {
+        if nodeToFiddle != nil{nodeToFiddle!.fiddle();nodeToFiddle = nil}
         if tutorialProgress == .welcome { nextStep() }
+        if tutInfo.text == "done" { tutArrow.run(SKAction.sequence([.fadeOut(withDuration: 0.2), .removeFromParent()])); tutInfo.text = "" }
         if !hideControl{showControls()}
         if mapPress1 == nil{
             mapPress1 = p
@@ -2123,7 +2166,8 @@ extension Play{
             if !playedLightSpeedOut{
                 accountIcon.removeFromParent()
                 removeTapToStart()
-                
+                ship.position.x = CGFloat(secx) - sector.1.pos.x
+                ship.position.y = CGFloat(secy) - sector.1.pos.y
                 self.run(lightSpeedOut)
                 playedLightSpeedOut = true
                 //anim
@@ -2203,21 +2247,53 @@ extension Play{
     }
     
     func nextStep(_ next: Bool? = true){
-        if next == nil{tutorialProgress = .welcome}
+        
+        if next == nil{
+            tutorialProgress = .thrust
+            if tutorialProgress == .done{return}
+            if tutorialProgress.rawValue > 4{
+                tutorialProgress = .followPlanet
+            }
+        }
+        guard !animating else {return}
+        animating = true
         let i = tutorialProgress.rawValue + (next != nil ? (next! ? 1 : -1) : 0)
         tutorialProgress = .init(rawValue: i)!
-        if tutInfo.parent != nil{tutInfo.run(SKAction.sequence([.fadeOut(withDuration: 0.2), .removeFromParent()]))}
-        if tutArrow.parent != nil{tutArrow.run(SKAction.sequence([.fadeOut(withDuration: 0.2), .removeFromParent()]))}
-        if tutorialProgress == .done{return}
-        tutArrow.anchorPoint = CGPoint(x: 0.15, y: 0.3)
-        tutInfo.fontSize = 30
-        tutInfo.zPosition = 999
-        tutArrow.zPosition = 999
+        if tutInfo.parent != nil{tutInfo.run(.fadeOut(withDuration: 0.2))}
+        if tutArrow.parent != nil{tutArrow.run(.fadeOut(withDuration: 0.2))}
+        if tutorialProgress == .done{
+            let _ = timeout(0.3){ [self] in
+                ship.controls = true
+                tutArrow.position = .zero
+                tutArrow.setScale(1)
+                tutArrow.texture = SKTexture(imageNamed: "tutdone")
+                tutArrow.size = tutArrow.texture!.size()
+                tutArrow.setScale(0.6)
+                tutArrow.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+                tutInfo.text = "done"
+                tutArrow.removeFromParent()
+                cam.addChild(tutArrow)
+                tutArrow.run(.fadeIn(withDuration: 0.2))
+            }
+            return
+        }
+        tutInfo.fontSize = 25
+        tutInfo.zPosition = .infinity
+        tutArrow.zPosition = .infinity
         tutInfo.numberOfLines = 10
         let _ = timeout(0.3){ [self] in
             let (hori, verti, mx: mx, my: my, x: x, y: y, text) = tutorials[i]
-            tutArrow.xScale = hori == .right ? -0.5 : 0.5
-            tutArrow.yScale = verti == .top ? -0.5 : 0.5
+            if hori == .center{
+                tutArrow.anchorPoint = CGPoint(x: 0.5, y: 0.6)
+                tutArrow.texture = SKTexture(imageNamed: "tut2")
+                tutArrow.xScale = hori == .right ? -0.5 : 0.5
+                tutArrow.yScale = verti == .top ? -0.5 : 0.5
+            }else{
+                tutArrow.texture = SKTexture(imageNamed: "tut")
+                tutArrow.anchorPoint = CGPoint(x: 0.15, y: 0.3)
+                tutArrow.xScale = hori == .right ? -0.5 : 0.5
+                tutArrow.yScale = verti == .top ? -0.5 : 0.5
+            }
             tutInfo.horizontalAlignmentMode = hori
             tutInfo.verticalAlignmentMode = verti
             tutArrow.position = pos(mx: mx, my: my, x: x, y: y)
@@ -2225,11 +2301,13 @@ extension Play{
             tutInfo.text = text
             tutArrow.alpha = 0.8
             tutInfo.alpha = 0.8
-            
+            tutArrow.removeFromParent()
+            tutInfo.removeFromParent()
             cam.addChild(tutArrow)
             cam.addChild(tutInfo)
             tutInfo.run(.fadeIn(withDuration: 0.2))
             tutArrow.run(.fadeIn(withDuration: 0.2))
+            animating = false
         }
     }
 }

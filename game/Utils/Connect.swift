@@ -38,7 +38,6 @@ func connect(_ host: String, _ a: @escaping (Data) -> ()) -> (Data) -> (){
                 DispatchQueue.main.async{for data in queue{
                     connection?.send(content: data, completion: NWConnection.SendCompletion.contentProcessed(({ (NWError) in
                         if NWError != nil {
-                            print("Error when sending Data:\n \(NWError!)")
                         }
                     })))
                 }
@@ -61,7 +60,6 @@ func connect(_ host: String, _ a: @escaping (Data) -> ()) -> (Data) -> (){
         guard ready else {queue.append(data);return}
         bg{connection?.send(content: data, completion: NWConnection.SendCompletion.contentProcessed(({ (NWError) in
             if NWError != nil {
-                print("Error when sending Data:\n \(NWError!)")
             }
         })))}
     }
