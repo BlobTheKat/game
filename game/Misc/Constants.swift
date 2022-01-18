@@ -15,9 +15,9 @@ let ROT_STEP = Complex(r: cos(PI256), i: -sin(PI256)) //complex step
 let PI20 = CGFloat.pi / 10 //20-step rotation, used in particles
 let build = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "nil" //Build Number, used for the debug menu
 let ID = (UIDevice.current.identifierForVendor?.uuidString ?? uuidstore("ID")).replacingOccurrences(of: "-", with: "")
-//Configurable constants//
 
-//ip override
+//Configurable constants//
+//for connecting to local servers
 let IPOVERRIDE: String? = nil//"192.168.1.141:65152"
 //Game version
 let VERSION = 1

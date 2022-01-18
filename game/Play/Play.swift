@@ -2153,7 +2153,7 @@ extension Play{
     override func touch(at p: CGPoint) {
         if nodeToFiddle != nil{nodeToFiddle!.fiddle();nodeToFiddle = nil}
         if tutorialProgress == .welcome { nextStep() }
-        if tutInfo.text == "done" { tutArrow.run(SKAction.sequence([.fadeOut(withDuration: 0.2), .removeFromParent()])); tutInfo.text = "" }
+        if tutInfo.text == "done" { tutArrow.run(SKAction.sequence([.fadeOut(withDuration: 0.2), .removeFromParent()])); tutInfo.text = ""; ship.controls = true; if hideControl{hideControl = false; showControls()} }
         if !hideControl{showControls()}
         if mapPress1 == nil{
             mapPress1 = p
@@ -2247,7 +2247,6 @@ extension Play{
     }
     
     func nextStep(_ next: Bool? = true){
-        
         if next == nil{
             tutorialProgress = .thrust
             if tutorialProgress == .done{return}
