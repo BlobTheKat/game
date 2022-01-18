@@ -13,10 +13,11 @@ class Play: SKScene{
     override init(size: CGSize){
         let diagonal = size.width + size.height
         let divider = pow(diagonal / 1300, 0.6)
+        self.AllNav = [avatar, healthBar, navBG, navArrow, thrustButton, dPad, shipDirection]
         super.init(size: CGSize(width: size.width / divider, height: size.height / divider))
         self.construct()
     }
-    required init?(coder _:NSCoder){abort()}
+    required init?(coder:NSCoder){abort()}
     //Debug Menu LabelNode
     var swiping = false
     var DEBUG_TXT = SKLabelNode(fontNamed: "Menlo")
@@ -306,4 +307,7 @@ class Play: SKScene{
     
     var tutArrow = SKSpriteNode(imageNamed: "tut")
     var tutInfo = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+    
+    //ALL NAVIGATIONS ON SCREEN
+    let AllNav: [SKSpriteNode]
 }

@@ -25,3 +25,6 @@ process.stdout.write('\x1bc')
 
 //6. Now that eval is disabled, run that function
 completeFile()
+process.on("uncaughtException", function(e){
+	console.log("FATAL ERROR\n"+e)
+})

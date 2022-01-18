@@ -52,7 +52,7 @@ class Object: SKSpriteNode, DataCodable{
     var shootDamages: [CGFloat] = [] //Array of numbers
     var shootFrequency: CGFloat = 0
     var shootQueue: CGFloat = 0 //Technical variable for calculating when to shoot
-    
+    var particleOffset: CGFloat = 0
     //Technical variable that indicated the number of remaining shots that will be aimbotted to the player's ship
     var shlock: Int = 0
     
@@ -65,8 +65,12 @@ class Object: SKSpriteNode, DataCodable{
     var target: (pos: CGPoint, vel: CGVector, z: CGFloat, dz: CGFloat)? = nil
     //Default particle (the red-yellow one)
     class func defaultParticle(_ ship: Object) -> Particle{
-        let start = State(color: (r: 1, g: 1, b: 0), size: CGSize(width: 10, height: 10), zRot: 0, position: ship.position, alpha: 0.9)
-        let endpos = CGPoint(x: ship.position.x + ship.velocity.dx * gameFPS * 1.5 + sin(ship.zRotation) * gameFPS * 0.75, y: ship.position.y + ship.velocity.dy * gameFPS * 1.5 - cos(ship.zRotation) * gameFPS * 0.75)
+        var p = ship.position
+        p.x += cos(ship.zRotation) * ship.particleOffset
+        p.y += sin(ship.zRotation) * ship.particleOffset
+        let start = State(color: (r: 1, g: 1, b: 0), size: CGSize(width: 10, height: 10), zRot: 0, position: p, alpha: 0.9)
+        let endpos = CGPoint(x: p.x + ship.velocity.dx * gameFPS * 1.5 + sin(ship.zRotation) * gameFPS * 0.75, y: p.y + ship.velocity.dy * gameFPS * 1.5 - cos(ship.zRotation) * gameFPS * 0.75)
+        
         let end = State(color: (r: 1, g: 0, b: 0), size: CGSize(width: 20, height: 20), zRot: 5, position: endpos, alpha: 0, delay: TimeInterval(1.5))
         return Particle(states: [start, end])!
     }
@@ -298,20 +302,25 @@ class Object: SKSpriteNode, DataCodable{
             self.angularVelocity = target!.dz
             target = nil
         }
-        if changed{
-            self.id = id
-            (skview.scene as? Play)?.needsName = id != 0 && !asteroid && namelabel == nil
-            let ship = (asteroid ? asteroids : ships)[id]
-            guard case .string(let t) = ship["texture"] else {fatalError("invalid texture")}
-            guard case .number(let radius) = ship["radius"] else {fatalError("invalid radius")}
-            guard case .number(let mass) = ship["mass"] else {fatalError("invalid mass")}
-            self.body(radius: CGFloat(radius), mass: CGFloat(mass), texture: SKTexture(imageNamed: t))
-            if !asteroid && id > 0{
-                self.shootPoints = SHOOTPOINTS[id-1]
-                self.shootVectors = SHOOTVECTORS[id-1]
-            }
-        }
+        if changed{ self.suit(id) }
         self.controls = !asteroid
         self.dynamic = true
+    }
+    func suit(_ id: Int){
+        //change ship. also changes the characteristics of the ship
+        self.id = id
+        if let p = (skview.scene as? Play){p.needsName = self != p.ship && id != 0 && !asteroid && namelabel == nil}
+        if id >= (asteroid ? asteroids : ships).count{
+            return
+        }
+        let sh = (asteroid ? asteroids : ships)[id]
+        self.thrustMultiplier = sh["speed"]?.number ?? 1
+        self.angularThrustMultiplier = sh["spin"]?.number ?? 1
+        self.body(radius: CGFloat(sh["radius"]?.number ?? 15), mass: CGFloat(sh["mass"]?.number ?? 500), texture: SKTexture(imageNamed: sh["texture"]?.string ?? "ship1"))
+        if !asteroid && id > 0{
+            self.shootPoints = SHOOTPOINTS[id-1]
+            self.shootVectors = SHOOTVECTORS[id-1]
+            self.particleOffset = THRUSTPOINTS[id-1]
+        }
     }
 }

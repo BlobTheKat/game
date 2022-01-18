@@ -39,7 +39,7 @@ class Physics{
     if((d < r && thing.superhot) || deathzone){
         if(this.respawnstate)return this.respawn()
     }
-    if(Math.abs(this.x) > sector.w2 || Math.abs(this.y) > sector.h2 && this.respawnstate)return this.respawn()
+    if((Math.abs(this.x) > sector.w2 || Math.abs(this.y) > sector.h2) && this.respawnstate)return this.respawn()
     let M = thing.mass * G
     let m = Math.min(M / (16 * r) - M / d, 0)
     this.dx += (this.x - thing.x) * m

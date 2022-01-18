@@ -15,21 +15,6 @@ let playSound = SKAction.play()
 var currentPlanetTexture = SKTexture()
 
 extension Play{
-    func suit(_ id: Int){
-        //change ship. also changes the characteristics of the ship
-        ship.id = id
-        let sh = ships[id]
-        guard case .string(let t) = sh["texture"] else {fatalError("invalid texture")}
-        guard case .number(let radius) = sh["radius"] else {fatalError("invalid radius")}
-        guard case .number(let mass) = sh["mass"] else {fatalError("invalid mass")}
-        guard case .number(let speed) = sh["speed"] else {fatalError("invalid speed")}
-        guard case .number(let spin) = sh["spin"] else {fatalError("invalid spin")}
-        ship.thrustMultiplier = speed
-        ship.angularThrustMultiplier = spin
-        ship.body(radius: CGFloat(radius), mass: CGFloat(mass), texture: SKTexture(imageNamed: t))
-        ship.shootPoints = SHOOTPOINTS[id-1]
-        ship.shootVectors = SHOOTVECTORS[id-1]
-    }
     func construct() {
         let x = UserDefaults.standard.integer(forKey: "sx")
         let y = UserDefaults.standard.integer(forKey: "sy")
@@ -71,7 +56,8 @@ extension Play{
         self.camera = cam
         cam.setScale(0.4)
         ship.alpha = 0
-        suit(1)
+        let id = UserDefaults.standard.integer(forKey: "shipid")
+        ship.suit(id > 0 ? id : 1)
         tunnel1.anchorPoint = CGPoint(x: 0, y: 0.5)
         tunnel1.position = pos(mx: -0.5, my: 0, x: -5)
         tunnel1.setScale(0.4)
@@ -1476,6 +1462,14 @@ extension Play{
                     badgeCropNode.name = "ship"
                     
                     //DISPLAY SHIPS
+                    var i = 0
+                    for s in SHIPS{
+                        s.removeFromParent()
+                        badgeCropNode.addChild(s)
+                        s.position.y = self.size.height / (i & 1 == 0 ? 4 : -4)
+                        s.position.x = CGFloat(i >> 1) * 200 + 150
+                        i += 1
+                    }
                     
                     badgeCropNode.removeFromParent()
                     statsWall.addChild(badgeCropNode)
@@ -1851,6 +1845,11 @@ extension Play{
             makeItem(planetLanded!, pos, .init(rawValue: UInt8(i))!)
             if tutorialProgress == .buyDrill{ nextStep() }
         }
+        if !swiping && node.parent == badgeCropNode && badgeCropNode.name == "ship"{
+            let id = badgeCropNode.children.firstIndex(of: node)! + 1
+            UserDefaults.standard.set(id, forKey: "shipid")
+            ship.suit(id)
+        }
         if thrustButton == node{
             thrustSound.run(SKAction.sequence([
                 SKAction.changeVolume(to: 0, duration: 0.2),
@@ -1881,6 +1880,10 @@ extension Play{
             statsWall.run(.moveTo(y: 0, duration: 0.5))
             statsWall.alpha = 0.99
             let _ = timeout(0.5){self.statsWall.alpha = 1}
+
+            for navigations in AllNav{
+                navigations.run(SKAction.fadeOut(withDuration: 0.1))
+            }
         }
     }
     override func keyDown(_ key: UIKeyboardHIDUsage) {
@@ -2225,6 +2228,9 @@ extension Play{
                 statsWall.run(SKAction.sequence([SKAction.moveTo(y: self.size.height / 2, duration: 0.5).ease(.easeOut),SKAction.removeFromParent()]))
                 statsWall.alpha = 0.99
                 let _ = timeout(0.5){self.statsWall.alpha = 1}
+                for navigations in AllNav{
+                    navigations.run(SKAction.fadeIn(withDuration: 0.1))
+                }
             }else{
                 statsWall.run(SKAction.moveTo(y: 0, duration: 0.5).ease(.easeOut))
                 statsWall.alpha = 0.99
@@ -2248,7 +2254,6 @@ extension Play{
     
     func nextStep(_ next: Bool? = true){
         if next == nil{
-            tutorialProgress = .thrust
             if tutorialProgress == .done{return}
             if tutorialProgress.rawValue > 4{
                 tutorialProgress = .followPlanet

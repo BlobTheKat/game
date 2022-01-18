@@ -95,7 +95,16 @@ let SHOOTVECTORS: [[CGFloat]] = ships.dropFirst().map { ship in
 let SHOOTDAMAGES: [[CGFloat]] = ships.dropFirst().map { ship in
     if case .string(let points) = ship["shootdmgs"]{
         return points.split(separator: ",").map{ a in CGFloat(Double(String(a).trimmingCharacters(in: CharacterSet([" "])))!) }
+    }else if case .number(let points) = ship["shootdmgs"]{
+        var arr = [CGFloat(points)]
+        for i in ship["shootpoints"]?.string ?? ""{
+            if i == ","{arr.append(CGFloat(points))}
+        }
+        return arr
     }else{
         return []
     }
+}
+let THRUSTPOINTS: [CGFloat] = ships.dropFirst().map{ sh in
+    return sh["thrustpos"]?.number ?? 0
 }
