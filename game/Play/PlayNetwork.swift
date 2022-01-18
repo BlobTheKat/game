@@ -259,6 +259,11 @@ extension Play{
             physics.asyncAfter(deadline: last){ [self] in
                 var i = 1
                 while data.count > 15{parseShip(&data, i);i += 1}
+                if data.count >= 4{
+                    level = Int(data.readunsafe() as UInt16)
+                    xp = Int(data.readunsafe() as UInt16)
+                    refreshXp()
+                }
                 for obj in objects.suffix(max(objects.count - i, 0)){
                     if let i = tracked.firstIndex(of: obj){
                         trackArrows[i].removeFromParent()

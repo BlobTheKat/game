@@ -58,6 +58,7 @@ function processData(data, res){
     }
     
     let energy = data.int()
+    this.xp(energy / 10)
     this.give(energy)
     res.code(rubber ? RESP.DATA2 : RESP.DATA)
     res.byte(this.seq)
@@ -70,6 +71,8 @@ function processData(data, res){
         if(obj == this)continue
         obj.toBuf(res, this)
     }
+    res.short(this.data.lvl)
+    res.short(this.data.xp)
     res.send()
     if(!(this.seq % 10)){
         let buf = new BufWriter()

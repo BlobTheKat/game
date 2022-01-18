@@ -1,17 +1,17 @@
 available: 0
 
 price: 150
-persec: 0.004
+persec: 0.01
 storage: 500
 time: 1m
 
 price: 300
-persec: 0.01
+persec: 0.03
 storage: 2000
 time: 5m
 
 price: 1000
-persec: 0.03
+persec: 0.05
 storage: 8000
 time: 15m
 
@@ -21,26 +21,26 @@ storage: 15k
 time: 1h
 
 price: 20k
-persec: 0.15
+persec: 0.2
 storage: 20k
 time: 3h
 
 price: 50k
-persec: 0.3
+persec: 0.4
 storage: 50k
 time: 6h
 
 price: 200k
-persec: 0.6
+persec: 0.8
 storage: 100k
 time: 12h
 
 price: 400k
-persec: 1
+persec: 1.5
 storage: 200k
 time: 24h
 
 price: 1M
-persec: 1.5
+persec: 3
 storage: 300k
 time: 35h

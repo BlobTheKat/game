@@ -187,6 +187,7 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                         }
                         node.setScale(scale)
                         node.name = t
+                        node.zPosition = 2
                         i += 1
                     }
                 }

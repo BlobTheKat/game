@@ -261,7 +261,7 @@ class Object: SKSpriteNode, DataCodable{
         data.write(Int16(round(self.velocity.dx * gameFPS).clamp(-32768, 32767)))
         data.write(Int16(round(self.velocity.dy * gameFPS).clamp(-32768, 32767)))
         data.write(UInt8(Int(round(self.zRotation / PI256)) & 255))
-        data.write(Int8(round(self.angularVelocity * 768)))
+        data.write(Int8(round(self.angularVelocity * 768).clamp(-128, 127)))
         let new = (parent as? Play)?.newShoot ?? false
         data.write(UInt16(thrust ? 1 : 0) + UInt16(thrustLeft ? 2 : 0) + UInt16(thrustRight ? 4 : 0) + UInt16(((parent as? Play)?.usedShoot ?? false) && !new ? 8 : 0) + UInt16(new ? 16 : 0) + UInt16(self.id * 32))
     }
@@ -320,6 +320,7 @@ class Object: SKSpriteNode, DataCodable{
         if !asteroid && id > 0{
             self.shootPoints = SHOOTPOINTS[id-1]
             self.shootVectors = SHOOTVECTORS[id-1]
+            self.shootDamages = SHOOTDAMAGES[id-1]
             self.particleOffset = THRUSTPOINTS[id-1]
         }
     }

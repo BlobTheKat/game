@@ -15,8 +15,8 @@ var energyPercent = 0.0
 var researchAmount: Float = 0.0
 var researchSpace: Float = 10.0
 var gemCount: Float = 0
-
-
+var level = 1
+var xp = 0
 
 //Array of actions that need to be stopped once scene changes
 var stop: [() -> ()] = []
@@ -67,24 +67,23 @@ func uuidstore(_ a: String) -> String{
 }
 
 enum tutorial: Int{
-    case welcome = 0
-    case thrust = 1
-    case dpad = 2
-    case shoot = 3
-    case followPlanet = 4
-    case shootPlanet = 5
-    case openNavigations = 6
-    case planetIcon = 7
-    case buyPlanet = 8
-    case editPlanet = 9
-    case addItem = 10
-    case buyDrill = 11
-    case gemFinish = 12
-    case done = 13
+    case thrust = 0
+    case dpad = 1
+    case shoot = 2
+    case followPlanet = 3
+    case shootPlanet = 4
+    case openNavigations = 5
+    case planetIcon = 6
+    case buyPlanet = 7
+    case editPlanet = 8
+    case addItem = 9
+    case buyDrill = 10
+    case gemFinish = 11
+    case done = 12
 }
 var tutorialProgress: tutorial{
     get{
-        return .init(rawValue: UserDefaults.standard.integer(forKey: "tutorial")) ?? .welcome
+        return .init(rawValue: UserDefaults.standard.integer(forKey: "tutorial")) ?? .thrust
     }
     set{
         UserDefaults.standard.set(newValue.rawValue, forKey: "tutorial")

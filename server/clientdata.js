@@ -23,14 +23,23 @@ class ClientData extends Physics{
     this.crits = []
     clientKeys[this.i = clientI++] = this
   }
+  xp(a){
+    this.data.xp += Math.floor(a)
+    while(this.data.xp >= this.data.lvl * 100){
+      this.data.xp -= this.data.lvl * 100
+      this.data.lvl++
+    }
+  }
   give(amount=0, amount2=0){
     this.data.bal = (this.data.bal||0) + amount
     this.data.bal2 = (this.data.bal2||0) + amount2
+    this.xp(amount / 50 + amount2 / 10)
   }
   take(amount=0,amount2=0){
     if(!(this.data.bal >= amount && this.data.bal2 >= amount2))return false
     this.data.bal -= amount
     this.data.bal2 -= amount2
+    this.xp(amount / 50 + amount2 / 10)
     return true
   }
   ready(x, y, id, w){

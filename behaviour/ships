@@ -107,11 +107,83 @@ shootdmgs: 7
 
 mass: 600
 radius: 9
-speed: 4
-spin: 2
+speed: 1.3
+spin: 1.2
 texture: zship11
 shootspeed: 0.05
 shootpoints: -20 40, 20 40
 shootvecs: 0, 0
 shootdmgs: 10
-thrustpos: -5
+thrustpos: -7
+
+mass: 700
+radius: 9
+speed: 1.5
+spin: 1.2
+texture: zship12
+shootspeed: 0.06
+shootpoints: -20 40, 20 40
+shootvecs: 0, 0
+shootdmgs: 10
+thrustpos: -7
+
+mass: 800
+radius: 9
+speed: 1.6
+spin: 1.4
+texture: zship13
+shootspeed: 0.09
+shootpoints: -20 40, 20 40
+shootvecs: 0, 0
+shootdmgs: 10
+thrustpos: -7
+
+mass: 500
+radius: 18
+speed: 1.2
+spin: 1.1
+texture: zship14
+shootspeed: 0.1
+shootpoints: -20 40, 20 40
+shootvecs: 0, 0
+shootdmgs: 5
+
+mass: 500
+radius: 17
+speed: 1.5
+spin: 1.4
+texture: zship15
+shootspeed: 0.15
+shootpoints: -20 40, 20 40
+shootvecs: 0, 0
+shootdmgs: 5
+
+mass: 800
+radius: 17
+speed: 2
+spin: 1.6
+texture: zship16
+shootspeed: 0.2
+shootpoints: -20 40, 20 40
+shootvecs: 0, 0
+shootdmgs: 5
+
+mass: 1200
+radius: 16
+speed: 0.7
+spin: 0.8
+texture: zship17
+shootspeed: 0.03
+shootpoints: -20 40, 20 40
+shootvecs: 0, 0
+shootdmgs: 70
+
+mass: 2000
+radius: 16
+speed: 1
+spin: 1
+texture: zship18
+shootspeed: 0.2
+shootpoints: -20 40, 20 40
+shootvecs: 0, 0
+shootdmgs: 15

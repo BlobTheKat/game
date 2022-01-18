@@ -103,7 +103,7 @@ extension Play{
         self.label(node: tapToStart, "loading sector   ", pos: pos(mx: 0, my: -0.3, x: -153), size: 48, color: .white, font: "HalogenbyPixelSurplus-Regular", zPos: 999, isStatic: true)
         tapToStart.horizontalAlignmentMode = .left
         tapToStart.alpha = 0.7
-        ship.zPosition = 5
+        ship.zPosition = 7
         tapToStart.run(.repeatForever(.sequence([
             .wait(forDuration: 0.5),
             .run{
@@ -308,6 +308,11 @@ extension Play{
             pw.append((name: k, old: old[k]?.number ?? 0, new: v.number!, max: (max[k] ?? v).number!))
         }
         return (price: formatPrice(new), time: formatTime(Int(new["time"]!.number!)), powers: pw.sorted(by: {(a,b) in a.name.count < b.name.count}))
+    }
+    func refreshXp(){
+        stats.levelLabel.text = "level \(level)"
+        stats.xpFill.xScale = 0.0737 * Double(xp) / Double(level)
+        stats.xpLabel.text = "\(xp)xp"
     }
     func startGame(){
         nextStep(nil)
@@ -1261,13 +1266,13 @@ extension Play{
     func wallIcons(){
         let mustard = UIColor(red: 1, green: 0.7, blue: 0, alpha: 1)
         stats.levelbg.position.y = self.size.height * 0.9 - 20
-        stats.levelLabel.text = "level 1"
+        stats.levelLabel.text = "level \(level)"
         stats.levelLabel.fontColor = mustard
         stats.levelLabel.position.y = self.size.height * 0.9 - 40
         stats.levelLabel.fontSize = 40
         stats.xpBox.position.y = self.size.height * 0.7
         stats.xpBox.setScale(0.5)
-        stats.xpLabel.text = "100xp"
+        stats.xpLabel.text = "\(xp)xp"
         stats.xpLabel.position = pos(mx: 0, my: 0.7, x: -218, y: -12)
         stats.xpLabel.horizontalAlignmentMode = .left
         stats.xpLabel.zPosition = 2
@@ -1465,6 +1470,13 @@ extension Play{
                     var i = 0
                     for s in SHIPS{
                         s.removeFromParent()
+                        if i < level{
+                            //unlock
+                            s.texture = SKTexture(imageNamed: "box")
+                        }else{
+                            //lock
+                            s.texture = SKTexture(imageNamed: "boxlock")
+                        }
                         badgeCropNode.addChild(s)
                         s.position.y = self.size.height / (i & 1 == 0 ? 4 : -4)
                         s.position.x = CGFloat(i >> 1) * 200 + 150
@@ -1538,7 +1550,7 @@ extension Play{
             break
         case editColoIcon:
             if tutorialProgress == .editPlanet{ nextStep() }
-            else if tutorialProgress.rawValue > 9 && tutorialProgress != .done{
+            else if tutorialProgress.rawValue > 8 && tutorialProgress != .done{
                 return
             }
             planetEditMode()
@@ -1847,6 +1859,7 @@ extension Play{
         }
         if !swiping && node.parent == badgeCropNode && badgeCropNode.name == "ship"{
             let id = badgeCropNode.children.firstIndex(of: node)! + 1
+            if level < id{return}
             UserDefaults.standard.set(id, forKey: "shipid")
             ship.suit(id)
         }
@@ -2155,7 +2168,6 @@ extension Play{
     }
     override func touch(at p: CGPoint) {
         if nodeToFiddle != nil{nodeToFiddle!.fiddle();nodeToFiddle = nil}
-        if tutorialProgress == .welcome { nextStep() }
         if tutInfo.text == "done" { tutArrow.run(SKAction.sequence([.fadeOut(withDuration: 0.2), .removeFromParent()])); tutInfo.text = ""; ship.controls = true; if hideControl{hideControl = false; showControls()} }
         if !hideControl{showControls()}
         if mapPress1 == nil{
@@ -2255,7 +2267,7 @@ extension Play{
     func nextStep(_ next: Bool? = true){
         if next == nil{
             if tutorialProgress == .done{return}
-            if tutorialProgress.rawValue > 4{
+            if tutorialProgress.rawValue > 3{
                 tutorialProgress = .followPlanet
             }
         }
