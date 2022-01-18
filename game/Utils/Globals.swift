@@ -90,7 +90,6 @@ var tutorialProgress: tutorial{
     }
 }
 let tutorials: [(SKLabelHorizontalAlignmentMode, SKLabelVerticalAlignmentMode, mx: CGFloat, my: CGFloat, x: CGFloat, y: CGFloat, String)] = [
-    (.left, .bottom, mx: 0, my: 0, x: -40, y: -15, "welcome!"),
     (.left, .bottom, mx: -0.4, my: -0.4, x: 110, y: 110, "hold to accelerate"),
     (.right, .bottom, mx: 0.4, my: -0.4, x: -120, y: 120, "use left/right to\nRotate your ship"),
     (.left, .top, mx: -0.4, my: -0.4, x: 105, y: 120, "press to\nshoot"),
