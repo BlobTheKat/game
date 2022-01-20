@@ -74,6 +74,7 @@ class Planet: Object{
         node.size = node.texture!.size()
         node.setScale(0.5)
         node.anchorPoint = CGPoint(x: 0.5, y: (10 - self.radius) / node.size.height)
+        node.zPosition = 3
         if item.type == .shooter && item.upgradeEnd == 0 && !destroyed{
             let n = SKSpriteNode(imageNamed: "head\(item.lvl)")
             node.addChild(n)
