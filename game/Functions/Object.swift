@@ -59,6 +59,9 @@ class Object: SKSpriteNode, DataCodable{
     //Variable for custom particles, initialized to a placeholder function
     var particle = {(_:Object) -> Particle in fatalError("particle() has not been defined")}
     //Technical variable. Used for figuring out what killed the ship (when it dies)
+    //1-299: died from planet
+    //301-599: died from another player/planet's bullets
+    //601-899: died from player (used for awarding kills)
     var death: UInt16 = 0
     //floating name
     var namelabel: SKLabelNode? = nil
@@ -66,8 +69,10 @@ class Object: SKSpriteNode, DataCodable{
     //Default particle (the red-yellow one)
     class func defaultParticle(_ ship: Object) -> Particle{
         var p = ship.position
-        p.x += cos(ship.zRotation) * ship.particleOffset
-        p.y += sin(ship.zRotation) * ship.particleOffset
+        let c = cos(ship.zRotation), s = sin(ship.zRotation)
+        p.x += c * ship.particleOffset + s * 7
+        p.y += s * ship.particleOffset - c * 7
+        
         let start = State(color: (r: 1, g: 1, b: 0), size: CGSize(width: 10, height: 10), zRot: 0, position: p, alpha: 0.9)
         let endpos = CGPoint(x: p.x + ship.velocity.dx * gameFPS * 1.5 + sin(ship.zRotation) * gameFPS * 0.75, y: p.y + ship.velocity.dy * gameFPS * 1.5 - cos(ship.zRotation) * gameFPS * 0.75)
         
@@ -82,6 +87,8 @@ class Object: SKSpriteNode, DataCodable{
         self.asteroid = asteroid
     }
     func update(){
+        
+    
         let parent = self.parent as? Play
         if let cam = parent?.camera{
             //calculate cam position so we only create a particle if it's in the scene
@@ -134,7 +141,7 @@ class Object: SKSpriteNode, DataCodable{
         //death timer
         if self.death > 0{
             self.death -= 1
-            if self.death % 100 == 0{
+            if self.death % 300 == 0{
                 self.death = 0
             }
         }
@@ -169,8 +176,8 @@ class Object: SKSpriteNode, DataCodable{
                 shlock -= 1
             }
             for p in shootPoints{
-                var v: CGFloat = 0
-                if i < shootVectors.count{v = shootVectors[i]}
+                let v: CGFloat = i < shootVectors.count ? shootVectors[i] : 0
+                let damage = i < shootDamages.count ? shootDamages[i] : 5.0
                 let bullet = SKSpriteNode(imageNamed: "bullet")
                 let d = sqrt(p.x * p.x + p.y * p.y)
                 let r = atan2(p.x, -p.y) + self.zRotation
@@ -187,24 +194,23 @@ class Object: SKSpriteNode, DataCodable{
                 let (obj: obj, len: len, planet: planet) = raylength(objs: parent.planets, objs2: parent.objects, rayorigin: bullet.position, raydir: CGVector(dx: dx, dy: dy), this: position)
                 if let obj = obj{
                     //obj wasShot
-                    obj.death = 200
-                    var damage = 5.0
-                    if i < shootDamages.count{damage = shootDamages[i]}
+                    obj.death = 600
                     if obj == parent.ship{
                         let _ = timeout((len - 10) / 1500){
                             parent.dealDamage(damage)
                         }
                         //code above DIE if you get hit
-                    }else{
-                        //IF ITS NOT A SHIP
+                    }else if self == parent.ship{
+                        //IF IM A SHIP AND NOT IT
                         parent.shotObj = obj
+                        obj.death = 900 //wasShot by me
                     }
                 }
                 let sdx = parent.ship.position.x - (planet?.position.x ?? .infinity)
                 let sdy = parent.ship.position.y - (planet?.position.y ?? .infinity)
                 if let planet = planet, !planet.superhot && sdx * sdx + sdy * sdy < planet.radius * planet.radius * 16 && planet.ownedState != .yours{
                     //planet was shot, it's not a star and we're in range
-                    planet.emitq += planet.emitf * 2
+                    planet.emitq += damage * planet.emitf / 3
                     while planet.emitq > 1{
                         planet.emit(randDir(planet.radius - 50))
                         if self == parent.ship{planet.angry = 1800;parent.planetShot = planet}
@@ -236,16 +242,15 @@ class Object: SKSpriteNode, DataCodable{
     }
     //change the physics and texture of the planet
     func body(radius: CGFloat, mass: CGFloat = -1, texture: SKTexture? = nil){
-        self.zPosition = 2
+        self.zPosition = 7
         self.mass = mass == -1 ? radius * radius : mass
         self.radius = radius
         self.setScale(1)
         if texture != nil{
             self.texture = texture!
-            self.texture!.filteringMode = .nearest
             self.size = texture!.size()
         }
-        self.setScale(0.5)
+        self.setScale(0.25)
     }
     convenience init(){ self.init(radius: 0, mass: 0) }
     required init?(coder aDecoder: NSCoder){ fatalError("init(coder:) has not been implemented") }
@@ -301,6 +306,8 @@ class Object: SKSpriteNode, DataCodable{
             self.zRotation = target!.z
             self.angularVelocity = target!.dz
             target = nil
+        }else if abs((zRotation - target!.z).remainder(dividingBy: .pi * 2)) > 0.5{
+            self.zRotation = target!.z
         }
         if changed{ self.suit(id) }
         self.controls = !asteroid

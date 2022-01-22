@@ -19,7 +19,6 @@ class Planet: Object{
         self.radius = radius
         if texture != nil{
             self.texture = texture!
-            self.texture!.filteringMode = .nearest
             self.size = texture!.size()
         }
     }
@@ -216,7 +215,8 @@ class Planet: Object{
             let frame = CGRect(origin: CGPoint(x: -parent.size.width / 2, y: -parent.size.height / 2), size: parent.size)
             let dx = (self.position.x - cam.position.x) / cam.xScale
             let dy = (self.position.y - cam.position.y) / cam.yScale
-            if (dx * dx + dy * dy < 9000000) && (dx < frame.minX - size.width / 2 || dx > frame.maxX + size.width / 2 || dy < frame.minY - size.height / 2 || dy > frame.maxY + size.height / 2){
+            let d = sqrt(dx * dx + dy * dy)
+            if d < 5000 && (dx < frame.minX - size.width / 2 || dx > frame.maxX + size.width / 2 || dy < frame.minY - size.height / 2 || dy > frame.maxY + size.height / 2){
                 let camw = frame.width / 2// - i.size.width
                 let camh = frame.height / 2// - i.size.height
                 if abs(dy / dx) > camh / camw{
@@ -229,6 +229,7 @@ class Planet: Object{
                     i.position.x = (dx > 0 ? camw : -camw)
                 }
                 i.zRotation = -atan2(dx, dy)
+                i.setScale(0.25 - d / 20000)
                 if i.parent == nil{cam.addChild(i)}
             }else if i.parent != nil{i.removeFromParent()}
         }
@@ -281,7 +282,7 @@ class Planet: Object{
                         }]))
                         n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * gameFPS, dy: CGFloat(n.velocity.dy) * gameFPS), duration: 1))
                     }else{
-                        n.death = 100
+                        n.death = 300
                     }
                 }
                 return
@@ -359,7 +360,7 @@ class Planet: Object{
                         }]))
                         n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * gameFPS, dy: CGFloat(n.velocity.dy) * gameFPS), duration: 1))
                     }else{
-                        n.death = 100
+                        n.death = 300
                     }
                 }
                 return
@@ -432,7 +433,7 @@ class Planet: Object{
         self.inbank2 = Int(data.readunsafe() as Float)
         self.namelabel?.removeFromParent()
         self.namelabel = SKLabelNode(text: "...")
-        (parent as? Play)?.label(node: self.namelabel!, data.read(lentype: UInt8.self) ?? "", pos: position.add(y: -15), size: 30, color: .green, font: "Menlo", zPos: 3)
+        (parent as? Play)?.label(node: self.namelabel!, data.read(lentype: UInt8.self) ?? "", pos: position.add(y: -15), size: 30, color: .green, font: "Menlo", zPos: 6)
         let bits = data.readunsafe() as UInt8
         let ownedState = OwnedState(rawValue: bits & 192)!
         if self.ownedState != ownedState{

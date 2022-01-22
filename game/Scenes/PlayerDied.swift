@@ -24,6 +24,7 @@ class PlayerDied: SKScene{
     let reconnectLabel = SKLabelNode()
     let tapToReconnect = SKLabelNode()
     override func didMove(to view: SKView) {
+        deaths += 1
         label(node: reconnectLabel, "", pos: pos(mx: 0.5, my: 0.6), size: 32, color: UIColor.white)
         
         label(node: tapToReconnect, "-tap to respawn-", pos: pos(mx: 0.5, my: 0.3, y: -50), size: 28.5, color: UIColor.white)

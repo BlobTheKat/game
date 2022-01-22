@@ -79,6 +79,15 @@ extension Play{
         }
     }
     func cameraUpdate(){
+        if statsLabel.count >= 5{
+            var kdr = (Float(kills) / Float(deaths)).clamp(0.01,999)
+            if kdr.isNaN{kdr = 0}
+            statsLabel2[0].text = "\(kills)"
+            statsLabel2[1].text = "\(deaths)"
+            statsLabel2[2].text = "\(kdr)"
+            statsLabel2[3].text = "\(planetsOwned)"
+            statsLabel2[4].text = "\(Int(travel/1000))ly"
+        }
         if !swiping && badgeCropNode.parent != nil && badgeCropNode.children.count > 0{
             var x = appleSwipe * 2
             var correct = badgeCropNode.children.first!.position.x + x - badgeCropNode.children.first!.frame.width
@@ -493,7 +502,7 @@ extension Play{
         }else if ship.dynamic{
             health = 0
             healthBar.texture = SKTexture(imageNamed: "health0")
-            ship.death = 200
+            ship.death = 600
             kill(ship)
             ship.removeFromParent()
             ship.controls = false

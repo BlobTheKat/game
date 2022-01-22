@@ -50,7 +50,11 @@ extension Play{
         gameAuthed = true
     }
     func kill(_ n: Object){
-        if n.death > 100{
+        if n.death > 300{
+            if n.death > 600{
+                //killed by player
+                kills += 1
+            }
             //explode
             for i in disappear(n.position){
                 self.particles.append(i)
@@ -136,7 +140,7 @@ extension Play{
     func didLoad(){
         planets.append(contentsOf: sector.0)
         for p in sector.0{
-            let a = SKSpriteNode(imageNamed: "arrow")
+            let a = SKSpriteNode(imageNamed: p.superhot ? "arrow0" : "arrow")
             planetindicators.append(a)
             a.anchorPoint = CGPoint(x: 0.5, y: 1)
             a.setScale(0.25)
@@ -331,6 +335,10 @@ extension Play{
                 let id = Int(data.readunsafe() as UInt16)
                 self.planets[id].decode(data: &data)
             }
+        }else if code == 2{
+            //STATS DATA
+            travel = Double(data.readunsafe() as Float)
+            planetsOwned = Int(data.readunsafe() as UInt16)
         }else if code == 13{
             self.didBuy(false)
         }else if code == 15{

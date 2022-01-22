@@ -1,7 +1,7 @@
 //5
 function tick(sector){
   for(var o of sector.objects){
-    if(o == EMPTY)continue;
+    if(o == EMPTY || !(o.x || o.y))continue;
     for(var p of sector.planets){
       o.updatep(p)
     }

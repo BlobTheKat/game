@@ -17,6 +17,10 @@ var researchSpace: Float = 10.0
 var gemCount: Float = 0
 var level = 1
 var xp = 0
+var travel = 0.0
+var planetsOwned = 0
+var kills: Int{get{return UserDefaults.standard.integer(forKey: "kills")}set{UserDefaults.standard.set(newValue, forKey: "kills")}}
+var deaths: Int{get{return UserDefaults.standard.integer(forKey: "deaths")}set{UserDefaults.standard.set(newValue, forKey: "deaths")}}
 
 //Array of actions that need to be stopped once scene changes
 var stop: [() -> ()] = []

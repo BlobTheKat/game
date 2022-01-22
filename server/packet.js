@@ -1,6 +1,11 @@
 //10
 //res = response
 //data = data input
+
+
+
+
+const STATSOBJ = {travel: TYPES.FLOAT, planets: TYPES.USHORT}
 function processData(data, res){
     let rubber = this.rubber > 0 ? (data.int(),data.int(),data.int(),data.int(),this.rubber--) : this.validate(data)
     let bitfield = data.ubyte()
@@ -41,6 +46,7 @@ function processData(data, res){
             if(p.data.health < 1){
                 //destroyed
                 p.data.health = 2048
+                //TODO: remove 1 from plamnet stats of old owner
                 p.data.owner = this.playerid
                 p.data.name = this.name
                 p.collect()
@@ -85,6 +91,10 @@ function processData(data, res){
             sector.planets[i].toBuf(buf, i, this.playerid)
         }
         res.send(buf.toBuf())
+        buf = new BufWriter()
+        buf.byte(2)
+        buf.obj(STATSOBJ, this.data.stats)
+        res.send(buf.toBuf())
     }
 }
 let msgs = {
@@ -103,6 +113,7 @@ let msgs = {
         res.double(this.data.bal)
         res.float(this.data.bal2)
         res.code(RESP.PLANETBUY).send()
+        this.data.stats.planets = (this.data.stats.planets || 0) + 1
     },
     [CODE.MOVESECTOR](data, res){
         let x = data.float()
@@ -143,7 +154,7 @@ let msgs = {
             let item = planet.data.items[x]
             if(!item)return res.code(ERR.CHANGEITEM).send()
             let dat = ITEMS[item.id][item.lvl+1]
-            if(item.lvl >= (planet.data.camplvl - ITEMS[item.id][0].available)/ITEMS[item.id][0].every + 1)return res.code(ERR.CHANGEITEM).send()
+            if(item.lvl >= (planet.data.camplvl - ITEMS[item.id][0].available) + 1)return res.code(ERR.CHANGEITEM).send()
             if(!this.take(dat.price, dat.price2))return res.code(ERR.CHANGEITEM).send()
             planet.collect()
             item.finish = (NOW + dat.time) >>> 0

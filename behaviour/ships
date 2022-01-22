@@ -2,14 +2,14 @@ mass: 0
 radius: 0
 speed: 1.5
 spin: 1
-texture: ship1
+texture: #nope
 shoot: 0
 
 mass: 150
 radius: 15
 speed: 1
 spin: 1
-texture: ship1 # and not zship1
+texture: zship1
 shootspeed: 0.05
 shootpoints: -10 40, 10 40
 shootvecs: 0, 0

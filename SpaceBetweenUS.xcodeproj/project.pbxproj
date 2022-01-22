@@ -36,6 +36,8 @@
 		34A5547226BBE13D00D43C04 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A5547126BBE13C00D43C04 /* Constants.swift */; };
 		34A5547426BC201800D43C04 /* Disconnected.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A5547326BC201800D43C04 /* Disconnected.swift */; };
 		34C5BC30271ED7F200997B1D /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34C5BC2F271ED7F200997B1D /* GameKit.framework */; platformFilter = ios; };
+		34CE76CA2799A316001D86BA /* PlayControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34CE76C92799A316001D86BA /* PlayControls.swift */; };
+		34CE76CC279B22D4001D86BA /* Story.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34CE76CB279B22D4001D86BA /* Story.swift */; };
 		34DD98582771D7A300F391E2 /* items in Resources */ = {isa = PBXBuildFile; fileRef = 34DD98572771D7A300F391E2 /* items */; };
 		34DFE616278D8387007BC16D /* globals.js in Resources */ = {isa = PBXBuildFile; fileRef = 34DFE615278D8387007BC16D /* globals.js */; };
 		34DFE61A278D86D1007BC16D /* data.js in Resources */ = {isa = PBXBuildFile; fileRef = 34DFE619278D86D1007BC16D /* data.js */; };
@@ -96,6 +98,8 @@
 		34A5547326BC201800D43C04 /* Disconnected.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Disconnected.swift; sourceTree = "<group>"; };
 		34C5BC2D271ED52400997B1D /* game.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = game.entitlements; sourceTree = "<group>"; };
 		34C5BC2F271ED7F200997B1D /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
+		34CE76C92799A316001D86BA /* PlayControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayControls.swift; sourceTree = "<group>"; };
+		34CE76CB279B22D4001D86BA /* Story.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Story.swift; sourceTree = "<group>"; };
 		34DD98572771D7A300F391E2 /* items */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = items; sourceTree = "<group>"; };
 		34DFE615278D8387007BC16D /* globals.js */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.javascript; path = globals.js; sourceTree = "<group>"; tabWidth = 2; };
 		34DFE619278D86D1007BC16D /* data.js */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.javascript; path = data.js; sourceTree = "<group>"; tabWidth = 2; };
@@ -166,6 +170,7 @@
 				3484BFD5270754DD00C06FFC /* PlayNetwork.swift */,
 				3484BFD72709C6C600C06FFC /* PlayCore.swift */,
 				343E313B276A3C03007F753D /* Play.swift */,
+				34CE76C92799A316001D86BA /* PlayControls.swift */,
 			);
 			path = Play;
 			sourceTree = "<group>";
@@ -213,6 +218,7 @@
 			children = (
 				33CF26182722C46500D25508 /* DPlay.swift */,
 				33E378B626BD57780034B14E /* PlayerDied.swift */,
+				34CE76CB279B22D4001D86BA /* Story.swift */,
 				34A5547326BC201800D43C04 /* Disconnected.swift */,
 			);
 			path = Scenes;
@@ -400,6 +406,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				343E3157276B4B61007F753D /* Structs.swift in Sources */,
+				34CE76CA2799A316001D86BA /* PlayControls.swift in Sources */,
 				33E378B726BD57780034B14E /* PlayerDied.swift in Sources */,
 				343E3144276A3EDE007F753D /* Extensions.swift in Sources */,
 				343E313E276A3C92007F753D /* Variables.swift in Sources */,
@@ -419,6 +426,7 @@
 				343E314F276B3E25007F753D /* Globals.swift in Sources */,
 				343E3146276A3F39007F753D /* GameParts.swift in Sources */,
 				343E313C276A3C03007F753D /* Play.swift in Sources */,
+				34CE76CC279B22D4001D86BA /* Story.swift in Sources */,
 				343E3154276B487A007F753D /* Sys.swift in Sources */,
 				341B34FE26C557F6006115F1 /* Particles.swift in Sources */,
 				343E3152276B47F9007F753D /* API.swift in Sources */,

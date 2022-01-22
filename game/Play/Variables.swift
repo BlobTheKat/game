@@ -186,7 +186,7 @@ class Play: SKScene{
     var playingThrustSound = false
     //GameCenter prompt
     var gkview: UIViewController? = nil
-    let addItemIcons: [SKSpriteNode] = [SKSpriteNode(imageNamed: "drillIcon"),SKSpriteNode(imageNamed: "shooterIcon"),SKSpriteNode(imageNamed: "dishIcon"),SKSpriteNode(imageNamed: "satelliteIcon"), SKSpriteNode(imageNamed: "electroIcon")]
+    let addItemIcons: [SKSpriteNode] = [SKSpriteNode(imageNamed: "drillIcon"),SKSpriteNode(imageNamed: "shooterIcon"),SKSpriteNode(imageNamed: "satelliteIcon"),SKSpriteNode(imageNamed: "dishIcon"),SKSpriteNode(imageNamed: "electroIcon")]
     let addItemPrices: [SKLabelNode] = items.dropFirst().map{a in
         let n = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
         if a.count < 2{

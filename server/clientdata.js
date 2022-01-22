@@ -94,6 +94,7 @@ class ClientData extends Physics{
     if(Math.abs(this.dz - dz) < amult * 0.001)this.dz = dz, update--
     if(Math.abs(this.z - z) < dz * 0.5)this.z = z, update--
     if(!update)return this.toBuf()*/
+    if(this.x || this.y)this.data.stats.travel = (this.data.stats.travel || 0) + Math.max(Math.abs(this.x - x), Math.abs(this.y - y))
     this.x = x
     this.y = y
     this.z = z
