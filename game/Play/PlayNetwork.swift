@@ -323,8 +323,9 @@ extension Play{
                 badge.position = CGPoint(x: -label.frame.width/2 - 5, y: 10)
                 badge.anchorPoint.x = 1
                 badge.zPosition = 2
-                badge.setScale(0.07)
-                //label.addChild(badge)
+                badge.setScale(0.5)
+                label.addChild(badge)
+                objects[id].badgeNode = badge
             }
         }else if code == 11{
             energyAmount = data.readunsafe()

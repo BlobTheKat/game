@@ -43,7 +43,7 @@ let SUFFIXES = [
     "%": 0.01
 ]
 
-let BADGES = ["badge1", "badge2", "badge3", "badge4", "badge5", "badge6", "badge7", "badge8", "badge9", "badge10", "badge11", "badge12", "badge13", "badge14", "badge15", "badge16", "badge17", "badge18", "badge19", "badge20", "badge21", "badge22", "badge23", "badge24", "badge25", "badge26", "badge27", "badge28", "badge29", "badge30"].map({ badge -> SKSpriteNode in
+let BADGES = ["blank", "badge1", "badge2", "badge3", "badge4", "badge5", "badge6", "badge7", "badge8", "badge9", "badge10", "badge11", "badge12", "badge13", "badge14", "badge15", "badge16", "badge17", "badge18", "badge19", "badge20", "badge21", "badge22", "badge23", "badge24", "badge25", "badge26", "badge27", "badge28", "badge29", "badge30", "badge31"].map({ badge -> SKSpriteNode in
     let node = SKSpriteNode(imageNamed: "boxlock")
     let child = SKSpriteNode(imageNamed: badge)
     child.zPosition = -1
@@ -60,6 +60,14 @@ let SHIPS = ["ship1","ship2","ship3","ship4","ship5","ship6","ship7","ship8","sh
     node.zPosition = 1
     return node
 })
+
+
+let COLORS: [UIColor] = [
+    .green,
+    .yellow,
+    .red
+]
+
 
 let missionTXTS = [
     "travel": "Travel %ly",
@@ -82,6 +90,5 @@ let MISSIONS: [String: GameData] = ({keys in
     for k in keys{
         dict[k] = GameData("/"+k)!
     }
-    print(dict)
     return dict
 })(missionTXTS.keys)

@@ -14,7 +14,6 @@ class Object: SKSpriteNode, DataCodable{
     var id = 0
     //Is an asteroid?
     var asteroid: Bool
-    
     //Particle Variables
     var producesParticles: Bool = false
     var particleFrequency = 0.2
@@ -65,6 +64,7 @@ class Object: SKSpriteNode, DataCodable{
     var death: UInt16 = 0
     //floating name
     var namelabel: SKLabelNode? = nil
+    var badgeNode: SKSpriteNode? = nil
     var target: (pos: CGPoint, vel: CGVector, z: CGFloat, dz: CGFloat)? = nil
     //Default particle (the red-yellow one)
     class func defaultParticle(_ ship: Object) -> Particle{
@@ -263,17 +263,18 @@ class Object: SKSpriteNode, DataCodable{
         }
         data.write(Float(self.position.x))
         data.write(Float(self.position.y))
-        data.write(Int16(round(self.velocity.dx * gameFPS).clamp(-32768, 32767)))
-        data.write(Int16(round(self.velocity.dy * gameFPS).clamp(-32768, 32767)))
+        data.write(Int8(round(self.velocity.dx / 4).clamp(-128, 127)))
+        data.write(Int8(round(self.velocity.dy / 4).clamp(-128, 127)))
         data.write(UInt8(Int(round(self.zRotation / PI256)) & 255))
         data.write(Int8(round(self.angularVelocity * 768).clamp(-128, 127)))
         let new = (parent as? Play)?.newShoot ?? false
         data.write(UInt16(thrust ? 1 : 0) + UInt16(thrustLeft ? 2 : 0) + UInt16(thrustRight ? 4 : 0) + UInt16(((parent as? Play)?.usedShoot ?? false) && !new ? 8 : 0) + UInt16(new ? 16 : 0) + UInt16(self.id * 32))
+        data.write(UInt16(badge + nameColor * 1024))
     }
     
     func decode(data: inout Data){
         //See server protocol for more insight
-        target = (pos: CGPoint(x: CGFloat(data.readunsafe() as Float), y: CGFloat(data.readunsafe() as Float)), vel: CGVector(dx: CGFloat(data.readunsafe() as Int16) / gameFPS, dy: CGFloat(data.readunsafe() as Int16) / gameFPS), z: CGFloat(data.readunsafe() as Int8) * PI256, dz: CGFloat(data.readunsafe() as Int8) / 768)
+        target = (pos: CGPoint(x: CGFloat(data.readunsafe() as Float), y: CGFloat(data.readunsafe() as Float)), vel: CGVector(dx: CGFloat(data.readunsafe() as Int8) * 4, dy: CGFloat(data.readunsafe() as Int8) * 4), z: CGFloat(data.readunsafe() as Int8) * PI256, dz: CGFloat(data.readunsafe() as Int8) / 768)
         let bits: UInt16 = data.readunsafe()
         let oa = asteroid
         thrust = bits & 1 != 0
@@ -308,6 +309,14 @@ class Object: SKSpriteNode, DataCodable{
             target = nil
         }else if abs((zRotation - target!.z).remainder(dividingBy: .pi * 2)) > 0.5{
             self.zRotation = target!.z
+        }
+        var color = data.readunsafe() as UInt16
+        let badge = color & 1023
+        color >>= 10
+        self.namelabel?.fontColor = COLORS[Int(color)]
+        if self.badgeNode != nil{
+            self.badgeNode!.texture = (BADGES[Int(badge)].children[0] as! SKSpriteNode).texture
+            self.badgeNode!.size = self.badgeNode!.texture!.size()
         }
         if changed{ self.suit(id) }
         self.controls = !asteroid

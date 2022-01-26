@@ -310,4 +310,8 @@ class Play: SKScene{
     
     //ALL NAVIGATIONS ON SCREEN
     let AllNav: [SKSpriteNode]
+    
+    
+    let equip = SKSpriteNode(imageNamed: "equip")
+    var shipSuit = -1
 }

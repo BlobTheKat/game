@@ -79,7 +79,7 @@ extension Play{
         }
     }
     func cameraUpdate(){
-        if statsLabel.count >= 5{
+        if statsLabel.count >= 5 && shipSuit == -1{
             var kdr = (Float(kills) / Float(deaths)).clamp(0.01,999)
             if kdr.isNaN{kdr = 0}
             statsLabel2[0].text = "\(kills)"

@@ -22,6 +22,8 @@ var planetsOwned = 0
 var kills: Int{get{return UserDefaults.standard.integer(forKey: "kills")}set{UserDefaults.standard.set(newValue, forKey: "kills")}}
 var deaths: Int{get{return UserDefaults.standard.integer(forKey: "deaths")}set{UserDefaults.standard.set(newValue, forKey: "deaths")}}
 var missions: [(name: String, val: CGFloat, max: CGFloat, gems: CGFloat, xp: CGFloat)] = []
+var badge: Int = 0
+var nameColor: Int = 0
 
 //Array of actions that need to be stopped once scene changes
 var stop: [() -> ()] = []

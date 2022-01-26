@@ -91,11 +91,12 @@ class Asteroid extends Physics{
   toBuf(buf){
     buf.float(this.x)
     buf.float(this.y)
-    buf.short(Math.max(Math.min(32767, Math.round(this.dx * FPS)), -32768))
-    buf.short(Math.max(Math.min(32767, Math.round(this.dy * FPS)), -32768))
+    buf.byte(Math.max(Math.min(127, Math.round(this.dx / 4)), -128))
+    buf.byte(Math.max(Math.min(127, Math.round(this.dy / 4)), -128))
     buf.byte(Math.round(this.z / PI256))
     buf.byte(Math.round(this.dz * 768))
     buf.short(6 + (this.id << 5))
+    buf.short(0)
     return buf
   }
   respawn(){

@@ -15,6 +15,14 @@ extension Play{
         if statsWall.parent != nil && !swiping{
             switch node{
             case statsIcons[1]:
+                shipSuit = -1
+                statsLabel[0].text = "kills:"
+                statsLabel[1].text = "deaths:"
+                statsLabel[2].text = "kdr:"
+                statsLabel[3].text = "planets:"
+                statsLabel[4].text = "travel:"
+                statsLabel[0].fontColor = .white
+                equip.removeFromParent()
                 if badgeCropNode.name != "badge"{
                     removeWallIcons()
                     var i = 0
@@ -31,6 +39,16 @@ extension Play{
                     badgeCropNode.maskNode = n
                     badgeCropNode.removeAllChildren()
                     for b in BADGES{
+                        if i * 2 + 2 <= level{
+                            //unlock
+                            b.texture = SKTexture(imageNamed: "box")
+                        }else{
+                            //lock
+                            b.texture = SKTexture(imageNamed: "boxlock")
+                        }
+                        if i == badge{
+                            b.setScale(1.2)
+                        }
                         b.removeFromParent()
                         badgeCropNode.addChild(b)
                         b.position.y = self.size.height / (i & 1 == 0 ? 4 : -4)
@@ -47,6 +65,14 @@ extension Play{
                 }
                 break
             case statsIcons[0]:
+                shipSuit = -1
+                statsLabel[0].text = "kills:"
+                statsLabel[1].text = "deaths:"
+                statsLabel[2].text = "kdr:"
+                statsLabel[3].text = "planets:"
+                statsLabel[4].text = "travel:"
+                statsLabel[0].fontColor = .white
+                equip.removeFromParent()
                 if badgeCropNode.name != "shop"{
                     removeWallIcons()
                     statsIcons[0].texture = SKTexture(imageNamed: "statsbtn")
@@ -106,6 +132,14 @@ extension Play{
                 }
                 break
             case statsIcons[2]:
+                shipSuit = -1
+                statsLabel[0].text = "kills:"
+                statsLabel[1].text = "deaths:"
+                statsLabel[2].text = "kdr:"
+                statsLabel[3].text = "planets:"
+                statsLabel[4].text = "travel:"
+                statsLabel[0].fontColor = .white
+                equip.removeFromParent()
                 if badgeCropNode.name != "ship"{
                     removeWallIcons()
                     statsIcons[0].texture = SKTexture(imageNamed: "shop")
@@ -125,7 +159,7 @@ extension Play{
                     var i = 0
                     for s in SHIPS{
                         s.removeFromParent()
-                        if i < level{
+                        if i * 2 + 1 <= level{
                             //unlock
                             s.texture = SKTexture(imageNamed: "box")
                         }else{
@@ -147,6 +181,10 @@ extension Play{
                     statsIcons[2].texture = SKTexture(imageNamed: "ship")
                 }
                 break
+            case equip:
+                UserDefaults.standard.set(shipSuit, forKey: "shipid")
+                ship.suit(shipSuit)
+                equip.texture = SKTexture(imageNamed: "equipped")
             default:break
             }
             return
@@ -512,11 +550,40 @@ extension Play{
             makeItem(planetLanded!, pos, .init(rawValue: UInt8(i))!)
             if tutorialProgress == .buyDrill{ nextStep() }
         }
-        if !swiping && node.parent == badgeCropNode && badgeCropNode.name == "ship"{
+        if !swiping && node.parent == badgeCropNode && badgeCropNode.name == "ship" && node.position.x < size.width * 0.8{
             let id = badgeCropNode.children.firstIndex(of: node)! + 1
-            if level < id{return}
-            UserDefaults.standard.set(id, forKey: "shipid")
-            ship.suit(id)
+            statsLabel[4].text = "speed:"
+            statsLabel[3].text = "agility:"
+            statsLabel[2].text = "damage:"
+            statsLabel[1].text = "size: \(Int(ships[id]["radius"]?.number ?? 15) * 2)m,"
+            statsLabel[0].text = ""
+            statsLabel2[4].text = "\(Int((ships[id]["speed"]?.number ?? 1) * 100))"
+            statsLabel2[3].text = "\(Int((ships[id]["spin"]?.number ?? 1) * 10))"
+            let dmg = SHOOTDAMAGES[id-1].reduce(0) { a, b in return a + b}
+            statsLabel2[2].text = "\(Int(dmg)) (\(Int(dmg * (ships[id]["shootspeed"]?.number ?? 0.05) * 60))/s)"
+            statsLabel2[1].text = "\(formatNum(ships[id]["mass"]?.number ?? 300))tons"
+            statsLabel2[0].text = ""
+            if level < id * 2 - 1{
+                statsLabel[0].text = "Unlocks at level \(id * 2 - 1)"
+                statsLabel[0].fontColor = UIColor(red: 0.8, green: 0.1, blue: 0.1, alpha: 1)
+                equip.removeFromParent()
+            }else{
+                equip.position = pos(mx: 0.7, my: 0, y: 70)
+                equip.setScale(0.4)
+                equip.removeFromParent()
+                statsWall.addChild(equip)
+                equip.texture = SKTexture(imageNamed: "equip")
+            }
+            shipSuit = id
+        }
+        if !swiping && node.parent == badgeCropNode && badgeCropNode.name == "badge" && node.position.x < size.width * 0.8{
+            let id = badgeCropNode.children.firstIndex(of: node)! + 1
+            if level >= id * 2{
+                //equip badge
+                node.setScale(1.2)
+                BADGES[badge].setScale(1)
+                badge = id
+            }
         }
         if thrustButton == node{
             thrustSound.run(SKAction.sequence([
@@ -730,6 +797,14 @@ extension Play{
         if statsWall.parent != nil && statsWall.alpha == 1{
             if statsWall.position.y > size.height / 4{
                 statsWall.run(SKAction.sequence([SKAction.moveTo(y: self.size.height / 2, duration: 0.5).ease(.easeOut),SKAction.removeFromParent()]))
+                shipSuit = -1
+                statsLabel[0].text = "kills:"
+                statsLabel[1].text = "deaths:"
+                statsLabel[2].text = "kdr:"
+                statsLabel[3].text = "planets:"
+                statsLabel[4].text = "travel:"
+                statsLabel[0].fontColor = .white
+                equip.removeFromParent()
                 statsWall.alpha = 0.99
                 let _ = timeout(0.5){self.statsWall.alpha = 1}
                 for navigations in AllNav{

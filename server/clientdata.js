@@ -62,11 +62,12 @@ class ClientData extends Physics{
     //let delay = -0.001 * FPS * (this.u - (this.u=NOW))
     let x = buffer.float()
     let y = buffer.float()
-    let dx = buffer.short() / FPS
-    let dy = buffer.short() / FPS
+    let dx = buffer.byte() * 4
+    let dy = buffer.byte() * 4
     let z = buffer.byte() * PI256
     let dz = buffer.byte() / 768
     let thrust = buffer.ushort()
+    this.cosmetic = buffer.ushort()
     /*if(true){
       this.ship = (ship << 8) + level
     }
@@ -112,11 +113,12 @@ class ClientData extends Physics{
     if(performance.nodeTiming.duration - this.u._idleStart > 1000){buf.int(0);buf.int(0);buf.int(0);buf.short(0);return}
     buf.float(this.x)
     buf.float(this.y)
-    buf.short(Math.max(Math.min(32767, Math.round(this.dx * FPS)), -32768))
-    buf.short(Math.max(Math.min(32767, Math.round(this.dy * FPS)), -32768))
+    buf.byte(Math.max(Math.min(127, Math.round(this.dx / 4)), -128))
+    buf.byte(Math.max(Math.min(127, Math.round(this.dy / 4)), -128))
     buf.byte(Math.round(this.z / PI256))
     buf.byte(Math.round(this.dz * 768))
     buf.short((this.thrust & 31) + (this.id << 5) + (!(this.thrust & 16) && this.shoots == ref ? 16 : 0))
+    buf.short(this.cosmetic)
     if(this.shoots == ref)this.shoots = null
     return buf
   }
