@@ -45,13 +45,6 @@ extension GameData{
             i += 1
         }
     }
-    static func from(location: String, completion: @escaping (GameData?) -> ()){
-        fetch("https://aaa.blobkat.repl.co\(location)") { (d: String) in
-            completion(GameData(data: d))
-        } _: { s in
-            completion(nil)
-        }
-    }
 }
 
 

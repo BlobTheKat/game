@@ -84,12 +84,13 @@ server.on('message', async function(m, remote) {
 				line -= 2
 				m = process.linesOfCode[line-1]
 				m = "\x1b[;37m"+m.slice(0,pos-1).trim() + "\x1b[33;4m" + m.slice(pos-1).match(/(\w*)(.*)/).slice(1).join("\x1b[m\x1b[37m")
-				let name = ""
+				let name = "", l = 0
 				for(let i of process.fileIndex){
 					if(i[1] > line)break
 					name = i[0]
+                    l = i[1]
 				}
-				m = "\n\x1b[34;4m" + name + ":" + line + ":" + pos + "\n" + m
+				m = "\n\x1b[34;4m" + name + ":" + (line-l) + ":" + pos + "\n" + m
 			});
 			console.log(msg)
 			send(Buffer.concat([Buffer.of(127), strbuf("Bad Packet")]))}

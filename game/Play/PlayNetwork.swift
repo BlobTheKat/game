@@ -339,6 +339,39 @@ extension Play{
             //STATS DATA
             travel = Double(data.readunsafe() as Float)
             planetsOwned = Int(data.readunsafe() as UInt16)
+            var i = 0
+            var redrawWall = false
+            while true{
+                let name = data.read(lentype: Int8.self) ?? ""
+                if name == ""{break}
+                let lvl = Int(data.readunsafe() as UInt8)
+                let left = CGFloat(data.readunsafe() as Float)
+                let dat = MISSIONS[name]![lvl]
+                let total = CGFloat(dat["amount"]!.number!)
+                let mission = (name: missionTXTS[name]!.split(separator: "%").joined(separator: "\(Int(total))"), val: total - left, max: total, gems: CGFloat(dat["gems"]!.number!), xp: CGFloat(dat["xp"]!.number!))
+                if i >= missions.count || missions[i].name != mission.name{
+                    if i < missions.count{
+                        missionCompleteNotification(missionTxt: missions[i].name, gems: Int(missions[i].gems), xp: Int(missions[i].xp))
+                    }
+                    redrawWall = true
+                }
+                if i < missions.count{
+                    if missions[i].name == mission.name && i < stats.missions.count{
+                        //just different value
+                        stats.missions[i].fill.xScale = (mission.val / mission.max) * 5.9
+                        let intval = Int(mission.val)
+                        stats.missions[i].text.text = "\(CGFloat(intval) == mission.val ? "\(intval)" : String(format: "%.2f", mission.val)) / \(Int(mission.max))"
+                    }
+                    missions[i] = mission
+                }else{
+                    missions.append(mission)
+                }
+                i += 1
+            }
+            while i < missions.count{
+                missions.removeLast()
+            }
+            if redrawWall{removeWallIcons();wallIcons()}
         }else if code == 13{
             self.didBuy(false)
         }else if code == 15{

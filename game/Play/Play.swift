@@ -1287,7 +1287,9 @@ extension Play{
         statsWall.addChild(stats.levelLabel)
         statsWall.addChild(stats.xpLabel)
         statsWall.addChild(stats.xpFill)
+        stats.missions = []
         for i in 0...2{
+            guard i < missions.count else {continue}
             let box = SKSpriteNode(imageNamed: "progressOutline")
             let fill = SKSpriteNode(imageNamed: "progressgreen")
             let text = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
@@ -1297,14 +1299,14 @@ extension Play{
             rewardsbox.position = pos(mx: 0.4, my: 0.5, x: -10.0, y: CGFloat(i * -60) + 2)
             rewardsbox.setScale(1.3)
             rewardsbox.anchorPoint = CGPoint(x: 1.0, y: 0.5)
-            xpReward.text = "1000"
+            xpReward.text = "\(Int(missions[i].xp))"
             xpReward.position = pos(mx: 0.4, my: 0.5, x: -218.0, y: CGFloat(i * -60))
             xpReward.fontSize = 28
             xpReward.horizontalAlignmentMode = .left
             xpReward.verticalAlignmentMode = .center
             xpReward.fontColor = mustard
 
-            gemReward.text = "10"
+            gemReward.text = "\(Int(missions[i].gems))"
             gemReward.position = pos(mx: 0.4, my: 0.5, x: -70.0, y: CGFloat(i * -60))
             gemReward.fontSize = 28.8
             gemReward.fontColor = .green
@@ -1313,16 +1315,18 @@ extension Play{
             fill.position = pos(mx: -0.4, my: 0.5, x: 22.0, y: CGFloat(i * -60))
             fill.anchorPoint.x = 0
             fill.setScale(0.4)
+            fill.xScale = (missions[i].val / missions[i].max) * 5.9
             box.position = pos(mx: -0.4, my: 0.5, x: 20.0, y: CGFloat(i * -60))
             box.setScale(0.4)
             box.anchorPoint.x = 0
             let label = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
-            label.text = "Destroy 300 asteroids"
+            label.text = "\(missions[i].name)"
             label.position = pos(mx: -0.4, my: 0.5, x: 18.0, y: 20.0 + CGFloat(i * -60))
             label.fontSize = 25
             label.horizontalAlignmentMode = .left
             label.zPosition = 2
-            text.text = "51 / 300"
+            let intval = Int(missions[i].val)
+            text.text = "\(CGFloat(intval) == missions[i].val ? "\(intval)" : String(format: "%.2f", missions[i].val)) / \(Int(missions[i].max))"
             text.position = pos(mx: -0.4, my: 0.5, x: 22.0, y: CGFloat(i * -60))
             text.fontSize = 20
             text.horizontalAlignmentMode = .left
@@ -1355,5 +1359,13 @@ extension Play{
             m.gemReward.removeFromParent()
         }
         stats.missions.removeAll()
+    }
+    
+    func missionCompleteNotification(missionTxt: String, gems: Int, xp: Int){
+        //add code here
+        //make your nodes here, not in Variables.swift
+        //whatever is in here will run whenever a mission is complete
+        //you can use parameters above for the labelnode's text
+        
     }
 }

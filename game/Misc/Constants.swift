@@ -60,3 +60,28 @@ let SHIPS = ["ship1","ship2","ship3","ship4","ship5","ship6","ship7","ship8","sh
     node.zPosition = 1
     return node
 })
+
+let missionTXTS = [
+    "travel": "Travel %ly",
+    "planets": "Colonize % planets",
+    "destroy": "Destroy % asteroids",
+    "steal": "Destroy % planets",
+    "build": "Build % buildings",
+    "drill": "Upgrade a drill to level %",
+    "canon": "Upgrade a canon to level %",
+    "kills": "Kill % players",
+    "energy": "Collect % energy",
+    "research": "Collect % research points",
+    "gems": "Find % gems",
+    "flybys": "Fly by % stars",
+    "visit": "Visit % sectors"
+]
+
+let MISSIONS: [String: GameData] = ({keys in
+    var dict = [String: GameData]()
+    for k in keys{
+        dict[k] = GameData("/"+k)!
+    }
+    print(dict)
+    return dict
+})(missionTXTS.keys)

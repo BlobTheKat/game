@@ -3,7 +3,14 @@
 //Like Object.assign but already-existing properties aren't overwritten
 //Usage: Object.fallback(a: {...}, ...b: ...{...}) -> {...}
 //Example: Object.fallback({a:1, x: 99}, {a:1,b:2,c:3}, {c: 4}) == {a: 1, b: 2, c: 4, x: 99}
-Object.fallback = function(a, ...b){for(let o of b)for(let i in o)if(!(i in a))a[i]=o[i];return a}
+Object.fallback = function(a, ...b){for(let o of b)for(let i in o){
+    if(o[i] && typeof o[i] == "object"){
+      if(!(i in a))a[i] = Array.isArray(o[i]) ? [] : {}
+      Object.fallback(a[i], o[i])
+      continue
+    }
+    if(!(i in a))a[i]=o[i]
+};return a}
 function strbuf(str){
   //Buffer of 4 empty bytes + the string
   let b = Buffer.from("    "+str)

@@ -1,0 +1,19 @@
+amount: 10
+xp: 20
+gems: 2
+
+amount: 50
+xp: 100
+gems: 5
+
+amount: 500
+xp: 500
+gems: 10
+
+amount: 5000
+xp: 2000
+gems: 100
+
+amount: 50k
+xp: 10000
+gems: 300

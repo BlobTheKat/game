@@ -94,7 +94,11 @@ class ClientData extends Physics{
     if(Math.abs(this.dz - dz) < amult * 0.001)this.dz = dz, update--
     if(Math.abs(this.z - z) < dz * 0.5)this.z = z, update--
     if(!update)return this.toBuf()*/
-    if(this.x || this.y)this.data.stats.travel = (this.data.stats.travel || 0) + Math.max(Math.abs(this.x - x), Math.abs(this.y - y))
+    if(this.x || this.y){
+      let d = Math.max(Math.abs(this.x - x), Math.abs(this.y - y))
+      this.mission("travel", d/1000)
+      this.data.stats.travel += d
+    }
     this.x = x
     this.y = y
     this.z = z
@@ -137,5 +141,23 @@ class ClientData extends Physics{
     let sig = sign(buf)
     buf = Buffer.concat([Buffer.of(sig.length, sig.length >> 8), sig, buf])
     sig = Number((BigInt("0x" + this.playerid) % SERVERCOUNT))
+  }
+  mission(key, value){
+    if(!this.data.missions)this.data.missions = {travel: 10, planets: 1, destroy: 5}
+    if(!this.data.missions[key])return
+    if(value >= this.data.missions[key]){
+      this.data.missionlvls[key] |= 0
+      let {xp, gems} = missionStats[key][this.data.missionlvls[key]]
+      if(this.data.missionlvls[key] < missionStats[key].length)this.data.missionlvls[key]++
+      this.xp(xp)
+      this.gems += gems
+      delete this.data.missions[key]
+      
+      let name = missions[Math.floor(Math.random() * missions.length)]
+      while(this.data.missions[name])name = missions[Math.floor(Math.random() * missions.length)]
+      this.data.missions[name] = missionStats[name][this.data.missionlvls[name]||0].amount
+    }else{
+      this.data.missions[key] -= value
+    }
   }
 }

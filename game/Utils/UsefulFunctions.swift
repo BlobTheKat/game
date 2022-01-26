@@ -85,16 +85,16 @@ func formatNum(_ a: Double) -> String{
     return "\(b == trunc(b) ? "\(Int(b))" : "\(b)")\(p == 0 ? "" : (p > 5 || p < 1 ? "e\(Int(p)*3)" : String("kmbtq"[Int(p-1)])))"
 }
 
-func vibrateObject(sprite: SKSpriteNode){
+func vibrateObject(sprite: SKSpriteNode, amount: CGFloat = 10){
     sprite.position.x += 5
     sprite.position.y += 5
         sprite.run(SKAction.repeatForever(SKAction.sequence([
-                    SKAction.moveBy(x: -10, y: 0, duration: 0.05),
-                    SKAction.moveBy(x: 10, y: 0, duration: 0.05),
+                    SKAction.moveBy(x: -amount, y: 0, duration: 0.05),
+                    SKAction.moveBy(x: amount, y: 0, duration: 0.05),
                 ])), withKey: "vibratingObject")
                 sprite.run(SKAction.repeatForever(SKAction.sequence([
-                    SKAction.moveBy(x: 0, y: -10, duration: 0.05),
-                    SKAction.moveBy(x: 0, y: 10, duration: 0.05),
+                    SKAction.moveBy(x: 0, y: -amount, duration: 0.04),
+                    SKAction.moveBy(x: 0, y: amount, duration: 0.04),
                 ])), withKey: "vibratingObjects")
 }
 func vibrateCamera(camera: SKCameraNode, amount: CGFloat = 0.5){
@@ -105,10 +105,10 @@ func vibrateCamera(camera: SKCameraNode, amount: CGFloat = 0.5){
                     SKAction.moveBy(x: amount, y: 0, duration: 0.1),
                 ])), withKey: "vibratingCamera")
     camera.run(SKAction.repeatForever(SKAction.sequence([
-                    SKAction.moveBy(x: 0, y: amount, duration: 0.1),
-                    SKAction.moveBy(x: 0, y: -amount, duration: 0.1),
-                    SKAction.moveBy(x: 0, y: amount, duration: 0.1),
-                    SKAction.moveBy(x: 0, y: -amount, duration: 0.1),
+                    SKAction.moveBy(x: 0, y: amount, duration: 0.09),
+                    SKAction.moveBy(x: 0, y: -amount, duration: 0.09),
+                    SKAction.moveBy(x: 0, y: amount, duration: 0.09),
+                    SKAction.moveBy(x: 0, y: -amount, duration: 0.09),
                 ])), withKey: "vibratingCameras")
 }
 func pulsate(node: SKNode, amount: CGFloat, duration: CGFloat){

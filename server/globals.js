@@ -27,8 +27,29 @@ let suffixes = { //multipliers
   "%": 0.01 //percent
 }
 
+const missionStats = {
+  travel: readfile("behaviour/missions/travel"),
+  planets: readfile("behaviour/missions/planets"),
+  destroy: readfile("behaviour/missions/destroy"), //destroy asteroids
+  steal: readfile("behaviour/missions/steal"), //steal (destroy) planets
+  build: readfile("behaviour/missions/build"), //coloItems
+  drill: readfile("behaviour/missions/drill"), //upgrade to lvl
+  canon: readfile("behaviour/missions/canon"), //upgrade to lvl
+  kills: readfile("behaviour/missions/kills"),
+  energy: readfile("behaviour/missions/energy"),
+  research: readfile("behaviour/missions/research"),
+  gems: readfile("behaviour/missions/gems"),
+  flybys: readfile("behaviour/missions/flybys"),
+  visit: readfile("behaviour/missions/visit"),
+}
+let missions = Object.keys(missionStats)
+
+
 const PLAYERDATA = { //Default player data
-  bal: 10e6, bal2: 5000, gems: 10e3, lvl: 1, xp: 0, stats: {}
+  bal: 10e6, bal2: 5000, gems: 10e3, lvl: 1, xp: 0,
+  stats: {travel: 0, planets: 0},
+  missions: null,
+  missionlvls: {}
 }
 
 const PI256 = Math.PI / 128

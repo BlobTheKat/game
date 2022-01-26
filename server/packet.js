@@ -94,7 +94,14 @@ function processData(data, res){
         buf = new BufWriter()
         buf.byte(2)
         buf.obj(STATSOBJ, this.data.stats)
+        for(let i in this.data.missions){
+            buf.str(i)
+            buf.byte(this.data.missionlvls[i])
+            buf.float(this.data.missions[i])
+        }
+        buf.byte(0)
         res.send(buf.toBuf())
+        
     }
 }
 let msgs = {
@@ -113,7 +120,7 @@ let msgs = {
         res.double(this.data.bal)
         res.float(this.data.bal2)
         res.code(RESP.PLANETBUY).send()
-        this.data.stats.planets = (this.data.stats.planets || 0) + 1
+        this.data.stats.planets++
     },
     [CODE.MOVESECTOR](data, res){
         let x = data.float()
