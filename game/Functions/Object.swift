@@ -317,6 +317,8 @@ class Object: SKSpriteNode, DataCodable{
         if self.badgeNode != nil{
             self.badgeNode!.texture = (BADGES[Int(badge)].children[0] as! SKSpriteNode).texture
             self.badgeNode!.size = self.badgeNode!.texture!.size()
+            self.badgeNode!.size.width /= 5
+            self.badgeNode!.size.height /= 5
         }
         if changed{ self.suit(id) }
         self.controls = !asteroid

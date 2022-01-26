@@ -314,9 +314,9 @@ extension Play{
         stats.xpFill.xScale = 0.0737 * Double(xp) / Double(level)
         stats.xpLabel.text = "\(xp)xp"
         var i = 0
-        for s in SHIPS{ if i * 2 + 1 < level { s.texture = SKTexture(imageNamed: "box") } else { break }; i += 1 }
+        for s in SHIPS{ if i * 2 + 1 <= level { s.texture = SKTexture(imageNamed: "box") } else { break }; i += 1 }
         i = 0
-        for b in BADGES{ if i * 2 + 2 < level { b.texture = SKTexture(imageNamed: "box") } else { break }; i += 1 }
+        for b in BADGES{ if i * 2 <= level { b.texture = SKTexture(imageNamed: "box") } else { break }; i += 1 }
     }
     func startGame(){
         nextStep(nil)

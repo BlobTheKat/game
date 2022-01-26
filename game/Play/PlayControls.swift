@@ -577,10 +577,11 @@ extension Play{
             shipSuit = id
         }
         if !swiping && node.parent == badgeCropNode && badgeCropNode.name == "badge" && node.position.x < size.width * 0.8{
-            let id = badgeCropNode.children.firstIndex(of: node)! + 1
+            let id = badgeCropNode.children.firstIndex(of: node)!
             if level >= id * 2{
                 //equip badge
                 node.setScale(1.2)
+                print(id)
                 BADGES[badge].setScale(1)
                 badge = id
             }
