@@ -319,10 +319,9 @@ extension Play{
                 let label = SKLabelNode(text: "...")
                 let badge = SKSpriteNode(imageNamed: "blank")
                 objects[id].namelabel = label
-                self.label(node: label, name, pos: objects[id].position.add(y: 30), size: 20, color: .green, font: "Menlo", zPos: 2)
+                self.label(node: label, name, pos: objects[id].position.add(y: 30), size: 20, color: .green, font: "Menlo", zPos: 6)
                 badge.position = CGPoint(x: -label.frame.width/2 - 5, y: 10)
                 badge.anchorPoint.x = 1
-                badge.zPosition = 2
                 badge.setScale(0.2)
                 label.addChild(badge)
                 objects[id].badgeNode = badge

@@ -302,7 +302,7 @@ class Object: SKSpriteNode, DataCodable{
         let id = Int(bits / 32)
         let changed = id != self.id || oa != asteroid
         if changed || id == 0 || self == (parent as? Play)?.ship || (target!.pos.x - position.x) * (target!.pos.x - position.x) + (target!.pos.y - position.y) * (target!.pos.y - position.y) > 1e6{
-            self.position = target!.pos
+            if id != 0{self.position = target!.pos}
             self.velocity = target!.vel
             self.zRotation = target!.z
             self.angularVelocity = target!.dz
@@ -317,8 +317,8 @@ class Object: SKSpriteNode, DataCodable{
         if self.badgeNode != nil{
             self.badgeNode!.texture = (BADGES[Int(badge)].children[0] as! SKSpriteNode).texture
             self.badgeNode!.size = self.badgeNode!.texture!.size()
-            self.badgeNode!.size.width /= 5
-            self.badgeNode!.size.height /= 5
+            self.badgeNode!.size.width /= 4
+            self.badgeNode!.size.height /= 4
         }
         if changed{ self.suit(id) }
         self.controls = !asteroid
