@@ -339,6 +339,7 @@ extension Play{
             //STATS DATA
             travel = Double(data.readunsafe() as Float)
             planetsOwned = Int(data.readunsafe() as UInt16)
+            gemCount = data.readunsafe()
             var i = 0
             var redrawWall = false
             while true{

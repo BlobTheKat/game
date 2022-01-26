@@ -152,7 +152,7 @@ class ClientData extends Physics{
       let {xp, gems} = missionStats[key][this.data.missionlvls[key]]
       if(this.data.missionlvls[key] < missionStats[key].length)this.data.missionlvls[key]++
       this.xp(xp)
-      this.gems += gems
+      this.data.gems += gems
       delete this.data.missions[key]
       
       let name = missions[Math.floor(Math.random() * missions.length)]

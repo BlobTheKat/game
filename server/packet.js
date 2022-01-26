@@ -94,6 +94,7 @@ function processData(data, res){
         buf = new BufWriter()
         buf.byte(2)
         buf.obj(STATSOBJ, this.data.stats)
+        buf.float(this.data.gems)
         for(let i in this.data.missions){
             buf.str(i)
             buf.byte(this.data.missionlvls[i])
