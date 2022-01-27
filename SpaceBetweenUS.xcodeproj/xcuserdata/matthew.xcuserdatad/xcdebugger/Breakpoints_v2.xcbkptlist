@@ -14,8 +14,8 @@
             filePath = "game/Play/PlayControls.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "582"
-            endingLineNumber = "582"
+            startingLineNumber = "577"
+            endingLineNumber = "577"
             landmarkName = "nodeUp(_:at:)"
             landmarkType = "7">
          </BreakpointContent>

@@ -31,13 +31,8 @@ extension Play{
             completion(ad)
         })
     }
-    func playAdd(){
-        if interstitialAd != nil{
-           // interstitialAd?.present(fromRootViewController: controller)
-            
-        }
+    func playAd(){
         interstitialAd?.present(fromRootViewController: controller)
-        
     }
     
     

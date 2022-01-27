@@ -21,7 +21,7 @@ class GameViewController: UIViewController, GADFullScreenContentDelegate {
         if let view = self.view as! SKView? {
             controller = self
             skview = view
-            let scene = Play(size: view.frame.size)
+            let scene = Story(size: view.frame.size)
             scene.scaleMode = .aspectFit
             scene.backgroundColor = .black
             SKScene.transition.pausesIncomingScene = false

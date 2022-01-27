@@ -186,9 +186,9 @@ extension Play{
                 UserDefaults.standard.set(shipSuit, forKey: "shipid")
                 ship.suit(shipSuit)
                 equip.texture = SKTexture(imageNamed: "equipped")
-                
+                break
             case cheapPass:
-                playAdd()
+                playAd()
                 break
             default:break
             }
@@ -326,11 +326,6 @@ extension Play{
             }
             planetLanded!.run(.rotate(byAngle: a * PI256, duration: abs(a) / 180.0).ease(.easeInEaseOut))
             renderUpgradeUI()
-            break
-        case cheapPass:
-           playAdd()
-            
-            
             break
         default:
             break

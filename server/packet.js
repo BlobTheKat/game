@@ -2,9 +2,6 @@
 //res = response
 //data = data input
 
-
-
-
 const STATSOBJ = {travel: TYPES.FLOAT, planets: TYPES.USHORT}
 function processData(data, res){
     let rubber = this.rubber > 0 ? (data.int(),data.int(),data.int(),data.int(),this.rubber--) : this.validate(data)
@@ -46,9 +43,10 @@ function processData(data, res){
             if(p.data.health < 1){
                 //destroyed
                 p.data.health = 2048
-                //TODO: remove 1 from plamnet stats of old owner
+                //TODO: remove 1 from planet stats of old owner
                 p.data.owner = this.playerid
                 p.data.name = this.name
+								this.mission("steal", 1)
                 p.collect()
                 p.inbank = Math.floor((p.inbank || 0) / 2)
                 p.inbank2 = Math.floor((p.inbank2 || 0) / 2)
@@ -64,6 +62,7 @@ function processData(data, res){
     }
     
     let energy = data.int()
+		this.mission("energy", energy)
     this.xp(energy / 10)
     this.give(energy)
     res.code(rubber ? RESP.DATA2 : RESP.DATA)
@@ -118,6 +117,7 @@ let msgs = {
         if(!this.take(planet.price, planet.price2))return res.code(ERR.PLANETBUY).send()
         planet.data = {owner: this.playerid, name: this.name, items: {0: {id: 0, lvl: 1, cap: 0}}, health: 4095, camplvl: 1}
         unsaveds[planet.filename] = planet.data
+				this.mission("planets", 1)
         res.double(this.data.bal)
         res.float(this.data.bal2)
         res.code(RESP.PLANETBUY).send()
@@ -164,6 +164,8 @@ let msgs = {
             let dat = ITEMS[item.id][item.lvl+1]
             if(item.lvl >= (planet.data.camplvl - ITEMS[item.id][0].available) + 1)return res.code(ERR.CHANGEITEM).send()
             if(!this.take(dat.price, dat.price2))return res.code(ERR.CHANGEITEM).send()
+						if(item.id===1)this.mission("drill", 1)
+						if(item.id===2)this.mission("canon",1)
             planet.collect()
             item.finish = (NOW + dat.time) >>> 0
             unsaveds[planet.filename] = planet.data
@@ -178,6 +180,8 @@ let msgs = {
         planet.data.name = this.name
         res.code(RESP.COLLECT)
         planet.collect()
+				this.mission("energy", planet.data.inbank) //resourse balance
+				this.mission("research", planet.data.inbank2) //research balance
         this.data.bal += planet.data.inbank
         this.data.bal2 += planet.data.inbank2
         res.double(this.data.bal)
@@ -198,6 +202,7 @@ let msgs = {
         if(num >= (planet.data.camplvl - ITEMS[i][0].available)/ITEMS[i][0].every + 1)return res.code(ERR.MAKEITEM).send()
         let dat = ITEMS[i][1]
         if(!this.take(dat.price, dat.price2))return res.code(ERR.MAKEITEM).send()
+				this.mission("build", 1)
         planet.data.items[x] = {id: i, lvl: 0, cap: 0, finish: (NOW + dat.time) >>> 0}
         unsaveds[planet.filename] = planet.data
         res.double(this.data.bal)
