@@ -136,6 +136,8 @@ func formatPrice(_ thing: [String: JSON], _ multiplier: Double = 1) -> String{
     return price
 }
 
+
+
 func rnd(_ a: Double) -> Double{
     return round(a * 1000000) / 1000000
 }

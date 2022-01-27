@@ -7,6 +7,7 @@
 
 import SpriteKit
 import GameKit
+import GoogleMobileAds
 var waitForSound = Int()
 
 let stopSound = SKAction.stop()
@@ -14,7 +15,36 @@ let playSound = SKAction.play()
 
 var currentPlanetTexture = SKTexture()
 
+
+
 extension Play{
+    
+    struct Constants{
+        
+        static let homeAdId = "ca-app-pub-5065501786618884/8757212443"
+    }
+   
+    
+    func createAd(_ completion: @escaping (GADInterstitialAd?) -> ()){
+        let request = GADRequest()
+        GADInterstitialAd.load(withAdUnitID:Constants.homeAdId,request: request, completionHandler: { ad, error in
+            completion(ad)
+        })
+    }
+    func playAdd(){
+        if interstitialAd != nil{
+           // interstitialAd?.present(fromRootViewController: controller)
+            
+        }
+        interstitialAd?.present(fromRootViewController: controller)
+        
+    }
+    
+    
+    
+    
+    
+    
     func construct() {
         let x = UserDefaults.standard.integer(forKey: "sx")
         let y = UserDefaults.standard.integer(forKey: "sy")
@@ -137,6 +167,10 @@ extension Play{
         api.position(completion: sectorpos)
     }
     override func didMove(to view: SKView) {
+        
+        createAd{ a in
+            self.interstitialAd = a
+        }
         startAnimation()
         guard !moved else{return}
         guard ready else{return}

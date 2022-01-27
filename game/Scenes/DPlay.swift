@@ -196,6 +196,7 @@ class DPlay: SKScene, SKPhysicsContactDelegate{
             SKScene.transition = SKTransition.crossFade(withDuration: 0)
             
         }
+        
     }
     override func nodeMoved(_ node: SKNode, at point: CGPoint) {
         if dPad == node{

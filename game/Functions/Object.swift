@@ -341,5 +341,7 @@ class Object: SKSpriteNode, DataCodable{
             self.shootDamages = SHOOTDAMAGES[id-1]
             self.particleOffset = THRUSTPOINTS[id-1]
         }
+        
     }
+    
 }

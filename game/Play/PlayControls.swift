@@ -89,7 +89,8 @@ extension Play{
                     badgeCropNode.name = "shop"
                     
                     //DISPLAY SHOP
-                    let cheapPass = SKSpriteNode(imageNamed: "cheap_pass")
+                    let advertButton = SKSpriteNode(imageNamed: "advert")
+                    
                     let pass = SKSpriteNode(imageNamed: "pass")
                     let cheapPrice = SKSpriteNode(imageNamed: "price300")
                     let price = SKSpriteNode(imageNamed: "price1000")
@@ -185,6 +186,10 @@ extension Play{
                 UserDefaults.standard.set(shipSuit, forKey: "shipid")
                 ship.suit(shipSuit)
                 equip.texture = SKTexture(imageNamed: "equipped")
+                
+            case cheapPass:
+                playAdd()
+                break
             default:break
             }
             return
@@ -321,6 +326,11 @@ extension Play{
             }
             planetLanded!.run(.rotate(byAngle: a * PI256, duration: abs(a) / 180.0).ease(.easeInEaseOut))
             renderUpgradeUI()
+            break
+        case cheapPass:
+           playAdd()
+            
+            
             break
         default:
             break

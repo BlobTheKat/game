@@ -7,6 +7,7 @@
 
 import Foundation
 import SpriteKit
+import GoogleMobileAds
 
 //Variables for the play scene
 class Play: SKScene{
@@ -314,4 +315,8 @@ class Play: SKScene{
     
     let equip = SKSpriteNode(imageNamed: "equip")
     var shipSuit = -1
+    
+    let cheapPass = SKSpriteNode(imageNamed: "cheap_pass")
+    
+    var interstitialAd: GADInterstitialAd? = nil
 }

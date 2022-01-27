@@ -8,11 +8,12 @@
 import UIKit
 import SpriteKit
 import GameplayKit
+import GoogleMobileAds
 
 var skview: SKView = SKView()
 var controller: UIViewController = UIViewController()
 
-class GameViewController: UIViewController {
+class GameViewController: UIViewController, GADFullScreenContentDelegate {
 
     override func viewDidLoad() {
         SKScene.font = "HalogenbyPixelSurplus-Regular"
