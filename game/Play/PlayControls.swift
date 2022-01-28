@@ -188,7 +188,7 @@ extension Play{
                 equip.texture = SKTexture(imageNamed: "equipped")
                 break
             case cheapPass:
-                playAd()
+                playAd({_ in})
                 break
             default:break
             }

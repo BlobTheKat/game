@@ -317,6 +317,5 @@ class Play: SKScene{
     var shipSuit = -1
     
     let cheapPass = SKSpriteNode(imageNamed: "cheap_pass")
-    
-    var interstitialAd: GADInterstitialAd? = nil
+    var ad: GADInterstitialAd? = nil
 }

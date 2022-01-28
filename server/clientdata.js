@@ -110,7 +110,7 @@ class ClientData extends Physics{
     this.id = thrust >> 5
   }
   toBuf(buf, ref){
-    if(performance.nodeTiming.duration - this.u._idleStart > 1000){buf.int(0);buf.int(0);buf.int(0);buf.short(0);return}
+    if(performance.nodeTiming.duration - this.u._idleStart > 1000){buf.int(0);buf.int(0);buf.int(0);buf.int(0);return}
     buf.float(this.x)
     buf.float(this.y)
     buf.byte(Math.max(Math.min(127, Math.round(this.dx / 4)), -128))

@@ -83,6 +83,8 @@ const asteroids = readfile('behaviour/asteroids')
 const itemMeta = readfile("behaviour/items")
 const ITEMS = itemMeta.map(a => readfile("behaviour"+a.path))
 
+const damages = ships.map(ship => (ship.shootdmgs+"").split(",").map(a => +a.trim()).reduce((a, b) => a + b))
+
 //performance variables
 const {performance} = require('perf_hooks')
 let lidle = performance.eventLoopUtilization().idle

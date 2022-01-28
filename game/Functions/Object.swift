@@ -62,6 +62,7 @@ class Object: SKSpriteNode, DataCodable{
     //301-599: died from another player/planet's bullets
     //601-899: died from player (used for awarding kills)
     var death: UInt16 = 0
+    var asteroidDeathNote: Bool = false
     //floating name
     var namelabel: SKLabelNode? = nil
     var badgeNode: SKSpriteNode? = nil
@@ -301,6 +302,29 @@ class Object: SKSpriteNode, DataCodable{
         }
         let id = Int(bits / 32)
         let changed = id != self.id || oa != asteroid
+        
+        var color = data.readunsafe() as UInt16
+        let badge = color & 1023
+        color >>= 10
+        if let p = parent as? Play, badge > 0 && asteroid{
+            //destroy animation
+            if !self.asteroidDeathNote{
+                self.death = 599
+                p.kill(self)
+                self.asteroidDeathNote = true
+            }
+        }else{
+            self.asteroidDeathNote = false
+            self.namelabel?.fontColor = COLORS[Int(color)]
+            if self.badgeNode != nil{
+                self.badgeNode!.texture = (BADGES[Int(badge)].children[0] as! SKSpriteNode).texture
+                self.badgeNode!.size = self.badgeNode!.texture!.size()
+                self.badgeNode!.size.width /= 4
+                self.badgeNode!.size.height /= 4
+            }
+            if changed{ self.suit(id) }
+        }
+        
         if changed || id == 0 || self == (parent as? Play)?.ship || (target!.pos.x - position.x) * (target!.pos.x - position.x) + (target!.pos.y - position.y) * (target!.pos.y - position.y) > 1e6{
             if id != 0{self.position = target!.pos}
             self.velocity = target!.vel
@@ -310,17 +334,6 @@ class Object: SKSpriteNode, DataCodable{
         }else if abs((zRotation - target!.z).remainder(dividingBy: .pi * 2)) > 0.5{
             self.zRotation = target!.z
         }
-        var color = data.readunsafe() as UInt16
-        let badge = color & 1023
-        color >>= 10
-        self.namelabel?.fontColor = COLORS[Int(color)]
-        if self.badgeNode != nil{
-            self.badgeNode!.texture = (BADGES[Int(badge)].children[0] as! SKSpriteNode).texture
-            self.badgeNode!.size = self.badgeNode!.texture!.size()
-            self.badgeNode!.size.width /= 4
-            self.badgeNode!.size.height /= 4
-        }
-        if changed{ self.suit(id) }
         self.controls = !asteroid
         self.dynamic = true
     }

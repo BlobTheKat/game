@@ -23,16 +23,12 @@ extension Play{
         
         static let homeAdId = "ca-app-pub-5065501786618884/8757212443"
     }
-   
-    
-    func createAd(_ completion: @escaping (GADInterstitialAd?) -> ()){
+    func playAd(_ completion: @escaping (GADInterstitialAd?) -> ()){
+        ad?.present(fromRootViewController: controller)
         let request = GADRequest()
         GADInterstitialAd.load(withAdUnitID:Constants.homeAdId,request: request, completionHandler: { ad, error in
-            completion(ad)
+            self.ad = ad
         })
-    }
-    func playAd(){
-        interstitialAd?.present(fromRootViewController: controller)
     }
     
     
@@ -162,10 +158,6 @@ extension Play{
         api.position(completion: sectorpos)
     }
     override func didMove(to view: SKView) {
-        
-        createAd{ a in
-            self.interstitialAd = a
-        }
         startAnimation()
         guard !moved else{return}
         guard ready else{return}
@@ -246,6 +238,11 @@ extension Play{
         vibrateObject(sprite: tunnel2)
         vibrateObject(sprite: border1)
         vibrateObject(sprite: border2)
+        
+        let request = GADRequest()
+        GADInterstitialAd.load(withAdUnitID:Constants.homeAdId,request: request, completionHandler: { ad, error in
+            self.ad = ad
+        })
     }
     func moveTrail(trail: SKSpriteNode, _ delay: Double){
         var stop = {}
@@ -1394,7 +1391,31 @@ extension Play{
         stats.missions.removeAll()
     }
     
-    func missionCompleteNotification(missionTxt: String, gems: Int, xp: Int){
+    func missionCompleteNotification(missionTxt: String, gems: Int){
+        
+        let missionLabel = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+        
+        if missionLabel.parent == nil{
+        missionLabel.position = pos(mx: 0, my: 0.5, x: 0, y: 0)
+        missionLabel.zPosition = 100000
+        missionLabel.alpha = 0
+        missionLabel.fontSize = 30
+        missionLabel.color = UIColor.green
+        missionLabel.text = "\(missionTxt):   +\(gems)"
+        cam.addChild(missionLabel)
+        
+        missionLabel.run(SKAction.fadeIn(withDuration: 0.5))
+        missionLabel.run(SKAction.sequence([
+        
+            SKAction.moveBy(x: 0, y: -50, duration: 0.5),
+            SKAction.wait(forDuration: 1),
+            SKAction.moveBy(x: 0, y: 50, duration: 0.5),
+            SKAction.run {
+                missionLabel.removeFromParent()
+            }
+        ]))
+        }
+        
         //add code here
         //make your nodes here, not in Variables.swift
         //whatever is in here will run whenever a mission is complete

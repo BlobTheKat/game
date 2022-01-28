@@ -19,6 +19,10 @@ function processData(data, res){
         let obj = sector.objects[x - (x <= this.ix)]
         if(obj){
             this.shoots = obj
+            if(obj instanceof Asteroid)if((obj.health -= damages[this.id]) <= 0){
+                this.mission("destroy", 1)
+                obj.respawn()
+            }
         }
     }
     hitc = (bitfield >> 4) & 7
@@ -39,7 +43,7 @@ function processData(data, res){
         //planet shot
         let p = sector.planets[data.ushort()]
         if(p && !(this.seq & 3) && p.data && p.data.owner){
-            p.data.health = (p.data.health || 4095) - 200
+            p.data.health = (p.data.health || 4095) - 25
             if(p.data.health < 1){
                 //destroyed
                 p.data.health = 2048

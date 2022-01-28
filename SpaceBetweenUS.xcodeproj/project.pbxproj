@@ -292,8 +292,8 @@
 				34DFE61B278ED10E007BC16D /* setup.js */,
 				34DFE61D278ED1F3007BC16D /* functions.js */,
 				34DFE61F278ED498007BC16D /* udpserver.js */,
-				34DFE621278ED4D3007BC16D /* objects.js */,
 				34DFE625278ED4F1007BC16D /* simulation.js */,
+				34DFE621278ED4D3007BC16D /* objects.js */,
 				34DFE623278ED4E5007BC16D /* clientdata.js */,
 				34DFE629278ED520007BC16D /* commands.js */,
 				34DFE62B278ED70D007BC16D /* packet.js */,
@@ -365,7 +365,6 @@
 				ECEA1B5DC053944C84E0A152 /* Pods-game.debug.xcconfig */,
 				DF2BBC0D6509C20BAD2097ED /* Pods-game.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};

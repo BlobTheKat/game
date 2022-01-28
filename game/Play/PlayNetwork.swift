@@ -63,7 +63,8 @@ extension Play{
         }else if n.death > 0{
             //fade
             n.run(SKAction.move(by: CGVector(dx: n.velocity.dx * gameFPS, dy: CGFloat(n.velocity.dy) * gameFPS), duration: 1))
-        }else{n.removeFromParent()}
+            n.run(SKAction.sequence([SKAction.fadeOut(withDuration: 1), SKAction.fadeIn(withDuration: 0)]))
+        }
     }
     func parseShip(_ data: inout Data, _ i: Int){
         guard i < objects.count else {
@@ -341,7 +342,10 @@ extension Play{
             planetsOwned = Int(data.readunsafe() as UInt16)
             gemCount = data.readunsafe()
             var i = 0
-            var redrawWall = false
+            var oldmap: [String: Int] = [:]
+            for i in missions{
+                oldmap[i.name] = Int(i.gems)
+            }
             while true{
                 let name = data.read(lentype: Int8.self) ?? ""
                 if name == ""{break}
@@ -350,12 +354,7 @@ extension Play{
                 let dat = MISSIONS[name]![lvl]
                 let total = CGFloat(dat["amount"]!.number!)
                 let mission = (name: missionTXTS[name]!.split(separator: "%").joined(separator: "\(Int(total))"), val: total - left, max: total, gems: CGFloat(dat["gems"]!.number!), xp: CGFloat(dat["xp"]!.number!))
-                if i >= missions.count || missions[i].name != mission.name{
-                    if i < missions.count{
-                        missionCompleteNotification(missionTxt: missions[i].name, gems: Int(missions[i].gems), xp: Int(missions[i].xp))
-                    }
-                    redrawWall = true
-                }
+                oldmap[mission.name] = nil
                 if i < missions.count{
                     if missions[i].name == mission.name && i < stats.missions.count{
                         //just different value
@@ -372,7 +371,11 @@ extension Play{
             while i < missions.count{
                 missions.removeLast()
             }
-            if redrawWall{removeWallIcons();wallIcons()}
+            for (n, g) in oldmap{
+                missionCompleteNotification(missionTxt: n, gems: g)
+                removeWallIcons();wallIcons()
+                break
+            }
         }else if code == 13{
             self.didBuy(false)
         }else if code == 15{

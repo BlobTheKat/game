@@ -87,6 +87,7 @@ class Asteroid extends Physics{
     this.radius = asteroids[this.id].radius
     this.mass = asteroids[this.id].mass
     this.respawnstate = [this.x, this.y, this.dx, this.dy]
+    this.health = this.mass / 10
   }
   toBuf(buf){
     buf.float(this.x)
@@ -96,10 +97,11 @@ class Asteroid extends Physics{
     buf.byte(Math.round(this.z / PI256))
     buf.byte(Math.round(this.dz * 768))
     buf.short(6 + (this.id << 5))
-    buf.short(0)
+    buf.short(this.health * 10 >= this.mass)
     return buf
   }
   respawn(){
+    this.health = this.mass / 10
     this.x = this.respawnstate[0]
     this.y = this.respawnstate[1]
     this.dx = this.respawnstate[2]
