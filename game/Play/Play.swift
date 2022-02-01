@@ -21,12 +21,12 @@ extension Play{
     
     struct Constants{
         
-        static let homeAdId = "ca-app-pub-5065501786618884/8757212443"
+        static let homeAdId = "ca-app-pub-5065501786618884/8908630960"
     }
-    func playAd(_ completion: @escaping (GADInterstitialAd?) -> ()){
-        ad?.present(fromRootViewController: controller)
+    func playAd(){
+        ad?.present(fromRootViewController: controller, userDidEarnRewardHandler: {})
         let request = GADRequest()
-        GADInterstitialAd.load(withAdUnitID:Constants.homeAdId,request: request, completionHandler: { ad, error in
+        GADRewardedAd.load(withAdUnitID:Constants.homeAdId,request: request, completionHandler: { ad, error in
             self.ad = ad
         })
     }
@@ -240,7 +240,7 @@ extension Play{
         vibrateObject(sprite: border2)
         
         let request = GADRequest()
-        GADInterstitialAd.load(withAdUnitID:Constants.homeAdId,request: request, completionHandler: { ad, error in
+        GADRewardedAd.load(withAdUnitID:Constants.homeAdId,request: request, completionHandler: { ad, error in
             self.ad = ad
         })
     }
@@ -756,7 +756,6 @@ extension Play{
         tunnel2.run(SKAction.moveBy(x: 200, y: 30, duration: 0.6).ease(.easeOut))
         tunnel2.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeOut))
         tunnel2.removeFromParent()
-        wallIcons()
         self.ambientSound()
     }
     func ambientSound(){
@@ -1240,7 +1239,7 @@ extension Play{
         coloArrow.anchorPoint = CGPoint(x: 0.5,y: 0)
         coloArrow.position = pos(mx: 0, my: 0.05, x: 0, y: 0)
         coloArrow.alpha = 1
-        coloArrow.zPosition = 1000
+        coloArrow.zPosition = 100
         coloArrow.setScale(0.15)
         if presence{
             cam.addChild(buildBG)
@@ -1296,6 +1295,7 @@ extension Play{
     }
     
     func wallIcons(){
+        guard badgeCropNode.name == nil else {return}
         let mustard = UIColor(red: 1, green: 0.7, blue: 0, alpha: 1)
         stats.levelbg.position.y = self.size.height * 0.9 - 20
         stats.levelLabel.text = "level \(level)"

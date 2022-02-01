@@ -48,7 +48,9 @@ extension Play{
                         }
                         if i == badge{
                             b.setScale(1.2)
+                            b.colorBlendFactor = 0.5
                         }
+                        b.color = .green
                         b.removeFromParent()
                         badgeCropNode.addChild(b)
                         b.position.y = self.size.height / (i & 1 == 0 ? 4 : -4)
@@ -89,8 +91,6 @@ extension Play{
                     badgeCropNode.name = "shop"
                     
                     //DISPLAY SHOP
-                    let advertButton = SKSpriteNode(imageNamed: "advert")
-                    
                     let pass = SKSpriteNode(imageNamed: "pass")
                     let cheapPrice = SKSpriteNode(imageNamed: "price300")
                     let price = SKSpriteNode(imageNamed: "price1000")
@@ -100,15 +100,17 @@ extension Play{
                     let gems4 = SKSpriteNode(imageNamed: "gems5000")
                     let dummy = SKSpriteNode(imageNamed: "blank")
                     dummy.setScale(0)
-                    cheapPass.position = CGPoint(x: w, y: 80)
-                    cheapPrice.position = CGPoint(x: w, y: -100)
-                    pass.position = CGPoint(x: w * 2.5 + 50, y: 80)
-                    price.position = CGPoint(x: w * 2.5 + 50, y: -100)
-                    gems1.position = CGPoint(x: w * 4, y: 80)
-                    gems2.position = CGPoint(x: w * 4 + 160, y: 80)
-                    gems3.position = CGPoint(x: w * 4, y: -80)
-                    gems4.position = CGPoint(x: w * 4 + 160, y: -80)
+                    advert.position = CGPoint(x: w, y: 5)
+                    cheapPass.position = CGPoint(x: w * 2.5, y: 80)
+                    cheapPrice.position = CGPoint(x: w * 2.5, y: -100)
+                    pass.position = CGPoint(x: w * 4 + 50, y: 80)
+                    price.position = CGPoint(x: w * 4 + 50, y: -100)
+                    gems1.position = CGPoint(x: w * 6, y: 80)
+                    gems2.position = CGPoint(x: w * 6 + 160, y: 80)
+                    gems3.position = CGPoint(x: w * 6, y: -80)
+                    gems4.position = CGPoint(x: w * 6 + 160, y: -80)
                     dummy.position.x = w * 5 + 80
+                    badgeCropNode.addChild(advert)
                     badgeCropNode.addChild(cheapPass)
                     badgeCropNode.addChild(cheapPrice)
                     badgeCropNode.addChild(pass)
@@ -118,6 +120,7 @@ extension Play{
                     badgeCropNode.addChild(gems3)
                     badgeCropNode.addChild(gems4)
                     badgeCropNode.addChild(dummy)
+                    advert.setScale(0.5)
                     pass.setScale(1.2)
                     price.setScale(1.2)
                     cheapPass.setScale(1.2)
@@ -187,9 +190,7 @@ extension Play{
                 ship.suit(shipSuit)
                 equip.texture = SKTexture(imageNamed: "equipped")
                 break
-            case cheapPass:
-                playAd({_ in})
-                break
+            
             default:break
             }
             return
@@ -585,9 +586,10 @@ extension Play{
             let id = badgeCropNode.children.firstIndex(of: node)!
             if level >= id * 2{
                 //equip badge
-                node.setScale(1.2)
-                print(id)
                 BADGES[badge].setScale(1)
+                BADGES[badge].colorBlendFactor = 0
+                node.setScale(1.2)
+                (node as? SKSpriteNode)?.colorBlendFactor = 0.5
                 badge = id
             }
         }
@@ -616,6 +618,7 @@ extension Play{
             mapIcon.texture = SKTexture(imageNamed: "map")
         }
         if cockpitIcon == node && statsWall.parent == nil{
+            removeWallIcons()
             cam.addChild(statsWall)
             statsWall.position.y = self.size.height / 2
             statsWall.run(.moveTo(y: 0, duration: 0.5))
@@ -625,6 +628,10 @@ extension Play{
             for navigations in AllNav{
                 navigations.run(SKAction.fadeOut(withDuration: 0.1))
             }
+            wallIcons()
+        }
+        if  advert == node && !swiping{
+            playAd()
         }
     }
     

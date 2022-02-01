@@ -251,7 +251,7 @@ extension Play{
             if d2 < planet.radius + self.size.width{canSave = false}
             a += 1
         }
-        if canSave{
+        if canSave && ship.controls{
             secx = Int(ship.position.x + sector.1.pos.x)
             secy = Int(ship.position.y + sector.1.pos.y)
             UserDefaults.standard.set(secx, forKey: "sx")
@@ -348,6 +348,8 @@ extension Play{
             }
             secx = Int(sx + sector.1.pos.x)
             secy = Int(sy + sector.1.pos.y)
+            UserDefaults.standard.set(secx, forKey: "sx")
+            UserDefaults.standard.set(secy, forKey: "sy")
             ship.run(SKAction.move(by: CGVector(dx: ship.velocity.dx * gameFPS, dy: ship.velocity.dy * gameFPS), duration: 1))
         }else if (isX || isY) && ship.controls && clock20 == 0{
             //calculate which sector you're gonna go to
