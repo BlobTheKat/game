@@ -37,13 +37,13 @@ class Disconnected: SKScene{
         charcter.zPosition = 4
         self.addChild(charcter)
         
-        stop.append(interval(4) {
+        let _ = interval(4) {
             self.charcter.run(SKAction.moveBy(x: 0, y: 7, duration: 2).ease(.easeInEaseOut))
             
             let _ = timeout(2) {
                 self.charcter.run(SKAction.moveBy(x: 0, y: -7, duration: 2).ease(.easeInEaseOut))
             }
-        })
+        }
     
         
         planet.position = pos(mx: 0.9, my: 0.85)

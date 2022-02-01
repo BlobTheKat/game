@@ -50,7 +50,7 @@ function processData(data, res){
                 //TODO: remove 1 from planet stats of old owner
                 p.data.owner = this.playerid
                 p.data.name = this.name
-								this.mission("steal", 1)
+                this.mission("steal", 1)
                 p.collect()
                 p.inbank = Math.floor((p.inbank || 0) / 2)
                 p.inbank2 = Math.floor((p.inbank2 || 0) / 2)
@@ -109,6 +109,17 @@ function processData(data, res){
     }
 }
 let msgs = {
+    [CODE.ADWATCHED](data, res){
+        if(this.data.adcd > NOW){
+            return res.code(RESP.ADWATCHED).send()
+        }
+        this.data.adcd = Math.max(NOW - 86400, this.data.adcd) + 21600
+        this.data.gems += 5
+        res.code(RESP.ADWATCHED)
+        res.float(this.data.gems)
+        res.float(this.data.adcd - NOW)
+        res.send()
+    },
     [CODE.PING](data, res){
         res.code(RESP.PONG).send()
     },
@@ -184,8 +195,8 @@ let msgs = {
         planet.data.name = this.name
         res.code(RESP.COLLECT)
         planet.collect()
-				this.mission("energy", planet.data.inbank) //resourse balance
-				this.mission("research", planet.data.inbank2) //research balance
+        this.mission("energy", planet.data.inbank) //resourse balance
+        this.mission("research", planet.data.inbank2) //research balance
         this.data.bal += planet.data.inbank
         this.data.bal2 += planet.data.inbank2
         res.double(this.data.bal)

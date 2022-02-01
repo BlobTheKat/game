@@ -84,7 +84,7 @@ extension Play{
             if kdr.isNaN{kdr = 0}
             statsLabel2[0].text = "\(kills)"
             statsLabel2[1].text = "\(deaths)"
-            statsLabel2[2].text = "\(kdr)"
+            statsLabel2[2].text = "\(String(format: "%.2f", kdr))"
             statsLabel2[3].text = "\(planetsOwned)"
             statsLabel2[4].text = "\(Int(travel/1000))ly"
         }

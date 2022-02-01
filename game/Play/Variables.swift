@@ -321,4 +321,5 @@ class Play: SKScene{
     
     let cheapPass = SKSpriteNode(imageNamed: "cheap_pass")
     var ad: GADRewardedAd? = nil
+    var adstop = {}
 }

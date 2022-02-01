@@ -112,13 +112,13 @@ func vibrateCamera(camera: SKCameraNode, amount: CGFloat = 0.5){
                 ])), withKey: "vibratingCameras")
 }
 func pulsate(node: SKNode, amount: CGFloat, duration: CGFloat){
-    stop.append(interval(Double(duration)) {
+    let _ = interval(Double(duration)) {
         node.run(SKAction.fadeAlpha(by: -amount, duration: Double(duration)/2).ease(.easeInEaseOut))
         
         let _ = timeout(Double(duration)/2) {
             node.run(SKAction.fadeAlpha(by: amount, duration: Double(duration)/2).ease(.easeInEaseOut))
         }
-    })
+    }
 }
 func bg(_ a: @escaping () -> ()){DispatchQueue.global(qos: .background).async(execute: a)}
 

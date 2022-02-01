@@ -630,8 +630,11 @@ extension Play{
             }
             wallIcons()
         }
-        if  advert == node && !swiping{
-            playAd()
+        if advert == node && advert.alpha == 1 && !swiping{
+            playAd({
+                //will be sent on next ship packet
+                adWatched = true
+            })
         }
     }
     

@@ -18,23 +18,23 @@ var currentPlanetTexture = SKTexture()
 
 
 extension Play{
-    
-    struct Constants{
-        
-        static let homeAdId = "ca-app-pub-5065501786618884/8908630960"
-    }
-    func playAd(){
+    func playAd(_ done: @escaping () -> () = {}){
+        adstop()
+        adstop = timeout((ad?.adMetadata?[.init(rawValue: "CreativeDurationMs")] as? Double ?? 15000) / 1000 + 1){ [self] in
+            //if ad is fullscreen then reward
+            //Make sure canPresent throws error (i.e it cant be displayed because it is already being displayed)
+            guard (try? ad?.canPresent(fromRootViewController: controller)) == nil else { return }
+            //If it's being displayed that means they didnt skip it
+            //If they skipped and rewatched, this timeout would be cancelled, so we know they definitely did watch it
+            done()
+        }
         ad?.present(fromRootViewController: controller, userDidEarnRewardHandler: {})
         let request = GADRequest()
-        GADRewardedAd.load(withAdUnitID:Constants.homeAdId,request: request, completionHandler: { ad, error in
+        GADRewardedAd.load(withAdUnitID: "ca-app-pub-5065501786618884/1136924485", request: request, completionHandler: { ad, error in
             self.ad = ad
+            if let error = error{print(error)}
         })
     }
-    
-    
-    
-    
-    
     
     func construct() {
         let x = UserDefaults.standard.integer(forKey: "sx")
@@ -207,13 +207,13 @@ extension Play{
             },
             SKAction.wait(forDuration: 0.2)
         ]), count: 100), withKey: "loading")
-        stop.append(interval(3){
+        let _ = interval(3){
             self.tapToStart.run(SKAction.moveBy(x: 0, y: 10, duration: 2).ease(.easeOut))
-        })
+        }
         let _ = timeout(1.5){
-            stop.append(interval(3){
+            let _ = interval(3){
                 self.tapToStart.run(SKAction.moveBy(x: 0, y: -10, duration: 2).ease(.easeOut))
-            })
+            }
         }
         DEBUG_TXT.removeFromParent()
         avatar.alpha = 1
@@ -239,10 +239,7 @@ extension Play{
         vibrateObject(sprite: border1)
         vibrateObject(sprite: border2)
         
-        let request = GADRequest()
-        GADRewardedAd.load(withAdUnitID:Constants.homeAdId,request: request, completionHandler: { ad, error in
-            self.ad = ad
-        })
+        playAd()
     }
     func moveTrail(trail: SKSpriteNode, _ delay: Double){
         var stop = {}
@@ -1399,7 +1396,7 @@ extension Play{
         missionLabel.position = pos(mx: 0, my: 0.5, x: 0, y: 0)
         missionLabel.zPosition = 100000
         missionLabel.alpha = 0
-        missionLabel.fontSize = 30
+        missionLabel.fontSize = 20
         missionLabel.color = UIColor.green
         missionLabel.text = "\(missionTxt):   +\(gems)"
         cam.addChild(missionLabel)
@@ -1407,9 +1404,9 @@ extension Play{
         missionLabel.run(SKAction.fadeIn(withDuration: 0.5))
         missionLabel.run(SKAction.sequence([
         
-            SKAction.moveBy(x: 0, y: -50, duration: 0.5),
-            SKAction.wait(forDuration: 1),
-            SKAction.moveBy(x: 0, y: 50, duration: 0.5),
+            SKAction.moveBy(x: 0, y: -60, duration: 0.4).ease(.easeOut),
+            SKAction.wait(forDuration: 3),
+            SKAction.fadeOut(withDuration: 1.5),
             SKAction.run {
                 missionLabel.removeFromParent()
             }

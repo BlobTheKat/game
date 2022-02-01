@@ -54,7 +54,7 @@ class Story: SKScene{
         //the thing is... where do I start?
     ]
     var CB: [() -> ()] = []
-    var i = -1 //which text we're at
+    var i = 4 //which text we're at
     func nextText(){
         guard !writing else {return}
         i += 1
@@ -65,12 +65,12 @@ class Story: SKScene{
             a = interval(0.1){
                 //make a ship
                 let p = SKSpriteNode()
-                State(color: (r: 0.8, g: 0.8, b: 0.8), size: CGSize(width: 6, height: 5), zRot: 0, position: CGPoint(x: random(min: self.size.width * 0.6 - 200, max: self.size.width * 0.6 + 200), y: random(min: 100, max: 150)), alpha: 1).apply(to: p)
-                p.run(.sequence([.moveBy(x: 0, y: self.size.height * 0.4 - 50, duration: 2).ease(.easeOut),.group([.moveBy(x: 600, y: 150, duration: 0.3), .fadeOut(withDuration: 0.5), .scale(to: CGSize(width: 3, height: 2), duration: 0.3)])]))
+                State(color: (r: 0.8, g: 0.8, b: 0.8), size: CGSize(width: 3, height: 2), zRot: 0, position: CGPoint(x: random(min: self.size.width * 0.6 - 200, max: self.size.width * 0.6 + 200), y: random(min: 100, max: 150)), alpha: 1).apply(to: p)
+                p.run(.sequence([.moveBy(x: 0, y: self.size.height * 0.4 - 50, duration: 3).ease(.easeOut),.group([.moveBy(x: 600, y: 150, duration: 0.3), .fadeOut(withDuration: 0.5), .scale(to: CGSize(width: 2, height: 1), duration: 0.3)])]))
                 p.zPosition = 3
                 self.addChild(p)
                 i += 1
-                if i > 10{a()}
+                if i > 9{a()}
             }
             let _ = timeout(4.5){
                 SKScene.transition = SKTransition.crossFade(withDuration: 1.5)

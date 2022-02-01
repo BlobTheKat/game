@@ -188,6 +188,13 @@ extension Play{
             shotObj = nil
             hits = []
             send(data)
+            
+            if adWatched{
+                var dat = Data([])
+                dat.write(critid(125))
+                critical(dat)
+                adWatched = false
+            }
         })
     }
     func startHB(){
@@ -245,7 +252,13 @@ extension Play{
             energyAmount = data.readunsafe()
             researchAmount = data.readunsafe()
             gemCount = data.readunsafe()
-            
+            let d = data.readunsafe() as Float
+            if d > 0{
+                advert.alpha = 0.5 //no more adverts
+                let _ = timeout(Double(d)){
+                    self.advert.alpha = 1
+                }
+            }
         }else if code == 127{
             dmessage = data.read() ?? "Disconnected!"
             end()
@@ -403,6 +416,18 @@ extension Play{
             researchAmount = data.readunsafe()
         }else if code == 30{
             energyAmount = data.readunsafe()
+        }else if code == 126{
+            
+            guard let g: Float = data.read() else {return}
+            gemCount = g
+            let d = data.readunsafe() as Float
+            
+            if d > 0{
+                advert.alpha = 0.5 //no more adverts
+                let _ = timeout(Double(d)){
+                    self.advert.alpha = 1
+                }
+            }
         }
     }
     

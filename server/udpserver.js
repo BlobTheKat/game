@@ -53,12 +53,13 @@ server.on('message', async function(m, remote) {
                 cli.ready(0, 0, a.id || 1, w)
                 cli.data = a
                 clients.set(address, cli)
-                let buf = Buffer.alloc(18)
+                let buf = Buffer.alloc(22)
                 buf[0] = 129
                 buf[1] = message.critical
                 buf.writeDoubleLE(cli.data.bal || 0, 2)
                 buf.writeFloatLE(cli.data.bal2 || 0, 10)
                 buf.writeFloatLE(cli.data.gems || 0, 14)
+                buf.writeFloatLE(cli.data.adcd - NOW, 18)
                 send(buf)
                 cli.crits[message.critical-256] = buf
             })
@@ -110,6 +111,7 @@ const CODE = {
     SKIPBUILD: 23,
     REPAIR: 26,
     RESTORE: 29,
+    ADWATCHED: 125
 }
 const RESP = {
     PONG: 4,
@@ -123,6 +125,7 @@ const RESP = {
     SKIPBUILD: 24,
     REPAIR: 27,
     RESTORE: 30,
+    ADWATCHED: 126
 }
 const ERR = {
     PLANETBUY: 13,
