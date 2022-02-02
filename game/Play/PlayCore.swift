@@ -366,6 +366,8 @@ extension Play{
             }
             secx = Int(sx + sector.1.pos.x)
             secy = Int(sy + sector.1.pos.y)
+            ssecx = secx
+            ssecy = secy
             UserDefaults.standard.set(secx, forKey: "sx")
             UserDefaults.standard.set(secy, forKey: "sy")
             ship.run(SKAction.move(by: CGVector(dx: ship.velocity.dx * gameFPS, dy: ship.velocity.dy * gameFPS), duration: 1))

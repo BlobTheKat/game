@@ -24,6 +24,10 @@ class PlayerDied: SKScene{
     let reconnectLabel = SKLabelNode()
     let tapToReconnect = SKLabelNode()
     override func didMove(to view: SKView) {
+        secx = ssecx
+        secy = ssecy
+        UserDefaults.standard.set(secx, forKey: "sx")
+        UserDefaults.standard.set(secy, forKey: "sy")
         deaths += 1
         label(node: reconnectLabel, "", pos: pos(mx: 0.5, my: 0.6), size: 32, color: UIColor.white)
         

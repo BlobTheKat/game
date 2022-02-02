@@ -39,8 +39,8 @@ extension Play{
     func construct() {
         let x = UserDefaults.standard.integer(forKey: "sx")
         let y = UserDefaults.standard.integer(forKey: "sy")
-        if x != 0{secx = x}
-        if y != 0{secy = y}
+        if x != 0{secx = x; ssecx = x}
+        if y != 0{secy = y; ssecy = y}
         if creds != nil{
             gotIp()
         }else{
@@ -859,10 +859,14 @@ extension Play{
                 upgradeTime.horizontalAlignmentMode = .center
                 upgradePrice.fontSize = 80
                 buildBG.addChild(upgradePrice)
-                upgradePrice.position = pos(mx: 1.5, my: -0.8)
+                upgradePrice.position = pos(mx: 1.5, my: -0.8, y: -30)
                 upgradePrice.horizontalAlignmentMode = .center
+                upgradePrice.zPosition = 3
+                upgradeOld = SKSpriteNode(imageNamed: "finishnow")
+                upgradeOld.position = pos(mx: 1.5, my: -0.8)
+                buildBG.addChild(upgradeOld)
                 upgradePrice.text = "Finish now (\(formatNum(ceil(Double(time) / 300))) gems)"
-                upgradePrice.fontColor = .green
+                upgradePrice.color = .green
                 upgradingHintInterval = interval(1, {
                     time -= 1
                     self.upgradePrice.text = "Finish now (\(formatNum(ceil(Double(time) / 300))) gems)"
@@ -877,10 +881,14 @@ extension Play{
                 upgradeTime.horizontalAlignmentMode = .center
                 upgradePrice.fontSize = 80
                 buildBG.addChild(upgradePrice)
-                upgradePrice.position = pos(mx: 1.5, my: -0.8)
+                upgradePrice.position = pos(mx: 1.5, my: -0.8, y: -30)
                 upgradePrice.horizontalAlignmentMode = .center
-                upgradePrice.text = "Repair (\(formatPrice(items[Int(id.rawValue)][Int(lvl)], 1.5)))"
-                upgradePrice.fontColor = .orange
+                upgradePrice.zPosition = 3
+                upgradeOld = SKSpriteNode(imageNamed: "repair")
+                upgradeOld.position = pos(mx: 1.5, my: -0.8)
+                buildBG.addChild(upgradeOld)
+                upgradePrice.text = "repair (\(formatPrice(items[Int(id.rawValue)][Int(lvl)], 1.5)))"
+                upgradePrice.color = .orange
             }else{
                 upgradeTime.text = "Level \(lvl)"
                 upgradeTime.fontSize = 120
@@ -892,11 +900,11 @@ extension Play{
                 upgradePrice.position = pos(mx: 1.5, my: -0.8)
                 upgradePrice.horizontalAlignmentMode = .center
                 upgradePrice.text = "Upgrade camp to unlock more levels"
-                upgradePrice.fontColor = .white
+                upgradePrice.color = .white
             }
             return
         }
-        upgradePrice.fontColor = .white
+        upgradePrice.color = .white
         upgradeTime.text = "Time: \(time)"
         upgradePrice.text = "Price: \(price)"
         upgradeTime.position = pos(mx: 0.9, my: -0.9)

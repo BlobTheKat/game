@@ -286,8 +286,8 @@ extension Play{
             changeItem(planetLanded!, Int(itemRot))
             hideUpgradeUI()
             break
-        case upgradePrice:
-            if upgradePrice.fontColor == .green{
+        case upgradeOld:
+            if upgradePrice.color == .green{
                 //skip time
                 guard let end = planetLanded?.items[Int(itemRot)]?.upgradeEnd else {break}
                 guard end > 1 else {return}
@@ -298,7 +298,7 @@ extension Play{
                 }
                 if tutorialProgress == .gemFinish && planetLanded?.items[Int(itemRot)]?.type == .drill{ nextStep(); ship.controls = true; planetEditMode() }
                 skipBuild(planetLanded!, itemRot)
-            }else if upgradePrice.fontColor == .orange{
+            }else if upgradePrice.color == .orange{
                 //repair
                 guard let item = planetLanded?.items[Int(itemRot)] else {break}
                 let price = (items[Int(item.type.rawValue)][Int(item.lvl)]["price"]?.number ?? 0) * 1.5
@@ -931,14 +931,6 @@ extension Play{
     
     
     override func keyDown(_ key: UIKeyboardHIDUsage) {
-        if mapBG.color == .blue{
-            mapBG.texture = SKTexture(imageNamed: "mapBG1")
-            mapBG.color = .red
-        }else{
-            mapBG.texture = SKTexture(imageNamed: "mapBG")
-            mapBG.color = .blue
-        }
-        
         hideControls()
         if let b = boolfiddle, key == .keyboardComma || key == .keyboardPeriod{b.setTo(!b.value);return}
         if let b = bytefiddle{if key == .keyboardComma{b.setTo(b.value&-1);return}else if key == .keyboardPeriod{b.setTo(b.value&+1);return}else if key == .keyboardN{b.setTo(b.value&-10);return}else if key == .keyboardM{b.setTo(b.value&+10);return}}

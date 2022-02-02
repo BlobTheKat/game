@@ -177,10 +177,11 @@ let msgs = {
             let item = planet.data.items[x]
             if(!item)return res.code(ERR.CHANGEITEM).send()
             let dat = ITEMS[item.id][item.lvl+1]
+            if(!dat)return res.code(ERR.CHANGEITEM).send()
             if(item.lvl >= (planet.data.camplvl - ITEMS[item.id][0].available) + 1)return res.code(ERR.CHANGEITEM).send()
             if(!this.take(dat.price, dat.price2))return res.code(ERR.CHANGEITEM).send()
-						if(item.id===1)this.mission("drill", 1)
-						if(item.id===2)this.mission("canon",1)
+            if(item.id===1)this.mission("drill", 1)
+            if(item.id===2)this.mission("canon",1)
             planet.collect()
             item.finish = (NOW + dat.time) >>> 0
             unsaveds[planet.filename] = planet.data
@@ -263,8 +264,7 @@ let msgs = {
         if(!planet || !planet.data || planet.data.owner != this.playerid)return res.code(ERR.RESTORE).send()
         if(planet.data.health > 4095)return
         if(!this.take(Math.floor(10000 - (planet.data.health>>4)*39.0625)))return res.code(ERR.RESTORE).send()
-        planet.data.health += 4096
-        let a = setInterval(function(){planet.data.health += 128;if(planet.data.health > 8190){planet.data.health = 4095;clearInterval(a)}}, 1000)
+        planet.data.health = 4095
         unsaveds[planet.filename] = planet.data
         res.double(this.data.bal)
         res.code(RESP.RESTORE).send()
