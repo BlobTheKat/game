@@ -132,7 +132,7 @@ let msgs = {
         if(!this.take(planet.price, planet.price2))return res.code(ERR.PLANETBUY).send()
         planet.data = {owner: this.playerid, name: this.name, items: {0: {id: 0, lvl: 1, cap: 0}}, health: 4095, camplvl: 1}
         unsaveds[planet.filename] = planet.data
-				this.mission("planets", 1)
+        this.mission("planets", 1)
         res.double(this.data.bal)
         res.float(this.data.bal2)
         res.code(RESP.PLANETBUY).send()

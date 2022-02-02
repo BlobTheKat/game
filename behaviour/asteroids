@@ -22,3 +22,63 @@ radius: 50 # id=4
 mass: 300
 spin: -0.01
 texture: asteroid4
+
+radius: 42 #id=5
+mass: 100
+spin: 0.005
+texture: asteroid5
+
+radius: 55 #id=6
+mass: 300
+spin: -0.001
+texture: asteroid6
+
+radius: 50 # id=7
+mass: 5000
+spin: 0.03
+texture: asteroid7
+
+radius: 150 # id=8
+mass: 200
+spin: -0.01
+texture: asteroid8
+
+radius: 55 #id=9
+mass: 100
+spin: 0.01
+texture: asteroid9
+
+radius: 130 #id=10
+mass: 5000
+spin: 0.001
+texture: asteroid10
+
+radius: 125 # id=11
+mass: 5000
+spin: 0.07
+texture: asteroid11
+
+radius: 105 # id=12
+mass: 180
+spin: -0.005
+texture: asteroid12
+
+radius: 75 #id=13
+mass: 800
+spin: 0
+texture: asteroid13
+
+radius: 110 #id=14
+mass: 3000
+spin: 0.001
+texture: asteroid14
+
+radius: 150 # id=15
+mass: 5000
+spin: 0.01
+texture: asteroid15
+
+radius: 600 # id=16
+mass: 20000
+spin: 0.003
+texture: asteroid16

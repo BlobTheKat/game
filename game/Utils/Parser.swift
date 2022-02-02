@@ -184,6 +184,11 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                         i += 1
                     }
                 }
+                var i = 0
+                for owned in UserDefaults.standard.value(forKey: "owned-\(CGFloat(px))-\(CGFloat(py))") as? [Bool] ?? []{
+                    if owned{planets[i].ownedState = .yours}
+                    i += 1
+                }
                 s.0 = planets
                 if px < xx || px > xx + REGIONSIZE || py < yy || py > yy + REGIONSIZE{
                     let delegated = CGPoint(x: 0, y: 0)//fdiv(px, REGIONSIZE), y: fdiv(py, REGIONSIZE))

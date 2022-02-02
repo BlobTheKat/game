@@ -463,7 +463,7 @@ extension Play{
                 mapBG.alpha = 1
                 FakemapBG.alpha = 1
                 showMap = true
-                FakemapBG.position = CGPoint(x: -mainMap.position.x/10 - playerArrow.position.x/10 ,y: -mainMap.position.y/10 - playerArrow.position.y/10)
+                FakemapBG.position = CGPoint(x: -(mainMap.position.x + playerArrow.position.x) * FakemapBG.xScale,y: -(mainMap.position.y + playerArrow.position.y) * FakemapBG.yScale)
             }else if showMap == true{
                 mapBG.alpha = 0
                 FakemapBG.alpha = 0
@@ -617,7 +617,7 @@ extension Play{
         if mapIcon == node{
             mapIcon.texture = SKTexture(imageNamed: "map")
         }
-        if cockpitIcon == node && statsWall.parent == nil{
+        if cockpitIcon == node && statsWall.parent == nil && tutorialProgress.rawValue > tutorial.gemFinish.rawValue{
             removeWallIcons()
             cam.addChild(statsWall)
             statsWall.position.y = self.size.height / 2
@@ -931,6 +931,14 @@ extension Play{
     
     
     override func keyDown(_ key: UIKeyboardHIDUsage) {
+        if mapBG.color == .blue{
+            mapBG.texture = SKTexture(imageNamed: "mapBG1")
+            mapBG.color = .red
+        }else{
+            mapBG.texture = SKTexture(imageNamed: "mapBG")
+            mapBG.color = .blue
+        }
+        
         hideControls()
         if let b = boolfiddle, key == .keyboardComma || key == .keyboardPeriod{b.setTo(!b.value);return}
         if let b = bytefiddle{if key == .keyboardComma{b.setTo(b.value&-1);return}else if key == .keyboardPeriod{b.setTo(b.value&+1);return}else if key == .keyboardN{b.setTo(b.value&-10);return}else if key == .keyboardM{b.setTo(b.value&+10);return}}
@@ -1011,7 +1019,7 @@ extension Play{
                 FakemapBG.alpha = 1
                 showMap = true
                 
-                FakemapBG.position = CGPoint(x: -mainMap.position.x/10 - playerArrow.position.x/10 ,y: -mainMap.position.y/10 - playerArrow.position.y/10)
+                FakemapBG.position = CGPoint(x: -(mainMap.position.x + playerArrow.position.x) * FakemapBG.xScale,y: -(mainMap.position.y + playerArrow.position.y) * FakemapBG.yScale)
             }else if showMap == true{
                 mapBG.alpha = 0
                 FakemapBG.alpha = 0

@@ -85,7 +85,6 @@ class Object: SKSpriteNode, DataCodable{
         super.init(texture: nil, color: UIColor.clear, size: CGSize.zero)
         self.body(radius: radius, mass: mass, texture: texture)
         particle = Object.defaultParticle
-        self.asteroid = asteroid
     }
     func update(){
         
@@ -251,7 +250,7 @@ class Object: SKSpriteNode, DataCodable{
             self.texture = texture!
             self.size = texture!.size()
         }
-        self.setScale(0.25)
+        self.setScale(asteroid ? 0.5 : 0.25)
     }
     convenience init(){ self.init(radius: 0, mass: 0) }
     required init?(coder aDecoder: NSCoder){ fatalError("init(coder:) has not been implemented") }
@@ -322,7 +321,7 @@ class Object: SKSpriteNode, DataCodable{
                 self.badgeNode!.size.width /= 4
                 self.badgeNode!.size.height /= 4
             }
-            if changed{ self.suit(id) }
+            if changed{ self.setScale(asteroid ? 0.5 : 0.25); self.suit(id) }
         }
         
         if changed || id == 0 || self == (parent as? Play)?.ship || (target!.pos.x - position.x) * (target!.pos.x - position.x) + (target!.pos.y - position.y) * (target!.pos.y - position.y) > 1e6{

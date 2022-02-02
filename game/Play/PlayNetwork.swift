@@ -259,6 +259,19 @@ extension Play{
                     self.advert.alpha = 1
                 }
             }
+            var i = 0
+            toploop: while data.count > 0{
+                var b = data.readunsafe() as UInt8
+                for _ in 1...8{
+                    if i >= planets.count{break toploop}
+                    if b & 128 != 0{
+                        planets[i].ownedState = .yours
+                    }
+                    i += 1
+                    b <<= 1
+                }
+            }
+            UserDefaults.standard.set(planets.map{a in return a.ownedState == .yours}, forKey: "owned-\(sector.1.pos.x)-\(sector.1.pos.y)")
         }else if code == 127{
             dmessage = data.read() ?? "Disconnected!"
             end()
@@ -417,7 +430,6 @@ extension Play{
         }else if code == 30{
             energyAmount = data.readunsafe()
         }else if code == 126{
-            
             guard let g: Float = data.read() else {return}
             gemCount = g
             let d = data.readunsafe() as Float

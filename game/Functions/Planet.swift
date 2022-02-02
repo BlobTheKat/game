@@ -332,7 +332,7 @@ class Planet: Object{
             if parent != nil && n == parent!.ship{
                 
                 let circle = parent!.planetsMap[parent!.planets.firstIndex(of: self)!]
-                circle.fillColor = superhot ? .orange : .white
+                circle.fillColor = ownedState == .yours ? UIColor(red: 0, green: 0.5, blue: 1, alpha: 1) : (superhot ? .orange : .white)
                 //GANGE MAP HERE
                 if parent!.playerArrow.parent == nil{
                     parent!.mainMap.addChild(parent!.playerArrow)
@@ -437,8 +437,13 @@ class Planet: Object{
         let bits = data.readunsafe() as UInt8
         let ownedState = OwnedState(rawValue: bits & 192)!
         if self.ownedState != ownedState{
-            if self.ownedState == .owned && ownedState == .yours, let p = parent as? Play{for i in boom2(self.position, self.radius){p.particles.append(i);p.addChild(i)}}
-            self.ownedState = ownedState
+            if let p = parent as? Play{
+                if self.ownedState == .owned && ownedState == .yours, let p = parent as? Play{
+                    for i in boom2(self.position, self.radius){p.particles.append(i);p.addChild(i)}
+                }
+                self.ownedState = ownedState
+                UserDefaults.standard.set(p.planets.map{a in return a.ownedState == .yours}, forKey: "owned-\(p.sector.1.pos.x)-\(p.sector.1.pos.y)")
+            }else{self.ownedState = ownedState}
             if self.ownedState == .yours{self.angry = 0}
             if let parent = parent as? Play{
                 parent.hideLandedUI()

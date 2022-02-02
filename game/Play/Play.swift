@@ -703,7 +703,7 @@ extension Play{
             
         mapBG.position = pos(mx: 0, my: 0)
         mapBG.zPosition = 9
-        mapBG.setScale(0.12)
+        mapBG.setScale(0.2)
         mapBG.alpha = 0
         cam.addChild(mapBG)
         

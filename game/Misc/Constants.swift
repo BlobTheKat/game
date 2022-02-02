@@ -31,6 +31,7 @@ let REGIONSIZE = 500000
 
 var secx = 7000
 var secy = 4000
+
 let SUFFIXES = [
     "s": 1,
     "m": 60,

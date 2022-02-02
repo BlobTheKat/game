@@ -320,7 +320,25 @@ extension Play{
                     hits.append(UInt32(a - 1))
                 }
             }
+            
+            if a == objBoxes.count{
+                objBoxes.append(SKShapeNode(rectOf: CGSize(width: 20, height: 20)))
+                objBoxes.last!.fillColor = .green
+                objBoxes.last!.lineWidth = 0
+                mainMap.addChild(objBoxes.last!)
+            }
+            if s.id != 0 && !s.asteroid && a > 0{
+                if objBoxes[a].parent == nil{mainMap.addChild(objBoxes.last!)}
+                objBoxes[a].position = s.position / 10
+            }else{
+                objBoxes[a].removeFromParent()
+            }
+            
             a += 1
+        }
+        while a < objBoxes.count{
+            objBoxes.last!.removeFromParent()
+            objBoxes.removeLast()
         }
         let isX = abs(ship.position.x) > sector.1.size.width / 2 - border2.size.width
         let isY = abs(ship.position.y) > sector.1.size.height / 2 - border1.size.width
