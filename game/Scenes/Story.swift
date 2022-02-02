@@ -27,7 +27,7 @@ class Story: SKScene{
     }
     var damages: [CGPoint] = []
     func newDamage(){
-        let x = random(min: 0, max: size.width)
+        let x = random(min: size.width / 2, max: size.width)
         let y = random(min: 0, max: size.height / 2 - planetbg.xScale * 100)
         damages.append(CGPoint(x: x, y: y))
     }
@@ -41,20 +41,13 @@ class Story: SKScene{
     let TEXTS = [
         "humanity was at its peak\nbusiness was doing better than ever",
         "nasa had just mastered the warp drive\nallowing humans to visit nearby stars",
-        "some aliens must have been watching\nand took our presence as a threat",
+        "%tutorial.story.stage3.text%",
         "the \"pyramid of doom\" destroyed earth\nand killed the majority of its population",
         "I'm glad I had prepared\nfor this kind of situation",
         "I boarded my ship and made a rapid exit\nheaded for the unknown"
-        //2037 was the best but also the worst year ever
-        //I had everything i needed to be happy... Everyone did...
-        //When overnight and for no particular reason...
-        //We got attacked, and all my dreams were
-        //I just had time to escape with my life... and my ship
-        //But now i'm all alone... with only one desire... REVENGE
-        //the thing is... where do I start?
     ]
     var CB: [() -> ()] = []
-    var i = 4 //which text we're at
+    var i = -1 //which text we're at
     func nextText(){
         guard !writing else {return}
         i += 1
@@ -65,8 +58,8 @@ class Story: SKScene{
             a = interval(0.1){
                 //make a ship
                 let p = SKSpriteNode()
-                State(color: (r: 0.8, g: 0.8, b: 0.8), size: CGSize(width: 3, height: 2), zRot: 0, position: CGPoint(x: random(min: self.size.width * 0.6 - 200, max: self.size.width * 0.6 + 200), y: random(min: 100, max: 150)), alpha: 1).apply(to: p)
-                p.run(.sequence([.moveBy(x: 0, y: self.size.height * 0.4 - 50, duration: 3).ease(.easeOut),.group([.moveBy(x: 600, y: 150, duration: 0.3), .fadeOut(withDuration: 0.5), .scale(to: CGSize(width: 2, height: 1), duration: 0.3)])]))
+                State(color: (r: 1, g: 0.5, b: 0), size: CGSize(width: 4, height: 3), zRot: 0, position: CGPoint(x: random(min: self.size.width * 0.7 - 100, max: self.size.width * 0.7 + 100), y: random(min: 100, max: 150)), alpha: 1).apply(to: p)
+                p.run(.sequence([.moveBy(x: 0, y: self.size.height * 0.4 - 50, duration: 3).ease(.easeOut),.group([.moveBy(x: 600, y: 150, duration: 0.3), .fadeOut(withDuration: 0.5), .scale(to: CGSize(width: 3, height: 2), duration: 0.3)])]))
                 p.zPosition = 3
                 self.addChild(p)
                 i += 1
@@ -88,10 +81,10 @@ class Story: SKScene{
         writing = true
         var lines = TEXTS[i].split(separator: "\n")
         textLabel.text = String(lines.first!)
-        var linex = textLabel.frame.width / -2
-        var liney = self.size.height * 0.3
+        var linex = textLabel.frame.width
+        var liney = self.size.height - 40
         textLabel.position.y = liney
-        textLabel.position.x = self.size.width / 2 + linex
+        textLabel.position.x = self.size.width - linex - 30
         textLabel.text = ""
         self.addChild(textLabel)
         var newlinecounter = 0
@@ -104,11 +97,12 @@ class Story: SKScene{
                 otherLabels.append(textLabel)
                 textLabel = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
                 textLabel.position.y = liney
-                textLabel.fontSize = 25
+                textLabel.fontSize = 20
                 textLabel.zPosition = 10
                 textLabel.horizontalAlignmentMode = .left
+                textLabel.fontColor = .init(red: 0.3, green: 0.8, blue: 0.5, alpha: 1)
                 guard let first = lines.first else {
-                    liney = self.size.height * 0.3
+                    liney = self.size.height - 40
                     stop()
                     let _ = timeout(1){
                         writing = false
@@ -117,11 +111,11 @@ class Story: SKScene{
                     return
                 }
                 textLabel.text = String(first)
-                linex = textLabel.frame.width / -2
-                textLabel.position.x = self.size.width / 2 + linex
+                linex = textLabel.frame.width
+                textLabel.position.x = self.size.width - linex - 30
                 textLabel.text = ""
                 self.addChild(textLabel)
-                liney -= 36
+                liney -= 30
                 textLabel.position.y = liney
                 newlinecounter = 10
             }
@@ -148,7 +142,6 @@ class Story: SKScene{
                 }
                 let _ = timeout(1.5){
                     //RAYTIME >:O
-                    //ball.run(.fadeOut(withDuration: 0.2))
                     let ray = SKSpriteNode(imageNamed: "rayline")
                     ray.anchorPoint.x = 0
                     ray.xScale = 0
@@ -178,7 +171,9 @@ class Story: SKScene{
                             d -= 100
                         }
                     }
+                    planetbg.color = .orange
                     a = interval(0.04){ [self] in
+                        planetbg.colorBlendFactor += 0.004
                         if amount >= 5{
                             var rayPos = ray.position
                             rayPos.y += sin(ray.zRotation) * ray.frame.width
@@ -195,7 +190,11 @@ class Story: SKScene{
                             }
                         }
                         amount -= ad
-                        if amount <= 0{return a()}
+                        if amount <= 0{
+                            a()
+                            planetbg.run(.colorize(withColorBlendFactor: 0.3, duration: 3))
+                            return
+                        }
                         let rx = random(min: -amount, max: amount)
                         let ry = random(min: -amount, max: amount)
                         planetbg.position.x += rx - orx
@@ -211,11 +210,10 @@ class Story: SKScene{
             {},
             {}
         ]
-        label(node: textLabel, "", pos: pos(mx: 0.5, my: 0.3), size: 25)
+        //label(node: textLabel, "", pos: pos(mx: 0.5, my: 0.3), size: 25, color: .init(red: 0.4, green: 0.8, blue: 0.6, alpha: 1))
+        label(node: textLabel, "", pos: pos(mx: 1, my: 1, x: -50, y: -50), size: 20, color: .init(red: 0.3, green: 0.8, blue: 0.5, alpha: 1))
         textLabel.removeFromParent()
         textLabel.horizontalAlignmentMode = .left
-        /*textLabel.lineBreakMode = .byWordWrapping
-        textLabel.preferredMaxLayoutWidth = self.size.width * 0.6*/
         label(node: tapToContinue, "-tap to continue-", pos: pos(mx: 0.5, my: 0.1, y: 0), size: 18, color: .white)
         tapToContinue.alpha = 0
         pulsate(node: tapToContinue, amount: 0.6, duration: 3)

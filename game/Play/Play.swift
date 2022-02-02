@@ -591,7 +591,7 @@ extension Play{
         lightSpeedIcon.setScale(1.1)
         //navBG.addChild(lightSpeedIcon)
         
-        removeTrackerIcon.position = CGPoint(x: lightSpeedIcon.position.x + (lightSpeedIcon.size.width * 1.5) ,y: lightSpeedIcon.position.y )
+        removeTrackerIcon.position = CGPoint(x: -navBG.size.width/1.2 ,y: mapIcon.position.y + (mapIcon.size.height * 1.2))
         removeTrackerIcon.alpha = 1
         removeTrackerIcon.zPosition = 11
         removeTrackerIcon.setScale(0.9)
@@ -625,6 +625,10 @@ extension Play{
         buyIcon.zPosition = 101
         buyIcon.setScale(0.4)
         colonizeBG.addChild(buyIcon)
+        
+        coloIcon.position = CGPoint(x: -navBG.size.width/1.2 ,y: repairIcon.position.y + (repairIcon.size.height * 1.2) )
+        coloIcon.zPosition = 11
+        coloIcon.setScale(0.9)
         
         //COLONIZE LABELS
         
@@ -674,11 +678,9 @@ extension Play{
         collectedLabel2.fontColor = .purple
         
         
-        coloIcon.position = CGPoint(x: repairIcon.position.x + (repairIcon.size.width * 1.5) ,y: repairIcon.position.y)
-        coloIcon.zPosition = 11
-        coloIcon.setScale(0.9)
+       
         
-        editColoIcon.position = CGPoint(x: repairIcon.position.x + (repairIcon.size.width * 1.5) ,y: repairIcon.position.y)
+        editColoIcon.position = CGPoint(x: -navBG.size.width/1.2 ,y: repairIcon.position.y + (repairIcon.size.height * 1.2) )
         editColoIcon.zPosition = 11
         editColoIcon.setScale(0.9)
         

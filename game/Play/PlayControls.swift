@@ -249,7 +249,7 @@ extension Play{
             break
         case editColoIcon:
             if tutorialProgress == .editPlanet{ nextStep() }
-            else if tutorialProgress.rawValue > 8 && tutorialProgress != .done{
+            else if tutorialProgress.rawValue > tutorial.editPlanet.rawValue && tutorialProgress != .done{
                 return
             }
             planetEditMode()
@@ -648,6 +648,13 @@ extension Play{
         if nodeToFiddle != nil{nodeToFiddle!.fiddle();nodeToFiddle = nil}
         if tutInfo.text == "done" { tutArrow.run(SKAction.sequence([.fadeOut(withDuration: 0.2), .removeFromParent()])); tutInfo.text = ""; ship.controls = true; if hideControl{hideControl = false; showControls()} }
         if !hideControl{showControls()}
+        if tutInfo.parent?.alpha == 1 && tutInfo.verticalAlignmentMode == .center && tutInfo.horizontalAlignmentMode == .center{
+            //skippable
+            if tutorialProgress == .seemsgood && showNav{
+                tutorialProgress = .openNavigations
+            }
+            nextStep()
+        }
         if mapPress1 == nil{
             mapPress1 = p
         }else if mapPress2 == nil{
@@ -850,7 +857,7 @@ extension Play{
     func nextStep(_ next: Bool? = true){
         if next == nil{
             if tutorialProgress == .done{return}
-            if tutorialProgress.rawValue > 3{
+            if tutorialProgress.rawValue > tutorial.followPlanet.rawValue{
                 tutorialProgress = .followPlanet
             }
         }
@@ -882,11 +889,19 @@ extension Play{
         tutInfo.numberOfLines = 10
         let _ = timeout(0.3){ [self] in
             let (hori, verti, mx: mx, my: my, x: x, y: y, text) = tutorials[i]
+            tutInfo.text = text
             if hori == .center{
-                tutArrow.anchorPoint = CGPoint(x: 0.5, y: 0.6)
-                tutArrow.texture = SKTexture(imageNamed: "tut2")
-                tutArrow.xScale = hori == .right ? -0.5 : 0.5
-                tutArrow.yScale = verti == .top ? -0.5 : 0.5
+                if verti == .center{
+                    tutArrow.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+                    tutArrow.texture = SKTexture(imageNamed: "tut3")
+                    tutArrow.xScale = tutInfo.frame.width / 300
+                    tutArrow.yScale = 0.6
+                }else{
+                    tutArrow.anchorPoint = CGPoint(x: 0.5, y: 0.6)
+                    tutArrow.texture = SKTexture(imageNamed: "tut2")
+                    tutArrow.xScale = 0.5
+                    tutArrow.yScale = verti == .top ? -0.5 : 0.5
+                }
             }else{
                 tutArrow.texture = SKTexture(imageNamed: "tut")
                 tutArrow.anchorPoint = CGPoint(x: 0.15, y: 0.3)
@@ -897,7 +912,6 @@ extension Play{
             tutInfo.verticalAlignmentMode = verti
             tutArrow.position = pos(mx: mx, my: my, x: x, y: y)
             tutInfo.position = tutArrow.position
-            tutInfo.text = text
             tutArrow.alpha = 0.8
             tutInfo.alpha = 0.8
             tutArrow.removeFromParent()

@@ -75,19 +75,23 @@ func uuidstore(_ a: String) -> String{
 }
 
 enum tutorial: Int{
-    case thrust = 0
-    case dpad = 1
-    case shoot = 2
-    case followPlanet = 3
-    case shootPlanet = 4
-    case openNavigations = 5
-    case planetIcon = 6
-    case buyPlanet = 7
-    case editPlanet = 8
-    case addItem = 9
-    case buyDrill = 10
-    case gemFinish = 11
-    case done = 12
+    case notsafe = 0
+    case thrust = 1
+    case dpad = 2
+    case shoot = 3
+    case buildanempire = 4
+    case followPlanet = 5
+    case seemsgood = 6
+    //case shootPlanet = 7
+    case openNavigations = 7
+    case planetIcon = 8
+    case buyPlanet = 9
+    case needsdrill = 10
+    case editPlanet = 11
+    case addItem = 12
+    case buyDrill = 13
+    case gemFinish = 14
+    case done = 15
 }
 var tutorialProgress: tutorial{
     get{
@@ -98,15 +102,19 @@ var tutorialProgress: tutorial{
     }
 }
 let tutorials: [(SKLabelHorizontalAlignmentMode, SKLabelVerticalAlignmentMode, mx: CGFloat, my: CGFloat, x: CGFloat, y: CGFloat, String)] = [
+    (.center, .center, mx: 0, my: -0.3, x: 0, y: 0, "space is not a safe place for me to\njust be staying in one place"),
     (.left, .bottom, mx: -0.4, my: -0.4, x: 110, y: 110, "hold to accelerate"),
     (.right, .bottom, mx: 0.4, my: -0.4, x: -120, y: 120, "use left/right to\nRotate your ship"),
     (.left, .top, mx: -0.4, my: -0.4, x: 105, y: 120, "press to\nshoot"),
+    (.center, .center, mx: 0, my: -0.3, x: 0, y: 0, "if i want to put an end to this i must create\nmy own empire, make them pay for what they did"),
     (.center, .bottom, mx: 0, my: 0.3, x: 0, y: -40, "follow a green arrow\n to land on a planet"),
-    (.left, .top, mx: -0.4, my: -0.4, x: 105, y: 120, "shoot the planet\nto gain energy"),
+    (.center, .center, mx: 0, my: -0.3, x: 0, y: 0, "this seems like a good place to start"),
+    //(.left, .top, mx: -0.4, my: -0.4, x: 105, y: 120, "shoot the planet\nto gain energy"),
     (.right, .top, mx: 0.43, my: 0.5, x: -50, y: -80, "open the navigation\nmenu"),
-    (.right, .top, mx: 0.43, my: 0.1, x: -40, y: 0, "buy the planet"),
+    (.right, .top, mx: 0.43, my: 0.1, x: -80, y: 40, "buy the planet"),
     (.left, .bottom, mx: -0.3, my: -0.3, x: 50, y: -10, "buy the planet"),
-    (.right, .top, mx: 0.43, my: 0.1, x: -40, y: 0, "edit the planet"),
+    (.center, .center, mx: 0, my: -0.3, x: 0, y: 0, "if i build an energy drill i will be able to generate\na constant source of energy to sustain my crew"),
+    (.right, .top, mx: 0.43, my: 0.1, x: -80, y: 40, "edit the planet"),
     (.right, .bottom, mx: 0.5, my: 0, x: -205, y: 80, "add an item"),
     (.left, .bottom, mx: -0.5, my: -0.1, x: 250, y: 0, "buy a drill\nto earn energy\nautomatically"),
     (.left, .bottom, mx: 0, my: -0.3, x: 185, y: 30, "")

@@ -201,9 +201,9 @@ extension Play{
         researchCount.text = "r$ \(Int(researchAmount))"
         gemLabel.text = "\(Int(gemCount))"
         
-        if tutorialProgress == .shootPlanet && energyAmount > 99{
+        /*if tutorialProgress == .shootPlanet && energyAmount > 99{
             nextStep()
-        }
+        }*/
         
         let energyPercent = floor((energyAmount / energySpace) * 8)
         let researchPercent = floor((researchAmount / researchSpace) * 8)
