@@ -18,7 +18,7 @@ let ID = (UIDevice.current.identifierForVendor?.uuidString ?? uuidstore("ID")).r
 
 //Configurable constants//
 //for connecting to local servers
-let IPOVERRIDE: String? = "192.168.1.141:65152"
+let IPOVERRIDE: String? = "192.168.1.248:65152"
 //Game version
 let VERSION = 2
 //Universal gravitational constant

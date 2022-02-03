@@ -9,6 +9,8 @@ function processData(data, res){
     let hitc = bitfield & 7
     while(hitc--){
         let x = data.uint()
+        this.dx = data.float()
+        this.dy = data.float()
         let obj = sector.objects[x - (x <= this.ix)]
         if(!obj)continue
         if(obj instanceof ClientData && x <= sector.objects.indexOf(this))continue

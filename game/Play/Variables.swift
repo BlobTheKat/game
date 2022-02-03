@@ -79,7 +79,7 @@ class Play: SKScene{
     //Is authed in gamecenter?
     var gameAuthed = false
     //List of object IDs that player hit since last packet
-    var hits: [UInt32] = []
+    var hits: [(UInt32, Float, Float)] = []
     //Sequence number for critical packets
     var SEQ = UInt8(255)
     //Set of sequence numbers for which we are waiting a response

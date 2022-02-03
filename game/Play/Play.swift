@@ -59,12 +59,12 @@ extension Play{
         }
         
         
-        cam.addChild(loadingbg)
+        //cam.addChild(loadingbg)
         loadingbg.lineWidth = 0
         loadingbg.position.y = -0.35 * self.size.height
         loadingbg.fillColor = .gray
         
-        cam.addChild(loading)
+        //cam.addChild(loading)
         loading.lineWidth = 0
         loading.position.y = -0.35 * self.size.height
         loading.fillColor = .white
@@ -102,7 +102,7 @@ extension Play{
         accountIcon.position = pos(mx: 0, my: 0.5, x: accountBG.size.width * 0.5 + 150, y: 20)
         accountIcon.anchorPoint = CGPoint(x: 1, y: 1)
         accountIcon.setScale(0.6)
-        cam.addChild(accountIcon)
+        //cam.addChild(accountIcon)
         if(accountIcon.position.x > self.size.width * 0.4 - 70){
             //reposition for smaller screens
             let dif = accountIcon.position.x - self.size.width * 0.4 - 70
@@ -215,7 +215,6 @@ extension Play{
                 self.tapToStart.run(SKAction.moveBy(x: 0, y: -10, duration: 2).ease(.easeOut))
             }
         }
-        DEBUG_TXT.removeFromParent()
         avatar.alpha = 1
     }
     func startAnimation(){
@@ -1028,7 +1027,6 @@ extension Play{
         trackArrows.removeAll()
     }
     func startLazer(){
-        
         usedShoot = true
         newShoot = true
         usingConstantLazer = true

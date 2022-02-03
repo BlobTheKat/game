@@ -313,11 +313,11 @@ extension Play{
                     let diff = ship.mass - s.mass
                     let newvelx = (ship.velocity.dx * diff + (2 * s.mass * s.velocity.dx)) / sum
                     let newvely = (ship.velocity.dy * diff + (2 * s.mass * s.velocity.dy)) / sum
-                    //s.velocity.dx = ((2 * ship.mass * ship.velocity.dx) - s.velocity.dx * diff) / sum
-                    //s.velocity.dy = ((2 * ship.mass * ship.velocity.dy) - s.velocity.dy * diff) / sum
+                    s.velocity.dx = ((2 * ship.mass * ship.velocity.dx) - s.velocity.dx * diff) / sum
+                    s.velocity.dy = ((2 * ship.mass * ship.velocity.dy) - s.velocity.dy * diff) / sum
+                    hits.append((UInt32(a), Float(ship.velocity.dx), Float(ship.velocity.dy)))
                     ship.velocity.dx = newvelx
                     ship.velocity.dy = newvely
-                    hits.append(UInt32(a - 1))
                 }
             }
             
