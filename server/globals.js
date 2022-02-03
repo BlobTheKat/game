@@ -1,7 +1,7 @@
 //1
 
 //Game version
-const VERSION = 1
+const VERSION = 2
 //Number of servers
 const SERVERCOUNT = 1n
 //App bundle ID

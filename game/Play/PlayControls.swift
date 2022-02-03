@@ -718,7 +718,7 @@ extension Play{
         }
     }
     override func swipe(from a: CGPoint, to b: CGPoint) {
-        swiping = true
+        defer{swiping = true}
         if !dragRemainder.isNaN{
             if abs(a.x) > self.size.width / 5{
                 dragRemainder = sign(a.x) * .infinity
@@ -772,10 +772,15 @@ extension Play{
                 return
             }
         }
-        if statsWall.parent != nil && statsWall.alpha == 1 && abs(b.y-a.y) > abs(b.x-a.x) * 2{
+        if !swiping && b.y < 30{
+            swipesCropNode = false
+        }else if !swiping{
+            swipesCropNode = true
+        }
+        
+        if statsWall.parent != nil && statsWall.alpha == 1 && !swipesCropNode{
             statsWall.removeAllActions()
             statsWall.position.y = max(statsWall.position.y + b.y - a.y, 0)
-            return
         }else if statsWall.parent != nil && statsWall.alpha == 1{
             if badgeCropNode.parent != nil && badgeCropNode.children.count > 0{
                 appleSwipe = (b.x - a.x)
@@ -789,32 +794,31 @@ extension Play{
                     node.position.x += x
                 }
             }
-            return
-        }
-        guard showMap else {return}
-        if dPad.contains(b) || thrustButton.contains(b){return}
-        if mapPress1 != nil && mapPress2 != nil{
-            var dx = mapPress1!.x - mapPress2!.x
-            var dy = mapPress1!.y - mapPress2!.y
-            let d1 = dx * dx + dy * dy
-            if closest(a, mapPress1!, mapPress2!){
-                mapPress1 = b
-            }else{
-                mapPress2 = b
+        }else if showMap{
+            if dPad.contains(b) || thrustButton.contains(b){return}
+            if mapPress1 != nil && mapPress2 != nil{
+                var dx = mapPress1!.x - mapPress2!.x
+                var dy = mapPress1!.y - mapPress2!.y
+                let d1 = dx * dx + dy * dy
+                if closest(a, mapPress1!, mapPress2!){
+                    mapPress1 = b
+                }else{
+                    mapPress2 = b
+                }
+                dx = mapPress1!.x - mapPress2!.x
+                dy = mapPress1!.y - mapPress2!.y
+                let d2 = dx * dx + dy * dy
+                var z = sqrt(d2 / d1)
+                if FakemapBG.xScale * z > 1{z = 1 / FakemapBG.xScale}
+                if FakemapBG.xScale * z < 0.02{z = 0.02 / FakemapBG.xScale}
+                FakemapBG.xScale *= z
+                FakemapBG.yScale *= z
+                FakemapBG.position.x *= z
+                FakemapBG.position.y *= z
             }
-            dx = mapPress1!.x - mapPress2!.x
-            dy = mapPress1!.y - mapPress2!.y
-            let d2 = dx * dx + dy * dy
-            var z = sqrt(d2 / d1)
-            if FakemapBG.xScale * z > 1{z = 1 / FakemapBG.xScale}
-            if FakemapBG.xScale * z < 0.02{z = 0.02 / FakemapBG.xScale}
-            FakemapBG.xScale *= z
-            FakemapBG.yScale *= z
-            FakemapBG.position.x *= z
-            FakemapBG.position.y *= z
+            FakemapBG.position.x += b.x - a.x
+            FakemapBG.position.y += b.y - a.y
         }
-        FakemapBG.position.x += b.x - a.x
-        FakemapBG.position.y += b.y - a.y
     }
     override func release(at point: CGPoint){
         if statsWall.parent != nil && statsWall.alpha == 1{

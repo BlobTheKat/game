@@ -295,7 +295,7 @@ class Play: SKScene{
     var statsIcons: [SKSpriteNode] = [SKSpriteNode(imageNamed: "shop"),SKSpriteNode(imageNamed: "badge"),SKSpriteNode(imageNamed: "ship")]
     var goingDown: Bool = false
     var stopInterval = {}
-    
+    var swipesCropNode = false
     
     var stats = (
         levelbg: SKSpriteNode(imageNamed: "levelbg"),

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0DBB2EB802135AFEEBAC53F9 /* Pods_game.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69826CF035AF16853F01F5DA /* Pods_game.framework */; };
 		3340582727234ACC0068C811 /* LightSpeedOut.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3340582627234ACC0068C811 /* LightSpeedOut.wav */; };
 		3340582927234AD30068C811 /* Lazer.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3340582827234AD30068C811 /* Lazer.wav */; };
 		3340582B27234E6C0068C811 /* InLightSpeed.wav in Resources */ = {isa = PBXBuildFile; fileRef = 3340582A27234E6C0068C811 /* InLightSpeed.wav */; };
@@ -146,6 +147,7 @@
 		34EB9E4D27708E09002C252B /* satellites */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = satellites; sourceTree = "<group>"; };
 		34EB9E4F27708E50002C252B /* shooters */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = shooters; sourceTree = "<group>"; };
 		34EB9E5127708E71002C252B /* dishes */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = dishes; sourceTree = "<group>"; };
+		69826CF035AF16853F01F5DA /* Pods_game.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_game.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC78185D26945B9200A19FE9 /* Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connect.swift; sourceTree = "<group>"; };
 		DC9F5277269249AB00DDF0AF /* game.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = game.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC9F527A269249AB00DDF0AF /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -163,6 +165,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				34C5BC30271ED7F200997B1D /* GameKit.framework in Frameworks */,
+				0DBB2EB802135AFEEBAC53F9 /* Pods_game.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -256,6 +259,7 @@
 			isa = PBXGroup;
 			children = (
 				34C5BC2F271ED7F200997B1D /* GameKit.framework */,
+				69826CF035AF16853F01F5DA /* Pods_game.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
