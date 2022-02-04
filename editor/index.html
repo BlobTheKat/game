@@ -1,5 +1,5 @@
 <!-- Polyglott >:D
-"console groupCollapsed\n%cHello, There!\0background:url('https://cdn.discordapp.com/avatars/708227690972315749/a_fd3c653b48c467334d2729107a6874f4.gif') 0/100%;padding:220px 0 30px;line-height:0;color:black;text-shadow:1px 1px 0 white;font-size:32px\n\nconsole log\n%cemail%c: %cblob.kat%c@hotmail.com\0color:#5DB0D7;font-weight:bold\0color:#E8EAED\0font-weight:normal;color:#987FFF\0color:#F28B54\n\nconsole log\n%cdiscord%c: %cBlobKat%c#1337\0color:#5DB0D7;font-weight:bold\0color:#E8EAED\0font-weight:normal;color:#987FFF\0color:#F28B54".split("\n\n").map(_=>(_=_.split("\n"),_[0].split(" ").reduce((a,b)=>a[b],this)(..._[1].split("\0"))))
+"console groupCollapsed\n%cHello, There!\0background:url('https://cdn.discordapp.com/avatars/708227690972315749/a_fd3c653b48c467334d2729107a6874f4.gif') 0/100%;padding:220px 0 30px;line-height:0;color:black;text-shadow:1px 1px 0 white;font-size:32px\n\nconsole log\n%cemail%c: %cblob.kat%c@hotmail.com\0color:#5DB0D7;font-weight:bold\0color:#E8EAED\0font-weight:normal;color:#987FFF\0color:#F28B54\n\nconsole log\n%cdiscord%c: %cBlobKat%c#1831\0color:#5DB0D7;font-weight:bold\0color:#E8EAED\0font-weight:normal;color:#987FFF\0color:#F28B54".split("\n\n").map(_=>(_=_.split("\n"),_[0].split(" ").reduce((a,b)=>a[b],this)(..._[1].split("\0"))))
 /*-->
 <!DOCTYPE html>
 <head>
@@ -102,16 +102,16 @@
     position: absolute;
     display: block;
     border-radius: 50%;
-    left: 50%;
-    bottom: 50%;
+    left: 0;
+    bottom: 0;
     
   }
   asteroid{
     position: absolute;
     display: block;
     border-radius: 50%;
-    left: 50%;
-    bottom: 50%;
+    left: 0;
+    bottom: 0;
     image-rendering: pixelated;
     image-rendering: optimizeSpeed;
     image-rendering: crisp-edges;
@@ -341,13 +341,13 @@
     width: 300px;
     overflow-y: scroll;
   }
-  #planets planet{
+  submenu planet{
     position: unset;
     width: 200px;
     height: 200px;
     margin: 40px auto 35px auto;
   }
-  #planets planet img{
+  submenu planet img{
     margin: 0;
     z-index: unset;
     position: absolute;
@@ -417,6 +417,7 @@
     top: -70px;
     z-index: 999;
   }
+	#side btn.remove{display: none}
   body .peditor{display:none}
   input[type=range] {
     -webkit-appearance: none;
@@ -527,11 +528,11 @@ traffic light{
     
   </submenu>
   <btn class="submenucontrol">Cores</btn>
-  <submenu>
+  <submenu id="currplanetsbefore">
     
   </submenu>
-  <btn class="submenucontrol">Current Planets</btn>
-  <submenu>
+  <btn class="submenucontrol" id="currplanets">Current Planets</btn>
+  <submenu id="plist">
     
   </submenu>
   <row><label>Name: </label><input type="text" style="flex-grow:2"/></row>
@@ -560,13 +561,13 @@ traffic light{
 
   <row class="planet sector asteroid"><label>List Index: </label><label id="listindex"></label></row>
 
-  <row class="planet"><label>Texture: </label><input type="text" id="texture" onchange="let n = nodeEdited;let val=this.value;let v2 = this.value.split(' '), v=v2.map(a=>a.split(':'));Promise.all((v.map(a=>a[0])).map(a=>srcFor('planets/'+a))).then(srcs=>{acted();n.object.textureshort = val;n.object.texture=n.t=v2;v=v.map(a=>+a[1]||1);for(var i in srcs){let a=n.children[i];if(!a)a=document.createElement('img'),nodeEdited.appendChild(a);a.src=srcs[i];a.style.setProperty('--scale',v[i]);a.style.animation='none';a.offsetWidth;a.style.animation='';redraw()}while(n.children.length>src.count)n.children[n.children.length-1].remove()})" /></row>
+  <row class="planet"><label>Texture: </label><input type="text" id="texture" onchange="let n = nodeEdited;let val=this.value;let v2 = this.value.split(' '), v=v2.map(a=>a.split(':'));Promise.all((v.map(a=>a[0])).map(a=>srcFor('planets/'+a))).then(srcs=>{acted(n);n.object.textureshort = val;n.object.texture=n.t=v2;v=v.map(a=>+a[1]||1);for(var i in srcs){let a=n.children[i];if(!a)a=document.createElement('img'),nodeEdited.appendChild(a);a.src=srcs[i];a.style.setProperty('--scale',v[i]);a.style.animation='none';a.offsetWidth;a.style.animation=''}while(n.children.length>srcs.length)n.children[n.children.length-1].remove()})" /></row>
 
   <row class="asteroid"><label>ID: </label><input type="number" id="a_id" min=1 onchange="acted();let val = +this.value, n = nodeEdited;let {radius, texture, spin} = asteroids[val]||{};if(!texture)return;srcFor('asteroids/'+texture).then(src=>{n.object.id = val;n.t = [texture];n.style.width = n.style.height = radius * 4 + 'px';n.children[0].src=src;n.style.setProperty('--animation', spin && ANIMS ? 'rotate ' + 0.10471975511965977 / Math.abs(spin) + 's infinite linear' + (spin > 0 ? ' reverse' : '') : 'none');redraw()});" /></row>
 
-  <row class="planet asteroid"><label>X: </label><input type="number" id="x" onchange="acted();nodeEdited.object.x = +this.value;let {object} = nodeEdited;let x = object.x / 1000;let y = object.y / 1000;nodeEdited.style.transform = 'translate('+x+'px, '+-y+'px) translate(-50%, 50%) scale(0.00'+(nodeEdited.object.id ? '05' : '1')+')'" /></row>
+  <row class="planet asteroid"><label>X: </label><input type="number" id="x" onchange="acted();nodeEdited.object.x = +this.value;transform(nodeEdited)" /></row>
 
-  <row class="planet asteroid"><label>Y: </label><input type="number" id="y" onchange="acted();nodeEdited.object.y = +this.value;let {object} = nodeEdited;let x = object.x / 1000;let y = object.y / 1000;nodeEdited.style.transform = 'translate('+x+'px, '+-y+'px) translate(-50%, 50%) scale(0.00'+(nodeEdited.object.id ? '05' : '1')+')'" /></row>
+  <row class="planet asteroid"><label>Y: </label><input type="number" id="y" onchange="acted();nodeEdited.object.y = +this.value;let {object} = nodeEdited;transform(nodeEdited)" /></row>
 
   <row class="sector"><label>Planets: </label><label id="planetcount"></label></row>
 
@@ -576,15 +577,15 @@ traffic light{
 
   <row class="sector"><label>Y: </label><input type="number" id="sy" onchange="acted();let {sector} = sectorEdited;sector.y = +this.value;let up = -100 - (sector.y - sector.h / 2);let down = 600 - (sector.y + sector.h / 2);if(up > 0)this.value = sector.y += up;if(down < 0)this.value = sector.y += down;sectorEdited.style.bottom = Math.round(sector.y - sector.h / 2) + 'px';acted()" /></row>
 
-  <row class="sector"><label>W: </label><input type="number" min=10 id="sw" onchange="acted();if(this.value > 500)this.value=500;if(this.value < 1)this.value=1;let {sector} = sectorEdited;sector.w = +this.value;let right = -100 - (sector.x - sector.w / 2);let left = 600 - (sector.x + sector.w / 2);if(left < 0)sector.x += left;if(right > 0)sector.x += right;sectorEdited.style.width = Math.round(sector.w) + 'px';sectorEdited.style.left = Math.round(sector.x - sector.w / 2) + 'px';acted()" /></row>
+  <row class="sector"><label>W: </label><input type="number" min=10 id="sw" onchange="acted();if(this.value > 500)this.value=500;if(this.value < 1)this.value=1;let {sector} = sectorEdited;sector.w = +this.value;let right = -100 - (sector.x - sector.w / 2);let left = 600 - (sector.x + sector.w / 2);if(left < 0)sector.x += left;if(right > 0)sector.x += right;sectorEdited.style.width = Math.round(sector.w) + 'px';sectorEdited.style.left = Math.round(sector.x - sector.w / 2) + 'px';for(var i of sectorEdited.children)transform(i);acted()" /></row>
 
-  <row class="sector"><label>H: </label><input type="number" min=10 id="sh" onchange="acted();if(this.value > 500)this.value=500;if(this.value < 1)this.value=1;let {sector} =sectorEdited;sector.h = +this.value;let up = -100 - (sector.y - sector.h / 2);let down = 600 - (sector.y + sector.h / 2);if(up > 0)sector.y += up;if(down < 0)sector.y += down;sectorEdited.style.height = Math.round(sector.h) + 'px';sectorEdited.style.bottom = Math.round(sector.y - sector.h / 2) + 'px';acted()" /></row>
+  <row class="sector"><label>H: </label><input type="number" min=10 id="sh" onchange="acted();if(this.value > 500)this.value=500;if(this.value < 1)this.value=1;let {sector} =sectorEdited;sector.h = +this.value;let up = -100 - (sector.y - sector.h / 2);let down = 600 - (sector.y + sector.h / 2);if(up > 0)sector.y += up;if(down < 0)sector.y += down;sectorEdited.style.height = Math.round(sector.h) + 'px';sectorEdited.style.bottom = Math.round(sector.y - sector.h / 2) + 'px';for(var i of sectorEdited.children)transform(i);acted()" /></row>
 
   <row class="sector"><btn id="secleft">◀ Left</btn><btn id="secup">▲ Up</btn><btn id="secdown">▼ Down</btn><btn id="secright">▶ Right</btn></row>
 
   <row class="planet"><label>Particle: </label><input type="number" id="particle" min=0 oninput="acted();nodeEdited.object.particle = this.value ? +this.value : null" /></row>
 
-  <row class="planet"><label>Superhot: </label><input type="checkbox" id="sup" onchange="acted();nodeEdited.object.superhot = this.checked" /></row>
+  <row class="planet"><label>Superhot: </label><input type="checkbox" id="sup" onchange="acted();if(nodeEdited.object.superhot = this.checked)nodeEdited.classList.add('hot');else nodeEdited.classList.remove('hot')" /></row>
 
   <row class="planet"><label>Radius: </label><input id="radius" min=0 step=5 onchange="acted();nodeEdited.object.radius = +this.value;nodeEdited.style.width = nodeEdited.style.height = nodeEdited.object.radius * 2 + 'px'" type="number"/></row>
 
@@ -620,6 +621,7 @@ traffic light{
 <script>
   window.onfocus = () => document.body.classList.remove("blurred")
 	window.onblur = () => document.body.classList.add("blurred")
+	onbeforeunload = () => unsaved.size > 0 ? true : undefined
 	
 	if(typeof require != "undefined"){window.IPC = require("electron").ipcRenderer;document.querySelector("traffic").style.display = "flex"}
 
@@ -940,29 +942,24 @@ traffic light{
     let fr = new DocumentFragment()
     for(let planet of sector.planets){
       let p = document.createElement("planet")
-      let x = planet.x / 1000
-      let y = planet.y / 1000
       p.t = planet.texture
       planet.superhot && p.classList.add("hot")
-
-      p.style.transform = "translate("+x+"px, "+-y+"px) translate(-50%, 50%) scale(0.001)"
-      p.style.width = p.style.height = planet.radius * 2 + "px"
-      p.object = planet
+			p.object = planet
       p.sector = sector
+      transform(p)
+      p.style.width = p.style.height = planet.radius * 2 + "px"
       //if(planet.spin && ANIMS)p.style.setProperty('--animation', "rotate " + 0.10471975511965977 / Math.abs(planet.spin) + "s infinite linear" + (planet.spin > 0 ? " reverse" : ""))
       p.ondragstart=_=>!1
       fr.appendChild(p)
     }
-    for(let planet of sector.asteroids){
+    for(let object of sector.asteroids){
       let p = document.createElement("asteroid")
-      let {radius, texture, spin} = asteroids[planet.id]||{}
+      let {radius, texture, spin} = asteroids[object.id]||{}
       if(!texture)({radius, texture, spin} = asteroids[1])
-      let x = planet.x / 1000
-      let y = planet.y / 1000
       p.t = [texture]
-      p.object = planet
+      p.object = object
       p.sector = sector
-      p.style.transform = "translate("+x+"px, "+-y+"px) translate(-50%, 50%) scale(0.0005)"
+      transform(p)
       p.style.width = p.style.height = radius * 4 + "px"
       //if(spin && ANIMS)p.style.setProperty('--animation', "rotate " + 0.10471975511965977 / Math.abs(spin) + "s infinite linear" + (spin > 0 ? " reverse" : ""))
       p.ondragstart=_=>!1
@@ -983,9 +980,7 @@ traffic light{
         ({object} = a.node)
         object.x -= a.dx
         object.y -= a.dy
-        let x = object.x / 1000
-        let y = object.y / 1000
-        a.node.style.transform = "translate("+x+"px, "+-y+"px) translate(-50%, 50%) scale(0.00"+('id' in object ? "05" : "1")+")"
+        transform(a.node)
       break
       case "move2":
         ({sector} = a.node)
@@ -1014,9 +1009,7 @@ traffic light{
         ({object, sector} = a.node)
         object.x += a.dx
         object.y += a.dy
-        let x = object.x / 1000
-        let y = object.y / 1000
-        a.node.style.transform = "translate("+x+"px, "+-y+"px) translate(-50%, 50%) scale(0.00"+('id' in object ? "05" : "1")+")"
+        transform(a.node)
       break
       case "move2":
         ({sector} = a.node)
@@ -1219,14 +1212,12 @@ traffic light{
       if(sector.element){
         //add planet
         let p = document.createElement("planet")
-        let x = planet.x / 1000
-        let y = planet.y / 1000
         p.t = planet.texture
-        planet.superhot && p.classList.add("hot")
-        p.style.transform = "translate("+x+"px, "+-y+"px) translate(-50%, 50%) scale(0.001)"
-        p.style.width = p.style.height = planet.radius * 2 + "px"
-        p.object = planet
+				p.object = planet
         p.sector = sector
+        planet.superhot && p.classList.add("hot")
+        transform(p)
+        p.style.width = p.style.height = planet.radius * 2 + "px"
         if(planet.spin && ANIMS)p.style.setProperty('--animation', "rotate " + 0.10471975511965977 / Math.abs(planet.spin) + "s infinite linear" + (planet.spin > 0 ? " reverse" : ""))
         p.ondragstart=_=>!1
         sector.element.appendChild(p)
@@ -1258,13 +1249,11 @@ traffic light{
         if(sector.element){
           //add planet
           let p = document.createElement("asteroid")
-          let x = planet.x / 1000
-          let y = planet.y / 1000
-          srcFor('asteroids/'+asteroids[1].texture).then(src=>{p.t = [asteroids[1].texture];p.style.width = p.style.height = asteroids[1].radius * 4 + 'px';p.appendChild(new Image);p.firstElementChild.src=src;p.firstElementChild.style.setProperty("--scale",1)})
-          p.style.transform = "translate("+x+"px, "+-y+"px) translate(-50%, 50%) scale(0.0005)"
-          p.style.width = p.style.height = asteroids[1].radius * 4 + "px"
           p.object = planet
           p.sector = sector
+          srcFor('asteroids/'+asteroids[1].texture).then(src=>{p.t = [asteroids[1].texture];p.style.width = p.style.height = asteroids[1].radius * 4 + 'px';p.appendChild(new Image);p.firstElementChild.src=src;p.firstElementChild.style.setProperty("--scale",1)})
+          transform(p)
+          p.style.width = p.style.height = asteroids[1].radius * 4 + "px"
           if(asteroids[1].spin && ANIMS)p.style.setProperty('--animation', "rotate " + 0.10471975511965977 / Math.abs(asteroids[1].spin) + "s infinite linear" + (asteroids[1].spin > 0 ? " reverse" : ""))
           p.ondragstart=_=>!1
           sector.element.appendChild(p)
@@ -1302,6 +1291,12 @@ traffic light{
     redraw()
   })
   let age = 0;
+	function transform(nodeEdited){
+		let {object, sector} = nodeEdited;
+		let x = object.x / 1000 + sector.w / 2
+		let y = object.y / 1000 + sector.h / 2
+		nodeEdited.style.transform = 'translate('+x+'px, '+-y+'px) translate(-50%, 50%) scale(0.00'+(nodeEdited.object.id ? '05' : '1')+')'
+	}
   function moveCurrent(dx, dy){
     if(sectorEdited){
       acted()
@@ -1335,9 +1330,7 @@ traffic light{
     action.dx += dx / zoom * 500000
     action.dy += dy / zoom * 500000
     push(action)
-    let x = object.x / 1000
-    let y = object.y / 1000
-    nodeEdited.style.transform = "translate("+x+"px, "+-y+"px) translate(-50%, 50%) scale(0.00"+(object.id?"05":"1")+")"
+    transform(nodeEdited)
     inputs.x.value = Math.round(object.x)
     inputs.y.value = Math.round(object.y)
   }
@@ -1489,6 +1482,40 @@ traffic light{
     }
     ghost.style.setProperty("--pos", cz)
   }, function(e){
+		if(side.contains(e.target) && e.target.nodeName == "IMG" && e.target.parentElement.parentElement.nodeName == "SUBMENU"){
+				//PLANET ADDED IN EDITOR
+				if(nodeEdited && !(nodeEdited.object.id)){
+					({radius: nodeEdited.object.radius, mass: nodeEdited.object.mass, particle: nodeEdited.object.particle, spin: nodeEdited.object.spin, name: nodeEdited.object.name, superhot: nodeEdited.object.superhot, texture: nodeEdited.object.textureshort} = e.target.parentElement)
+					nodeEdited.t = nodeEdited.object.texture = nodeEdited.object.textureshort.split(" ")
+					acted()
+  				if(nodeEdited.object.superhot)nodeEdited.classList.add('hot')
+					else nodeEdited.classList.remove('hot')
+  				nodeEdited.style.width = nodeEdited.style.height = nodeEdited.object.radius * 2 + 'px'
+  				if(nodeEdited.object.spin && ANIMS)nodeEdited.style.setProperty('--animation', 'rotate ' + 0.10471975511965977 / Math.abs(nodeEdited.object.spin) + 's infinite linear' + (nodeEdited.object.spin > 0 ? ' reverse' : ''))
+					else nodeEdited.style.setProperty('--animation', 'none')
+					let n = nodeEdited
+					let t = nodeEdited.t.map(a=>a.split(':'))
+					let done = srcs => {
+						let v = t.map(a=>+a[1]||1);
+						for(var i in srcs){
+							let a = n.children[i]
+							if(!a)a = document.createElement('img'),nodeEdited.appendChild(a)
+							a.src = srcs[i]
+							a.style.setProperty('--scale',v[i])
+							a.style.animation='none'
+							a.offsetWidth
+							a.style.animation=''
+						}
+						while(n.children.length>srcs.length)n.children[n.children.length-1].remove()
+					}
+					Promise.all(t.map(a=>a[0]).map(a=>srcFor('planets/'+a))).then(done).catch(e => done([]))
+					inputs.radius.value = nodeEdited.object.radius
+					inputs.mass.value = nodeEdited.object.mass
+					inputs.spin.value = nodeEdited.object.spin
+					inputs.texture.value = nodeEdited.object.textureshort
+					inputs.particle.value = nodeEdited.object.particle
+				}
+		}
     if(ghost)ghost = (ghost.remove(),null)
     if(!document.body.classList.contains("peditor"))return
     if(e.target.nodeName != "IMG")return
@@ -1505,7 +1532,7 @@ traffic light{
     if(e.target.parentElement.parentElement.nodeName != "SUBMENU")return
     let {target} = e
     if(target.parentElement.parentElement.previousElementSibling.textContent=="Current Planets"){
-      for(let el of target.parentElement.children){
+			for(let el of target.parentElement.children){
         let g = el.cloneNode()
         let end = square.children.length&1 //if odd, add to end, else add to start
         if(!end)for(let i of square.children){
@@ -1563,13 +1590,14 @@ traffic light{
   }
   //initialise planet editor
   async function make(key, txt = fetch("super/planets/"+key).then(a=>a.text())){
-    let [radius, mass, particle, spin, resource, ...texture] = (await txt).split(" ")
+    let [radius, mass, particle, spin, ...texture] = (await txt).split(" ")
     let superhot = false
     if(radius<0)radius = -radius, superhot = true
     let textureshort = texture.join(" ")
     texture = texture.map(a=>a.split(":"))
     let sizes = texture.map(a=>a[1]||1)
     texture = texture.map(a=>a[0])
+		
     radius-=0;mass-=0;spin-=0;particle=particle?+particle:null
     let planet = document.createElement("planet")
     let cur = 0;
@@ -1585,6 +1613,14 @@ traffic light{
       srcFor("planets/"+texture[a]).then(j => i.src = j)
       planet.appendChild(i)
     }
+		planet.radius = radius
+		planet.mass = mass
+		planet.particle = particle
+		planet.spin = spin
+		planet.superhot = superhot
+		planet.name = key
+		planet.texture = textureshort
+
     currents.appendChild(planet)
     let btn = document.createElement("btn")
     btn.textContent="remove"
@@ -1670,10 +1706,10 @@ traffic light{
       show()
       redraw()
     },
-    w: ctrl => redraw(y += (ctrl ? 30 : 10) / zoom),
-    a: ctrl => redraw(x -= (ctrl ? 30 : 10) / zoom),
-    s: ctrl => redraw(y -= (ctrl ? 30 : 10) / zoom),
-    d: ctrl => redraw(x += (ctrl ? 30 : 10) / zoom),
+    w: ctrl => redraw(y += (ctrl ? 80 : 20) / zoom),
+    a: ctrl => redraw(x -= (ctrl ? 80 : 20) / zoom),
+    s: ctrl => redraw(y -= (ctrl ? 80 : 20) / zoom),
+    d: ctrl => redraw(x += (ctrl ? 80 : 20) / zoom),
     Backspace: function deleteObject(ctrl){
       if(lastGhost && lastGhost.parentElement == square){
         rad.style.visibility = "hidden"
@@ -1719,6 +1755,8 @@ traffic light{
     side.classList.remove("asteroid", "planet", "sector", "region", "default")
     let a = nodeEdited ? ('id' in nodeEdited.object ? "asteroid" : "planet") : (sectorEdited ? "sector" : "default")
     side.classList.add(a)
+		id("currplanetsbefore").insertAdjacentElement("afterEnd", id("currplanets"))
+		id("currplanets").insertAdjacentElement("afterEnd", id("plist"))
     if(a == "planet"){
       inputs.id.textContent = "P"+nodeEdited.sector.planets.indexOf(nodeEdited.object)
       inputs.radius.value = nodeEdited.object.radius
@@ -1729,6 +1767,8 @@ traffic light{
       inputs.x.value = Math.round(nodeEdited.object.x)
       inputs.y.value = Math.round(nodeEdited.object.y)
       inputs.superhot.checked = nodeEdited.object.superhot
+			side.insertAdjacentElement("beforeEnd", id("currplanets"))
+			side.insertAdjacentElement("beforeEnd", id("plist"))
     }else if(a == "asteroid"){
       inputs.id.textContent = "A"+nodeEdited.sector.asteroids.indexOf(nodeEdited.object)
       inputs.x.value = Math.round(nodeEdited.object.x)
@@ -1796,7 +1836,11 @@ traffic light{
   }
   showeditor("home")
   link("toeditor", () => showeditor("editor"))
-  link("topeditor", () => showeditor("peditor"))
+  link("topeditor", () => {
+		id("currplanetsbefore").insertAdjacentElement("afterEnd", id("currplanets"))
+		id("currplanets").insertAdjacentElement("afterEnd", id("plist"))
+		showeditor("peditor")
+	})
   link("tohome", () => showeditor("home"))
   for(let e of $(".submenucontrol")){let el = e;link(e, function(){
     el.classList.contains("open") ? el.classList.remove("open") : el.classList.add("open")

@@ -39,13 +39,12 @@ server.on('message', async function(m, remote) {
             let w = Math.min(4000, message.ushort())
             clients.set(address, 0)
             let err = await new Promise(r => verify({publicKeyUrl, signature, salt, playerId, timestamp, bundleId}, r))
-            playerId = playerId.slice(3)
             if(err){
                 //if(notGuest)
                 if(timestamp > 1)return send(Buffer.from(Buffer.concat([Buffer.of(127), strbuf("Invalid identity")])))
                 //is guest, uppercase
-                playerId = playerId.toUpperCase()
-            }else playerId = playerId.toLowerCase() //not guest, lowercase
+                playerId = "1" + playerId.toLowerCase()
+            }else playerId = playerId.slice(3).toLowerCase() //not guest, lowercase
             //fetch DB stuff
             let cli = new ClientData(name, playerId, address)
             fetchdata(playerId).then(a => {
