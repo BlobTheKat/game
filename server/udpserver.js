@@ -50,7 +50,7 @@ server.on('message', async function(m, remote) {
             let cli = new ClientData(name, playerId, address)
             fetchdata(playerId).then(a => {
                 Object.fallback(a, PLAYERDATA)
-                cli.ready(0, 0, a.id || 1, w)
+                cli.ready(0, 0, 0, w)
                 cli.data = a
                 clients.set(address, cli)
                 let buf = Buffer.alloc(22 + Math.ceil(sector.planets.length / 8))

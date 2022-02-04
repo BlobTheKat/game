@@ -14,7 +14,7 @@ class Play: SKScene{
     override init(size: CGSize){
         let diagonal = size.width + size.height
         let divider = pow(diagonal / 1300, 0.6)
-        self.AllNav = [avatar, healthBar, navBG, navArrow, thrustButton, dPad, shipDirection]
+        self.AllNav = [avatar, healthBar, navBG, navArrow]
         super.init(size: CGSize(width: size.width / divider, height: size.height / divider))
         self.construct()
     }
@@ -22,6 +22,9 @@ class Play: SKScene{
     //Debug Menu LabelNode
     var swiping = false
     var DEBUG_TXT = SKLabelNode(fontNamed: "Menlo")
+    var advancedDebug = false
+    var debugToggle = SKShapeNode(rectOf: CGSize(width: 30, height: 80))
+    var debugPressed = false
     //Minimum Number of nodes to start the game (to detect when textures have all loaded)
     var MIN_NODES_TO_START = 70
     //Player ship

@@ -32,11 +32,16 @@ extension Play{
         let request = GADRequest()
         GADRewardedAd.load(withAdUnitID: "ca-app-pub-5065501786618884/1136924485", request: request, completionHandler: { ad, error in
             self.ad = ad
-            if let error = error{print(error)}
+            if let error = error{print(error.localizedDescription)}
         })
     }
     
     func construct() {
+        debugToggle.position = pos(mx: -0.5, my: 0.5, x: 15, y: -40)
+        debugToggle.lineWidth = 0
+        debugToggle.fillColor = UIColor(red: 0.5, green: 0.5, blue: 0.5, alpha: 0.1)
+        cam.addChild(debugToggle)
+        debugToggle.zPosition = .infinity
         let x = UserDefaults.standard.integer(forKey: "sx")
         let y = UserDefaults.standard.integer(forKey: "sy")
         if x != 0{secx = x; ssecx = x}
@@ -153,7 +158,7 @@ extension Play{
         DEBUG_TXT.verticalAlignmentMode = .top
         DEBUG_TXT.numberOfLines = 20
         DEBUG_TXT.zPosition = .infinity
-        cam.addChild(DEBUG_TXT)
+        //cam.addChild(DEBUG_TXT)
         avatar.alpha = 0.2
         api.position(completion: sectorpos)
     }
@@ -341,6 +346,7 @@ extension Play{
         for b in BADGES{ if i * 2 <= level { b.texture = SKTexture(imageNamed: "box") } else { break }; i += 1 }
     }
     func startGame(){
+        
         nextStep(nil)
         //IMPORTANT SIZE ALGORITHM
         colonizeBG.anchorPoint = CGPoint(x: 1, y: 1)
@@ -635,7 +641,7 @@ extension Play{
         coloStatsName.position = colonizeBG.pos(mx: 0, my: 0, x: -230, y: -240)
         coloStatsName.fontSize = 20
         coloStatsName.text = "Name: Big Ed"
-        colonizeBG.addChild(coloStatsName)
+        //colonizeBG.addChild(coloStatsName)
         
         coloStatsStatus.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
         coloStatsStatus.position = colonizeBG.pos(mx: 0, my: 0, x: -230, y: -270)
@@ -647,12 +653,12 @@ extension Play{
         coloStatsRecource.position = colonizeBG.pos(mx: 0, my: 0, x: -230, y: -300)
         coloStatsRecource.fontSize = 20
         coloStatsRecource.text = "resource: Blackstone"
-        colonizeBG.addChild(coloStatsRecource)
+        //colonizeBG.addChild(coloStatsRecource)
         
         coloStatsPrice.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
         coloStatsPrice.position = colonizeBG.pos(mx: 0, my: 0, x: -230, y: -330)
         coloStatsPrice.fontSize = 20
-        coloStatsPrice.text = "price: K$ 10,000"
+        coloStatsPrice.text = "price: K$ 10"
         colonizeBG.addChild(coloStatsPrice)
         
         collect.anchorPoint = CGPoint(x: 0 ,y:0.5)

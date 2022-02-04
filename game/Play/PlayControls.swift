@@ -11,6 +11,15 @@ import GameKit
 
 extension Play{
     override func nodeDown(_ node: SKNode, at point: CGPoint) {
+        if node == debugToggle && (debugPressed || DEBUG_TXT.parent != nil){
+            if DEBUG_TXT.parent == nil{
+                cam.addChild(DEBUG_TXT)
+                avatar.alpha = 0.1
+            }else if !advancedDebug{advancedDebug = true}else{advancedDebug = false;DEBUG_TXT.removeFromParent();avatar.alpha = 1}
+        }else if node == debugToggle{
+            debugPressed = true
+            let _ = timeout(0.5){self.debugPressed = false}
+        }
         if fiddlenode == nil && nodeToFiddle?.zPosition ?? -.infinity < node.zPosition {nodeToFiddle = node}
         if statsWall.parent != nil && !swiping{
             switch node{
@@ -193,7 +202,6 @@ extension Play{
             
             default:break
             }
-            return
         }
         switch node{
         case addItemIcon:
@@ -772,7 +780,7 @@ extension Play{
                 return
             }
         }
-        if !swiping && b.y < 30{
+        if !swiping && abs(b.y - a.y) >= abs(b.x - a.x){
             swipesCropNode = false
         }else if !swiping{
             swipesCropNode = true
@@ -794,7 +802,7 @@ extension Play{
                     node.position.x += x
                 }
             }
-        }else if showMap{
+        }else if showMap && (statsWall.parent == nil || statsWall.alpha < 0.5){
             if dPad.contains(b) || thrustButton.contains(b){return}
             if mapPress1 != nil && mapPress2 != nil{
                 var dx = mapPress1!.x - mapPress2!.x
@@ -821,7 +829,7 @@ extension Play{
         }
     }
     override func release(at point: CGPoint){
-        if statsWall.parent != nil && statsWall.alpha == 1{
+        if statsWall.parent != nil && statsWall.alpha == 1 && !swipesCropNode{
             if statsWall.position.y > size.height / 4{
                 statsWall.run(SKAction.sequence([SKAction.moveTo(y: self.size.height / 2, duration: 0.5).ease(.easeOut),SKAction.removeFromParent()]))
                 shipSuit = -1
@@ -1036,7 +1044,7 @@ extension Play{
             if DEBUG_TXT.parent == nil{
                 cam.addChild(DEBUG_TXT)
                 avatar.alpha = 0.1
-            }else{DEBUG_TXT.removeFromParent();avatar.alpha = 1}
+            }else if !advancedDebug{advancedDebug = true}else{advancedDebug = false;DEBUG_TXT.removeFromParent();avatar.alpha = 1}
         }
         if key == .keyboardSpacebar{
             if  !showAccount && !startPressed && !tapToStartPressed && children.count > MIN_NODES_TO_START{
