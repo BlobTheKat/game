@@ -232,7 +232,7 @@ let msgs = {
         let planet = sector.planets[x]
         if(!planet || !planet.data || planet.data.owner != this.playerid)return res.code(ERR.SKIPBUILD).send()
         x = data.ubyte()
-        if(!planet.data.items || !planet.data.items[x])return res.code(ERR.SKIPBUILD).send()
+        if(!planet.data.items || !planet.data.items[x] || !planet.data.items[x].finish)return res.code(ERR.SKIPBUILD).send()
         let item = planet.data.items[x]
         let price = Math.ceil((item.finish - NOW) / 300)
         if(this.data.gems < price || price < 1)return res.code(ERR.SKIPBUILD).send()
