@@ -91,7 +91,8 @@ enum tutorial: Int{
     case addItem = 12
     case buyDrill = 13
     case gemFinish = 14
-    case done = 15
+    case finishEditing = 15
+    case done = 16
 }
 var tutorialProgress: tutorial{
     get{
@@ -117,7 +118,8 @@ let tutorials: [(SKLabelHorizontalAlignmentMode, SKLabelVerticalAlignmentMode, m
     (.right, .top, mx: 0.43, my: 0.1, x: -80, y: 40, "edit the planet"),
     (.right, .bottom, mx: 0.5, my: 0, x: -205, y: 80, "add an item"),
     (.left, .bottom, mx: -0.5, my: -0.1, x: 250, y: 0, "buy a drill\nto earn energy\nautomatically"),
-    (.left, .bottom, mx: 0, my: -0.3, x: 185, y: 30, "")
+    (.left, .bottom, mx: 0, my: -0.3, x: 185, y: 30, ""),
+    (.right, .top, mx: 0.43, my: 0.1, x: -80, y: 40, "finish editing")
 ]
 
 var animating: Bool = false

@@ -26,8 +26,7 @@ class GameViewController: UIViewController, GADFullScreenContentDelegate {
             scene.backgroundColor = .black
             SKScene.transition.pausesIncomingScene = false
             view.presentScene(scene, transition: SKScene.transition)
-            view.preferredFramesPerSecond = 60
-            view.showsNodeCount = true
+            view.preferredFramesPerSecond = 120
             view.showsFPS = true
         }
     }

@@ -327,4 +327,6 @@ class Play: SKScene{
     var adstop = {}
     
     var objBoxes: [SKShapeNode] = []
+    
+    
 }

@@ -10,6 +10,19 @@ import SpriteKit
 import GameKit
 
 extension Play{
+    
+    func swapControls(){
+        if thrustButton.position.x > 0{
+            dPad.position = pos(mx: 0.4, my: -0.4, x: -50, y: 50)
+            shipDirection.position = pos(mx: 0.4, my: -0.4, x: -50, y: 50)
+            thrustButton.position = pos(mx: -0.4, my: -0.4, x: 50, y: 80)
+        }else{
+            dPad.position = pos(mx: -0.4, my: -0.4, x: 50, y: 50)
+            shipDirection.position = pos(mx: -0.4, my: -0.4, x: 50, y: 50)
+            thrustButton.position = pos(mx: 0.4, my: -0.4, x: -50, y: 80)
+        }
+    }
+    
     override func nodeDown(_ node: SKNode, at point: CGPoint) {
         if node == debugToggle && (debugPressed || DEBUG_TXT.parent != nil){
             if DEBUG_TXT.parent == nil{
@@ -206,8 +219,13 @@ extension Play{
         switch node{
         case addItemIcon:
             if tutorialProgress == .gemFinish{return}
-            hideUpgradeUI()
             if tutorialProgress == .addItem{ nextStep(); lastSentEnergy += 150 }
+            if addItemIcons.first!.parent != nil{
+                hideUpgradeUI()
+                renderUpgradeUI()
+                return
+            }
+            hideUpgradeUI()
             //render additem ui
             var used = [Int8](repeating: 0, count: 128)
             var lvl = 0
@@ -257,7 +275,8 @@ extension Play{
             break
         case editColoIcon:
             if tutorialProgress == .editPlanet{ nextStep() }
-            else if tutorialProgress.rawValue > tutorial.editPlanet.rawValue && tutorialProgress != .done{
+            else if tutorialProgress == .finishEditing{ nextStep() }
+            else if tutorialProgress != .done{
                 return
             }
             planetEditMode()
@@ -414,7 +433,7 @@ extension Play{
             }
             
         }
-        if navArrow == node{
+        if navArrow == node && !presence{
             if tutorialProgress == .openNavigations{
                 if editColoIcon.parent != nil{
                     tutorialProgress = .buyPlanet
@@ -944,63 +963,65 @@ extension Play{
     
     override func keyDown(_ key: UIKeyboardHIDUsage) {
         hideControls()
-        if let b = boolfiddle, key == .keyboardComma || key == .keyboardPeriod{b.setTo(!b.value);return}
-        if let b = bytefiddle{if key == .keyboardComma{b.setTo(b.value&-1);return}else if key == .keyboardPeriod{b.setTo(b.value&+1);return}else if key == .keyboardN{b.setTo(b.value&-10);return}else if key == .keyboardM{b.setTo(b.value&+10);return}}
-        if let f = floatfiddle{if key == .keyboardComma{f.setTo(f.value-1);return}else if key == .keyboardPeriod{f.setTo(f.value+1);return}else if key == .keyboardN{f.setTo(f.value-10);return}else if key == .keyboardM{f.setTo(f.value+10);return}else if key == .keyboardSemicolon{f.setTo(f.value-0.1);return}else if key == .keyboardQuote{f.setTo(f.value+0.1);return}}
-        boolfiddle = nil
-        floatfiddle = nil
-        bytefiddle = nil
-        switch key{
-        case .keyboardX:
-            floatfiddle = reg.x
-            break
-        case .keyboardY:
-            floatfiddle = reg.y
-            break
-        case .keyboardZ:
-            floatfiddle = reg.z
-            break
-        case .keyboardS:
-            floatfiddle = reg.s
-            break
-        case .keyboardI:
-            boolfiddle = reg.i
-            break
-        case .keyboardO:
-            floatfiddle = reg.o
-            break
-        case .keyboardP:
-            boolfiddle = reg.p
-            break
-        case .keyboardOpenBracket:
-            floatfiddle = reg.mx
-            break
-        case .keyboardCloseBracket:
-            floatfiddle = reg.my
-            break
-        case .keyboardHyphen:
-            floatfiddle = reg.sx
-            break
-        case .keyboardEqualSign:
-            floatfiddle = reg.sy
-            break
-        case .keyboardR:
-            bytefiddle = reg.r
-            break
-        case .keyboardG:
-            bytefiddle = reg.g
-            break
-        case .keyboardB:
-            bytefiddle = reg.b
-            break
-        case .keyboardGraveAccentAndTilde:
-            let node = "<#node#" + ">"
-            let label = fiddlenode as? SKLabelNode != nil
-            UIPasteboard.general.string = "\(node).position = pos(mx: \(rnd(reg.mx.value)), my: \(rnd(reg.my.value))\(reg.x.value != 0 || reg.y.value != 0 ? ", x: \(rnd(reg.x.value)), y: \(rnd(reg.y.value))":""))\n\(reg.o.value < 1 ? "\(node).alpha = \(rnd(reg.o.value))\n":"")\(reg.s.value != 1 ? (label ? "\(node).fontSize = \(rnd(reg.s.value*32))\n":"\(node).setScale(\(rnd(reg.s.value)))\n"):"")\(reg.z.value != 0 ? "\(node).zPosition = \(rnd(reg.z.value))\n":"")\( reg.sx.value != 0.5 || reg.sy.value != 0.5 ? (label ? "\(reg.sx.value > 0.55 ? "\(node).horizontalAlignmentMode = .right\n" : (reg.sx.value < 0.45 ? "\(node).horizontalAlignmentMode = .left\n" : ""))\(reg.sy.value > 0.55 ? "\(node).verticalAlignmentMode = .top\n" : (reg.sy.value >= 0.45 ? "\(node).verticalAlignmentMode = .center\n" : ""))" : "\(node).anchorPoint = CGPoint(x: \(rnd(reg.sx.value)), y: \(rnd(reg.sy.value)))\n"):"")\(reg.r.value != 255 || reg.g.value != 255 || reg.b.value != 255 && (label || fiddlenode as? SKSpriteNode != nil) ? "\(node).\(label ? "fontColor" : "color") = UIColor(red: \(rnd(Double(reg.r.value) / 255)), green: \(rnd(Double(reg.g.value) / 255)), blue: \(rnd(Double(reg.b.value) / 255))\n":"")"
-        case .keyboardF:
-            if fiddlenode == nil{fiddlenode = SKNode();fiddlenode!.name="!"}
-            else if fiddlenode!.name != "!"{fiddlenode = nil}
-        default:break
+        if advancedDebug{
+            if let b = boolfiddle, key == .keyboardComma || key == .keyboardPeriod{b.setTo(!b.value);return}
+            if let b = bytefiddle{if key == .keyboardComma{b.setTo(b.value&-1);return}else if key == .keyboardPeriod{b.setTo(b.value&+1);return}else if key == .keyboardN{b.setTo(b.value&-10);return}else if key == .keyboardM{b.setTo(b.value&+10);return}}
+            if let f = floatfiddle{if key == .keyboardComma{f.setTo(f.value-1);return}else if key == .keyboardPeriod{f.setTo(f.value+1);return}else if key == .keyboardN{f.setTo(f.value-10);return}else if key == .keyboardM{f.setTo(f.value+10);return}else if key == .keyboardSemicolon{f.setTo(f.value-0.1);return}else if key == .keyboardQuote{f.setTo(f.value+0.1);return}}
+            boolfiddle = nil
+            floatfiddle = nil
+            bytefiddle = nil
+            switch key{
+            case .keyboardX:
+                floatfiddle = reg.x
+                break
+            case .keyboardY:
+                floatfiddle = reg.y
+                break
+            case .keyboardZ:
+                floatfiddle = reg.z
+                break
+            case .keyboardS:
+                floatfiddle = reg.s
+                break
+            case .keyboardI:
+                boolfiddle = reg.i
+                break
+            case .keyboardO:
+                floatfiddle = reg.o
+                break
+            case .keyboardP:
+                boolfiddle = reg.p
+                break
+            case .keyboardOpenBracket:
+                floatfiddle = reg.mx
+                break
+            case .keyboardCloseBracket:
+                floatfiddle = reg.my
+                break
+            case .keyboardHyphen:
+                floatfiddle = reg.sx
+                break
+            case .keyboardEqualSign:
+                floatfiddle = reg.sy
+                break
+            case .keyboardR:
+                bytefiddle = reg.r
+                break
+            case .keyboardG:
+                bytefiddle = reg.g
+                break
+            case .keyboardB:
+                bytefiddle = reg.b
+                break
+            case .keyboardGraveAccentAndTilde:
+                let node = "<#node#" + ">"
+                let label = fiddlenode as? SKLabelNode != nil
+                UIPasteboard.general.string = "\(node).position = pos(mx: \(rnd(reg.mx.value)), my: \(rnd(reg.my.value))\(reg.x.value != 0 || reg.y.value != 0 ? ", x: \(rnd(reg.x.value)), y: \(rnd(reg.y.value))":""))\n\(reg.o.value < 1 ? "\(node).alpha = \(rnd(reg.o.value))\n":"")\(reg.s.value != 1 ? (label ? "\(node).fontSize = \(rnd(reg.s.value*32))\n":"\(node).setScale(\(rnd(reg.s.value)))\n"):"")\(reg.z.value != 0 ? "\(node).zPosition = \(rnd(reg.z.value))\n":"")\( reg.sx.value != 0.5 || reg.sy.value != 0.5 ? (label ? "\(reg.sx.value > 0.55 ? "\(node).horizontalAlignmentMode = .right\n" : (reg.sx.value < 0.45 ? "\(node).horizontalAlignmentMode = .left\n" : ""))\(reg.sy.value > 0.55 ? "\(node).verticalAlignmentMode = .top\n" : (reg.sy.value >= 0.45 ? "\(node).verticalAlignmentMode = .center\n" : ""))" : "\(node).anchorPoint = CGPoint(x: \(rnd(reg.sx.value)), y: \(rnd(reg.sy.value)))\n"):"")\(reg.r.value != 255 || reg.g.value != 255 || reg.b.value != 255 && (label || fiddlenode as? SKSpriteNode != nil) ? "\(node).\(label ? "fontColor" : "color") = UIColor(red: \(rnd(Double(reg.r.value) / 255)), green: \(rnd(Double(reg.g.value) / 255)), blue: \(rnd(Double(reg.b.value) / 255))\n":"")"
+            case .keyboardF:
+                if fiddlenode == nil{fiddlenode = SKNode();fiddlenode!.name="!"}
+                else if fiddlenode!.name != "!"{fiddlenode = nil}
+            default:break
+            }
         }
         if key == .keyboardUpArrow || key == .keyboardW{
             ship.thrust = true
@@ -1101,11 +1122,11 @@ extension Play{
             if tutorialProgress == .dpad { nextStep() }
         }else if key == .keyboardDownArrow || key == .keyboardS || key == .keyboardK{
             pauseLazer()
-        }else if key == .keyboardL{
+        }/*else if key == .keyboardL{
             self.end()
             SKScene.transition = SKTransition.crossFade(withDuration: 1.5)
             DPlay.renderTo(skview)
             SKScene.transition = SKTransition.crossFade(withDuration: 0)
-        }
+        }*/
     }
 }
