@@ -60,6 +60,7 @@ let SHIPS = ["ship1","ship2","ship3","ship4","ship5","ship6","ship7","ship8","sh
     let child = SKSpriteNode(imageNamed: badge)
     child.zPosition = -1
     node.addChild(child)
+    node.addChild(child)
     node.zPosition = 1
     return node
 })

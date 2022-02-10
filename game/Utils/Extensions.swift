@@ -436,3 +436,11 @@ extension Dictionary{
         }
     }
 }
+
+extension SKNode{
+    func addChild(_ node: SKNode){
+        if node.parent == nil{
+            insertChild(node, at: children.count)
+        }
+    }
+}

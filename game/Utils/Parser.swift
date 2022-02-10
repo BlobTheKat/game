@@ -106,6 +106,8 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
             return
         }
         err("Spacetime continuum ends here...")
+        secx = ssecx
+        secy = ssecy
         return
     }
     regions[CGPoint(x: regionx, y: regiony)] = a
@@ -186,7 +188,7 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                 }
                 var i = 0
                 for owned in UserDefaults.standard.value(forKey: "owned-\(CGFloat(px))-\(CGFloat(py))") as? [Bool] ?? []{
-                    if owned{planets[i].ownedState = .yours}
+                    if owned && i < planets.count{planets[i].ownedState = .yours}
                     i += 1
                 }
                 s.0 = planets
@@ -200,7 +202,12 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                 }else{regions[CGPoint(x: regionx, y: regiony)]!.append(s)}
                 if current{completion(s)}
             }
-            if !found{err("Spacetime continuum ends here...");return}
+            if !found{
+                err("Spacetime continuum ends here...")
+                secx = ssecx
+                secy = ssecy
+                return
+            }
             loadedRegions.insert(CGPoint(x: regionx, y: regiony))
         }
     } _: { e in
