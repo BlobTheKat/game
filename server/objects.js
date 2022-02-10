@@ -15,9 +15,20 @@ class Planet{
     this.price *= 1
     this.price2 *= 1
     this.data = dat
-    if(this.data){
-      this.data.health &= 4095
+    if(this.data && this.data.health > 4095){
+      this.data.health -= 4096
+      this.heal()
     }
+  }
+  heal(){
+    this.data.health += 4096
+    let stop = setInterval(function(){
+      this.data.health += 64
+      if(this.data.health > 8190){
+        stop()
+        this.data.health = 4095
+      }
+    }, 30)
   }
   toBuf(buf, id, pid){
     if(!this.data)return
@@ -27,7 +38,7 @@ class Planet{
     buf.byte((this.data.health || 4095) >> 4)
     buf.float(this.data.inbank || 0)
     buf.float(this.data.inbank2 || 0)
-    buf.byte((this.data.name || "").length)
+    buf.byte((this.data.name || "").length + (this.data.health > 4095 ? 128 : 0))
     buf.buffer(Buffer.from(this.data.name || ""))
     let k = Object.keys(it)
     if(k.length == 0)return buf.byte((this.data.owner ? 160 : 32) + ((!this.data.owner && !this.superhot) || this.data.owner == pid ? 64 : 0))

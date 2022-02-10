@@ -117,6 +117,10 @@ extension Play{
                 let dif: Double = NSDate().timeIntervalSince1970 - planetLanded.last
                 collectedLabel.text = "\(min(planetLanded.capacity, Int(dif * planetLanded.persec)) + planetLanded.inbank)"
                 collectedLabel2.text = "\(min(planetLanded.capacity2, Int(dif * planetLanded.persec2)) + planetLanded.inbank2)"
+            }else if planetLanded.restoring{
+                collect.texture = SKTexture(imageNamed: "blank")
+                collectedLabel2.text = ""
+                collectedLabel.text = "Restoring... (\(Int(32.99 - planetLanded.health * 32))m)"
             }else{
                 collect.texture = restoreImg
                 collectedLabel2.text = ""
@@ -365,9 +369,7 @@ extension Play{
                 sy = (sy < 0 ? -1 : 1) * (sector.1.size.height / 2 + 2000)
             }
             secx = Int(sx + sector.1.pos.x)
-            secy = Int(sy + sector.1.pos.y)
-            ssecx = secx
-            ssecy = secy
+            secy = Int(sy + sector.1.pos.y) 
             UserDefaults.standard.set(secx, forKey: "sx")
             UserDefaults.standard.set(secy, forKey: "sy")
             ship.run(SKAction.move(by: CGVector(dx: ship.velocity.dx * gameFPS, dy: ship.velocity.dy * gameFPS), duration: 1))

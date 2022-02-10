@@ -151,6 +151,8 @@ extension Play{
         for p in planetindicators{
             p.alpha = 0
         }
+        ssecx = secx
+        ssecy = secy
         if view != nil{
             didMove(to: view!)
         }

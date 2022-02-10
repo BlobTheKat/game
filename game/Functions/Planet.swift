@@ -409,6 +409,7 @@ class Planet: Object{
     var health: CGFloat = 1
     let healthNode1 = SKShapeNode(rectOf: CGSize(width: 64, height: 3))
     let healthNode2 = SKShapeNode(rectOf: CGSize(width: 64, height: 3))
+    var restoring = false
     override func decode(data: inout Data) {
         //decode things on the planet
         self.last = Double(data.readunsafe() as UInt32)
@@ -433,7 +434,9 @@ class Planet: Object{
         self.inbank2 = Int(data.readunsafe() as Float)
         self.namelabel?.removeFromParent()
         self.namelabel = SKLabelNode(text: "...")
-        (parent as? Play)?.label(node: self.namelabel!, data.read(lentype: UInt8.self) ?? "", pos: position.add(y: -15), size: 30, color: .green, font: "Menlo", zPos: 6)
+        let namelen = data.readunsafe() as UInt8
+        self.restoring = namelen & 128 > 0
+        (parent as? Play)?.label(node: self.namelabel!, String(data.read(count: namelen & 127) as! [Character]), pos: position.add(y: -15), size: 30, color: .green, font: "Menlo", zPos: 6)
         let bits = data.readunsafe() as UInt8
         let ownedState = OwnedState(rawValue: bits & 192)!
         if self.ownedState != ownedState{

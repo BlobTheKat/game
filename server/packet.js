@@ -44,7 +44,7 @@ function processData(data, res){
     if(bitfield & 128){
         //planet shot
         let p = sector.planets[data.ushort()]
-        if(p && !(this.seq & 3) && p.data && p.data.owner){
+        if(p && !(this.seq & 3) && p.data && p.data.owner && !(p.data.health > 4095)){
             p.data.health = (p.data.health || 4095) - 25
             if(p.data.health < 1){
                 //destroyed
@@ -266,7 +266,7 @@ let msgs = {
         if(!planet || !planet.data || planet.data.owner != this.playerid)return res.code(ERR.RESTORE).send()
         if(planet.data.health > 4095)return
         if(!this.take(Math.floor(10000 - (planet.data.health>>4)*39.0625)))return res.code(ERR.RESTORE).send()
-        planet.data.health = 4095
+        planet.heal()
         unsaveds[planet.filename] = planet.data
         res.double(this.data.bal)
         res.code(RESP.RESTORE).send()
