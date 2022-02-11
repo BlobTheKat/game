@@ -203,6 +203,7 @@ class Object: SKSpriteNode, DataCodable{
                     }else if self == parent.ship{
                         //IF IM A SHIP AND NOT IT
                         parent.shotObj = obj
+                        parent.killName = obj.namelabel?.text ?? ""
                         obj.death = 900 //wasShot by me
                     }
                 }

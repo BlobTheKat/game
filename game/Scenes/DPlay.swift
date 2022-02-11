@@ -325,6 +325,7 @@ class DPlay: SKScene, SKPhysicsContactDelegate{
            movingDown = true
            
         }
+       
     }
     
     override func keyUp(_ key: UIKeyboardHIDUsage) {

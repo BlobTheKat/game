@@ -53,6 +53,38 @@ extension Play{
         if n.death > 300{
             if n.death > 600{
                 //killed by player
+                
+                let zKill = SKSpriteNode(imageNamed: "zKill")
+                zKill.anchorPoint = CGPoint(x: 1 , y: 0.5)
+                zKill.position = pos(mx: -0.5, my: 0.14, x: 0, y: 0)
+                zKill.zPosition = 10000
+                zKill.setScale(0.4)
+                zKill.alpha = 0
+                let killLabel = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+                killLabel.horizontalAlignmentMode = .right
+                killLabel.position = pos(mx: -0.1, my: 0, x: 0, y: 0)
+                killLabel.fontSize = 40
+                killLabel.zPosition = 5000
+                killLabel.text = "\(killName)"
+                killLabel.fontColor = UIColor.red
+                
+                
+                cam.addChild(zKill)
+                zKill.addChild(killLabel)
+                
+                zKill.run(SKAction.sequence([
+                    SKAction.moveBy(x: zKill.size.width/1.5, y: 0, duration: 0.5).ease(.easeOut),
+                    .wait(forDuration: 5),
+                    SKAction.moveBy(x: -zKill.size.width/1.5, y: 0, duration: 0.3),
+                    SKAction.run {
+                        zKill.removeFromParent()
+                    }
+                ]))
+                zKill.run(SKAction.fadeIn(withDuration: 0.8).ease(.easeOut))
+                
+                if killName != "mouse"{
+                    
+                }
                 kills += 1
             }
             //explode
@@ -171,7 +203,7 @@ extension Play{
             if planetShot?.angry ?? 0 < 1770{planetShot = nil} //resend for half a second
             let a = min(needsNames.count, 7) * 16 + Int(planetShot != nil ? 128 : 0)
             data.write(UInt8(hits.count + Int(shotObj != nil ? 8 : 0) + a))
-            if !usingConstantLazer || coolingDown{usedShoot = false}
+            if ship.shootFrequency == 0{usedShoot = false}
             newShoot = false
             for hit in hits{
                 data.write(hit)
