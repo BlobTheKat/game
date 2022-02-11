@@ -187,3 +187,13 @@ shootspeed: 0.2
 shootpoints: -20 40, 20 40
 shootvecs: 0, 0
 shootdmgs: 15
+
+mass: 1800
+radius: 18
+speed: 1.8
+spin: 1.44
+texture: ship19
+shootspeed: 0.18
+shootpoints: -20 40, 20, 40
+shootvecs: 0, 0
+shootdmgs: 63
