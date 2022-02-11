@@ -323,7 +323,7 @@ extension Play{
                     DisplayWARNING("not enough gems",.warning,false)
                     break
                 }
-                if tutorialProgress == .gemFinish && planetLanded?.items[Int(itemRot)]?.type == .drill{ nextStep(); ship.controls = true; planetEditMode() }
+                if tutorialProgress == .gemFinish && planetLanded?.items[Int(itemRot)]?.type == .drill{ nextStep(); ship.controls = true }
                 skipBuild(planetLanded!, itemRot)
             }else if upgradePrice.color == .orange{
                 //repair
@@ -644,7 +644,7 @@ extension Play{
         if mapIcon == node{
             mapIcon.texture = SKTexture(imageNamed: "map")
         }
-        if cockpitIcon == node && statsWall.parent == nil && tutorialProgress.rawValue > tutorial.gemFinish.rawValue{
+        if cockpitIcon == node && statsWall.parent == nil && tutorialProgress.rawValue > tutorial.finishEditing.rawValue{
             removeWallIcons()
             cam.addChild(statsWall)
             statsWall.position.y = self.size.height / 2

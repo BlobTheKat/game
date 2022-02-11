@@ -416,7 +416,7 @@ class Planet: Object{
         self.health = CGFloat(data.readunsafe() as UInt8) / 255
         //update health
         if health >= 1{healthNode1.removeFromParent();healthNode2.removeFromParent()}else{
-            if healthNode1.parent == nil{
+            if healthNode1.parent != parent{
                 parent?.addChild(healthNode1)
                 parent?.addChild(healthNode2)
                 healthNode1.position = position.add(y: 50)
@@ -430,13 +430,14 @@ class Planet: Object{
             healthNode2.xScale = health
             healthNode2.fillColor = UIColor(red: (2-health*2).clamp(0, 1), green: (health*2).clamp(0, 1), blue: 0, alpha: 1)
         }
+        
         self.inbank = Int(data.readunsafe() as Float)
         self.inbank2 = Int(data.readunsafe() as Float)
         self.namelabel?.removeFromParent()
         self.namelabel = SKLabelNode(text: "...")
         let namelen = data.readunsafe() as UInt8
         self.restoring = namelen & 128 > 0
-        (parent as? Play)?.label(node: self.namelabel!, String(data.read(count: namelen & 127) as! [Character]), pos: position.add(y: -15), size: 30, color: .green, font: "Menlo", zPos: 6)
+        (parent as? Play)?.label(node: self.namelabel!, String(data.read(encoding: .utf8, count: Int(namelen & 127))!), pos: position.add(y: -15), size: 30, color: .green, font: "Menlo", zPos: 6)
         let bits = data.readunsafe() as UInt8
         let ownedState = OwnedState(rawValue: bits & 192)!
         if self.ownedState != ownedState{

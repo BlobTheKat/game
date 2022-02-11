@@ -328,5 +328,6 @@ class Play: SKScene{
     
     var objBoxes: [SKShapeNode] = []
     
-    
+    var killName = ""
+  
 }

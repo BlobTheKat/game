@@ -603,6 +603,10 @@ extension Play{
         navBG.addChild(removeTrackerIcon)
         
         
+        
+        
+        
+        
         //COLONIZING
         coloPlanet.position = CGPoint(x: -125, y: -120)
         coloPlanet.zPosition = 101
@@ -1033,12 +1037,12 @@ extension Play{
         trackArrows.removeAll()
     }
     func startLazer(){
-        usedShoot = true
-        newShoot = true
+        
         usingConstantLazer = true
         heatingLaser.alpha = 1
         stopInterval()
         if heatLevel <= 40{
+            usedShoot = true
             heatLevel += 3
             goingDown = false
             ship.shootQueue = 1
@@ -1082,85 +1086,6 @@ extension Play{
             goingDown = true
         }
         ship.shootFrequency = 0
-    }
-    func constantLazer(){
-        usedShoot = true
-        newShoot = true
-        usingConstantLazer = true
-        if case .number(let f) = ships[ship.id]["shootspeed"]{
-            ship.shootFrequency = f
-        }
-        ship.shootQueue = 1 - ship.shootFrequency
-        if let action = self.action(forKey: "constantLazer"), action.speed == 0{
-            action.speed = 1
-            heatingLaser.alpha = 1
-            return
-        }
-        self.heatingLaser.texture = SKTexture(imageNamed: "heating0")
-        self.run(SKAction.sequence([
-            SKAction.repeat(SKAction.sequence([
-            
-                SKAction.wait(forDuration: 1),
-                SKAction.run {
-                    if !self.actionStopped{
-                    self.heatingLaser.alpha = 1
-                         self.heatLevel += 1
-                        self.heatingLaser.texture = SKTexture(imageNamed: "heating\(self.heatLevel)")
-                        
-                } },
-            ]), count: 4 - self.heatLevel),
-            SKAction.repeat(SKAction.sequence([
-                SKAction.run {
-                    let _ = timeout(5){
-                        if !self.usingConstantLazer{
-                            self.heatLevel = 0
-                            self.coolingDown = false
-                            self.removeAction(forKey: "constantLazer")
-                        }
-                    }
-                    if !self.actionStopped{
-                    self.coolingDown = true
-                    self.heatLevel += 1
-                    switch self.heatLevel{
-                        case 5: self.heatingLaser.texture = SKTexture(imageNamed: "heating4")
-                            break
-                        case 6:  self.heatingLaser.alpha = 0
-                            break
-                        case 7:  self.heatingLaser.alpha = 1
-                            break
-                        case 8:   self.heatingLaser.alpha = 0
-                            break
-                        case 9:  self.heatingLaser.alpha = 1
-                            break
-                        case 10:   self.heatingLaser.alpha = 0
-                            break
-                        case 11:  self.heatingLaser.alpha = 1
-                            break
-                        default:break
-                    }
-                    }
-                },
-                SKAction.wait(forDuration: 0.3),
-            ]), count: 7),
-            SKAction.wait(forDuration: 0.5),
-            SKAction.run{ self.heatLevel = 3},
-            SKAction.repeat(SKAction.sequence([
-                SKAction.wait(forDuration: 0.7),
-                SKAction.run {
-                    if !self.actionStopped{
-                    self.heatingLaser.texture = SKTexture(imageNamed: "heating\(self.heatLevel)")
-                    self.heatLevel -= 1
-                    }
-                },
-            ]), count: 4),
-            SKAction.run {
-                self.coolingDown = false
-                self.heatLevel = 0
-                if self.usingConstantLazer{
-                    self.constantLazer()
-                }
-            }
-        ]), withKey: "constantLazer")
     }
     func showLandedUI(){
         if planetLanded?.ownedState == .yours{

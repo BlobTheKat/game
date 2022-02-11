@@ -254,6 +254,12 @@ extension Data{
         self.removeFirst(Int(count))
         return String(data: data, encoding: encoding)
     }
+    mutating func read(encoding: String.Encoding = .utf8, count: Int) -> String?{
+        if self.count < count{return nil}
+        let data = self.prefix(Int(count))
+        self.removeFirst(Int(count))
+        return String(data: data, encoding: encoding)
+    }
     @inline(__always) mutating func read(encoding: String.Encoding = .utf8) -> String?{
         return read(encoding: encoding, lentype: UInt32.self)
     }
@@ -439,8 +445,7 @@ extension Dictionary{
 
 extension SKNode{
     func addChild(_ node: SKNode){
-        if node.parent == nil{
-            insertChild(node, at: children.count)
-        }
+        if node.parent != nil{ Swift.print("addChild(_:) called with a node that already has a parent\nnode: \(node)\nparent: \(node.parent!)"); node.removeFromParent() }
+        insertChild(node, at: children.count)
     }
 }
