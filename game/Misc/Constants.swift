@@ -55,7 +55,7 @@ let BADGES = ["blank", "badge1", "badge2", "badge3", "badge4", "badge5", "badge6
     return node
 })
 
-let SHIPS = ["ship1","ship2","ship3","ship4","ship5","ship6","ship7","ship8","ship9","ship10","ship11","ship12","ship13","ship14","ship15","ship16","ship17","ship18"].map({ badge -> SKSpriteNode in
+let SHIPS = ["ship1","ship2","ship3","ship4","ship5","ship6","ship7","ship8","ship9","ship10","ship11","ship12","ship13","ship14","ship15","ship16","ship17","ship18","ship19"].map({ badge -> SKSpriteNode in
     let node = SKSpriteNode(imageNamed: "boxlock")
     let child = SKSpriteNode(imageNamed: badge)
     child.zPosition = -1
