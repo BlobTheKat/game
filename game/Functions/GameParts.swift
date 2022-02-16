@@ -11,6 +11,8 @@ import SpriteKit
 //Name of colonize items, ordered
 let coloNames = ["camp", "drill", "canon", "satellite", "lab", "electro"]
 
+let coloDisplayNames = ["Main Camp", "Energy Drill", "Space Canon", "Satellite", "Research Lab", "Electro-tower"]
+
 //a colonize item consists of a type, level and capacity
 typealias ColonizeItem = (type: ColonizeItemType, lvl: UInt8, capacity: UInt8, upgradeEnd: UInt32)
 

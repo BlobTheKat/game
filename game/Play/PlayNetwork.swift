@@ -300,6 +300,8 @@ extension Play{
                     if i >= planets.count{break toploop}
                     if b & 128 != 0{
                         planets[i].ownedState = .yours
+                    }else{
+                        planets[i].ownedState = .unowned
                     }
                     i += 1
                     b <<= 1

@@ -200,9 +200,15 @@ class Play: SKScene{
         n.text = formatPrice(a[1])
         return n
     }
+    let addItemNames: [SKLabelNode] = coloDisplayNames.dropFirst().map{a in
+        let n = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+        n.text = a
+        return n
+    }
     var upgradingHintInterval = {}
     // these are item upgrade variables
     var upgradeNodes : [SKNode] = []
+    var upgradeName = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
     var upgradePrice = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
     var upgradeTime = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
     let upgradeArrow = SKSpriteNode(imageNamed: "upgradearrow")
@@ -240,7 +246,6 @@ class Play: SKScene{
     
     let buildBG = SKSpriteNode(imageNamed: "buildBG")
     let coloArrow = SKSpriteNode(imageNamed: "coloArrow")
-    let moveItemIcon = SKSpriteNode(imageNamed: "moveitem")
     let addItemIcon = SKSpriteNode(imageNamed: "addicon")
     
     

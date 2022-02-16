@@ -124,7 +124,7 @@ extension Play{
             }else{
                 collect.texture = restoreImg
                 collectedLabel2.text = ""
-                collectedLabel.text = "Heal (k$ \(Int(10000 - planetLanded.health*10000)))"
+                collectedLabel.text = "Heal (\(Int(10000 - planetLanded.health*10000)) energy)"
             }
         }
         if presence{
@@ -201,8 +201,8 @@ extension Play{
     }
     func spaceUpdate(){
         
-        energyCount.text = "k$ \(Int(energyAmount))"
-        researchCount.text = "r$ \(Int(researchAmount))"
+        energyCount.text = "\(Int(energyAmount))"
+        researchCount.text = "\(Int(researchAmount))"
         gemLabel.text = "\(Int(gemCount))"
         
         /*if tutorialProgress == .shootPlanet && energyAmount > 99{

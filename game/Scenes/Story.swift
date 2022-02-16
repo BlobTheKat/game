@@ -41,7 +41,7 @@ class Story: SKScene{
     let TEXTS = [
         "humanity was at its peak\nbusiness was doing better than ever",
         "nasa had just mastered the warp drive\nallowing humans to visit nearby stars",
-        "<#STORY TEXT HERE#>",
+        "our visits were clearly not well recieved",
         "the \"pyramid of doom\" destroyed earth\nand killed the majority of its population",
         "I'm glad I had prepared\nfor this kind of situation",
         "I boarded my ship and made a rapid exit\nheaded for the unknown"

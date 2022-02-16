@@ -218,10 +218,28 @@ extension Play{
         }
         switch node{
         case addItemIcon:
+            if !dragRemainder.isNaN{
+                guard let l = planetLanded!.children.first(where: {$0.userData?["rot"] as? UInt8 == itemRot}) as? SKSpriteNode else {return}
+                if l.color == .red{
+                    let amount = CGFloat(Int8(bitPattern: oldItemRot &- itemRot))
+                    planetLanded!.items[(Int(itemRot) + Int(amount)) & 255] = planetLanded!.items[Int(itemRot)]
+                    planetLanded!.items[Int(itemRot)] = nil
+                    itemRot &+= UInt8(Int(amount) & 255)
+                    planetLanded!.run(.rotate(byAngle: amount * PI256, duration: abs(amount) / 180.0))
+                    l.run(.rotate(byAngle: -amount * PI256, duration: abs(amount) / 180.0))
+                    l.userData?["rot"] = itemRot
+                    l.color = .clear
+                    l.colorBlendFactor = 0
+                }
+                if coloArrow.parent == nil{cam.addChild(coloArrow)}
+                changeItem(planetLanded!, Int(oldItemRot), Int(itemRot))
+                addItemIcon.texture = SKTexture(imageNamed: "addicon")
+                buildBG.alpha = 1
+                return
+            }
             if tutorialProgress == .gemFinish{return}
             if tutorialProgress == .addItem{ nextStep(); lastSentEnergy += 150 }
             if addItemIcons.first!.parent != nil{
-                hideUpgradeUI()
                 renderUpgradeUI()
                 return
             }
@@ -235,19 +253,27 @@ extension Play{
                 if itm!.type == .camp{lvl = Int(itm!.lvl)}
             }
             for i in 0...addItemIcons.count-1{
-                addItemIcons[i].position = CGPoint(x: 600 + CGFloat(i) * 400, y: -220)
+                addItemIcons[i].position = CGPoint(x: 600 + CGFloat(i) * 400, y: -190)
+                addItemIcons[i].setScale(0.8)
                 addItemPrices[i].position = addItemIcons[i].position
-                addItemPrices[i].position.y -= 250
+                addItemPrices[i].position.y -= 270
+                addItemNames[i].position = addItemIcons[i].position
+                addItemNames[i].position.y -= 200
                 addItemPrices[i].fontSize = 60
+                addItemNames[i].fontSize = 60
+                addItemNames[i].zPosition = 2
+                addItemNames[i].fontColor = .init(red: 0.7, green: 0.8, blue: 0, alpha: 1)
                 if Double(used[i+1]) >= Double(Double(lvl) - (items[i+1][0]["available"]?.number ?? 1.0)) / (items[i+1][0]["every"]?.number ?? 1.0) + 1.0{
                     addItemIcons[i].alpha = 0.5
                 }else{
                     addItemIcons[i].alpha = 1
                     buildBG.addChild(addItemPrices[i])
+                    buildBG.addChild(addItemNames[i])
                 }
                 buildBG.addChild(addItemIcons[i])
                 
             }
+            addItemIcon.texture = SKTexture(imageNamed: "backicon1")
             break
         case backIcon:
             if buyScreenShowing{
@@ -303,6 +329,7 @@ extension Play{
             }
             break
         case upgradebtn:
+            guard dragRemainder.isNaN else {return}
             guard let item = planetLanded?.items[Int(itemRot)] else {break}
             let itm = items[Int(item.type.rawValue)][Int(item.lvl + 1)]
             let price = itm["price"]?.number ?? 0
@@ -341,16 +368,23 @@ extension Play{
         case coloArrow:
             if tutorialProgress == .gemFinish{return}
             var a: CGFloat = 0
-            if point.x > coloArrow.position.x{
+            if point.x > coloArrow.position.x + 80{
                 repeat{
                     a += 1
                     itemRot &+= 1
                 }while planetLanded!.items[Int(itemRot)] == nil
-            }else{
+            }else if point.x < coloArrow.position.x - 80{
                 repeat{
                     a -= 1
                     itemRot &-= 1
                 }while planetLanded!.items[Int(itemRot)] == nil
+            }else{
+                if dragRemainder.isNaN{
+                    dragRemainder = 0;oldItemRot = itemRot;coloArrow.removeFromParent()
+                    addItemIcon.texture = SKTexture(imageNamed: "doneicon")
+                    buildBG.alpha = 0.5
+                }
+                return
             }
             planetLanded!.run(.rotate(byAngle: a * PI256, duration: abs(a) / 180.0).ease(.easeInEaseOut))
             renderUpgradeUI()
@@ -539,7 +573,7 @@ extension Play{
     override func nodeUp(_ node: SKNode, at _: CGPoint) {
         if !swiping && node.parent == buildBG, var i = addItemIcons.firstIndex(of: node as? SKSpriteNode ?? ship){
             guard node.alpha == 1 else{
-                DisplayWARNING("upgrade camp to build more",.warning,false)
+                DisplayWARNING("upgrade main camp to build more",.warning,false)
                 return
             }
             i += 1
@@ -645,6 +679,7 @@ extension Play{
             mapIcon.texture = SKTexture(imageNamed: "map")
         }
         if cockpitIcon == node && statsWall.parent == nil && tutorialProgress.rawValue > tutorial.finishEditing.rawValue{
+            if presence{planetEditMode()}
             removeWallIcons()
             cam.addChild(statsWall)
             statsWall.position.y = self.size.height / 2
@@ -723,26 +758,6 @@ extension Play{
             }
         }
         tapToStartPressed = false
-        
-        if presence && moveItemIcon.contains(p){
-            if dragRemainder.isNaN{dragRemainder = 0;oldItemRot = itemRot;coloArrow.removeFromParent()}
-            else{
-                guard let l = planetLanded!.children.first(where: {$0.userData?["rot"] as? UInt8 == itemRot}) as? SKSpriteNode else {return}
-                if l.color == .red{
-                    let amount = CGFloat(Int8(bitPattern: oldItemRot &- itemRot))
-                    planetLanded!.items[(Int(itemRot) + Int(amount)) & 255] = planetLanded!.items[Int(itemRot)]
-                    planetLanded!.items[Int(itemRot)] = nil
-                    itemRot &+= UInt8(Int(amount) & 255)
-                    planetLanded!.run(.rotate(byAngle: amount * PI256, duration: abs(amount) / 180.0))
-                    l.run(.rotate(byAngle: -amount * PI256, duration: abs(amount) / 180.0))
-                    l.userData?["rot"] = itemRot
-                    l.color = .clear
-                    l.colorBlendFactor = 0
-                }
-                if coloArrow.parent == nil{cam.addChild(coloArrow)}
-                changeItem(planetLanded!, Int(oldItemRot), Int(itemRot))
-            }
-        }
     }
     override func swipe(from a: CGPoint, to b: CGPoint) {
         defer{swiping = true}
@@ -794,6 +809,9 @@ extension Play{
                     n.position.x += x
                 }
                 for n in addItemPrices{
+                    n.position.x += x
+                }
+                for n in addItemNames{
                     n.position.x += x
                 }
                 return
