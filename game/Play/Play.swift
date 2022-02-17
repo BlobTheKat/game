@@ -189,11 +189,8 @@ extension Play{
         self.addChild(border1)
         self.addChild(border2)
         
-        moveItemIcon.position = pos(mx: 0.5, my: 0, x: -170, y: 120)
-        moveItemIcon.size = CGSize(width: 50, height: 50)
         addItemIcon.position = pos(mx: 0.5, my: 0, x: -170, y: 50)
         addItemIcon.size = CGSize(width: 50, height: 50)
-        moveItemIcon.zPosition = 10
         addItemIcon.zPosition = 10
         
         tapToStart.removeAction(forKey: "dotdotdot")
@@ -457,19 +454,19 @@ extension Play{
             researchNodes[i].setScale(1)
             avatar.addChild(researchNodes[i])
         }
-        energyCount.text = "k$ 0"
+        energyCount.text = ""
         energyCount.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
         energyCount.zPosition = avatar.zPosition + 1
-        energyCount.position = CGPoint(x: 165, y: -100)
+        energyCount.position = CGPoint(x: 165, y: -102)
         energyCount.fontColor = UIColor.white
-        energyCount.fontSize = 36
+        energyCount.fontSize = 40
         avatar.addChild(energyCount)
-        researchCount.text = "r$ 0"
+        researchCount.text = ""
         researchCount.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
         researchCount.zPosition = avatar.zPosition + 1
-        researchCount.position = CGPoint(x: 300, y: 73)
+        researchCount.position = CGPoint(x: 270, y: 71)
         researchCount.fontColor = UIColor.white
-        researchCount.fontSize = 36
+        researchCount.fontSize = 40
         avatar.addChild(researchCount)
         researchIconBecauseAdamWasTooLazy.zPosition = avatar.zPosition + 1
         researchIconBecauseAdamWasTooLazy.setScale(0.3)
@@ -566,7 +563,7 @@ extension Play{
         //NAVIGATION
         navArrow.position = pos(mx: 0.43, my: 0.5)
         navArrow.alpha = 1
-        navArrow.zPosition = 11
+        navArrow.zPosition = 10
         navArrow.setScale(0.3)
         cam.addChild(navArrow)
         
@@ -662,7 +659,7 @@ extension Play{
         coloStatsPrice.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
         coloStatsPrice.position = colonizeBG.pos(mx: 0, my: 0, x: -230, y: -330)
         coloStatsPrice.fontSize = 20
-        coloStatsPrice.text = "price: K$ 10"
+        coloStatsPrice.text = "price: \(priceFor(planetsOwned + 4)) energy"
         colonizeBG.addChild(coloStatsPrice)
         
         collect.anchorPoint = CGPoint(x: 0 ,y:0.5)
@@ -705,7 +702,7 @@ extension Play{
         warning.position = CGPoint(x: 0, y: -healthBar.size.height)
         warning.alpha = 0
         warning.zPosition = 10
-        warning.setScale(2)
+        warning.setScale(2.4)
         healthBar.addChild(warning)
             
             
@@ -810,10 +807,10 @@ extension Play{
             break
         }
         warningLabel.text = "\(label)"
-        
         warningLabel.zPosition = 101
         warningLabel.position = pos(mx: 0, my: 0, x: 0, y: -25)
         warningLabel.fontSize = 60
+        warningLabel.setScale(0.8)
         if warningLabel.parent == nil{warning.addChild(warningLabel)}
         if blink{
             warning.run(SKAction.repeatForever(SKAction.sequence([
@@ -839,8 +836,12 @@ extension Play{
         for icon in addItemPrices{
             icon.removeFromParent()
         }
+        for icon in addItemNames{
+            icon.removeFromParent()
+        }
         upgradeTime.removeFromParent()
         upgradePrice.removeFromParent()
+        upgradeName.removeFromParent()
         upgradeArrow.removeFromParent()
         upgradeOld.removeFromParent()
         upgradeNew.removeFromParent()
@@ -850,6 +851,8 @@ extension Play{
         upgradeNodes = []
         upgradingHintInterval()
         upgradingHintInterval = {}
+        
+        addItemIcon.texture = SKTexture(imageNamed: "addicon")
     }
     //This function renders the upgrading UI
     
@@ -908,7 +911,7 @@ extension Play{
                 buildBG.addChild(upgradePrice)
                 upgradePrice.position = pos(mx: 1.5, my: -0.8)
                 upgradePrice.horizontalAlignmentMode = .center
-                upgradePrice.text = "Upgrade camp to unlock more levels"
+                upgradePrice.text = "Upgrade main camp to unlock more levels"
                 upgradePrice.color = .white
             }
             return
@@ -916,28 +919,31 @@ extension Play{
         upgradePrice.color = .white
         upgradeTime.text = "Time: \(time)"
         upgradePrice.text = "Price: \(price)"
-        upgradeTime.position = pos(mx: 0.9, my: -0.9)
+        upgradeTime.position = pos(mx: 0.7, my: -0.9)
         upgradeTime.horizontalAlignmentMode = .right
         upgradeTime.fontSize = 60
         buildBG.addChild(upgradeTime)
-        upgradePrice.position = pos(mx: 1, my: -0.9)
+        upgradePrice.position = pos(mx: 0.8, my: -0.9)
         upgradePrice.horizontalAlignmentMode = .left
         upgradePrice.fontSize = 60
         buildBG.addChild(upgradePrice)
         upgradeOld = SKSpriteNode(imageNamed: "\(coloNames[Int(id.rawValue)])\(lvl)")
         upgradeNew = SKSpriteNode(imageNamed: "\(coloNames[Int(id.rawValue)])\(lvl+1)")
-        upgradeOld.position = pos(mx: 0.6, my: -0.3)
-        upgradeNew.position = pos(mx: 1.3, my: -0.3)
-        upgradeOld2.position = pos(mx: 0.6, my: -0.65)
-        upgradeNew2.position = pos(mx: 1.3, my: -0.65)
+        upgradeOld.position = pos(mx: 0.6, my: -0.36)
+        upgradeNew.position = pos(mx: 1.3, my: -0.36)
+        upgradeOld2.position = pos(mx: 0.6, my: -0.67)
+        upgradeNew2.position = pos(mx: 1.3, my: -0.67)
+        upgradeName.position = pos(mx: 0.95, my: -0.2)
+        upgradeName.text = coloDisplayNames[Int(id.rawValue)]
         let avg = upgradeOld.size.height + upgradeNew.size.height
         upgradeOld.setScale(300 / avg)
         upgradeNew.setScale(300 / avg)
-        upgradeOld2.fontSize = 60
-        upgradeNew2.fontSize = 60
+        upgradeOld2.fontSize = 40
+        upgradeNew2.fontSize = 40
+        upgradeName.fontSize = 60
         upgradeOld2.text = "Level \(lvl)"
         upgradeNew2.text = "Level \(lvl+1)"
-        upgradeArrow.position = pos(mx: 0.95, my: -0.4)
+        upgradeArrow.position = pos(mx: 0.95, my: -0.45)
         upgradeArrow.setScale(0.3)
         upgradebtn.position = pos(mx: 0.95, my: -1.07)
         upgradebtn.setScale(0.7)
@@ -947,6 +953,7 @@ extension Play{
         buildBG.addChild(upgradeOld2)
         buildBG.addChild(upgradeNew2)
         buildBG.addChild(upgradebtn)
+        buildBG.addChild(upgradeName)
         var i = 0
         var oldOutlineY = -125.0
         for (name: name, old: old, new: new, max: max) in powers{
@@ -1126,6 +1133,7 @@ extension Play{
             tutInfo.fontColor = UIColor(red: 0.8, green: 0.1, blue: 0.1, alpha: 1)
         }
         vibratePhone(.light)
+        coloStatsPrice.text = "price: \(priceFor(planetsOwned + 4)) energy"
     }
     func takeoff(){
         if tutorialProgress == .followPlanet{
@@ -1180,7 +1188,6 @@ extension Play{
         if presence{
             cam.addChild(buildBG)
             cam.addChild(coloArrow)
-            cam.addChild(moveItemIcon)
             cam.addChild(addItemIcon)
             ship.alpha = 0
             itemRot = 0
@@ -1206,7 +1213,6 @@ extension Play{
             dragRemainder = .nan
             coloArrow.removeFromParent()
             buildBG.removeFromParent()
-            moveItemIcon.removeFromParent()
             addItemIcon.removeFromParent()
             for n in planetLanded!.children{
                 let itm = (n.userData?["type"] as? ColonizeItem)
@@ -1216,10 +1222,14 @@ extension Play{
                 }
             }
             if planetTouched == nil{planetLanded = nil}
-            for i in 0...addItemIcons.count-1{
-                addItemIcons[i].removeFromParent()
-                addItemPrices[i].removeFromParent()
-            }
+            hideUpgradeUI()
+        }
+        if !hideControl{
+            hideControl.toggle()
+            hideControls()
+        }else{
+            hideControl.toggle()
+            showControls()
         }
     }
     func didChangeItem(_ success: Bool){
@@ -1351,12 +1361,5 @@ extension Play{
             }
         ]))
         }
-        
-        //add code here
-        //make your nodes here, not in Variables.swift
-        //whatever is in here will run whenever a mission is complete
-        //you can use parameters above for the labelnode's text
-        
     }
 }
-

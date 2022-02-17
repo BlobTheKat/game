@@ -373,11 +373,10 @@ class Planet: Object{
                     emitq -= 1
                 }
             }
-            if d < radius * radius + 300 * radius + 22500 && !n.asteroid{
+            if d < radius * radius + 300 * radius + 22500 && n == parent?.ship{
                 //check for collect
                 let r = n.radius * n.radius + 30 * n.radius + 225
                 for i in self.collectibles{
-                    if i.zPosition != -1.5{continue}
                     let x = i.position.x - n.position.x
                     let y = i.position.y - n.position.y
                     if x * x + y * y < r{
