@@ -659,7 +659,7 @@ extension Play{
         coloStatsPrice.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
         coloStatsPrice.position = colonizeBG.pos(mx: 0, my: 0, x: -230, y: -330)
         coloStatsPrice.fontSize = 20
-        coloStatsPrice.text = "price: 10 energy"
+        coloStatsPrice.text = "price: \(priceFor(planetsOwned + 4)) energy"
         colonizeBG.addChild(coloStatsPrice)
         
         collect.anchorPoint = CGPoint(x: 0 ,y:0.5)
@@ -1133,6 +1133,7 @@ extension Play{
             tutInfo.fontColor = UIColor(red: 0.8, green: 0.1, blue: 0.1, alpha: 1)
         }
         vibratePhone(.light)
+        coloStatsPrice.text = "price: \(priceFor(planetsOwned + 4)) energy"
     }
     func takeoff(){
         if tutorialProgress == .followPlanet{
@@ -1222,6 +1223,13 @@ extension Play{
             }
             if planetTouched == nil{planetLanded = nil}
             hideUpgradeUI()
+        }
+        if !hideControl{
+            hideControl.toggle()
+            hideControls()
+        }else{
+            hideControl.toggle()
+            showControls()
         }
     }
     func didChangeItem(_ success: Bool){

@@ -320,7 +320,6 @@ class Play: SKScene{
     //ALL NAVIGATIONS ON SCREEN
     let AllNav: [SKSpriteNode]
     
-    
     let equip = SKSpriteNode(imageNamed: "equip")
     var shipSuit = -1
     
@@ -334,5 +333,5 @@ class Play: SKScene{
     var objBoxes: [SKShapeNode] = []
     
     var killName = ""
-  
+    var collectibles = Set<SKSpriteNode>()
 }

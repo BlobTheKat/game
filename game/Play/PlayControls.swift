@@ -306,14 +306,6 @@ extension Play{
                 return
             }
             planetEditMode()
-            if !hideControl{
-                hideControl.toggle()
-                hideControls()
-            }else{
-                hideControl.toggle()
-                showControls()
-            }
-            
             break
         case collect:
             if planetLanded == nil{break}

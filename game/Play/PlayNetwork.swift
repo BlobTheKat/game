@@ -53,7 +53,6 @@ extension Play{
         if n.death > 300{
             if n.death > 600{
                 //killed by player
-                
                 let zKill = SKSpriteNode(imageNamed: "zKill")
                 zKill.anchorPoint = CGPoint(x: 1 , y: 0.5)
                 zKill.position = pos(mx: -0.5, my: 0.14, x: 0, y: 0)
@@ -81,11 +80,10 @@ extension Play{
                     }
                 ]))
                 zKill.run(SKAction.fadeIn(withDuration: 0.8).ease(.easeOut))
-                
-                if killName != "mouse"{
-                    
-                }
                 kills += 1
+                for _ in 1...Int(SHOOTDAMAGES[n.id].reduce(0){(a, b) in return a + b} / 10){
+                    emit(n.position, CGVector(dx: random(min: -100, max: 99), dy: random(min: -100, max: 99)))
+                }
             }
             //explode
             for i in disappear(n.position){
@@ -119,6 +117,7 @@ extension Play{
             return
         }
         let object = objects[i]
+        let oldid = object.id
         object.decode(data: &data)
         if needsName{needsNames.insert(i)}
         needsName = false
@@ -131,7 +130,9 @@ extension Play{
                 tracked.remove(at: i)
                 trackArrows.remove(at: i)
             }
+            object.id = oldid
             kill(object)
+            object.id = 0
             object.removeFromParent()
         }
         if object.id != 0 && object.parent == nil{

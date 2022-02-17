@@ -338,6 +338,19 @@ extension Play{
                 objBoxes[a].removeFromParent()
             }
             
+            let r = ship.radius * ship.radius + 30 * ship.radius + 225
+            for i in collectibles{
+                let x = i.position.x - ship.position.x
+                let y = i.position.y - ship.position.y
+                if x * x + y * y < r{
+                    //collect
+                    lastSentEnergy += random(min: 100, max: 200)
+                    self.collectibles.remove(i)
+                    i.run(.fadeOut(withDuration: 0.4).ease(.easeOut))
+                    i.run(.sequence([.scale(to: 1.5, duration: 0.7),.run{i.removeFromParent()}]))
+                    vibratePhone(.light)
+                }
+            }
             a += 1
         }
         while a < objBoxes.count{
@@ -401,6 +414,21 @@ extension Play{
             }
         }
         clock20 = (clock20 + 1) % 20
+    }
+    func emit(_ pos: CGPoint, _ p: CGVector){
+        //we can make a particle node that will be added to the planet
+        let randomTexture = random(min: 0, max: 8)
+        let n = SKSpriteNode()
+        n.position = pos
+        n.texture = SKTexture(imageNamed: "particle\(randomTexture)")
+        n.size = n.texture!.size()
+        n.setScale(0.5)
+        n.zPosition = 1
+        self.addChild(n)
+        
+        //now we can animate the particle
+        n.run(.sequence([.move(by: CGVector(dx: p.dx, dy: p.dy), duration: 1).ease(.easeOut),.wait(forDuration: 18),.fadeOut(withDuration: 1),.run{n.removeFromParent();self.collectibles.remove(n)}]))
+        collectibles.insert(n)
     }
     func report_memory() -> UInt16{
         var taskInfo = mach_task_basic_info()

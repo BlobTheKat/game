@@ -141,3 +141,9 @@ func formatPrice(_ thing: [String: JSON], _ multiplier: Double = 1) -> String{
 func rnd(_ a: Double) -> Double{
     return round(a * 1000000) / 1000000
 }
+
+func priceFor(_ a: Int) -> Int{
+    let pow: Double = pow(100.0, Double(a / 3))
+    return Int(pow) * (a % 3 == 0 ? 1 : (a % 3 == 1 ? 5 : 20))
+}
+//1, 5, 20, 100, 500, 2000, 10000, ...
