@@ -126,7 +126,7 @@ class Play: SKScene{
     //taptostart pressed and all trails disappeared
     var started = false
     //Camera offset, in screen units. Starts at y offset down by 0.2
-    var camOffset = CGPoint(x: 0, y: 0.2)
+    var camOffset = CGPoint(x: 0, y: movemode ? 0 : 0.2)
     //Ship velocity
     var vel: CGFloat = 0
     //Technical variable used for dragging items when customizing your planet
@@ -334,4 +334,9 @@ class Play: SKScene{
     
     var killName = ""
     var collectibles = Set<SKSpriteNode>()
+    var camBasicZoom = CGFloat(1)
+    var pressed = false
+    
+    
+    let discord = SKSpriteNode(imageNamed: "discord")
 }

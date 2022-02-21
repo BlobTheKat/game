@@ -26,6 +26,8 @@ class PlayerDied: SKScene{
     override func didMove(to view: SKView) {
         secx = ssecx
         secy = ssecy
+        velo = CGVector()
+        zrot = zzrot
         UserDefaults.standard.set(secx, forKey: "sx")
         UserDefaults.standard.set(secy, forKey: "sy")
         deaths += 1

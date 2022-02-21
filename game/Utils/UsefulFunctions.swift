@@ -76,7 +76,7 @@ func formatTime(_ seconds: Int) -> String {
     let m = (seconds / 60) % 60
     let h = (seconds / 3600) % 24
     let d = seconds / 86400
-    return String("\(d>0 ? "\(d)d " : "")\(h>0 ? "\(h)h " : "")\(m>0 ? "\(m)m " : "")\(s>0 ? "\(s)s " : "")".dropLast())
+    return String("\(d>0 ? "\(d)d " : "")\(h>0 ? "\(h)h " : "")\(m>0 ? "\(m)m " : "")\(s>0 ? "\(s) " : "")".dropLast())
 }
 func formatNum(_ a: Double) -> String{
     if a == 0{return "0"}

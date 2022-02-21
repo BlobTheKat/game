@@ -186,6 +186,8 @@ extension Play{
         }
         ssecx = secx
         ssecy = secy
+        vvelo = velo
+        zzrot = zrot
         if view != nil{
             didMove(to: view!)
         }
@@ -223,7 +225,6 @@ extension Play{
             shotObj = nil
             hits = []
             send(data)
-            
             if adWatched{
                 var dat = Data([])
                 dat.write(critid(125))
@@ -258,13 +259,17 @@ extension Play{
                 if c.name != nil{(c as? SKSpriteNode)?.texture = nil}
                 else {c.removeFromParent()}
             }
+            p.items = [ColonizeItem?](repeating: nil, count: 256)
+            p.namelabel?.removeFromParent()
+            p.namelabel = nil
+            p.healthNode1.removeFromParent()
+            p.healthNode2.removeFromParent()
         }
         send = {(_:Data) in}
         stopPing()
         datastop()
         ended = true
     }
-    
     func recieved(_ d: Data){
         if ended{return}
         ping()
@@ -282,8 +287,8 @@ extension Play{
         if code == 1{
             authed = true
             loaded -= 1
-            if loaded == 0{didLoad()}
             startHB()
+            if loaded == 0{didLoad()}
             energyAmount = data.readunsafe()
             researchAmount = data.readunsafe()
             gemCount = data.readunsafe()

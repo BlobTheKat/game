@@ -31,6 +31,7 @@
 		343E3152276B47F9007F753D /* API.swift in Sources */ = {isa = PBXBuildFile; fileRef = 343E3151276B47F9007F753D /* API.swift */; };
 		343E3154276B487A007F753D /* Sys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 343E3153276B487A007F753D /* Sys.swift */; };
 		343E3157276B4B61007F753D /* Structs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 343E3156276B4B61007F753D /* Structs.swift */; };
+		34753DBB27C3937500D259FC /* click.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 34753DBA27C3937500D259FC /* click.mp3 */; };
 		34844AE026A9955900A3F790 /* Planet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34844ADF26A9955900A3F790 /* Planet.swift */; };
 		3484BFD6270754DD00C06FFC /* PlayNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3484BFD5270754DD00C06FFC /* PlayNetwork.swift */; };
 		3484BFD82709C6C600C06FFC /* PlayCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3484BFD72709C6C600C06FFC /* PlayCore.swift */; };
@@ -53,16 +54,6 @@
 		34CE76E727A04397001D86BA /* visit in Resources */ = {isa = PBXBuildFile; fileRef = 34CE76E627A04397001D86BA /* visit */; };
 		34CE76EA27A15984001D86BA /* kills in Resources */ = {isa = PBXBuildFile; fileRef = 34CE76E927A15984001D86BA /* kills */; };
 		34DD98582771D7A300F391E2 /* items in Resources */ = {isa = PBXBuildFile; fileRef = 34DD98572771D7A300F391E2 /* items */; };
-		34DFE616278D8387007BC16D /* globals.js in Resources */ = {isa = PBXBuildFile; fileRef = 34DFE615278D8387007BC16D /* globals.js */; };
-		34DFE61A278D86D1007BC16D /* data.js in Resources */ = {isa = PBXBuildFile; fileRef = 34DFE619278D86D1007BC16D /* data.js */; };
-		34DFE61C278ED10E007BC16D /* setup.js in Resources */ = {isa = PBXBuildFile; fileRef = 34DFE61B278ED10E007BC16D /* setup.js */; };
-		34DFE61E278ED1F3007BC16D /* functions.js in Resources */ = {isa = PBXBuildFile; fileRef = 34DFE61D278ED1F3007BC16D /* functions.js */; };
-		34DFE620278ED498007BC16D /* udpserver.js in Resources */ = {isa = PBXBuildFile; fileRef = 34DFE61F278ED498007BC16D /* udpserver.js */; };
-		34DFE622278ED4D3007BC16D /* objects.js in Resources */ = {isa = PBXBuildFile; fileRef = 34DFE621278ED4D3007BC16D /* objects.js */; };
-		34DFE624278ED4E5007BC16D /* clientdata.js in Resources */ = {isa = PBXBuildFile; fileRef = 34DFE623278ED4E5007BC16D /* clientdata.js */; };
-		34DFE626278ED4F1007BC16D /* simulation.js in Resources */ = {isa = PBXBuildFile; fileRef = 34DFE625278ED4F1007BC16D /* simulation.js */; };
-		34DFE62A278ED520007BC16D /* commands.js in Resources */ = {isa = PBXBuildFile; fileRef = 34DFE629278ED520007BC16D /* commands.js */; };
-		34DFE62C278ED70D007BC16D /* packet.js in Resources */ = {isa = PBXBuildFile; fileRef = 34DFE62B278ED70D007BC16D /* packet.js */; };
 		34E2B92327747EED007D3C6A /* ships in Resources */ = {isa = PBXBuildFile; fileRef = 34E2B92227747EED007D3C6A /* ships */; };
 		34E2B92527747F04007D3C6A /* asteroids in Resources */ = {isa = PBXBuildFile; fileRef = 34E2B92427747F04007D3C6A /* asteroids */; };
 		34E2B92927761DAC007D3C6A /* UsefulFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E2B92827761DAC007D3C6A /* UsefulFunctions.swift */; };
@@ -104,8 +95,8 @@
 		343E3151276B47F9007F753D /* API.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = API.swift; sourceTree = "<group>"; };
 		343E3153276B487A007F753D /* Sys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sys.swift; sourceTree = "<group>"; };
 		343E3156276B4B61007F753D /* Structs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Structs.swift; sourceTree = "<group>"; };
+		34753DBA27C3937500D259FC /* click.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = click.mp3; sourceTree = "<group>"; };
 		34844ADF26A9955900A3F790 /* Planet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Planet.swift; sourceTree = "<group>"; };
-		3484BFAC27031DF700C06FFC /* server.js */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.javascript; path = server.js; sourceTree = "<group>"; tabWidth = 2; usesTabs = 1; };
 		3484BFD5270754DD00C06FFC /* PlayNetwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayNetwork.swift; sourceTree = "<group>"; };
 		3484BFD72709C6C600C06FFC /* PlayCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayCore.swift; sourceTree = "<group>"; };
 		34A5547126BBE13C00D43C04 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
@@ -128,16 +119,6 @@
 		34CE76E627A04397001D86BA /* visit */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = visit; sourceTree = "<group>"; };
 		34CE76E927A15984001D86BA /* kills */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = kills; sourceTree = "<group>"; };
 		34DD98572771D7A300F391E2 /* items */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = items; sourceTree = "<group>"; };
-		34DFE615278D8387007BC16D /* globals.js */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.javascript; path = globals.js; sourceTree = "<group>"; tabWidth = 2; };
-		34DFE619278D86D1007BC16D /* data.js */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.javascript; path = data.js; sourceTree = "<group>"; tabWidth = 2; };
-		34DFE61B278ED10E007BC16D /* setup.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = setup.js; sourceTree = "<group>"; };
-		34DFE61D278ED1F3007BC16D /* functions.js */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.javascript; path = functions.js; sourceTree = "<group>"; tabWidth = 2; };
-		34DFE61F278ED498007BC16D /* udpserver.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = udpserver.js; sourceTree = "<group>"; };
-		34DFE621278ED4D3007BC16D /* objects.js */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.javascript; path = objects.js; sourceTree = "<group>"; tabWidth = 2; };
-		34DFE623278ED4E5007BC16D /* clientdata.js */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.javascript; path = clientdata.js; sourceTree = "<group>"; tabWidth = 2; };
-		34DFE625278ED4F1007BC16D /* simulation.js */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.javascript; path = simulation.js; sourceTree = "<group>"; tabWidth = 2; };
-		34DFE629278ED520007BC16D /* commands.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = commands.js; sourceTree = "<group>"; };
-		34DFE62B278ED70D007BC16D /* packet.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = packet.js; sourceTree = "<group>"; };
 		34E2B92227747EED007D3C6A /* ships */ = {isa = PBXFileReference; explicitFileType = text.script.python; fileEncoding = 4; path = ships; sourceTree = "<group>"; };
 		34E2B92427747F04007D3C6A /* asteroids */ = {isa = PBXFileReference; explicitFileType = text.script.python; fileEncoding = 4; path = asteroids; sourceTree = "<group>"; };
 		34E2B92827761DAC007D3C6A /* UsefulFunctions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsefulFunctions.swift; sourceTree = "<group>"; };
@@ -183,6 +164,7 @@
 		33592F6E2780717D0010EF7E /* soundEffect */ = {
 			isa = PBXGroup;
 			children = (
+				34753DBA27C3937500D259FC /* click.mp3 */,
 				33A879202725EC4B0096A6C4 /* inshipSound.wav */,
 				33A8791E2725EC460096A6C4 /* playerWalking.wav */,
 				3340582827234AD30068C811 /* Lazer.wav */,
@@ -284,23 +266,6 @@
 			path = missions;
 			sourceTree = "<group>";
 		};
-		34DFE614278D8327007BC16D /* server */ = {
-			isa = PBXGroup;
-			children = (
-				34DFE615278D8387007BC16D /* globals.js */,
-				34DFE619278D86D1007BC16D /* data.js */,
-				34DFE61B278ED10E007BC16D /* setup.js */,
-				34DFE61D278ED1F3007BC16D /* functions.js */,
-				34DFE61F278ED498007BC16D /* udpserver.js */,
-				34DFE625278ED4F1007BC16D /* simulation.js */,
-				34DFE621278ED4D3007BC16D /* objects.js */,
-				34DFE623278ED4E5007BC16D /* clientdata.js */,
-				34DFE629278ED520007BC16D /* commands.js */,
-				34DFE62B278ED70D007BC16D /* packet.js */,
-			);
-			path = server;
-			sourceTree = "<group>";
-		};
 		34E2B91D27747E45007D3C6A /* behaviour */ = {
 			isa = PBXGroup;
 			children = (
@@ -322,8 +287,6 @@
 		DC9F526E269249AB00DDF0AF = {
 			isa = PBXGroup;
 			children = (
-				34DFE614278D8327007BC16D /* server */,
-				3484BFAC27031DF700C06FFC /* server.js */,
 				DC9F5279269249AB00DDF0AF /* game */,
 				DC9F5278269249AB00DDF0AF /* Products */,
 				34C5BC2E271ED7F200997B1D /* Frameworks */,
@@ -435,7 +398,6 @@
 				3340582927234AD30068C811 /* Lazer.wav in Resources */,
 				34CE76E327A04380001D86BA /* gems in Resources */,
 				34E2B92327747EED007D3C6A /* ships in Resources */,
-				34DFE62A278ED520007BC16D /* commands.js in Resources */,
 				34E2B92C277F357E007D3C6A /* electro in Resources */,
 				33C227AE273C679B00F83862 /* thrust.wav in Resources */,
 				3340582B27234E6C0068C811 /* InLightSpeed.wav in Resources */,
@@ -446,27 +408,19 @@
 				34CE76E527A04389001D86BA /* flybys in Resources */,
 				34CE76CE27A03DA1001D86BA /* travel in Resources */,
 				34CE76EA27A15984001D86BA /* kills in Resources */,
-				34DFE61C278ED10E007BC16D /* setup.js in Resources */,
 				33A879212725EC4B0096A6C4 /* inshipSound.wav in Resources */,
-				34DFE626278ED4F1007BC16D /* simulation.js in Resources */,
 				33A8791F2725EC460096A6C4 /* playerWalking.wav in Resources */,
 				34CE76D827A04147001D86BA /* drill in Resources */,
 				34CE76D227A03FA6001D86BA /* destroy in Resources */,
-				34DFE622278ED4D3007BC16D /* objects.js in Resources */,
-				34DFE61A278D86D1007BC16D /* data.js in Resources */,
 				34EB9E5227708E71002C252B /* dishes in Resources */,
-				34DFE62C278ED70D007BC16D /* packet.js in Resources */,
-				34DFE620278ED498007BC16D /* udpserver.js in Resources */,
 				33592F6A278065B50010EF7E /* extras in Resources */,
 				DC9F5286269249AB00DDF0AF /* Main.storyboard in Resources */,
 				DC9F5288269249AC00DDF0AF /* Assets.xcassets in Resources */,
 				34CE76D627A040B3001D86BA /* build in Resources */,
 				34CE76DF27A04369001D86BA /* energy in Resources */,
+				34753DBB27C3937500D259FC /* click.mp3 in Resources */,
 				34CE76E127A04378001D86BA /* research in Resources */,
-				34DFE61E278ED1F3007BC16D /* functions.js in Resources */,
-				34DFE624278ED4E5007BC16D /* clientdata.js in Resources */,
 				34EB9E4E27708E09002C252B /* satellites in Resources */,
-				34DFE616278D8387007BC16D /* globals.js in Resources */,
 				34EB9E5027708E50002C252B /* shooters in Resources */,
 				34E2B92E277F36D0007D3C6A /* townhalls in Resources */,
 			);

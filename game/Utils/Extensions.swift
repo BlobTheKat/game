@@ -363,13 +363,13 @@ extension SKScene{
         return CGPoint(x: self.size.width * mx + x, y: self.size.height * my + y)
     }
     @objc
-    func nodeDown(_: SKNode, at _: CGPoint){
+    func nodeDown(_: SKNode, at _: CGPoint, _ exclusive: Bool){
     }
     @objc
-    func nodeUp(_: SKNode, at _: CGPoint){
+    func nodeUp(_: SKNode, at _: CGPoint, _ exclusive: Bool){
     }
     @objc
-    func nodeMoved(_: SKNode, at _: CGPoint){
+    func nodeMoved(_: SKNode, at _: CGPoint, _ exclusive: Bool){
     }
     @available(iOS 13.4, *)
     @objc
@@ -391,8 +391,9 @@ extension SKScene{
     open override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         
         for t in touches {
-            for node in Set(self.nodes(at: t.location(in: self))){
-                self.nodeDown(node, at: t.location(in: node.parent ?? self))
+            let node1 = self.atPoint(t.location(in: self))
+            for node in self.nodes(at: t.location(in: self)){
+                self.nodeDown(node, at: t.location(in: node.parent ?? self), node == node1)
             }
             touch(at: t.location(in: camera ?? self))
         }
@@ -401,15 +402,17 @@ extension SKScene{
     open override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         for t in touches {
             var oldNodes = Set(self.nodes(at: t.previousLocation(in: self)))
+            let node1 = self.atPoint(t.location(in: self))
+            let node2 = self.atPoint(t.previousLocation(in: self))
             for node in Set(self.nodes(at: t.location(in: self))){
                 if oldNodes.remove(node) == nil{
-                    self.nodeDown(node, at: t.location(in: node.parent ?? self))
+                    self.nodeDown(node, at: t.location(in: node.parent ?? self), node == node1)
                 }else{
-                    self.nodeMoved(node, at: t.location(in: node.parent ?? self))
+                    self.nodeMoved(node, at: t.location(in: node.parent ?? self), node == node1)
                 }
             }
             for node in oldNodes{
-                self.nodeUp(node, at: t.location(in: node.parent ?? self))
+                self.nodeUp(node, at: t.previousLocation(in: node.parent ?? self), node == node2)
             }
             swipe(from: t.previousLocation(in: camera ?? self), to: t.location(in: camera ?? self))
         }
@@ -417,8 +420,9 @@ extension SKScene{
     
     open override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         for t in touches {
+            let node1 = self.atPoint(t.location(in: self))
             for node in Set(self.nodes(at: t.location(in: self))){
-                self.nodeUp(node, at: t.location(in: node.parent ?? self))
+                self.nodeUp(node, at: t.location(in: node.parent ?? self), node == node1)
             }
             release(at: t.location(in: camera ?? self))
         }
@@ -426,8 +430,9 @@ extension SKScene{
     
     open override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         for t in touches {
+            let node1 = self.atPoint(t.location(in: self))
             for node in Set(self.nodes(at: t.location(in: self))){
-                self.nodeUp(node, at: t.location(in: node.parent ?? self))
+                self.nodeUp(node, at: t.location(in: node.parent ?? self), node == node1)
             }
             release(at: t.location(in: camera ?? self))
         }

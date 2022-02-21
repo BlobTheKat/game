@@ -123,3 +123,8 @@ let tutorials: [(SKLabelHorizontalAlignmentMode, SKLabelVerticalAlignmentMode, m
 ]
 
 var animating: Bool = false
+var movemode = false
+var zrot = CGFloat()
+var velo = CGVector()
+var zzrot = CGFloat()
+var vvelo = CGVector()

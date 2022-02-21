@@ -11,6 +11,11 @@ import GameKit
 
 extension Play{
     
+    func clicked(){
+        self.run(SKAction.playSoundFileNamed("click.mp3", waitForCompletion: false))
+        vibratePhone(.light)
+    }
+    
     func swapControls(){
         if thrustButton.position.x > 0{
             dPad.position = pos(mx: 0.4, my: -0.4, x: -50, y: 50)
@@ -23,7 +28,11 @@ extension Play{
         }
     }
     
-    override func nodeDown(_ node: SKNode, at point: CGPoint) {
+    override func nodeDown(_ node: SKNode, at point: CGPoint, _ exclusive: Bool) {
+        if node == discord{
+            tapToStartPressed = true
+            UIApplication.shared.open(URL(string: "https://discord.gg/tqyGCcqfbJ")!, options: [:], completionHandler: nil)
+        }
         if node == debugToggle && (debugPressed || DEBUG_TXT.parent != nil){
             if DEBUG_TXT.parent == nil{
                 cam.addChild(DEBUG_TXT)
@@ -37,6 +46,7 @@ extension Play{
         if statsWall.parent != nil && !swiping{
             switch node{
             case statsIcons[1]:
+                clicked()
                 shipSuit = -1
                 statsLabel[0].text = "kills:"
                 statsLabel[1].text = "deaths:"
@@ -89,6 +99,7 @@ extension Play{
                 }
                 break
             case statsIcons[0]:
+                clicked()
                 shipSuit = -1
                 statsLabel[0].text = "kills:"
                 statsLabel[1].text = "deaths:"
@@ -158,6 +169,7 @@ extension Play{
                 }
                 break
             case statsIcons[2]:
+                clicked()
                 shipSuit = -1
                 statsLabel[0].text = "kills:"
                 statsLabel[1].text = "deaths:"
@@ -208,6 +220,7 @@ extension Play{
                 }
                 break
             case equip:
+                clicked()
                 UserDefaults.standard.set(shipSuit, forKey: "shipid")
                 ship.suit(shipSuit)
                 equip.texture = SKTexture(imageNamed: "equipped")
@@ -218,6 +231,7 @@ extension Play{
         }
         switch node{
         case addItemIcon:
+            clicked()
             if !dragRemainder.isNaN{
                 guard let l = planetLanded!.children.first(where: {$0.userData?["rot"] as? UInt8 == itemRot}) as? SKSpriteNode else {return}
                 if l.color == .red{
@@ -263,7 +277,7 @@ extension Play{
                 addItemNames[i].fontSize = 60
                 addItemNames[i].zPosition = 2
                 addItemNames[i].fontColor = .init(red: 0.7, green: 0.8, blue: 0, alpha: 1)
-                if Double(used[i+1]) >= Double(Double(lvl) - (items[i+1][0]["available"]?.number ?? 1.0)) / (items[i+1][0]["every"]?.number ?? 1.0) + 1.0{
+                if Double(used[i+1]) > Double(Double(lvl) - (items[i+1][0]["available"]?.number ?? 1.0)) / (items[i+1][0]["every"]?.number ?? 1.0){
                     addItemIcons[i].alpha = 0.5
                 }else{
                     addItemIcons[i].alpha = 1
@@ -276,6 +290,7 @@ extension Play{
             addItemIcon.texture = SKTexture(imageNamed: "backicon1")
             break
         case backIcon:
+            clicked()
             if buyScreenShowing{
                 colonizeBG.removeFromParent()
                 showControls()
@@ -283,10 +298,11 @@ extension Play{
             }
             break
         case buyIcon:
+            clicked()
             if tutorialProgress == .buyPlanet{
                 nextStep()
             }
-            if energyAmount >= planetLanded!.price {
+            if energyAmount >= pow(100, Double(planetsOwned + 1)) {
                 if buyScreenShowing{
                     colonizeBG.removeFromParent()
                     coloIcon.removeFromParent()
@@ -305,9 +321,11 @@ extension Play{
             else if tutorialProgress != .done{
                 return
             }
+            clicked()
             planetEditMode()
             break
         case collect:
+            clicked()
             if planetLanded == nil{break}
             if collectedLabel2.text != ""{
                 collectFrom(planetLanded!);planetLanded!.last=NSDate().timeIntervalSince1970
@@ -321,6 +339,7 @@ extension Play{
             }
             break
         case upgradebtn:
+            clicked()
             guard dragRemainder.isNaN else {return}
             guard let item = planetLanded?.items[Int(itemRot)] else {break}
             let itm = items[Int(item.type.rawValue)][Int(item.lvl + 1)]
@@ -333,6 +352,7 @@ extension Play{
             hideUpgradeUI()
             break
         case upgradeOld:
+            clicked()
             if upgradePrice.color == .green{
                 //skip time
                 guard let end = planetLanded?.items[Int(itemRot)]?.upgradeEnd else {break}
@@ -358,6 +378,7 @@ extension Play{
             
             break
         case coloArrow:
+            vibratePhone(.light)
             if tutorialProgress == .gemFinish{return}
             var a: CGFloat = 0
             if point.x > coloArrow.position.x + 80{
@@ -385,9 +406,11 @@ extension Play{
             break
         }
         if removeTrackerIcon == node{
+            clicked()
             removeTrackers()
         }
         if accountIcon == node{
+            clicked()
             gkview?.present(controller, animated: true){
                 if GKLocalPlayer.local.isAuthenticated{
                     //get token
@@ -405,6 +428,7 @@ extension Play{
         if let n = node as? Object{
             guard n != ship else {return}
             guard n as? Planet == nil else{return}
+            guard n.asteroid == false else{return}
             if let i = tracked.firstIndex(of: n){
                 for i in n.children{
                     if i.zPosition == 9{i.removeFromParent()}
@@ -431,6 +455,7 @@ extension Play{
             }
         }
         if repairIcon == node{
+            clicked()
             if isWarning{
                 warning.removeAction(forKey: "warningAlpha")
                 warning.alpha = 0
@@ -447,7 +472,7 @@ extension Play{
         }
         
         if accountIcon == node{
-            
+            clicked()
             if !showAccount{
                 accountIcon.run(SKAction.moveBy(x: 0, y: -200, duration: 0.35).ease(.easeOut))
                 accountBG.run(SKAction.moveBy(x: 0, y: -300, duration: 0.35).ease(.easeOut))
@@ -458,25 +483,6 @@ extension Play{
                 showAccount = false
             }
             
-        }
-        if navArrow == node && !presence{
-            if tutorialProgress == .openNavigations{
-                if editColoIcon.parent != nil{
-                    tutorialProgress = .buyPlanet
-                }
-                nextStep()
-            }
-            if showNav == false{
-            navArrow.run(SKAction.move(to: pos(mx: 0.43, my: 0 ), duration: 0.35).ease(.easeOut))
-            navArrow.run(SKAction.rotate(toAngle: 3.18, duration: 0.35).ease(.easeOut))
-                navBG.run(SKAction.move(to: pos(mx: 0.43, my: 0 ), duration: 0.35).ease(.easeOut))
-                showNav = true
-            }else if showNav == true{
-                navArrow.run(SKAction.move(to: pos(mx: 0.43, my: 0.5 ), duration: 0.35).ease(.easeOut))
-                navArrow.run(SKAction.rotate(toAngle: 0, duration: 0.35).ease(.easeOut))
-                navBG.run(SKAction.move(to: pos(mx: 0.43, my: 0.5  ), duration: 0.35).ease(.easeOut))
-                showNav = false
-            }
         }
         if thrustButton == node{
             if point.y > thrustButton.position.y + 50{
@@ -510,20 +516,22 @@ extension Play{
         }
         
         if mapIcon == node{
+            clicked()
             mapIcon.texture = SKTexture(imageNamed: "mapT")
             
-            if showMap == false{
+            if !showMap{
                 mapBG.alpha = 1
                 FakemapBG.alpha = 1
                 showMap = true
                 FakemapBG.position = CGPoint(x: -(mainMap.position.x + playerArrow.position.x) * FakemapBG.xScale,y: -(mainMap.position.y + playerArrow.position.y) * FakemapBG.yScale)
-            }else if showMap == true{
+            }else{
                 mapBG.alpha = 0
                 FakemapBG.alpha = 0
                 showMap = false
             }
         }
         if coloIcon == node{
+            clicked()
             if tutorialProgress == .planetIcon{
                 nextStep()
             }
@@ -534,7 +542,7 @@ extension Play{
             }
         }
     }
-    override func nodeMoved(_ node: SKNode, at point: CGPoint) {
+    override func nodeMoved(_ node: SKNode, at point: CGPoint, _ exclusive: Bool) {
         if dPad == node{
             if point.x > dPad.position.x{
                 ship.thrustRight = true
@@ -562,7 +570,7 @@ extension Play{
         }
     }
     
-    override func nodeUp(_ node: SKNode, at _: CGPoint) {
+    override func nodeUp(_ node: SKNode, at _: CGPoint, _ exclusive: Bool) {
         if !swiping && node.parent == buildBG, var i = addItemIcons.firstIndex(of: node as? SKSpriteNode ?? ship){
             guard node.alpha == 1 else{
                 DisplayWARNING("upgrade main camp to build more",.warning,false)
@@ -671,7 +679,8 @@ extension Play{
             mapIcon.texture = SKTexture(imageNamed: "map")
         }
         if cockpitIcon == node && statsWall.parent == nil && tutorialProgress.rawValue > tutorial.finishEditing.rawValue{
-            if presence{planetEditMode()}
+            clicked()
+            if presence{ planetEditMode() }
             removeWallIcons()
             cam.addChild(statsWall)
             statsWall.position.y = self.size.height / 2
@@ -684,7 +693,40 @@ extension Play{
             }
             wallIcons()
         }
+        if navArrow == node && !presence{
+            clicked()
+            if tutorialProgress == .openNavigations{
+                if editColoIcon.parent != nil{
+                    tutorialProgress = .buyPlanet
+                }
+                nextStep()
+            }
+            if showNav == false{
+                navArrow.run(SKAction.move(to: pos(mx: 0.43, my: 0 ), duration: 0.35).ease(.easeOut))
+                navArrow.run(SKAction.rotate(toAngle: 3.18, duration: 0.35).ease(.easeOut))
+                navBG.run(SKAction.move(to: pos(mx: 0.43, my: 0 ), duration: 0.35).ease(.easeOut))
+                showNav = true
+            }else if showNav == true{
+                navArrow.run(SKAction.move(to: pos(mx: 0.43, my: 0.5 ), duration: 0.35).ease(.easeOut))
+                navArrow.run(SKAction.rotate(toAngle: 0, duration: 0.35).ease(.easeOut))
+                navBG.run(SKAction.move(to: pos(mx: 0.43, my: 0.5  ), duration: 0.35).ease(.easeOut))
+                showNav = false
+            }
+        }
+        if let n = node.parent as? Planet{
+            if !swiping && n == planetLanded && !presence && planetLanded?.ownedState == .yours && exclusive{
+                if showNav == false{
+                    navArrow.run(SKAction.move(to: pos(mx: 0.43, my: 0 ), duration: 0.35).ease(.easeOut))
+                    navArrow.run(SKAction.rotate(toAngle: 3.18, duration: 0.35).ease(.easeOut))
+                    navBG.run(SKAction.move(to: pos(mx: 0.43, my: 0 ), duration: 0.35).ease(.easeOut))
+                    showNav = true
+                }
+                planetEditMode()
+            }
+        }
+        
         if advert == node && advert.alpha == 1 && !swiping{
+            clicked()
             playAd({
                 //will be sent on next ship packet
                 adWatched = true
@@ -719,6 +761,7 @@ extension Play{
         if  !showAccount && !startPressed && !tapToStartPressed && children.count > MIN_NODES_TO_START{
             if !playedLightSpeedOut{
                 accountIcon.removeFromParent()
+                discord.removeFromParent()
                 removeTapToStart()
                 ship.position.x = CGFloat(secx) - sector.1.pos.x
                 ship.position.y = CGFloat(secy) - sector.1.pos.y
@@ -855,6 +898,25 @@ extension Play{
             }
             FakemapBG.position.x += b.x - a.x
             FakemapBG.position.y += b.y - a.y
+        }else if statsWall.parent == nil || statsWall.alpha < 0.5{
+            //zoom out
+            if mapPress1 != nil && mapPress2 != nil{
+                var dx = mapPress1!.x - mapPress2!.x
+                var dy = mapPress1!.y - mapPress2!.y
+                let d1 = dx * dx + dy * dy
+                if closest(a, mapPress1!, mapPress2!){
+                    mapPress1 = b
+                }else{
+                    mapPress2 = b
+                }
+                dx = mapPress1!.x - mapPress2!.x
+                dy = mapPress1!.y - mapPress2!.y
+                let d2 = dx * dx + dy * dy
+                let z = sqrt(d2 / d1)
+                camBasicZoom /= z
+                if camBasicZoom < 0.5{camBasicZoom = 0.5}
+                if camBasicZoom > 2{camBasicZoom = 2}
+            }
         }
     }
     override func release(at point: CGPoint){
@@ -880,7 +942,6 @@ extension Play{
                 let _ = timeout(0.5){self.statsWall.alpha = 1}
             }
         }
-        swiping = false
         if mapPress2 != nil{
             //both
             if closest(point, mapPress1!, mapPress2!){
@@ -890,6 +951,7 @@ extension Play{
                 mapPress2 = nil
             }
         }else if mapPress1 != nil{
+            swiping = false
             //1
             mapPress1 = nil
         }
@@ -1081,6 +1143,7 @@ extension Play{
             if  !showAccount && !startPressed && !tapToStartPressed && children.count > MIN_NODES_TO_START{
                 if !playedLightSpeedOut{
                     accountIcon.removeFromParent()
+                    discord.removeFromParent()
                     removeTapToStart()
                     
                     self.run(lightSpeedOut)

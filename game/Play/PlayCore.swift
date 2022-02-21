@@ -64,7 +64,7 @@ extension Play{
         }
         framesQueued += currentTime - lastUpdate! - ti
         lastUpdate = currentTime
-        
+        framesQueued = min(framesQueued, 60)
         
         if framesQueued > ti{
             framesQueued -= ti
@@ -79,6 +79,7 @@ extension Play{
         }
     }
     func cameraUpdate(){
+        if ship.landed && camBasicZoom < 1{camBasicZoom = 1}
         if statsLabel.count >= 5 && shipSuit == -1{
             var kdr = (Float(kills) / Float(deaths)).clamp(0.01,999)
             if kdr.isNaN{kdr = 0}
@@ -128,7 +129,7 @@ extension Play{
             }
         }
         if presence{
-            if planetLanded == nil{return planetEditMode()}
+            if planetLanded == nil{ return planetEditMode() }
             planetLandedRot += planetLanded!.angularVelocity
             planetLanded!.zRotation -= planetLanded!.angularVelocity
             cam.position.x = (cam.position.x*9 + planetLanded!.position.x)/10
@@ -177,10 +178,10 @@ extension Play{
 
             let scale = (cam.xScale + cam.yScale) / 2
             if stress > 0.5{
-                let ts = min((stress / 0.6 - 1) * scale, 5 - scale)
+                let ts = (stress / 0.6 * scale).clamp((ship.landed ? camBasicZoom : 2 * camBasicZoom), 5) - scale
                 cam.setScale(scale + ts / 50)
             }else if stress < 0.3{
-                let ts = max((stress / 0.4 - 1) * scale, (ship.landed ? 1 : 2) - scale)
+                let ts = (stress / 0.4 * scale).clamp((ship.landed ? camBasicZoom : 2 * camBasicZoom), 5) - scale
                 cam.setScale(scale + ts / 50)
             }
         }
@@ -197,7 +198,7 @@ extension Play{
             border2.xScale *= -1
         }
         vel = CGFloat(sqrt(ship.velocity.dx*ship.velocity.dx + ship.velocity.dy*ship.velocity.dy)) * gameFPS
-        speedLabel.text = %Float(vel / 2)
+        speedLabel.text = ship.landed ? "0.000" : %Float(vel / 2)
     }
     func spaceUpdate(){
         
@@ -209,18 +210,15 @@ extension Play{
             nextStep()
         }*/
         
-        let energyPercent = floor((energyAmount / energySpace) * 8)
-        let researchPercent = floor((researchAmount / researchSpace) * 8)
-        
-        var i = 0.0
+        var i = 100.0
         for node in energyNodes{
-            node.texture = i < energyPercent ? SKTexture(imageNamed: "energyOn") : SKTexture(imageNamed: "energyOff")
-            i += 1
+            node.texture = i < energyAmount ? SKTexture(imageNamed: "energyOn") : SKTexture(imageNamed: "energyOff")
+            i *= 10
         }
-        i = 0
+        i = 10
         for node in researchNodes{
-            node.texture = Float(i) < researchPercent ? SKTexture(imageNamed: "energyOn") : SKTexture(imageNamed: "energyOff")
-            i += 1
+            node.texture = Float(i) < researchAmount ? SKTexture(imageNamed: "energyOn") : SKTexture(imageNamed: "energyOff")
+            i *= 10
         }
         
         if coolingDown{
@@ -357,9 +355,9 @@ extension Play{
             objBoxes.last!.removeFromParent()
             objBoxes.removeLast()
         }
-        let isX = abs(ship.position.x) > sector.1.size.width / 2 - border2.size.width
-        let isY = abs(ship.position.y) > sector.1.size.height / 2 - border1.size.width
-        if (abs(ship.position.x) > sector.1.size.width / 2 || abs(ship.position.y) > sector.1.size.height / 2) && ship.controls{
+        let isX = abs(ship.position.x) > sector.1.size.width / 2
+        let isY = abs(ship.position.y) > sector.1.size.height / 2
+        if (isX || isY) && ship.controls{
             //move
             ship.controls = false
             ship.dynamic = false
@@ -367,6 +365,9 @@ extension Play{
             ship.run(SKAction.sequence([
                 SKAction.fadeOut(withDuration: 1),
                 SKAction.run{ [self] in
+                    movemode = true
+                    zrot = ship.zRotation
+                    velo = ship.velocity
                     ship.removeFromParent()
                     send(Data([9, 0, 0, 0, 0, 0, 0, 0, 0]))
                     end()
@@ -376,13 +377,13 @@ extension Play{
             var sx = ship.position.x
             var sy = ship.position.y
             if isX{
-                sx = (sx < 0 ? -1 : 1) * (sector.1.size.width / 2 + 2000)
+                sx = (sx < 0 ? -1 : 1) * (sector.1.size.width / 2 + 1)
             }
             if isY{
-                sy = (sy < 0 ? -1 : 1) * (sector.1.size.height / 2 + 2000)
+                sy = (sy < 0 ? -1 : 1) * (sector.1.size.height / 2 + 1)
             }
             secx = Int(sx + sector.1.pos.x)
-            secy = Int(sy + sector.1.pos.y) 
+            secy = Int(sy + sector.1.pos.y)
             UserDefaults.standard.set(secx, forKey: "sx")
             UserDefaults.standard.set(secy, forKey: "sy")
             ship.run(SKAction.move(by: CGVector(dx: ship.velocity.dx * gameFPS, dy: ship.velocity.dy * gameFPS), duration: 1))
@@ -391,10 +392,10 @@ extension Play{
             var sx = ship.position.x
             var sy = ship.position.y
             if isX{
-                sx = (sx < 0 ? -1 : 1) * (sector.1.size.width / 2 + 2000)
+                sx = (sx < 0 ? -1 : 1) * (sector.1.size.width / 2 + 1)
             }
             if isY{
-                sy = (sy < 0 ? -1 : 1) * (sector.1.size.height / 2 + 2000)
+                sy = (sy < 0 ? -1 : 1) * (sector.1.size.height / 2 + 1)
             }
             let x = sector.1.pos.x + sx, y = sector.1.pos.y + sy
             let regionx = 0, regiony = 0//fdiv(Int(x), REGIONSIZE), regiony = fdiv(Int(y), REGIONSIZE)

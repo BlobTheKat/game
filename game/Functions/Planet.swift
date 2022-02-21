@@ -327,10 +327,9 @@ class Planet: Object{
         }else{
             
            
-           
+        
             let parent = parent as? Play
             if parent != nil && n == parent!.ship{
-                
                 let circle = parent!.planetsMap[parent!.planets.firstIndex(of: self)!]
                 circle.fillColor = ownedState == .yours ? UIColor(red: 0, green: 0.5, blue: 1, alpha: 1) : (superhot ? .orange : .white)
                 //GANGE MAP HERE

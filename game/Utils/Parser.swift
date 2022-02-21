@@ -108,6 +108,8 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
         err("Spacetime continuum ends here...")
         secx = ssecx
         secy = ssecy
+        velo = CGVector()
+        zrot = zzrot
         return
     }
     regions[CGPoint(x: regionx, y: regiony)] = a
@@ -206,6 +208,8 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                 err("Spacetime continuum ends here...")
                 secx = ssecx
                 secy = ssecy
+                velo = CGVector()
+                zrot = zzrot
                 return
             }
             loadedRegions.insert(CGPoint(x: regionx, y: regiony))

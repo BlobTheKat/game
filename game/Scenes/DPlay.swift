@@ -172,7 +172,7 @@ class DPlay: SKScene, SKPhysicsContactDelegate{
     var movingRight = false
     var movingLeft = false
     var playerSpriteNumber = 0.0
-    override func nodeDown(_ node: SKNode, at point: CGPoint) {
+    override func nodeDown(_ node: SKNode, at point: CGPoint, _ exclusive: Bool) {
         if dPad == node{
             let T = dPad.size.width / 7
             movingRight = point.x > dPad.position.x + T
@@ -198,7 +198,7 @@ class DPlay: SKScene, SKPhysicsContactDelegate{
         }
         
     }
-    override func nodeMoved(_ node: SKNode, at point: CGPoint) {
+    override func nodeMoved(_ node: SKNode, at point: CGPoint, _ exclusive: Bool) {
         if dPad == node{
             let T = dPad.size.width / 7
             movingRight = point.x > dPad.position.x + T
@@ -217,7 +217,7 @@ class DPlay: SKScene, SKPhysicsContactDelegate{
             
         }
     }
-    override func nodeUp(_ node: SKNode, at point: CGPoint) {
+    override func nodeUp(_ node: SKNode, at point: CGPoint, _ exclusive: Bool) {
         
         
         if dPad == node{

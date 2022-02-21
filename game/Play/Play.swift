@@ -42,10 +42,12 @@ extension Play{
         debugToggle.fillColor = UIColor(red: 0.5, green: 0.5, blue: 0.5, alpha: 0.1)
         cam.addChild(debugToggle)
         debugToggle.zPosition = .infinity
-        let x = UserDefaults.standard.integer(forKey: "sx")
-        let y = UserDefaults.standard.integer(forKey: "sy")
-        if x != 0{secx = x; ssecx = x}
-        if y != 0{secy = y; ssecy = y}
+        if !movemode{
+            let x = UserDefaults.standard.integer(forKey: "sx")
+            let y = UserDefaults.standard.integer(forKey: "sy")
+            if x != 0{secx = x; ssecx = x}
+            if y != 0{secy = y; ssecy = y}
+        }
         if creds != nil{
             gotIp()
         }else{
@@ -80,18 +82,18 @@ extension Play{
         cam.position = CGPoint.zero
         self.addChild(cam)
         self.camera = cam
-        cam.setScale(0.4)
+        cam.setScale(movemode ? 2 : 0.4)
         ship.alpha = 0
         let id = UserDefaults.standard.integer(forKey: "shipid")
         ship.suit(id > 0 ? id : 1)
         tunnel1.anchorPoint = CGPoint(x: 0, y: 0.5)
         tunnel1.position = pos(mx: -0.5, my: 0, x: -5)
         tunnel1.setScale(0.4)
-        cam.addChild(tunnel1)
+        if !movemode{cam.addChild(tunnel1)}
         tunnel2.anchorPoint = CGPoint(x: 1, y: 0.5)
         tunnel2.position = pos(mx: 0.5, my: 0, x: 5)
         tunnel2.setScale(0.4)
-        cam.addChild(tunnel2)
+        if !movemode{cam.addChild(tunnel2)}
         ship.death = 300
         ship.controls = false
         self.addChild(ship)
@@ -126,30 +128,30 @@ extension Play{
             return Particle[State(color: (r: 0.1, g: 0.7, b: 0.7), size: CGSize(width: 11, height: 2), zRot: 0, position: ship.position.add(x: ship.particleOffset, y: -5), alpha: i), State(color: (r: 1, g: 1, b: 1), size: CGSize(width: 5, height: 2), zRot: 0, position: ship.position.add(x: ship.particleOffset, y: -35), alpha: 0, delay: TimeInterval(i))]
         }
         ship.particleFrequency = 1
-        self.label(node: tapToStart, "loading sector   ", pos: pos(mx: 0, my: -0.3, x: -153), size: 48, color: .white, font: "HalogenbyPixelSurplus-Regular", zPos: 999, isStatic: true)
+        self.label(node: tapToStart, movemode ? "   " : "loading sector   ", pos: pos(mx: 0, my: -0.3, x: movemode ? -20 : -153), size: 48, color: .white, font: "HalogenbyPixelSurplus-Regular", zPos: 999, isStatic: true)
         tapToStart.horizontalAlignmentMode = .left
         tapToStart.alpha = 0.7
         ship.zPosition = 7
         tapToStart.run(.repeatForever(.sequence([
             .wait(forDuration: 0.5),
             .run{
-                self.tapToStart.text = "loading sector.  "
+                self.tapToStart.text = movemode ? ".  " : "loading sector.  "
             },
             .wait(forDuration: 0.5),
             .run{
-                self.tapToStart.text = "loading sector.. "
+                self.tapToStart.text = movemode ? ".. " : "loading sector.. "
             },
             .wait(forDuration: 0.5),
             .run{
-                self.tapToStart.text = "loading sector..."
+                self.tapToStart.text = movemode ? "..." : "loading sector..."
             },
             .wait(forDuration: 0.5),
             .run{
-                self.tapToStart.text = "loading sector   "
+                self.tapToStart.text = movemode ? "   " : "loading sector   "
             }
         ])), withKey: "dotdotdot")
         
-        self.addChild(inlightSpeed)
+        if !movemode{self.addChild(inlightSpeed)}
         DEBUG_TXT.fontSize = 15
         DEBUG_TXT.position = pos(mx: -0.5, my: 0.5, x: 20, y: -20)
         DEBUG_TXT.color = UIColor(red: 0, green: 0, blue: 0, alpha: 0.5)
@@ -161,6 +163,12 @@ extension Play{
         //cam.addChild(DEBUG_TXT)
         avatar.alpha = 0.2
         api.position(completion: sectorpos)
+        
+        discord.anchorPoint = CGPoint.zero
+        discord.position = pos(mx: -0.5, my: -0.5, x: 20, y: 20)
+        discord.zPosition = 20
+        discord.setScale(0.6)
+        if !movemode{cam.addChild(discord)}
     }
     override func didMove(to view: SKView) {
         startAnimation()
@@ -186,6 +194,8 @@ extension Play{
         border2.xScale = cam.position.x < 0 ? 2 : -2
         border1.yScale = 2
         border2.yScale = 2
+        border1.alpha = 0.5
+        border2.alpha = 0.5
         self.addChild(border1)
         self.addChild(border2)
         
@@ -218,10 +228,33 @@ extension Play{
             }
         }
         avatar.alpha = 1
+        if movemode{
+            accountIcon.removeFromParent()
+            discord.removeFromParent()
+            removeTapToStart()
+            ship.position.x = CGFloat(secx) - sector.1.pos.x
+            ship.position.y = CGFloat(secy) - sector.1.pos.y
+            /*var movex = CGFloat(), movey = CGFloat()
+            if ship.position.x > sector.1.size.width / 2 - 1001{ ship.position.x += 500; movex -= 500 }
+            if ship.position.x < sector.1.size.width / -2 + 1001{ ship.position.x -= 500; movex += 500 }
+            if ship.position.y > sector.1.size.height / 2 - 1001{ ship.position.y += 500; movey -= 500 }
+            if ship.position.y < sector.1.size.height / -2 + 1001{ ship.position.y -= 500; movey += 500 }
+            ship.run(.moveBy(x: movex, y: movey, duration: 2).ease(.easeOut))*/
+            ship.velocity = velo
+            ship.zRotation = zrot
+            playedLightSpeedOut = true
+            ship.run(.scale(to: 0.25, duration: 0.5))
+            removeAction(forKey: "inLightSpeed")
+            inlightSpeed.removeFromParent()
+            startGame()
+            started = true
+            movemode = false
+        }
     }
     func startAnimation(){
         if animated{return}
         animated = true
+        if movemode{return}
         var delay = 0.0
         for i in 1...15{
             let trail = SKSpriteNode(imageNamed: "trail\((i%5)+1)")
@@ -292,7 +325,7 @@ extension Play{
             let a = SKShapeNode(circleOfRadius: planet.radius/10)
             a.position = CGPoint(x: planet.position.x/10, y: planet.position.y/10)
             a.zPosition = 8
-            a.fillColor = planet.superhot ? .orange : .white
+            a.fillColor = planet.ownedState == .yours ? UIColor(red: 0, green: 0.5, blue: 1, alpha: 1) : (planet.superhot ? .orange : .white)
             a.lineWidth = 0
             sector.addChild(a)
             a.name = "planet"
@@ -413,11 +446,12 @@ extension Play{
         cam.removeAction(forKey: "vibratingCameras")
         speedLabel.text = "320"
         speedLabel.zPosition = 9
-        speedLabel.fontSize = 70
+        speedLabel.fontSize = 60
         speedLabel.color = .white
         speedLabel.zRotation = 0.165
         speedLabel.horizontalAlignmentMode = .left
-        speedLabel.position = CGPoint(x: -speedBG.size.width/2.7 ,y: -speedBG.size.height/3)
+        speedLabel.verticalAlignmentMode = .center
+        speedLabel.position = CGPoint(x: -speedBG.size.width/2.7 ,y: -50)
         speedLabel.xScale = 1.3
         
         speedBG.addChild(speedLabel)
@@ -426,10 +460,10 @@ extension Play{
         dPad.setScale(1.5)
         cam.addChild(dPad)
         avatar.anchorPoint.x = 0
-        avatar.position = pos(mx: -0.5, my: 0.3, x: 50)
+        avatar.position = pos(mx: -0.5, my: 0.35, x: 50)
         avatar.alpha = 1
         avatar.zPosition = 10
-        avatar.setScale(0.3)
+        avatar.setScale(0.25)
         cam.addChild(avatar)
         for i in 0...7 {
             var energyNode = SKSpriteNode(imageNamed: "energyOff")
@@ -659,7 +693,6 @@ extension Play{
         coloStatsPrice.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
         coloStatsPrice.position = colonizeBG.pos(mx: 0, my: 0, x: -230, y: -330)
         coloStatsPrice.fontSize = 20
-        coloStatsPrice.text = "price: \(priceFor(planetsOwned + 4)) energy"
         colonizeBG.addChild(coloStatsPrice)
         
         collect.anchorPoint = CGPoint(x: 0 ,y:0.5)
@@ -743,12 +776,12 @@ extension Play{
             
         healthBar.position = pos(mx: 0, my: 0.47)
         healthBar.alpha = 1
-        healthBar.zPosition = 10
-        healthBar.setScale(0.15)
+        healthBar.zPosition = 100
+        healthBar.setScale(0.12)
         cam.addChild(healthBar)
             
             
-            speedBG.position = CGPoint(x: healthBar.size.width * 1.8, y: -healthBar.size.height * 2.5 )
+        speedBG.position = CGPoint(x: healthBar.size.width * 2.1, y: -healthBar.size.height * 3)
         speedBG.alpha = 1
         speedBG.zPosition = 10
         speedBG.setScale(2)
@@ -916,6 +949,21 @@ extension Play{
             }
             return
         }
+        var required = 0
+        if id == .camp{
+            var used = [Int8](repeating: 0, count: 128)
+            var lvl = 0
+            for itm in planetLanded!.items{
+                guard itm != nil else {continue}
+                used[Int(itm!.type.rawValue)] += 1
+                if itm!.type == .camp{lvl = Int(itm!.lvl)}
+            }
+            for i in 0...addItemIcons.count-1{
+                if Double(used[i+1]) <= Double(Double(lvl) - (items[i+1][0]["available"]?.number ?? 1.0)) / (items[i+1][0]["every"]?.number ?? 1.0){
+                    required = i + 1
+                }
+            }
+        }
         upgradePrice.color = .white
         upgradeTime.text = "Time: \(time)"
         upgradePrice.text = "Price: \(price)"
@@ -957,7 +1005,7 @@ extension Play{
         var i = 0
         var oldOutlineY = -125.0
         for (name: name, old: old, new: new, max: max) in powers{
-            if name == "unlocksitem"{
+            if name == "unlocksitem" && required == 0{
                 //unlocks item
                 let unlockslabel = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
                 let unlocksIcon = SKSpriteNode(imageNamed: coloNames[Int(new)]+"1")
@@ -972,7 +1020,7 @@ extension Play{
                 buildBG.addChild(unlocksIcon)
                 oldOutlineY -= 400
                 continue
-            }
+            }else if name == "unlocksitem"{continue}
             let progressLabel2 = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
             let progress2 = SKSpriteNode(imageNamed: "progress")
             let progress3 = SKSpriteNode(imageNamed: "progressgreen")
@@ -1029,6 +1077,21 @@ extension Play{
             upgradeNodes.append(progress3)
             upgradeNodes.append(outline2)
             i += 1
+        }
+        if required > 0{
+            upgradebtn.removeFromParent()
+            let unlockslabel = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+            let unlocksIcon = SKSpriteNode(imageNamed: coloNames[Int(required)]+"1")
+            unlockslabel.text = "Required buildings:"
+            unlockslabel.fontSize = 60
+            unlockslabel.position = pos(mx: 2.5, my: 0, x: -300, y: oldOutlineY + 30)
+            unlocksIcon.position = pos(mx: 2.5, my: 0, x: -300, y: oldOutlineY - 110)
+            unlocksIcon.setScale(200 / unlocksIcon.size.height)
+            upgradeNodes.append(unlockslabel)
+            upgradeNodes.append(unlocksIcon)
+            buildBG.addChild(unlockslabel)
+            buildBG.addChild(unlocksIcon)
+            oldOutlineY -= 400
         }
     }
     func removeTrackers(){
@@ -1133,7 +1196,7 @@ extension Play{
             tutInfo.fontColor = UIColor(red: 0.8, green: 0.1, blue: 0.1, alpha: 1)
         }
         vibratePhone(.light)
-        coloStatsPrice.text = "price: \(priceFor(planetsOwned + 4)) energy"
+        coloStatsPrice.text = "price: \(formatNum(pow(100, Double(planetsOwned + 1)))) energy"
     }
     func takeoff(){
         if tutorialProgress == .followPlanet{
@@ -1168,18 +1231,18 @@ extension Play{
             DisplayWARNING("error: try again later", .warning, false)
             return
         }
-        DisplayWARNING("colonized successfuly",.achieved,false)
+        DisplayWARNING("colonized successfuly", .achieved,false)
     }
     
     func planetEditMode(){
-        presence.toggle()
-
+        
+        presence = !presence
+        
         buildBG.anchorPoint = CGPoint(x: 0, y: 1)
         buildBG.position = pos(mx: -0.5, my: 0, x: -50, y: 0)
         buildBG.alpha = 1
         buildBG.zPosition = 1000
         buildBG.setScale(0.4)
-        
         coloArrow.anchorPoint = CGPoint(x: 0.5,y: 0)
         coloArrow.position = pos(mx: 0, my: 0.05, x: 0, y: 0)
         coloArrow.alpha = 1
@@ -1224,11 +1287,10 @@ extension Play{
             if planetTouched == nil{planetLanded = nil}
             hideUpgradeUI()
         }
-        if !hideControl{
-            hideControl.toggle()
+        hideControl.toggle()
+        if hideControl{
             hideControls()
         }else{
-            hideControl.toggle()
             showControls()
         }
     }
