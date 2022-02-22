@@ -974,7 +974,9 @@ extension Play{
     func nextStep(_ next: Bool? = true){
         if next == nil{
             if tutorialProgress == .done{return}
-            if tutorialProgress.rawValue > tutorial.followPlanet.rawValue{
+            if tutorialProgress.rawValue > tutorial.openProfile.rawValue{
+                tutorialProgress = .openProfile
+            }else if tutorialProgress.rawValue > tutorial.followPlanet.rawValue{
                 tutorialProgress = .followPlanet
             }
         }

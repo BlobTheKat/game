@@ -1331,9 +1331,16 @@ extension Play{
         stats.xpFill.position = pos(mx: 0, my: 0.75, x: -220, y: 0)
         stats.xpFill.setScale(0.5)
         stats.missionTitle.position.y = self.size.height * 0.75 - 75
-        stats.missionTitle.text = "Missions:"
+        stats.missionTitle.text = "missions:"
         stats.missionTitle.fontSize = 40
         stats.missionTitle.fontColor = .blue
+        stats.missionTitle.removeAllActions()
+        stats.missionTitle.run(.repeatForever(.sequence([
+            .run{self.stats.missionTitle.fontColor = .init(red: 0.3, green: 0.2, blue: 0.9, alpha: 1)},
+            .wait(forDuration: 0.5),
+            .run{self.stats.missionTitle.fontColor = .init(red: 0.3, green: 0.2, blue: 0.7, alpha: 1)},
+            .wait(forDuration: 0.5)
+        ])))
         stats.rewards.position = pos(mx: 0.4, my: 0.45, x: -218.0, y: 20)
         stats.rewards.horizontalAlignmentMode = .left
         stats.rewards.text = "rewards:"
@@ -1399,7 +1406,6 @@ extension Play{
             statsWall.addChild(gemReward)
             statsWall.addChild(xpReward)
         }
-        
     }
     func removeWallIcons(){
         stats.levelbg.removeFromParent()
