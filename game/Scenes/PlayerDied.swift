@@ -31,9 +31,9 @@ class PlayerDied: SKScene{
         UserDefaults.standard.set(secx, forKey: "sx")
         UserDefaults.standard.set(secy, forKey: "sy")
         deaths += 1
-        label(node: reconnectLabel, "", pos: pos(mx: 0.5, my: 0.6), size: 32, color: UIColor.white)
+        label(node: reconnectLabel, "", pos: pos(mx: 0.5, my: 0.6), size: 32, color: .white)
         
-        label(node: tapToReconnect, "-tap to respawn-", pos: pos(mx: 0.5, my: 0.3, y: -50), size: 28.5, color: UIColor.white)
+        label(node: tapToReconnect, "-tap to respawn-", pos: pos(mx: 0.5, my: 0.3, y: -50), size: 28.5, color: .white)
         
         pulsate(node: tapToReconnect, amount: 0.6, duration: 3)
         

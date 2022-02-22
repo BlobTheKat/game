@@ -251,21 +251,28 @@ extension Play{
                 buildBG.alpha = 1
                 return
             }
-            if tutorialProgress == .gemFinish{return}
-            if tutorialProgress == .addItem{ nextStep(); lastSentEnergy += 150 }
             if addItemIcons.first!.parent != nil{
                 renderUpgradeUI()
                 return
             }
-            hideUpgradeUI()
-            //render additem ui
+            if tutorialProgress == .gemFinish{return}
+            if tutorialProgress == .addItem{ nextStep(); lastSentEnergy += 150 }
+            
             var used = [Int8](repeating: 0, count: 128)
             var lvl = 0
             for itm in planetLanded!.items{
                 guard itm != nil else {continue}
                 used[Int(itm!.type.rawValue)] += 1
                 if itm!.type == .camp{lvl = Int(itm!.lvl)}
+                if itm!.upgradeEnd == 1{lvl = -1}
             }
+            if lvl == -1{
+                //nope
+                DisplayWARNING("repair all your buildings first", .warning, true)
+                return
+            }
+            hideUpgradeUI()
+            //render additem ui
             for i in 0...addItemIcons.count-1{
                 addItemIcons[i].position = CGPoint(x: 600 + CGFloat(i) * 400, y: -190)
                 addItemIcons[i].setScale(0.8)
@@ -281,6 +288,7 @@ extension Play{
                     addItemIcons[i].alpha = 0.5
                 }else{
                     addItemIcons[i].alpha = 1
+                    addItemPrices[i].fontColor = items[i+1][1]["price"]?.number ?? 0 <= energyAmount && Float(items[i+1][1]["price2"]?.number ?? 0) <= researchAmount ? .white : UIColor(red: 0.8, green: 0.1, blue: 0.1, alpha: 1)
                     buildBG.addChild(addItemPrices[i])
                     buildBG.addChild(addItemNames[i])
                 }
@@ -342,6 +350,7 @@ extension Play{
             clicked()
             guard dragRemainder.isNaN else {return}
             guard let item = planetLanded?.items[Int(itemRot)] else {break}
+            guard upgradebtn.alpha > 0.9 else {return}
             let itm = items[Int(item.type.rawValue)][Int(item.lvl + 1)]
             let price = itm["price"]?.number ?? 0
             let price2 = Float(itm["price2"]?.number ?? 0)
@@ -422,6 +431,10 @@ extension Play{
             }
             tapToStartPressed = true
         }
+        if loginFailed.parent != nil{
+            loginFailed.run(.sequence([.fadeOut(withDuration: 0.5),.removeFromParent()]))
+            tapToStartPressed = true
+        }
         if cockpitIcon == node{
           //  cockpitIcon.texture = SKTexture(imageNamed: "cockpitOn")
         }
@@ -471,7 +484,7 @@ extension Play{
             warning.alpha = 0
         }
         
-        if accountIcon == node{
+        /*if accountIcon == node{
             clicked()
             if !showAccount{
                 accountIcon.run(SKAction.moveBy(x: 0, y: -200, duration: 0.35).ease(.easeOut))
@@ -483,7 +496,7 @@ extension Play{
                 showAccount = false
             }
             
-        }
+        }*/
         if thrustButton == node{
             if point.y > thrustButton.position.y + 50{
                 thrustButton.texture = SKTexture(imageNamed: "shooting2")
@@ -680,6 +693,7 @@ extension Play{
         }
         if cockpitIcon == node && statsWall.parent == nil && tutorialProgress.rawValue > tutorial.finishEditing.rawValue{
             clicked()
+            if tutorialProgress == .openProfile{ nextStep() }
             if presence{ planetEditMode() }
             removeWallIcons()
             cam.addChild(statsWall)
@@ -714,8 +728,8 @@ extension Play{
             }
         }
         if let n = node.parent as? Planet{
-            if !swiping && n == planetLanded && !presence && planetLanded?.ownedState == .yours && exclusive{
-                if showNav == false{
+            if !swiping && n == planetLanded && !presence && planetLanded?.ownedState == .yours && exclusive && statsWall.parent == nil{
+                if !showNav{
                     navArrow.run(SKAction.move(to: pos(mx: 0.43, my: 0 ), duration: 0.35).ease(.easeOut))
                     navArrow.run(SKAction.rotate(toAngle: 3.18, duration: 0.35).ease(.easeOut))
                     navBG.run(SKAction.move(to: pos(mx: 0.43, my: 0 ), duration: 0.35).ease(.easeOut))
@@ -970,6 +984,7 @@ extension Play{
         tutorialProgress = .init(rawValue: i)!
         if tutInfo.parent != nil{tutInfo.run(.fadeOut(withDuration: 0.2))}
         if tutArrow.parent != nil{tutArrow.run(.fadeOut(withDuration: 0.2))}
+        tutArrow.removeAllActions()
         if tutorialProgress == .done{
             let _ = timeout(0.3){ [self] in
                 ship.controls = true
@@ -1023,6 +1038,7 @@ extension Play{
             cam.addChild(tutInfo)
             tutInfo.run(.fadeIn(withDuration: 0.2))
             tutArrow.run(.fadeIn(withDuration: 0.2))
+            let _ = timeout(0.2){self.tutArrow.run(.repeatForever(.sequence([.fadeAlpha(by: -0.7, duration: 0.5),.fadeAlpha(by: 0.7, duration: 0.5)])))}
             animating = false
         }
     }

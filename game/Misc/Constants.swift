@@ -72,21 +72,7 @@ let COLORS: [UIColor] = [
 ]
 
 
-let missionTXTS = [
-    "travel": "Travel %ly",
-    "planets": "Colonize % planets",
-    "destroy": "Destroy % asteroids",
-    "steal": "Destroy % planets",
-    "build": "Build % buildings",
-    "drill": "Upgrade a drill to level %",
-    "canon": "Upgrade a canon to level %",
-    "kills": "Kill % players",
-    "energy": "Collect % energy",
-    "research": "Collect % research points",
-    "gems": "Find % gems",
-    "flybys": "Fly by % stars",
-    "visit": "Visit % sectors"
-]
+let missionTXTS = GameData("/missionindex")![0]
 
 let MISSIONS: [String: GameData] = ({keys in
     var dict = [String: GameData]()
@@ -95,3 +81,11 @@ let MISSIONS: [String: GameData] = ({keys in
     }
     return dict
 })(missionTXTS.keys)
+
+
+
+let NAMES = [
+    "john bob silli hugo best coffee cat locus blob darth random bolt pik dave terrible littl",
+    "winner lover ross invader doe smith parker mully hulk boi guy sky inter s player pawn",
+    "123 1000 200000 69 420 65535 2147483647 64 541345 9999 1337 911 -ultra thesecond butbetter lovesanime"
+].map{a in return a.split(separator: " ")}

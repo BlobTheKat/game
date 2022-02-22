@@ -32,6 +32,7 @@
 		343E3154276B487A007F753D /* Sys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 343E3153276B487A007F753D /* Sys.swift */; };
 		343E3157276B4B61007F753D /* Structs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 343E3156276B4B61007F753D /* Structs.swift */; };
 		34753DBB27C3937500D259FC /* click.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 34753DBA27C3937500D259FC /* click.mp3 */; };
+		34753DBD27C506D000D259FC /* missionindex in Resources */ = {isa = PBXBuildFile; fileRef = 34753DBC27C506D000D259FC /* missionindex */; };
 		34844AE026A9955900A3F790 /* Planet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34844ADF26A9955900A3F790 /* Planet.swift */; };
 		3484BFD6270754DD00C06FFC /* PlayNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3484BFD5270754DD00C06FFC /* PlayNetwork.swift */; };
 		3484BFD82709C6C600C06FFC /* PlayCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3484BFD72709C6C600C06FFC /* PlayCore.swift */; };
@@ -96,6 +97,7 @@
 		343E3153276B487A007F753D /* Sys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sys.swift; sourceTree = "<group>"; };
 		343E3156276B4B61007F753D /* Structs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Structs.swift; sourceTree = "<group>"; };
 		34753DBA27C3937500D259FC /* click.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = click.mp3; sourceTree = "<group>"; };
+		34753DBC27C506D000D259FC /* missionindex */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = missionindex; sourceTree = "<group>"; };
 		34844ADF26A9955900A3F790 /* Planet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Planet.swift; sourceTree = "<group>"; };
 		3484BFD5270754DD00C06FFC /* PlayNetwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayNetwork.swift; sourceTree = "<group>"; };
 		3484BFD72709C6C600C06FFC /* PlayCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayCore.swift; sourceTree = "<group>"; };
@@ -249,6 +251,7 @@
 		34CE76DB27A0416F001D86BA /* missions */ = {
 			isa = PBXGroup;
 			children = (
+				34753DBC27C506D000D259FC /* missionindex */,
 				34CE76CD27A03DA1001D86BA /* travel */,
 				34CE76D727A04147001D86BA /* drill */,
 				34CE76CF27A03F1A001D86BA /* planets */,
@@ -409,6 +412,7 @@
 				34CE76CE27A03DA1001D86BA /* travel in Resources */,
 				34CE76EA27A15984001D86BA /* kills in Resources */,
 				33A879212725EC4B0096A6C4 /* inshipSound.wav in Resources */,
+				34753DBD27C506D000D259FC /* missionindex in Resources */,
 				33A8791F2725EC460096A6C4 /* playerWalking.wav in Resources */,
 				34CE76D827A04147001D86BA /* drill in Resources */,
 				34CE76D227A03FA6001D86BA /* destroy in Resources */,
@@ -662,7 +666,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.20;
+				MARKETING_VERSION = 0.1.22;
 				PRODUCT_BUNDLE_IDENTIFIER = locus.tunnelvision;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -696,7 +700,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.20;
+				MARKETING_VERSION = 0.1.22;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = locus.tunnelvision;
 				PRODUCT_NAME = "$(TARGET_NAME)";

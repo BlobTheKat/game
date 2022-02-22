@@ -92,7 +92,9 @@ enum tutorial: Int{
     case buyDrill = 13
     case gemFinish = 14
     case finishEditing = 15
-    case done = 16
+    case openProfile = 16
+    case missions = 17
+    case done = 18
 }
 var tutorialProgress: tutorial{
     get{
@@ -112,14 +114,16 @@ let tutorials: [(SKLabelHorizontalAlignmentMode, SKLabelVerticalAlignmentMode, m
     (.center, .center, mx: 0, my: -0.3, x: 0, y: 0, "this seems like a good place to start"),
     //(.left, .top, mx: -0.4, my: -0.4, x: 105, y: 120, "shoot the planet\nto gain energy"),
     (.right, .top, mx: 0.43, my: 0.5, x: -50, y: -80, "open the navigation\nmenu"),
-    (.right, .top, mx: 0.43, my: 0.1, x: -80, y: 40, "buy the planet"),
+    (.right, .top, mx: 0.43, my: 0, x: -80, y: 80, "buy the planet"),
     (.left, .bottom, mx: -0.3, my: -0.3, x: 50, y: -10, "buy the planet"),
     (.center, .center, mx: 0, my: -0.3, x: 0, y: 0, "if i build an energy drill i will be able to generate\na constant source of energy to sustain my crew"),
-    (.right, .top, mx: 0.43, my: 0.1, x: -80, y: 40, "edit the planet"),
+    (.right, .top, mx: 0.43, my: 0, x: -80, y: 80, "edit the planet"),
     (.right, .bottom, mx: 0.5, my: 0, x: -205, y: 80, "add an item"),
     (.left, .bottom, mx: -0.5, my: -0.1, x: 250, y: 0, "buy a drill\nto earn energy\nautomatically"),
-    (.left, .bottom, mx: 0, my: -0.3, x: 185, y: 30, ""),
-    (.right, .top, mx: 0.43, my: 0.1, x: -80, y: 40, "finish editing")
+    (.left, .bottom, mx: 0, my: -0.3, x: 185, y: 30, "you can skip waiting"),
+    (.right, .top, mx: 0.43, my: 0, x: -80, y: 80, "finish editing"),
+    (.right, .top, mx: 0.43, my: 0, x: -80, y: 130, "open your profile"),
+    (.center, .center, mx: 0, my: -0.5, x: 0, y: 100, "complete missions\nand track your progress"),
 ]
 
 var animating: Bool = false

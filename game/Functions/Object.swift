@@ -82,7 +82,7 @@ class Object: SKSpriteNode, DataCodable{
     }
     init(radius: CGFloat, mass: CGFloat = -1, texture: SKTexture = SKTexture(), asteroid: Bool = false){
         self.asteroid = asteroid
-        super.init(texture: nil, color: UIColor.clear, size: CGSize.zero)
+        super.init(texture: nil, color: .clear, size: CGSize.zero)
         self.body(radius: radius, mass: mass, texture: texture)
         particle = Object.defaultParticle
     }
@@ -116,8 +116,8 @@ class Object: SKSpriteNode, DataCodable{
         }
         if !asteroid{ //asteroids don't slow down
             self.angularVelocity *= 0.95
-            if abs(velocity.dx) > 10{velocity.dx *= 0.997}
-            if abs(velocity.dy) > 10{velocity.dy *= 0.997}
+            if abs(velocity.dx) > 8 * thrustMultiplier{velocity.dx *= 0.997}
+            if abs(velocity.dy) > 8 * thrustMultiplier{velocity.dy *= 0.997}
         }
         if controls{
             producesParticles = false

@@ -454,3 +454,12 @@ extension SKNode{
         insertChild(node, at: children.count)
     }
 }
+
+extension String {
+    public func index(of char: Character) -> Int? {
+        if let idx = self.firstIndex(of: char) {
+            return self.distance(from: startIndex, to: idx)
+        }
+        return nil
+    }
+}

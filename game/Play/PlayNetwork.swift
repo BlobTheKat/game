@@ -48,6 +48,9 @@ extension Play{
         if gameAuthed{return}
         gotIp()
         gameAuthed = true
+        loginFailed.setScale(0.5)
+        loginFailed.zPosition = 3000
+        cam.addChild(loginFailed)
     }
     func kill(_ n: Object){
         if n.death > 300{
@@ -65,7 +68,7 @@ extension Play{
                 killLabel.fontSize = 40
                 killLabel.zPosition = 5000
                 killLabel.text = "\(killName)"
-                killLabel.fontColor = UIColor.red
+                killLabel.fontColor = .red
                 
                 
                 cam.addChild(zKill)
@@ -421,7 +424,7 @@ extension Play{
                 let left = CGFloat(data.readunsafe() as Float)
                 let dat = MISSIONS[name]![lvl]
                 let total = CGFloat(dat["amount"]!.number!)
-                let mission = (name: missionTXTS[name]!.split(separator: "%").joined(separator: "\(Int(total))"), val: total - left, max: total, gems: CGFloat(dat["gems"]!.number!), xp: CGFloat(dat["xp"]!.number!))
+                let mission = (name: missionTXTS[name]!.string!.split(separator: "%").joined(separator: "\(Int(total))"), val: total - left, max: total, gems: CGFloat(dat["gems"]!.number!), xp: CGFloat(dat["xp"]!.number!))
                 oldmap[mission.name] = nil
                 if i < missions.count{
                     if missions[i].name == mission.name && i < stats.missions.count{
@@ -513,9 +516,15 @@ extension Play{
         data.write(creds!.time)
         var local = GKLocalPlayer.local.alias
         if local == "Unknown"{
-            let id = ID.prefix(2)
-            local = "Guest \(%(UInt8(id, radix: 16) ?? 0))"
+            let id = ID.prefix(NAMES.count)
+            var i = 0
+            local = ""
+            for id in id.map({ e in return "0123456789abcdef".index(of: e) ?? ("ABCDEF".index(of: e)! + 10)}){
+                local += NAMES[i][Int(id)]
+                i += 1
+            }
         }
+        self.name = local
         data.write(local, lentype: UInt8.self)
         data.write(UInt16(self.size.width + self.size.height))
         critical(data, abandoned: { [self] in

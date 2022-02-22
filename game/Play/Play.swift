@@ -348,7 +348,7 @@ extension Play{
         self.tapToStart.run(SKAction.scale(by: 1.5, duration: 0.2))
     }
     
-    var upgradeStats: (price: String, time: String, powers: [(name: String, old: Double, new: Double, max: Double)])?{
+    var upgradeStats: (price: String, time: String, powers: [(name: String, old: Double, new: Double, max: Double)], canGet: Bool)?{
         guard let item = planetLanded?.items[Int(itemRot)] else {return nil}
         let id = Int(item.type.rawValue)
         var lvl = 0
@@ -364,7 +364,7 @@ extension Play{
             if k[0] == "_" || k == "price" || k == "price2" || k == "time"{continue}
             pw.append((name: k, old: old[k]?.number ?? 0, new: v.number!, max: (max[k] ?? v).number!))
         }
-        return (price: formatPrice(new), time: formatTime(Int(new["time"]!.number!)), powers: pw.sorted(by: {(a,b) in a.name.count < b.name.count}))
+        return (price: formatPrice(new), time: formatTime(Int(new["time"]!.number!)), powers: pw.sorted(by: {(a,b) in a.name.count < b.name.count}), canGet: new["price"]?.number ?? 0 <= energyAmount && Float(new["price2"]?.number ?? 0) <= researchAmount)
     }
     func refreshXp(){
         stats.levelLabel.text = "level \(level)"
@@ -447,7 +447,6 @@ extension Play{
         speedLabel.text = "320"
         speedLabel.zPosition = 9
         speedLabel.fontSize = 60
-        speedLabel.color = .white
         speedLabel.zRotation = 0.165
         speedLabel.horizontalAlignmentMode = .left
         speedLabel.verticalAlignmentMode = .center
@@ -492,14 +491,12 @@ extension Play{
         energyCount.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
         energyCount.zPosition = avatar.zPosition + 1
         energyCount.position = CGPoint(x: 165, y: -102)
-        energyCount.fontColor = UIColor.white
         energyCount.fontSize = 40
         avatar.addChild(energyCount)
         researchCount.text = ""
         researchCount.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
         researchCount.zPosition = avatar.zPosition + 1
         researchCount.position = CGPoint(x: 270, y: 71)
-        researchCount.fontColor = UIColor.white
         researchCount.fontSize = 40
         avatar.addChild(researchCount)
         researchIconBecauseAdamWasTooLazy.zPosition = avatar.zPosition + 1
@@ -543,7 +540,6 @@ extension Play{
             statsLabel2.append(SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular"))
             
             statsLabel[i].fontSize = 40
-            statsLabel[i].color = UIColor.white
             statsLabel[i].horizontalAlignmentMode = .left
             if i > 0{
                 statsLabel[i].position = CGPoint(x: statsLabel[i - 1].position.x ,y: statsLabel[i - 1].position.y + 60)
@@ -558,7 +554,6 @@ extension Play{
             statsLabel2.append(SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular"))
             
             statsLabel2[i].fontSize = 40
-            statsLabel2[i].color = UIColor.white
             statsLabel2[i].horizontalAlignmentMode = .left
             if i > 0{
                 statsLabel2[i].position = CGPoint(x: statsLabel2[i - 1].position.x ,y: statsLabel2[i - 1].position.y + 60)
@@ -831,6 +826,10 @@ extension Play{
     
     
     func DisplayWARNING(_ label: String, _ warningType: WarningTypes = .warning, _ blink: Bool = false){
+        if cam.action(forKey: "warningAlpha") != nil{
+            cam.removeAction(forKey: "warningAlpha")
+            warning.alpha = 0
+        }
         switch warningType{
         case .warning:
             warning.texture = SKTexture(imageNamed: "warning")
@@ -841,7 +840,8 @@ extension Play{
         }
         warningLabel.text = "\(label)"
         warningLabel.zPosition = 101
-        warningLabel.position = pos(mx: 0, my: 0, x: 0, y: -25)
+        warningLabel.verticalAlignmentMode = .center
+        warningLabel.position.x = -20
         warningLabel.fontSize = 60
         warningLabel.setScale(0.8)
         if warningLabel.parent == nil{warning.addChild(warningLabel)}
@@ -893,8 +893,8 @@ extension Play{
         //remove upgrade nodes, and replace them with addItemIcons
         hideUpgradeUI()
         guard let (type: id, lvl: lvl, capacity: _, upgradeEnd: u) = planetLanded!.items[Int(itemRot)] else {return}
-        guard let (price: price, time: time, powers: powers) = upgradeStats else {
-            
+        guard let (price: price, time: time, powers: powers, canGet: canGet) = upgradeStats else {
+            upgradePrice.fontColor = .white
             if u > 1{
                 var time = Int(u) - Int(NSDate().timeIntervalSince1970)
                 upgradeTime.text = "Time: \(formatTime(time))"
@@ -944,7 +944,7 @@ extension Play{
                 buildBG.addChild(upgradePrice)
                 upgradePrice.position = pos(mx: 1.5, my: -0.8)
                 upgradePrice.horizontalAlignmentMode = .center
-                upgradePrice.text = "Upgrade main camp to unlock more levels"
+                upgradePrice.text = id == .camp ? "More levels coming soon! (maybe)" : "Upgrade main camp to unlock more levels"
                 upgradePrice.color = .white
             }
             return
@@ -964,6 +964,7 @@ extension Play{
                 }
             }
         }
+        upgradePrice.fontColor = canGet ? .white : UIColor(red: 0.8, green: 0.1, blue: 0.1, alpha: 1)
         upgradePrice.color = .white
         upgradeTime.text = "Time: \(time)"
         upgradePrice.text = "Price: \(price)"
@@ -993,6 +994,7 @@ extension Play{
         upgradeNew2.text = "Level \(lvl+1)"
         upgradeArrow.position = pos(mx: 0.95, my: -0.45)
         upgradeArrow.setScale(0.3)
+        upgradebtn.alpha = canGet ? 1 : 0.5
         upgradebtn.position = pos(mx: 0.95, my: -1.07)
         upgradebtn.setScale(0.7)
         buildBG.addChild(upgradeArrow)
@@ -1059,7 +1061,6 @@ extension Play{
             progressLabel2.horizontalAlignmentMode = .left
             progressLabel2.zPosition = 100
             progressLabel2.fontSize = 60
-            progressLabel2.color = UIColor.white
             buildBG.addChild(progressLabel2)
             //from here is for the inside of the progress bar showing the actual progress
             progress2.zPosition = 99
@@ -1188,7 +1189,16 @@ extension Play{
         }
         if tutorialProgress == .followPlanet && (planetLanded!.ownedState == .yours || planetLanded!.ownedState == .unowned){
             ship.controls = false
-            for a in planetLanded!.items{if a?.type == .drill{tutorialProgress = .gemFinish;ship.controls = true}}
+            for a in planetLanded!.items{if a?.type == .drill{
+                tutorialProgress = .finishEditing
+                if !showNav{
+                    navArrow.run(SKAction.move(to: pos(mx: 0.43, my: 0 ), duration: 0.35).ease(.easeOut))
+                    navArrow.run(SKAction.rotate(toAngle: 3.18, duration: 0.35).ease(.easeOut))
+                    navBG.run(SKAction.move(to: pos(mx: 0.43, my: 0 ), duration: 0.35).ease(.easeOut))
+                    showNav = true
+                }
+                ship.controls = true
+            }}
             nextStep()
             
         }else if tutorialProgress == .followPlanet{
@@ -1305,26 +1315,36 @@ extension Play{
     func wallIcons(){
         guard badgeCropNode.name == nil else {return}
         let mustard = UIColor(red: 1, green: 0.7, blue: 0, alpha: 1)
-        stats.levelbg.position.y = self.size.height * 0.9 - 20
+        stats.levelbg.position.y = self.size.height * 0.95 - 20
         stats.levelLabel.text = "level \(level)"
         stats.levelLabel.fontColor = mustard
-        stats.levelLabel.position.y = self.size.height * 0.9 - 40
+        stats.levelLabel.position.y = self.size.height * 0.95 - 40
         stats.levelLabel.fontSize = 40
-        stats.xpBox.position.y = self.size.height * 0.7
+        stats.xpBox.position.y = self.size.height * 0.75
         stats.xpBox.setScale(0.5)
         stats.xpLabel.text = "\(xp)xp"
-        stats.xpLabel.position = pos(mx: 0, my: 0.7, x: -218, y: -12)
+        stats.xpLabel.position = pos(mx: 0, my: 0.75, x: -218, y: -12)
         stats.xpLabel.horizontalAlignmentMode = .left
         stats.xpLabel.zPosition = 2
         stats.xpLabel.fontSize = 30
         stats.xpFill.anchorPoint.x = 0
-        stats.xpFill.position = pos(mx: 0, my: 0.7, x: -220, y: 0)
+        stats.xpFill.position = pos(mx: 0, my: 0.75, x: -220, y: 0)
         stats.xpFill.setScale(0.5)
+        stats.missionTitle.position.y = self.size.height * 0.75 - 75
+        stats.missionTitle.text = "Missions:"
+        stats.missionTitle.fontSize = 40
+        stats.missionTitle.fontColor = .blue
+        stats.rewards.position = pos(mx: 0.4, my: 0.45, x: -218.0, y: 20)
+        stats.rewards.horizontalAlignmentMode = .left
+        stats.rewards.text = "rewards:"
+        stats.rewards.fontSize = 28
         statsWall.addChild(stats.xpBox)
         statsWall.addChild(stats.levelbg)
         statsWall.addChild(stats.levelLabel)
         statsWall.addChild(stats.xpLabel)
         statsWall.addChild(stats.xpFill)
+        statsWall.addChild(stats.missionTitle)
+        statsWall.addChild(stats.rewards)
         stats.missions = []
         for i in 0...2{
             guard i < missions.count else {continue}
@@ -1334,38 +1354,38 @@ extension Play{
             let rewardsbox = SKSpriteNode(imageNamed: "rewards")
             let xpReward = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
             let gemReward = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
-            rewardsbox.position = pos(mx: 0.4, my: 0.5, x: -10.0, y: CGFloat(i * -60) + 2)
+            rewardsbox.position = pos(mx: 0.4, my: 0.45, x: -10.0, y: CGFloat(i * -60) + 2)
             rewardsbox.setScale(1.3)
             rewardsbox.anchorPoint = CGPoint(x: 1.0, y: 0.5)
             xpReward.text = "\(Int(missions[i].xp))"
-            xpReward.position = pos(mx: 0.4, my: 0.5, x: -218.0, y: CGFloat(i * -60))
+            xpReward.position = pos(mx: 0.4, my: 0.45, x: -218.0, y: CGFloat(i * -60))
             xpReward.fontSize = 28
             xpReward.horizontalAlignmentMode = .left
             xpReward.verticalAlignmentMode = .center
             xpReward.fontColor = mustard
 
             gemReward.text = "\(Int(missions[i].gems))"
-            gemReward.position = pos(mx: 0.4, my: 0.5, x: -70.0, y: CGFloat(i * -60))
+            gemReward.position = pos(mx: 0.4, my: 0.45, x: -70.0, y: CGFloat(i * -60))
             gemReward.fontSize = 28.8
             gemReward.fontColor = .green
             gemReward.verticalAlignmentMode = .center
             
-            fill.position = pos(mx: -0.4, my: 0.5, x: 22.0, y: CGFloat(i * -60))
+            fill.position = pos(mx: -0.4, my: 0.45, x: 22.0, y: CGFloat(i * -60))
             fill.anchorPoint.x = 0
             fill.setScale(0.4)
             fill.xScale = (missions[i].val / missions[i].max) * 5.9
-            box.position = pos(mx: -0.4, my: 0.5, x: 20.0, y: CGFloat(i * -60))
+            box.position = pos(mx: -0.4, my: 0.45, x: 20.0, y: CGFloat(i * -60))
             box.setScale(0.4)
             box.anchorPoint.x = 0
             let label = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
             label.text = "\(missions[i].name)"
-            label.position = pos(mx: -0.4, my: 0.5, x: 18.0, y: 20.0 + CGFloat(i * -60))
+            label.position = pos(mx: -0.4, my: 0.45, x: 18.0, y: 20.0 + CGFloat(i * -60))
             label.fontSize = 25
             label.horizontalAlignmentMode = .left
             label.zPosition = 2
             let intval = Int(missions[i].val)
             text.text = "\(CGFloat(intval) == missions[i].val ? "\(intval)" : String(format: "%.2f", missions[i].val)) / \(Int(missions[i].max))"
-            text.position = pos(mx: -0.4, my: 0.5, x: 22.0, y: CGFloat(i * -60))
+            text.position = pos(mx: -0.4, my: 0.45, x: 22.0, y: CGFloat(i * -60))
             text.fontSize = 20
             text.horizontalAlignmentMode = .left
             text.verticalAlignmentMode = .center
@@ -1387,6 +1407,8 @@ extension Play{
         stats.xpLabel.removeFromParent()
         stats.xpBox.removeFromParent()
         stats.xpFill.removeFromParent()
+        stats.missionTitle.removeFromParent()
+        stats.rewards.removeFromParent()
         for m in stats.missions{
             m.label.removeFromParent()
             m.box.removeFromParent()
@@ -1408,7 +1430,7 @@ extension Play{
         missionLabel.zPosition = 100000
         missionLabel.alpha = 0
         missionLabel.fontSize = 20
-        missionLabel.color = UIColor.green
+        missionLabel.fontColor = .green
         missionLabel.text = "\(missionTxt):   +\(gems)"
         cam.addChild(missionLabel)
         

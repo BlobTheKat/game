@@ -453,7 +453,7 @@ extension Play{
             lastComplete = lastComplete &+ lastU
             lastMem = report_memory()
         }
-        DEBUG_TXT.text = "X: \(%ship.position.x) / Y: \(%ship.position.y)\nDX: \(%ship.velocity.dx) / DY: \(%ship.velocity.dy)\nA: \(%ship.zRotation), AV: \(%ship.angularVelocity)\nVEL: \(%vel) P: \(planets.count) O: \(objects.count)/\(objects.filter({return !$0.asteroid}).count)\nMEM: \(lastMem)MB NET: \(Int(Double(lastU) * gameFPS / 20480.0))KB/s" + (advancedDebug ? "\nIP: \(IPOVERRIDE ?? ip)\n\(logs.joined(separator: "\n"))" + (IPOVERRIDE != nil ? "\nx: \(Float(reg.x.value)), y: \(rnd(reg.y.value)), s: \(rnd(reg.s.value))\nmx: \(rnd(reg.mx.value)), my: \(rnd(reg.my.value)), z: \(rnd(reg.z.value))\nsx: \(rnd(reg.sx.value)), sy: \(rnd(reg.sy.value)), o: \(rnd(reg.o.value))\nr: \(reg.r.str), g: \(reg.g.str), b: \(reg.b.str)\ni: \(reg.i.str) p: \(reg.p.str)" : "") : "")
+        DEBUG_TXT.text = "X: \(%ship.position.x) / Y: \(%ship.position.y)\nDX: \(%ship.velocity.dx) / DY: \(%ship.velocity.dy)\nA: \(%ship.zRotation), AV: \(%ship.angularVelocity)\nVEL: \(%vel) P: \(planets.count) O: \(objects.count)/\(objects.filter({return !$0.asteroid}).count)\nMEM: \(lastMem)MB \"\(name ?? "nil")\"" + (advancedDebug ? "\nIP: \(IPOVERRIDE ?? ip) (\(Int(Double(lastU) * gameFPS / 20480.0))KB/s)\n\(logs.joined(separator: "\n"))" + (IPOVERRIDE != nil ? "\nx: \(Float(reg.x.value)), y: \(rnd(reg.y.value)), s: \(rnd(reg.s.value))\nmx: \(rnd(reg.mx.value)), my: \(rnd(reg.my.value)), z: \(rnd(reg.z.value))\nsx: \(rnd(reg.sx.value)), sy: \(rnd(reg.sy.value)), o: \(rnd(reg.o.value))\nr: \(reg.r.str), g: \(reg.g.str), b: \(reg.b.str)\ni: \(reg.i.str) p: \(reg.p.str)" : "") : "")
     }
     // USED FOR COLONIZING A PLANET
     func colonize(_ planet: Planet){

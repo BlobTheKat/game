@@ -17,12 +17,12 @@ class Particle: SKSpriteNode{
     }
     init?(states: [State]){
         self.states = states
-        super.init(texture: nil, color: UIColor.clear, size: CGSize.zero)
+        super.init(texture: nil, color: .clear, size: CGSize.zero)
         if nextState(){return nil}
     }
     init(){
         self.states = []
-        super.init(texture: nil, color: UIColor.clear, size: CGSize.zero)
+        super.init(texture: nil, color: .clear, size: CGSize.zero)
     }
     func nextState() -> Bool{
         if states.count < 1{

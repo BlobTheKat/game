@@ -311,6 +311,8 @@ class Play: SKScene{
         xpLabel: SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular"),
         xpBox: SKSpriteNode(imageNamed: "progressOutline"),
         xpFill: SKSpriteNode(imageNamed: "progressyellow"),
+        missionTitle: SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular"),
+        rewards: SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular"),
         missions: [(label: SKLabelNode, box: SKSpriteNode, fill: SKSpriteNode, text: SKLabelNode, rewardsbox: SKSpriteNode, xpReward: SKLabelNode, gemReward: SKLabelNode)]()
     )
     
@@ -336,7 +338,6 @@ class Play: SKScene{
     var collectibles = Set<SKSpriteNode>()
     var camBasicZoom = CGFloat(1)
     var pressed = false
-    
-    
     let discord = SKSpriteNode(imageNamed: "discord")
+    var loginFailed = SKSpriteNode(imageNamed: "loginfailed")
 }

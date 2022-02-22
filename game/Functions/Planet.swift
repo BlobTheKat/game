@@ -199,7 +199,6 @@ class Planet: Object{
                     let _ = timeout(1){
                         lightStrike.removeFromParent()
                     }
-                    
                     break
                 default:
                     break
@@ -313,7 +312,7 @@ class Planet: Object{
             if parent != nil && n == parent!.ship{
                 //WHEN THE PLAYER HAS LANDED ON A PLANET
                 let circle = parent!.planetsMap[parent!.planets.firstIndex(of: self)!]
-                circle.fillColor = UIColor.green
+                circle.fillColor = .green
                 parent?.playerArrow.removeFromParent()
                 //TO DO WITH COLONISING
                 if self.ownedState == .unowned{

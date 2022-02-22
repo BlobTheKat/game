@@ -1,0 +1,13 @@
+travel: Travel %ly
+planets: Colonize % planets
+destroy: Destroy % asteroids
+steal: Destroy % planets
+build: Build % buildings
+drill: Upgrade a drill to level %
+canon: Upgrade a canon to level %
+kills: Kill % players
+energy: Collect % energy
+research: Collect % research points
+gems: Find % gems
+flybys: Fly by % stars
+visit: Visit % sectors
