@@ -16,7 +16,6 @@ class Updating: SKScene{
 
     func done(){
         i -= 1
-        print("done", i)
         if i == 0{
             //Really done
             UserDefaults.standard.set(version, forKey: "v")
@@ -43,15 +42,25 @@ class Updating: SKScene{
             let cv = (UserDefaults.standard.string(forKey: "v") ?? "0.0.0").split(separator: ".")
             fetch = data["behaviour"]!.string!
             SECTOR_PATH = data["sectors"]!.string!
+            UserDefaults.standard.set(SECTOR_PATH, forKey: "secpath")
             version = ov
             if v[0] > cv[0] || v[1] > cv[1] || v[2] > cv[2]{
                 //oh no
                 update()
                 return
             }
-            reallyDone()
+            DispatchQueue.main.async{reallyDone()}
         } _: { err in
-            self.reallyDone()
+            guard let s = UserDefaults.standard.string(forKey: "secpath") else{
+                let note = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+                note.text = "internet connection required"
+                note.fontSize = 40
+                note.position = self.pos()
+                self.addChild(note)
+                return
+            }
+            SECTOR_PATH = s
+            DispatchQueue.main.async{self.reallyDone()}
         }
     }
     
@@ -59,17 +68,19 @@ class Updating: SKScene{
         loadingbg.lineWidth = 0
         loadingbg.position = pos(my: 0.2)
         loadingbg.fillColor = .gray
-        self.addChild(loading)
+        
         loading.lineWidth = 0
         loading.position = pos(my: 0.2, x: -150)
         loading.fillColor = .white
         loading.zPosition = 1
         loading.xScale = 0
-        self.addChild(loadingbg)
+        
         let note = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
         note.text = "updating"
         note.fontSize = 60
         note.position = pos()
+        self.addChild(loading)
+        self.addChild(loadingbg)
         self.addChild(note)
         
         //load stuff

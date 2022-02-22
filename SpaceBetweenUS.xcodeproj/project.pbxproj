@@ -32,7 +32,6 @@
 		343E3154276B487A007F753D /* Sys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 343E3153276B487A007F753D /* Sys.swift */; };
 		343E3157276B4B61007F753D /* Structs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 343E3156276B4B61007F753D /* Structs.swift */; };
 		34753DBB27C3937500D259FC /* click.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 34753DBA27C3937500D259FC /* click.mp3 */; };
-		34753DBD27C506D000D259FC /* missionindex in Resources */ = {isa = PBXBuildFile; fileRef = 34753DBC27C506D000D259FC /* missionindex */; };
 		34753DBF27C5328200D259FC /* Updating.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34753DBE27C5328200D259FC /* Updating.swift */; };
 		34844AE026A9955900A3F790 /* Planet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34844ADF26A9955900A3F790 /* Planet.swift */; };
 		3484BFD6270754DD00C06FFC /* PlayNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3484BFD5270754DD00C06FFC /* PlayNetwork.swift */; };
@@ -42,29 +41,7 @@
 		34C5BC30271ED7F200997B1D /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34C5BC2F271ED7F200997B1D /* GameKit.framework */; platformFilter = ios; };
 		34CE76CA2799A316001D86BA /* PlayControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34CE76C92799A316001D86BA /* PlayControls.swift */; };
 		34CE76CC279B22D4001D86BA /* Story.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34CE76CB279B22D4001D86BA /* Story.swift */; };
-		34CE76CE27A03DA1001D86BA /* travel in Resources */ = {isa = PBXBuildFile; fileRef = 34CE76CD27A03DA1001D86BA /* travel */; };
-		34CE76D027A03F1A001D86BA /* planets in Resources */ = {isa = PBXBuildFile; fileRef = 34CE76CF27A03F1A001D86BA /* planets */; };
-		34CE76D227A03FA6001D86BA /* destroy in Resources */ = {isa = PBXBuildFile; fileRef = 34CE76D127A03FA6001D86BA /* destroy */; };
-		34CE76D427A04043001D86BA /* steal in Resources */ = {isa = PBXBuildFile; fileRef = 34CE76D327A04043001D86BA /* steal */; };
-		34CE76D627A040B3001D86BA /* build in Resources */ = {isa = PBXBuildFile; fileRef = 34CE76D527A040B3001D86BA /* build */; };
-		34CE76D827A04147001D86BA /* drill in Resources */ = {isa = PBXBuildFile; fileRef = 34CE76D727A04147001D86BA /* drill */; };
-		34CE76DA27A04150001D86BA /* canon in Resources */ = {isa = PBXBuildFile; fileRef = 34CE76D927A04150001D86BA /* canon */; };
-		34CE76DF27A04369001D86BA /* energy in Resources */ = {isa = PBXBuildFile; fileRef = 34CE76DE27A04369001D86BA /* energy */; };
-		34CE76E127A04378001D86BA /* research in Resources */ = {isa = PBXBuildFile; fileRef = 34CE76E027A04378001D86BA /* research */; };
-		34CE76E327A04380001D86BA /* gems in Resources */ = {isa = PBXBuildFile; fileRef = 34CE76E227A04380001D86BA /* gems */; };
-		34CE76E527A04389001D86BA /* flybys in Resources */ = {isa = PBXBuildFile; fileRef = 34CE76E427A04389001D86BA /* flybys */; };
-		34CE76E727A04397001D86BA /* visit in Resources */ = {isa = PBXBuildFile; fileRef = 34CE76E627A04397001D86BA /* visit */; };
-		34CE76EA27A15984001D86BA /* kills in Resources */ = {isa = PBXBuildFile; fileRef = 34CE76E927A15984001D86BA /* kills */; };
-		34DD98582771D7A300F391E2 /* items in Resources */ = {isa = PBXBuildFile; fileRef = 34DD98572771D7A300F391E2 /* items */; };
-		34E2B92327747EED007D3C6A /* ships in Resources */ = {isa = PBXBuildFile; fileRef = 34E2B92227747EED007D3C6A /* ships */; };
-		34E2B92527747F04007D3C6A /* asteroids in Resources */ = {isa = PBXBuildFile; fileRef = 34E2B92427747F04007D3C6A /* asteroids */; };
 		34E2B92927761DAC007D3C6A /* UsefulFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E2B92827761DAC007D3C6A /* UsefulFunctions.swift */; };
-		34E2B92C277F357E007D3C6A /* electro in Resources */ = {isa = PBXBuildFile; fileRef = 34E2B92B277F357E007D3C6A /* electro */; };
-		34E2B92E277F36D0007D3C6A /* townhalls in Resources */ = {isa = PBXBuildFile; fileRef = 34E2B92D277F36D0007D3C6A /* townhalls */; };
-		34EB9E4C27708DF0002C252B /* drills in Resources */ = {isa = PBXBuildFile; fileRef = 34EB9E4B27708DF0002C252B /* drills */; };
-		34EB9E4E27708E09002C252B /* satellites in Resources */ = {isa = PBXBuildFile; fileRef = 34EB9E4D27708E09002C252B /* satellites */; };
-		34EB9E5027708E50002C252B /* shooters in Resources */ = {isa = PBXBuildFile; fileRef = 34EB9E4F27708E50002C252B /* shooters */; };
-		34EB9E5227708E71002C252B /* dishes in Resources */ = {isa = PBXBuildFile; fileRef = 34EB9E5127708E71002C252B /* dishes */; };
 		DC78185E26945B9200A19FE9 /* Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC78185D26945B9200A19FE9 /* Connect.swift */; };
 		DC9F527B269249AB00DDF0AF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC9F527A269249AB00DDF0AF /* AppDelegate.swift */; };
 		DC9F5283269249AB00DDF0AF /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC9F5282269249AB00DDF0AF /* GameViewController.swift */; };
@@ -98,7 +75,6 @@
 		343E3153276B487A007F753D /* Sys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sys.swift; sourceTree = "<group>"; };
 		343E3156276B4B61007F753D /* Structs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Structs.swift; sourceTree = "<group>"; };
 		34753DBA27C3937500D259FC /* click.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = click.mp3; sourceTree = "<group>"; };
-		34753DBC27C506D000D259FC /* missionindex */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = missionindex; sourceTree = "<group>"; };
 		34753DBE27C5328200D259FC /* Updating.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Updating.swift; sourceTree = "<group>"; };
 		34844ADF26A9955900A3F790 /* Planet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Planet.swift; sourceTree = "<group>"; };
 		3484BFD5270754DD00C06FFC /* PlayNetwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayNetwork.swift; sourceTree = "<group>"; };
@@ -109,29 +85,7 @@
 		34C5BC2F271ED7F200997B1D /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
 		34CE76C92799A316001D86BA /* PlayControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayControls.swift; sourceTree = "<group>"; };
 		34CE76CB279B22D4001D86BA /* Story.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Story.swift; sourceTree = "<group>"; };
-		34CE76CD27A03DA1001D86BA /* travel */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = travel; sourceTree = "<group>"; };
-		34CE76CF27A03F1A001D86BA /* planets */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = planets; sourceTree = "<group>"; };
-		34CE76D127A03FA6001D86BA /* destroy */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = destroy; sourceTree = "<group>"; };
-		34CE76D327A04043001D86BA /* steal */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = steal; sourceTree = "<group>"; };
-		34CE76D527A040B3001D86BA /* build */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = build; sourceTree = "<group>"; };
-		34CE76D727A04147001D86BA /* drill */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = drill; sourceTree = "<group>"; };
-		34CE76D927A04150001D86BA /* canon */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = canon; sourceTree = "<group>"; };
-		34CE76DE27A04369001D86BA /* energy */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = energy; sourceTree = "<group>"; };
-		34CE76E027A04378001D86BA /* research */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = research; sourceTree = "<group>"; };
-		34CE76E227A04380001D86BA /* gems */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = gems; sourceTree = "<group>"; };
-		34CE76E427A04389001D86BA /* flybys */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = flybys; sourceTree = "<group>"; };
-		34CE76E627A04397001D86BA /* visit */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = visit; sourceTree = "<group>"; };
-		34CE76E927A15984001D86BA /* kills */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = kills; sourceTree = "<group>"; };
-		34DD98572771D7A300F391E2 /* items */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = items; sourceTree = "<group>"; };
-		34E2B92227747EED007D3C6A /* ships */ = {isa = PBXFileReference; explicitFileType = text.script.python; fileEncoding = 4; path = ships; sourceTree = "<group>"; };
-		34E2B92427747F04007D3C6A /* asteroids */ = {isa = PBXFileReference; explicitFileType = text.script.python; fileEncoding = 4; path = asteroids; sourceTree = "<group>"; };
 		34E2B92827761DAC007D3C6A /* UsefulFunctions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsefulFunctions.swift; sourceTree = "<group>"; };
-		34E2B92B277F357E007D3C6A /* electro */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = electro; sourceTree = "<group>"; };
-		34E2B92D277F36D0007D3C6A /* townhalls */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = townhalls; sourceTree = "<group>"; };
-		34EB9E4B27708DF0002C252B /* drills */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = drills; sourceTree = "<group>"; };
-		34EB9E4D27708E09002C252B /* satellites */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = satellites; sourceTree = "<group>"; };
-		34EB9E4F27708E50002C252B /* shooters */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = shooters; sourceTree = "<group>"; };
-		34EB9E5127708E71002C252B /* dishes */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = dishes; sourceTree = "<group>"; };
 		69826CF035AF16853F01F5DA /* Pods_game.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_game.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC78185D26945B9200A19FE9 /* Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connect.swift; sourceTree = "<group>"; };
 		DC9F5277269249AB00DDF0AF /* game.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = game.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -251,45 +205,6 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		34CE76DB27A0416F001D86BA /* missions */ = {
-			isa = PBXGroup;
-			children = (
-				34753DBC27C506D000D259FC /* missionindex */,
-				34CE76CD27A03DA1001D86BA /* travel */,
-				34CE76D727A04147001D86BA /* drill */,
-				34CE76CF27A03F1A001D86BA /* planets */,
-				34CE76E927A15984001D86BA /* kills */,
-				34CE76D927A04150001D86BA /* canon */,
-				34CE76E627A04397001D86BA /* visit */,
-				34CE76E427A04389001D86BA /* flybys */,
-				34CE76E027A04378001D86BA /* research */,
-				34CE76E227A04380001D86BA /* gems */,
-				34CE76D127A03FA6001D86BA /* destroy */,
-				34CE76D527A040B3001D86BA /* build */,
-				34CE76DE27A04369001D86BA /* energy */,
-				34CE76D327A04043001D86BA /* steal */,
-			);
-			path = missions;
-			sourceTree = "<group>";
-		};
-		34E2B91D27747E45007D3C6A /* behaviour */ = {
-			isa = PBXGroup;
-			children = (
-				34E2B92227747EED007D3C6A /* ships */,
-				34E2B92427747F04007D3C6A /* asteroids */,
-				34EB9E4B27708DF0002C252B /* drills */,
-				34E2B92B277F357E007D3C6A /* electro */,
-				34EB9E4D27708E09002C252B /* satellites */,
-				34EB9E4F27708E50002C252B /* shooters */,
-				34EB9E5127708E71002C252B /* dishes */,
-				34DD98572771D7A300F391E2 /* items */,
-				34E2B92D277F36D0007D3C6A /* townhalls */,
-				34CE76DB27A0416F001D86BA /* missions */,
-			);
-			name = behaviour;
-			path = ../behaviour;
-			sourceTree = "<group>";
-		};
 		DC9F526E269249AB00DDF0AF = {
 			isa = PBXGroup;
 			children = (
@@ -320,7 +235,6 @@
 				343E3142276A3EC5007F753D /* Utils */,
 				343E313A276A3B9D007F753D /* Play */,
 				343E3155276B48C9007F753D /* Scenes */,
-				34E2B91D27747E45007D3C6A /* behaviour */,
 				DC9F5287269249AC00DDF0AF /* Assets.xcassets */,
 				DC9F5284269249AB00DDF0AF /* Main.storyboard */,
 				DC9F5289269249AC00DDF0AF /* Info.plist */,
@@ -396,40 +310,17 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				34CE76DA27A04150001D86BA /* canon in Resources */,
-				34CE76D427A04043001D86BA /* steal in Resources */,
 				3346242D26B1490F008A73C3 /* HalogenbyPixelSurplus-Regular.otf in Resources */,
-				34CE76E727A04397001D86BA /* visit in Resources */,
 				3340582727234ACC0068C811 /* LightSpeedOut.wav in Resources */,
 				3340582927234AD30068C811 /* Lazer.wav in Resources */,
-				34CE76E327A04380001D86BA /* gems in Resources */,
-				34E2B92327747EED007D3C6A /* ships in Resources */,
-				34E2B92C277F357E007D3C6A /* electro in Resources */,
 				33C227AE273C679B00F83862 /* thrust.wav in Resources */,
 				3340582B27234E6C0068C811 /* InLightSpeed.wav in Resources */,
-				34CE76D027A03F1A001D86BA /* planets in Resources */,
-				34EB9E4C27708DF0002C252B /* drills in Resources */,
-				34E2B92527747F04007D3C6A /* asteroids in Resources */,
-				34DD98582771D7A300F391E2 /* items in Resources */,
-				34CE76E527A04389001D86BA /* flybys in Resources */,
-				34CE76CE27A03DA1001D86BA /* travel in Resources */,
-				34CE76EA27A15984001D86BA /* kills in Resources */,
 				33A879212725EC4B0096A6C4 /* inshipSound.wav in Resources */,
-				34753DBD27C506D000D259FC /* missionindex in Resources */,
 				33A8791F2725EC460096A6C4 /* playerWalking.wav in Resources */,
-				34CE76D827A04147001D86BA /* drill in Resources */,
-				34CE76D227A03FA6001D86BA /* destroy in Resources */,
-				34EB9E5227708E71002C252B /* dishes in Resources */,
 				33592F6A278065B50010EF7E /* extras in Resources */,
 				DC9F5286269249AB00DDF0AF /* Main.storyboard in Resources */,
 				DC9F5288269249AC00DDF0AF /* Assets.xcassets in Resources */,
-				34CE76D627A040B3001D86BA /* build in Resources */,
-				34CE76DF27A04369001D86BA /* energy in Resources */,
 				34753DBB27C3937500D259FC /* click.mp3 in Resources */,
-				34CE76E127A04378001D86BA /* research in Resources */,
-				34EB9E4E27708E09002C252B /* satellites in Resources */,
-				34EB9E5027708E50002C252B /* shooters in Resources */,
-				34E2B92E277F36D0007D3C6A /* townhalls in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

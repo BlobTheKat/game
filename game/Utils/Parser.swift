@@ -13,7 +13,6 @@ extension GameData{
     static var fetch: String? = nil
     func load(_ cb: @escaping (GameData) -> ()){
         let key = "data"+self[0]["___path"]!.string!
-        print(key)
         game.fetch(GameData.fetch! + self[0]["___path"]!.string!){ (str: String) in
             UserDefaults.standard.set(str, forKey: key)
             cb(GameData(data: str))
@@ -128,7 +127,7 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
         return
     }
     regions[CGPoint(x: regionx, y: regiony)] = a
-    fetch(SECTOR_PATH + "\(regionx)_\(regiony).region") { (d: Data) in
+    fetch(SECTOR_PATH + "/\(regionx)_\(regiony).region") { (d: Data) in
         DispatchQueue.main.async {
             var data = d
             //guard let _ = data.read() else {return}
