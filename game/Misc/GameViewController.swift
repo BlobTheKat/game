@@ -19,13 +19,23 @@ class GameViewController: UIViewController, GADFullScreenContentDelegate {
         SKScene.font = "HalogenbyPixelSurplus-Regular"
         super.viewDidLoad()
         if let view = self.view as! SKView? {
-            controller = self
-            skview = view
-            let scene = ((tutorialProgress.rawValue > tutorial.shoot.rawValue ? Play(size: view.frame.size) : Story(size: view.frame.size)) as SKScene)
+            let done = {
+                let scene = ((tutorialProgress.rawValue > tutorial.shoot.rawValue ? Play(size: view.frame.size) : Story(size: view.frame.size)) as SKScene)
+                scene.scaleMode = .aspectFit
+                scene.backgroundColor = .black
+                view.presentScene(scene, transition: SKScene.transition)
+            }
+            let scene = Updating(size: view.frame.size)
+            
             scene.scaleMode = .aspectFit
             scene.backgroundColor = .black
-            SKScene.transition.pausesIncomingScene = false
+            
             view.presentScene(scene, transition: SKScene.transition)
+            scene.reallyDone = done
+
+            controller = self
+            skview = view
+            SKScene.transition.pausesIncomingScene = false
             view.preferredFramesPerSecond = 120
             view.showsFPS = true
         }

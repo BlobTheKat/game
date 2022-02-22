@@ -33,6 +33,7 @@
 		343E3157276B4B61007F753D /* Structs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 343E3156276B4B61007F753D /* Structs.swift */; };
 		34753DBB27C3937500D259FC /* click.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 34753DBA27C3937500D259FC /* click.mp3 */; };
 		34753DBD27C506D000D259FC /* missionindex in Resources */ = {isa = PBXBuildFile; fileRef = 34753DBC27C506D000D259FC /* missionindex */; };
+		34753DBF27C5328200D259FC /* Updating.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34753DBE27C5328200D259FC /* Updating.swift */; };
 		34844AE026A9955900A3F790 /* Planet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34844ADF26A9955900A3F790 /* Planet.swift */; };
 		3484BFD6270754DD00C06FFC /* PlayNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3484BFD5270754DD00C06FFC /* PlayNetwork.swift */; };
 		3484BFD82709C6C600C06FFC /* PlayCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3484BFD72709C6C600C06FFC /* PlayCore.swift */; };
@@ -98,6 +99,7 @@
 		343E3156276B4B61007F753D /* Structs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Structs.swift; sourceTree = "<group>"; };
 		34753DBA27C3937500D259FC /* click.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = click.mp3; sourceTree = "<group>"; };
 		34753DBC27C506D000D259FC /* missionindex */ = {isa = PBXFileReference; explicitFileType = text.script.python; path = missionindex; sourceTree = "<group>"; };
+		34753DBE27C5328200D259FC /* Updating.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Updating.swift; sourceTree = "<group>"; };
 		34844ADF26A9955900A3F790 /* Planet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Planet.swift; sourceTree = "<group>"; };
 		3484BFD5270754DD00C06FFC /* PlayNetwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayNetwork.swift; sourceTree = "<group>"; };
 		3484BFD72709C6C600C06FFC /* PlayCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayCore.swift; sourceTree = "<group>"; };
@@ -233,6 +235,7 @@
 			children = (
 				33CF26182722C46500D25508 /* DPlay.swift */,
 				33E378B626BD57780034B14E /* PlayerDied.swift */,
+				34753DBE27C5328200D259FC /* Updating.swift */,
 				34CE76CB279B22D4001D86BA /* Story.swift */,
 				34A5547326BC201800D43C04 /* Disconnected.swift */,
 			);
@@ -479,6 +482,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				34753DBF27C5328200D259FC /* Updating.swift in Sources */,
 				343E3157276B4B61007F753D /* Structs.swift in Sources */,
 				34CE76CA2799A316001D86BA /* PlayControls.swift in Sources */,
 				33E378B726BD57780034B14E /* PlayerDied.swift in Sources */,

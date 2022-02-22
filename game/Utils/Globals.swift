@@ -36,7 +36,8 @@ var ships = GameData("/ships")!
 var asteroids = GameData("/asteroids")!
 
 //item level dictionaries
-var items = GameData("/items")!.map { json -> GameData in
+var itemIndex = GameData("/items")!
+var items = itemIndex.map { json -> GameData in
     return GameData(json["path"]!.string ?? "/null")!
 }
 

@@ -424,7 +424,7 @@ extension Play{
                 let left = CGFloat(data.readunsafe() as Float)
                 let dat = MISSIONS[name]![lvl]
                 let total = CGFloat(dat["amount"]!.number!)
-                let mission = (name: missionTXTS[name]!.string!.split(separator: "%").joined(separator: "\(Int(total))"), val: total - left, max: total, gems: CGFloat(dat["gems"]!.number!), xp: CGFloat(dat["xp"]!.number!))
+                let mission = (name: missionTXTS[0][name]!.string!.split(separator: "%").joined(separator: "\(Int(total))"), val: total - left, max: total, gems: CGFloat(dat["gems"]!.number!), xp: CGFloat(dat["xp"]!.number!))
                 oldmap[mission.name] = nil
                 if i < missions.count{
                     if missions[i].name == mission.name && i < stats.missions.count{

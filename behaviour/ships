@@ -10,6 +10,7 @@ radius: 15
 speed: 1
 spin: 1
 texture: zship1
+boximg: ship1
 shootspeed: 0.05
 shootpoints: -10 40, 10 40
 shootvecs: 0, 0
@@ -19,6 +20,7 @@ mass: 400
 radius: 15
 speed: 1.1
 spin: 1.1
+boximg: ship2
 texture: zship2
 shootspeed: 0.05
 shootpoints: -10 40, 10 40
@@ -29,6 +31,7 @@ mass: 900
 radius: 17
 speed: 0.8
 spin: 0.8
+boximg: ship3
 texture: zship3
 shootspeed: 0.07
 shootpoints: -10 40, 10 40
@@ -39,6 +42,7 @@ mass: 1200
 radius: 16
 speed: 0.85
 spin: 0.85
+boximg: ship4
 texture: zship4
 shootspeed: 0.1
 shootpoints: -10 40, 10 40
@@ -49,6 +53,7 @@ mass: 500
 radius: 15
 speed: 1.1
 spin: 1.1
+boximg: ship5
 texture: zship5
 shootspeed: 0.05
 shootpoints: -10 40, 10 40
@@ -59,6 +64,7 @@ mass: 400
 radius: 16
 speed: 1.2
 spin: 1.2
+boximg: ship6
 texture: zship6
 shootspeed: 0.07
 shootpoints: -10 40, 10 40
@@ -69,6 +75,7 @@ mass: 360
 radius: 20
 speed: 1.3
 spin: 1.3
+boximg: ship7
 texture: zship7
 shootspeed: 0.1
 shootpoints: -10 40, 10 40
@@ -79,6 +86,7 @@ mass: 340
 radius: 18
 speed: 1.4
 spin: 1.3
+boximg: ship8
 texture: zship8
 shootspeed: 0.13
 shootpoints: -10 40, 10 40
@@ -89,6 +97,7 @@ mass: 320
 radius: 17
 speed: 1.5
 spin: 1.4
+boximg: ship9
 texture: zship9
 shootspeed: 0.15
 shootpoints: -10 40, 10 40
@@ -99,6 +108,7 @@ mass: 350
 radius: 17
 speed: 1.6
 spin: 1.4
+boximg: ship10
 texture: zship10
 shootspeed: 0.2
 shootpoints: -10 40, 10 40
@@ -109,6 +119,7 @@ mass: 600
 radius: 9
 speed: 1.3
 spin: 1.2
+boximg: ship11
 texture: zship11
 shootspeed: 0.05
 shootpoints: -20 40, 20 40
@@ -120,6 +131,7 @@ mass: 700
 radius: 9
 speed: 1.5
 spin: 1.2
+boximg: ship12
 texture: zship12
 shootspeed: 0.06
 shootpoints: -20 40, 20 40
@@ -131,6 +143,7 @@ mass: 800
 radius: 9
 speed: 1.6
 spin: 1.4
+boximg: ship13
 texture: zship13
 shootspeed: 0.09
 shootpoints: -20 40, 20 40
@@ -142,6 +155,7 @@ mass: 500
 radius: 18
 speed: 1.2
 spin: 1.1
+boximg: ship14
 texture: zship14
 shootspeed: 0.1
 shootpoints: -20 40, 20 40
@@ -152,6 +166,7 @@ mass: 500
 radius: 17
 speed: 1.5
 spin: 1.4
+boximg: ship15
 texture: zship15
 shootspeed: 0.15
 shootpoints: -20 40, 20 40
@@ -162,6 +177,7 @@ mass: 800
 radius: 17
 speed: 2
 spin: 1.6
+boximg: ship16
 texture: zship16
 shootspeed: 0.2
 shootpoints: -20 40, 20 40
@@ -172,6 +188,7 @@ mass: 1200
 radius: 16
 speed: 0.7
 spin: 0.8
+boximg: ship17
 texture: zship17
 shootspeed: 0.03
 shootpoints: -20 40, 20 40
@@ -182,6 +199,7 @@ mass: 2000
 radius: 16
 speed: 1
 spin: 1
+boximg: ship18
 texture: zship18
 shootspeed: 0.2
 shootpoints: -20 40, 20 40
@@ -192,6 +210,7 @@ mass: 1800
 radius: 18
 speed: 3
 spin: 1.5
+boximg: ship19
 texture: zship19
 shootspeed: 0.1
 shootpoints: -20 40, 20 40

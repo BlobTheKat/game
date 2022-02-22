@@ -10,9 +10,24 @@ import SpriteKit
 
 typealias GameData = [[String: JSON]]
 extension GameData{
+    static var fetch: String? = nil
+    func load(_ cb: @escaping (GameData) -> ()){
+        let key = "data"+self[0]["___path"]!.string!
+        print(key)
+        game.fetch(GameData.fetch! + self[0]["___path"]!.string!){ (str: String) in
+            UserDefaults.standard.set(str, forKey: key)
+            cb(GameData(data: str))
+        } _: { err in
+            fatalError(err)
+        }
+    }
     static let floatparser = try! NSRegularExpression(pattern: "^(-?(?:\\d+\\.\\d*|\\.?\\d+)(?:e[+-]?\\d+)?)([a-zA-Z%]*)$")
     init?(_ path: String){
-        guard let dat = FileManager.default.contents(atPath: Bundle.main.path(forResource: path, ofType: nil) ?? ""), let s = String(data: dat, encoding: .utf8) else {
+        if GameData.fetch != nil{
+            self = [["___path": .string(path)]]
+            return
+        }
+        guard let s = UserDefaults.standard.string(forKey: "data"+path) else {
             return nil
         }
         self.init(data: s)
@@ -26,7 +41,7 @@ extension GameData{
         while i < text.count{
             self.append([:])
             while i < text.count && text[i] != ""{
-                let t = text[i].split(separator: ":")
+                let t = text[i].split(separator: ":", maxSplits: 1)
                 guard t.count > 1 else{self[self.count-1][String(t[0])] = .null;i+=1;continue}
                 let value = t[1].trimmingCharacters(in: CharacterSet([" ", "\u{0009}"]))
                 let match = GameData.floatparser.firstMatch(in: value, range: NSRange(value.startIndex..<value.endIndex, in: value))
@@ -113,7 +128,7 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
         return
     }
     regions[CGPoint(x: regionx, y: regiony)] = a
-    fetch("https://raw.githubusercontent.com/BlobTheKat/data/master/\(regionx)_\(regiony).region") { (d: Data) in
+    fetch(SECTOR_PATH + "\(regionx)_\(regiony).region") { (d: Data) in
         DispatchQueue.main.async {
             var data = d
             //guard let _ = data.read() else {return}
