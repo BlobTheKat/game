@@ -637,7 +637,7 @@ extension Play{
             statsLabel[2].text = "damage:"
             statsLabel[1].text = "size: \(Int(ships[id]["radius"]?.number ?? 15) * 2)m,"
             statsLabel[0].text = ""
-            statsLabel2[4].text = "\(Int((ships[id]["speed"]?.number ?? 1) * 100))"
+            statsLabel2[4].text = "\(Int((ships[id]["speed"]?.number ?? 1) * 300))"
             statsLabel2[3].text = "\(Int((ships[id]["spin"]?.number ?? 1) * 10))"
             let dmg = SHOOTDAMAGES[id-1].reduce(0) { a, b in return a + b}
             statsLabel2[2].text = "\(Int(dmg)) (\(Int(dmg * (ships[id]["shootspeed"]?.number ?? 0.05) * 60))/s)"

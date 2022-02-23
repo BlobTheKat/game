@@ -535,6 +535,7 @@ extension Play{
     func didMake(_ success: Bool){renderUpgradeUI()}
     func dealDamage(_ damage: Double){
         if health > damage{
+            let oldRatio = health / maxHealth
             health -= damage
             let ratio = health / maxHealth
             if ratio < 0.25{
@@ -542,7 +543,10 @@ extension Play{
                     DisplayWARNING("warning: low health",.warning,true)
                 }
             }
-            healthBar.texture = SKTexture(imageNamed: "health\(Int8(round(ratio * 13)))")
+            let r = Int8(round(ratio * 13))
+            if r != Int8(round(oldRatio * 13)){
+                healthBar.texture = SKTexture(imageNamed: "health\(r)")
+            }
             self.run(SKAction.sequence([
                 SKAction.run{
                     let cam = self.cam
@@ -574,11 +578,15 @@ extension Play{
         }
     }
     func heal(_ amount: Double){
+        let oldRatio = health / maxHealth
         health += amount
         if health > maxHealth{
             health = maxHealth
         }
         let ratio = health / maxHealth
-        healthBar.texture = SKTexture(imageNamed: "health\(Int8(round(ratio * 13)))")
+        let r = Int8(round(ratio * 13))
+        if r != Int8(round(oldRatio * 13)){
+            healthBar.texture = SKTexture(imageNamed: "health\(r)")
+        }
     }
 }
