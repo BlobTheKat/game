@@ -201,6 +201,7 @@ extension Play{
         speedLabel.text = ship.landed ? "0.000" : %Float(vel / 2)
     }
     func spaceUpdate(){
+        heal(0.1 / 60) //1 hp every 10s
         
         energyCount.text = "\(Int(energyAmount))"
         researchCount.text = "\(Int(researchAmount))"
@@ -344,6 +345,7 @@ extension Play{
                     //collect
                     lastSentEnergy += random(min: 100, max: 200)
                     self.collectibles.remove(i)
+                    heal(2)
                     i.run(.fadeOut(withDuration: 0.4).ease(.easeOut))
                     i.run(.sequence([.scale(to: 1.5, duration: 0.7),.run{i.removeFromParent()}]))
                     vibratePhone(.light)
@@ -570,5 +572,13 @@ extension Play{
                 SKScene.transition = .crossFade(withDuration: 0)
             }
         }
+    }
+    func heal(_ amount: Double){
+        health += amount
+        if health > maxHealth{
+            health = maxHealth
+        }
+        let ratio = health / maxHealth
+        healthBar.texture = SKTexture(imageNamed: "health\(Int8(round(ratio * 13)))")
     }
 }

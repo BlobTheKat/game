@@ -796,7 +796,7 @@ extension Play{
         
         
         let randomSound = Int(random(min: 1, max: 4))
-                    ambient = SKAudioNode(fileNamed: "extras/ambient\(randomSound).wav")
+                    ambient = SKAudioNode(fileNamed: "extras/ambient\(randomSound).mp3")
                     
                     switch randomSound{
                     case 1: self.waitForSound = 180
@@ -1180,7 +1180,7 @@ extension Play{
         planetLanded = planetTouched
         showLandedUI()
         if vel > 50 {
-            let impactSound = SKAudioNode(fileNamed: "extras/impact.wav")
+            let impactSound = SKAudioNode(fileNamed: "impact.mp3")
             impactSound.run(SKAction.changeVolume(to: 0.3, duration: 0))
             self.addChild(impactSound)
             let _ = timeout(1){

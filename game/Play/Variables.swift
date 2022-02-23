@@ -32,8 +32,8 @@ class Play: SKScene{
     //Camera
     var cam = SKCameraNode()
     //Sounds for lightspeed and thrust
-    let inlightSpeed = SKAudioNode(fileNamed: "InLightSpeed.wav")
-    var thrustSound = SKAudioNode(fileNamed: "thrust.wav")
+    let inlightSpeed = SKAudioNode(fileNamed: "InLightSpeed.mp3")
+    var thrustSound = SKAudioNode(fileNamed: "thrust.mp3")
     //ambient sound
     var waitForSound = TimeInterval()
    //playing impact sound
@@ -180,11 +180,11 @@ class Play: SKScene{
     //Used as a failsafe to prevent calling twice and therefore crashing the game
     var moved = false
     //Player health
-    var health = 100.0
-    var maxHealth = 100.0
+    var health = 150.0
+    var maxHealth = 150.0
     //Sound Actions
-    var lightSpeedOut = SKAction.playSoundFileNamed("LightSpeedOut.wav", waitForCompletion: false)
-    var shootSound = SKAction.playSoundFileNamed("Lazer.wav", waitForCompletion: false)
+    var lightSpeedOut = SKAction.playSoundFileNamed("LightSpeedOut.mp3", waitForCompletion: false)
+    var shootSound = SKAction.playSoundFileNamed("Lazer.mp3", waitForCompletion: false)
     //Sound variables
     var playedLightSpeedOut = false
     var playingThrustSound = false

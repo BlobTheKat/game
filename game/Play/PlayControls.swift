@@ -824,7 +824,7 @@ extension Play{
             guard amount != 0 else {return} //shortcut
             while planetLanded!.items[(Int(itemRot) + Int(amount)) & 255] != nil{amount += sign(amount)}
             let newRot = UInt8((Int(itemRot) + Int(amount)) & 255)
-            let box = UInt8(min(32, ceil(3000 / planetLanded!.radius)))
+            let box = UInt8(min(32, ceil(5000 / planetLanded!.radius)))
             var red = false
             var i = newRot &- box &+ 1
             while i != newRot &+ box{

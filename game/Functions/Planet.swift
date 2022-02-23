@@ -190,8 +190,7 @@ class Planet: Object{
                     parent.addChild(ray)
                     parent.dealDamage(item["damage"]?.number ?? 1)
                     let _ = timeout(0.2){ray.removeFromParent()}
-                    //parent.run(.playSoundFileNamed("extras/lightning\(Int(random(min: 1, max: 4))).wav", waitForCompletion: false))
-                    let lightStrike = SKAudioNode(fileNamed: "extras/lightning\(Int(random(min: 1, max: 4))).wav")
+                    let lightStrike = SKAudioNode(fileNamed: "lightning\(Int(random(min: 1, max: 4))).mp3")
                     lightStrike.run(.changePlaybackRate(to: 1.5, duration: 0))
                     lightStrike.autoplayLooped = false
                     parent.addChild(lightStrike)
@@ -379,7 +378,8 @@ class Planet: Object{
                     let y = i.position.y - n.position.y
                     if x * x + y * y < r{
                         //collect
-                        lastSentEnergy += random(min: 10, max: 20)
+                        if angry < 10{ parent?.heal(2) }
+                        lastSentEnergy += random(min: baseEnergyChunks * 0.5, max: baseEnergyChunks * 1.5)
                         self.collectibles.remove(i)
                         i.run(.fadeOut(withDuration: 0.4).ease(.easeOut))
                         i.run(.sequence([.scale(to: 1.5, duration: 0.7),.run{i.removeFromParent()}]))
@@ -407,6 +407,7 @@ class Planet: Object{
     let healthNode1 = SKShapeNode(rectOf: CGSize(width: 64, height: 3))
     let healthNode2 = SKShapeNode(rectOf: CGSize(width: 64, height: 3))
     var restoring = false
+    var baseEnergyChunks = 20.0
     override func decode(data: inout Data) {
         //decode things on the planet
         self.last = Double(data.readunsafe() as UInt32)
@@ -463,6 +464,7 @@ class Planet: Object{
         self.capacity = 0
         self.persec2 = 0
         self.capacity2 = 0
+        self.baseEnergyChunks = Double(len) * 50 //for 20 items you get 1000 per chunk
         while(i < len){
             while (self.children.count > child_i ? self.children[child_i].name : nil) != nil{child_i += 1;continue}
             let id: UInt8 = data.readunsafe()

@@ -25,8 +25,8 @@ class DPlay: SKScene, SKPhysicsContactDelegate{
     let door = SKSpriteNode(imageNamed: "door7")
     //Sound
     
-    let inShipSound = SKAudioNode(fileNamed: "inshipSound.wav")
-    let playerWalking = SKAudioNode(fileNamed: "playerWalking.wav")
+    let inShipSound = SKAudioNode(fileNamed: "inshipSound.mp3")
+    let playerWalking = SKAudioNode(fileNamed: "playerWalking.mp3")
     var framesQueued = 0.0
     var lastUpdate: TimeInterval? = nil
     let dPad = SKSpriteNode(imageNamed: "dPad")
