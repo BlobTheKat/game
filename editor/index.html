@@ -1,5 +1,5 @@
 <!-- Polyglott >:D
-"console groupCollapsed\n%cHello, There!\0background:url('https://cdn.discordapp.com/avatars/708227690972315749/a_fd3c653b48c467334d2729107a6874f4.gif') 0/100%;padding:220px 0 30px;line-height:0;color:black;text-shadow:1px 1px 0 white;font-size:32px\n\nconsole log\n%cemail%c: %cblob.kat%c@hotmail.com\0color:#5DB0D7;font-weight:bold\0color:#E8EAED\0font-weight:normal;color:#987FFF\0color:#F28B54\n\nconsole log\n%cdiscord%c: %cBlobKat%c#1831\0color:#5DB0D7;font-weight:bold\0color:#E8EAED\0font-weight:normal;color:#987FFF\0color:#F28B54".split("\n\n").map(_=>(_=_.split("\n"),_[0].split(" ").reduce((a,b)=>a[b],this)(..._[1].split("\0"))))
+"console groupCollapsed\n%cHello, There!\0background:url('https://slackmojis.com/emojis/6025-meow_shocked/download') 0/100%;padding:220px 0 30px;line-height:0;color:black;text-shadow:1px 1px 0 white;font-size:32px\n\nconsole log\n%cemail%c: %cblob.kat%c@hotmail.com\0color:#5DB0D7;font-weight:bold\0color:#E8EAED\0font-weight:normal;color:#987FFF\0color:#F28B54\n\nconsole log\n%cdiscord%c: %cBlobKat%c#1831\0color:#5DB0D7;font-weight:bold\0color:#E8EAED\0font-weight:normal;color:#987FFF\0color:#F28B54".split("\n\n").map(_=>(_=_.split("\n"),_[0].split(" ").reduce((a,b)=>a[b],this)(..._[1].split("\0"))))
 /*-->
 <!DOCTYPE html>
 <head>
@@ -178,6 +178,7 @@
     padding: 15px;
   }
   #side{
+		overflow: auto;
     left: 100%;
     right: unset;
     box-shadow: 10px 0 20px 10px black;
@@ -288,7 +289,7 @@
     padding-left: 0;
   }
   @media (hover: none){
-    toolbar.header{
+    body.editor toolbar.header{
       display: flex !important;
     }
   }
@@ -436,28 +437,28 @@
   input[type=range]::-webkit-slider-runnable-track {
     height: 18px;
     cursor: pointer;
-    background: #666;
+    background: var(--slider-fill, #666);
   }
   input[type=range]::-ms-fill-lower, input[type=range]::-moz-range-progress{
     background: #999;
   }
   @media screen and (-webkit-min-device-pixel-ratio:0) {
     input[type='range']::-webkit-slider-thumb {
-      box-shadow: 100px 0 0 100px #666;
+      box-shadow: 100px 0 0 100px var(--slider-fill, #666);
     }
     input[type=range]::-webkit-slider-runnable-track {
       background: #999;
     }
   }
   input.normal_slider[type=range]::-ms-fill-lower, input.normal_slider[type=range]::-moz-range-progress{
-    background: #666;
+    background: var(--slider-fill, #666);
   }
   input.normal_slider[type=range]::-webkit-slider-runnable-track {
     background: #999;
   }
   @media screen and (-webkit-min-device-pixel-ratio:0) {
     input.normal_slider[type='range']::-webkit-slider-thumb {
-      box-shadow: -150px 0 0 150px #666;
+      box-shadow: -150px 0 0 150px var(--slider-fill, #666);
     }
   }
   row.scale_slider input{
@@ -501,7 +502,7 @@ traffic light{
 </canv>
 <menu id="planets" class="peditor">
   <row id="radiusrow"><input type="checkbox" style="margin: auto" onchange="rad2.classList.toggle('scale_slider')" /><label>Scale: </label></row>
-  <row class="scale_slider scale_no"><input min=0.01 step=0.1 max=50 onchange="lastGhost.style.setProperty('--scale',this.value);redo_size()" type="number" style="flex-grow:2"/><input class="normal_slider" id="layer_slider" min=0.1 step=0.01 max=3 oninput="lastGhost.style.setProperty('--scale',this.value);redo_size()" type="range" style="flex-grow:2"/></row>
+  <row class="scale_slider scale_no"><input min=0.01 step=0.1 max=50 onchange="lastGhost && lastGhost.style.setProperty('--scale',this.value);redo_size()" type="number" style="flex-grow:2"/><input class="normal_slider" id="layer_slider" min=0.1 step=0.01 max=3 oninput="lastGhost && lastGhost.style.setProperty('--scale',this.value);redo_size()" type="range" style="flex-grow:2"/></row>
   
   <btn class="submenucontrol">Gradients</btn>
   <submenu>
@@ -592,6 +593,16 @@ traffic light{
   <row class="planet"><label>Mass: </label><input type="number" id="mass" min=0 step=1000 onchange="acted();nodeEdited.object.mass = +this.value" /></row>
 
   <row class="planet"><label>Spin: </label><input type="number" id="spin" step=0.001 onchange="acted();let spin = nodeEdited.object.spin = +this.value;if(spin && ANIMS)nodeEdited.style.setProperty('--animation', 'rotate ' + 0.10471975511965977 / Math.abs(spin) + 's infinite linear' + (spin > 0 ? ' reverse' : ''));else nodeEdited.style.setProperty('--animation', 'none');redraw()" /></row>
+
+	<row class="sector"><label>Density: </label><input class="normal_slider" id="density" min=0 step=0.01 max=0.3 type="range" style="margin:6px" /></row>
+
+	<row class="sector"><label>Star ratio: </label><input class="normal_slider" id="starratio" min=0 step=0.05 max=1 value=0.3 type="range" style="margin:6px;--slider-fill: orange" /></row>
+
+	<row class="sector"><label>Centering: </label><input class="normal_slider" id="centering" min=-1 step=0.1 max=1 type="range" style="margin:6px" /></row>
+
+	<row class="sector" style="margin-bottom: 20px;">High centering = lots of stars near center</row>
+
+	<row class="sector"><btn id="wipesector" style="color:#e22">wipe</btn><btn id="fillsector">fill</btn></row>
 </menu>
 <menu id="menu" style="transform: translateX(100%);">
   <row id="tohome"><img src="/home.png" class="btn" /> <label>Home</label></row>
@@ -719,34 +730,54 @@ traffic light{
   })
   const vars = varfor(document.body)
   function fetchsync(url){
-    let x=new XMLHttpRequest();x.open("GET", url, false);x.send();return x.responseText
+    //let x=new XMLHttpRequest();x.open("GET", url, false);x.send();return x.responseText
   }
-  async function readfile(path){
-    let text
-    try{text=await fetch(path).then(a=>a.text());if(!text)throw 1}catch(e){return null}
-    text = text.split('\n').map(a=>a.replace(/#(?:.*)/,''))
-    let i = 0
-    let arr = []
-    while(i < text.length){
-      arr.push({})
-      while(text[i]){
-        let t = text[i].split(':')
-        t[1] = t.slice(1).join(':')
-        if(!t[1])continue
-        t[1] = t[1].trim()
-        if(t[1] == "true" || t[1] == "yes")t[1] = true
-        else if(t[1] == "false" || t[1] == "no")t[1] = false
-        else if(+t[1] == +t[1])t[1] = +t[1]
-        arr[arr.length-1][t[0]]=t[1]
-        i++
-      }
-      i++
-    }
-    return arr
-  }
+	let suffixes = {
+		ms: 0.001, //millisecond
+		s: 1, //second
+		m: 60, //minute
+		h: 3600, //hour
+		d: 86400, //day
+		K: 1000, //thousand
+		k: 1000, //also thousand
+		M: 1000000, //million
+		"%": 0.01 //percent
+	}
+	function suffixify(str){
+		let m = str.match(/^(-?(?:\d+\.\d*|\.?\d+)(?:e[+-]?\d+)?)([a-zA-Z%]*)$/)
+		if(!m)return NaN
+		return m[1] * (suffixes[m[2]] || 1)
+	}
+	async function readfile(path){
+		let text
+		try{text = await fetch(path).then(a=>a.text())}catch(e){return null}
+		text = text.split('\n').map(a=>a.replace(/(?:#.*)/,''))
+		let i = 0
+		let arr = []
+		while(i < text.length){
+			arr.push({})
+			while(text[i]){
+				let t = text[i].split(':')
+				t[1] = t.slice(1).join(':').split("#")[0]
+				if(!t[1]){i++;continue}
+				t[1] = t[1].trim()
+				let p = suffixify(t[1])
+				if(t[1] == "true" || t[1] == "yes")t[1] = true
+				else if(t[1] == "false" || t[1] == "no")t[1] = false
+				else if(p == p)t[1] = p
+				arr[arr.length-1][t[0]]=t[1]
+				i++
+			}
+			i++
+		}
+		return arr
+	}
   let ANIMS = true
   let asteroids = []
-  readfile("/parent/behaviour/asteroids").then(a => asteroids = a)
+	;(async function(){
+		let behaviour = (await readfile('https://locus.tunnelvision.online/files'))[0].behaviour
+		readfile(behaviour + "/asteroids").then(a => asteroids = a)
+	})()
   async function srcFor(name){
     let {images: [{filename}]} = await fetch("/parent/game/Assets.xcassets/" + name + ".imageset/Contents.json").then(a=>a.json())
     return "/parent/game/Assets.xcassets/" + name + ".imageset/" + filename
@@ -1362,6 +1393,71 @@ traffic light{
       }
     }
   })
+	Object.defineProperty(Array.prototype, "cat", {value(fn, ...props){
+		let target = Object.create(null)
+		for(let prop of props)target[prop] = []
+		for(let i in this){
+			let a = fn(this[i], i, this)
+			if(a != void 0 && target[a])target[a].push(this[i])
+			else if(a != void 0){
+				throw new TypeError("Failed to categorize: property '"+a+"' not indicated")
+			}
+		}
+		return target
+	}, enumerable: false})
+	Object.defineProperty(Array.prototype, "cat2", {value(fn){
+		let t = [], f = []
+		for(let i in this)(fn(this[i], i, this) ? t : f).push(this[i])
+		return [f, t]
+	}, enumerable: false})
+	link("wipesector", function(){
+		let wipesector = id("wipesector")
+		if(wipesector.textContent == "wipe"){
+			wipesector.textContent = "are you sure?"
+			setTimeout(() => wipesector.textContent = "wipe", 2000)
+			return
+		}
+		wipesector.textContent = "wipe"
+		sectorEdited.sector.planets = []
+		sectorEdited.sector.asteroids = []
+		sectorEdited.innerHTML = ""
+		acted()
+	})
+	link("fillsector", function(){
+		if(!sectorEdited)return
+		let density = id("density").value
+		let starratio = id("starratio").value
+		let centering = id("centering").value
+		let [planets, stars] = planetlist.cat2(a=>a.superhot)
+		function makePlanet(x, y, p){
+			let planet = {textureshort: p.texture, texture: p.texture.split(" "), superhot: p.superhot, radius: p.radius, mass: p.mass, name: p.name, x, y, spin: p.spin,particle: p.particle}
+      sectorEdited.sector.planets.push(planet)
+			let p = document.createElement("planet")
+			p.t = planet.texture
+			p.object = planet
+			p.sector = sectorEdited.sector
+			planet.superhot && p.classList.add("hot")
+			transform(p)
+			p.style.width = p.style.height = planet.radius * 2 + "px"
+			p.ondragstart=_=>!1
+			sectorEdited.appendChild(p)
+		}
+		let count = sectorEdited.sector.w * sectorEdited.sector.h * density
+		while(count--){
+			let x = Math.round((Math.random() * sectorEdited.sector.w * 1000) - sectorEdited.sector.w * 500)
+			let y = Math.round((Math.random() * sectorEdited.sector.h * 1000) - sectorEdited.sector.h * 500)
+			let planet = (Math.random() < starratio ? stars : planets)
+			planet = planet[Math.floor(Math.random() * planet.length)]
+			//TODO: reshape x and y, check for safe area, place
+		}
+		acted()
+	})
+	const waveFunction = (t, a, b, c, i = squareFunction(t)) => b * (Math.cos(a * t + c) + 1 / b) * i
+	const squareFunction = t => 1 / Math.max(Math.abs(Math.sin(t)), Math.abs(Math.cos(t)))
+
+	link("fillsector", function(){
+		acted()
+	})
   link("secleft", function(){
     acted()
     region(sectorEdited.region.x - 1, sectorEdited.region.y).then(region => {
@@ -1374,7 +1470,7 @@ traffic light{
         sectorEdited.region = region
         sectorEdited.sector.region = region
         acted()
-        let {sector} = sectorEdited;sector.x = 250;let right = -100 - (sector.x - sector.w / 2);let left = 600 - (sector.x + sector.w / 2);if(left < 0)this.value = sector.x += left;if(right > 0)this.value = sector.x += right;sectorEdited.style.left = Math.round(sector.x - sector.w / 2) + 'px'
+        let {sector} = sectorEdited;sector.x = 250;let right = -100 - (sector.x - sector.w / 2);let left = 600 - (sector.x + sector.w / 2);if(left < 0)id("sx").value = sector.x += left;if(right > 0)id("sx").value = sector.x += right;sectorEdited.style.left = Math.round(sector.x - sector.w / 2) + 'px'
       }
     })
   })
@@ -1390,7 +1486,7 @@ traffic light{
         sectorEdited.region = region
         sectorEdited.sector.region = region
         acted()
-        let {sector} = sectorEdited;sector.x = 250;let right = -100 - (sector.x - sector.w / 2);let left = 600 - (sector.x + sector.w / 2);if(left < 0)this.value = sector.x += left;if(right > 0)this.value = sector.x += right;sectorEdited.style.left = Math.round(sector.x - sector.w / 2) + 'px'
+        let {sector} = sectorEdited;sector.x = 250;let right = -100 - (sector.x - sector.w / 2);let left = 600 - (sector.x + sector.w / 2);if(left < 0)id("sx").value = sector.x += left;if(right > 0)id("sx").value = sector.x += right;sectorEdited.style.left = Math.round(sector.x - sector.w / 2) + 'px'
       }
     })
   })
@@ -1406,7 +1502,7 @@ traffic light{
         sectorEdited.region = region
         sectorEdited.sector.region = region
         acted()
-        let {sector} = sectorEdited;sector.y = 250;let up = -100 - (sector.y - sector.h / 2);let down = 600 - (sector.y + sector.h / 2);if(up > 0)this.value = sector.y += up;if(down < 0)this.value = sector.y += down;sectorEdited.style.bottom = Math.round(sector.y - sector.h / 2) + 'px'
+        let {sector} = sectorEdited;sector.y = 250;let up = -100 - (sector.y - sector.h / 2);let down = 600 - (sector.y + sector.h / 2);if(up > 0)id("sy").value = sector.y += up;if(down < 0)id("sy").value = sector.y += down;sectorEdited.style.bottom = Math.round(sector.y - sector.h / 2) + 'px'
       }
     })
   })
@@ -1422,7 +1518,7 @@ traffic light{
         sectorEdited.region = region
         sectorEdited.sector.region = region
         acted()
-        let {sector} = sectorEdited;sector.y = 250;let up = -100 - (sector.y - sector.h / 2);let down = 600 - (sector.y + sector.h / 2);if(up > 0)this.value = sector.y += up;if(down < 0)this.value = sector.y += down;sectorEdited.style.bottom = Math.round(sector.y - sector.h / 2) + 'px'
+        let {sector} = sectorEdited;sector.y = 250;let up = -100 - (sector.y - sector.h / 2);let down = 600 - (sector.y + sector.h / 2);if(up > 0)id("sy").value = sector.y += up;if(down < 0)id("sy").value = sector.y += down;sectorEdited.style.bottom = Math.round(sector.y - sector.h / 2) + 'px'
       }
     })
   })
@@ -1589,12 +1685,9 @@ traffic light{
     square.style.setProperty("--size", down)
   }
   //initialise planet editor
-  async function make(key, txt = fetch("super/planets/"+key).then(a=>a.text())){
-    let [radius, mass, particle, spin, ...texture] = (await txt).split(" ")
-    let superhot = false
-    if(radius<0)radius = -radius, superhot = true
-    let textureshort = texture.join(" ")
-    texture = texture.map(a=>a.split(":"))
+  async function make(obj){
+    let {radius, mass, particle, spin, texture: textureshort, superhot, name} = obj
+    let texture = textureshort.split(" ").map(a=>a.split(":"))
     let sizes = texture.map(a=>a[1]||1)
     texture = texture.map(a=>a[0])
 		
@@ -1618,7 +1711,7 @@ traffic light{
 		planet.particle = particle
 		planet.spin = spin
 		planet.superhot = superhot
-		planet.name = key
+		planet.name = name
 		planet.texture = textureshort
 
     currents.appendChild(planet)
@@ -1627,30 +1720,27 @@ traffic light{
     link(btn, function(){
       planet.remove()
       btn.remove()
-      fetch("/del/"+encodeURI(key))
+			planetlist.splice(planetlist.indexOf(obj),1)
+			localStorage.planets = JSON.stringify(planetlist)
     })
     btn.classList.add("remove")
     currents.appendChild(btn)
   }
-  fetch("/superdirlist/planets").then(a=>a.text()).then(a=>{
-    let list=a.split("\n").filter(a=>!a.startsWith("."))
-    if(!list[0])return
-    for(let key of list){
-      make(key)
-    }
-  })
+	let planetlist = JSON.parse(localStorage.planets)
+  for(let i of planetlist){
+    make(i)
+  }
   link("save", function(){
     let i = $("#planets row input")
     let [,,, {value: name}, {value: radius}, {value: mass}, {value: spin}, {value: particle}, {checked: superhot}] = i
-    if(superhot)radius=-radius
     let textures = Array.from(square.children, i => i.name + ((i=i.style.getPropertyValue("--scale"),i&&i!=1)?":"+i:""))
-    let a = [radius, mass, particle, spin, ...textures].join(" ")
-    fetch("/save/"+name+"?data="+encodeURIComponent(a)).then(_=>{
-      square.innerHTML=""
-      for(let a of i.slice(1))a.value="",a.onchange&&a.onchange()
-      redo_size()
-      make(name, a)
-    }).catch(a=>alert("Failed Saving :("))
+    let a = {name, superhot, radius, mass, particle, spin, texture: textures.join(" ")}
+    square.innerHTML=""
+		for(let a of i.slice(1))a.value="",a.onchange&&a.onchange()
+		redo_size()
+		make(a)
+    planetlist.push(a)
+		localStorage.planets = JSON.stringify(planetlist)
   })
   fetch("/dirlist/game/Assets.xcassets/planets").then(a=>a.text()).then(a=>{a=a.split("\n").filter(a=>a.endsWith(".imageset")).map(a=>a.replace(".imageset",""));
     a.map(name=>srcFor("planets/" + name).then(src => {

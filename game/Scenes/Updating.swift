@@ -39,12 +39,12 @@ class Updating: SKScene{
             let data = GameData(data: str)[0]
             let ov = data["version"]!.string!
             let v = ov.split(separator: ".")
-            let cv = (UserDefaults.standard.string(forKey: "v") ?? "0.0.0").split(separator: ".")
+            let cv = (UserDefaults.standard.string(forKey: "v") ?? "0.0").split(separator: ".")
             fetch = data["behaviour"]!.string!
             SECTOR_PATH = data["sectors"]!.string!
             UserDefaults.standard.set(SECTOR_PATH, forKey: "secpath")
             version = ov
-            if v[0] > cv[0] || v[1] > cv[1] || v[2] > cv[2]{
+            if Int(v[0])! > Int(cv[0])! || Int(v[1])! > Int(cv[1])!{
                 //oh no
                 update()
                 return
