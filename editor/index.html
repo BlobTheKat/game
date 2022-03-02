@@ -594,11 +594,11 @@ traffic light{
 
   <row class="planet"><label>Spin: </label><input type="number" id="spin" step=0.001 onchange="acted();let spin = nodeEdited.object.spin = +this.value;if(spin && ANIMS)nodeEdited.style.setProperty('--animation', 'rotate ' + 0.10471975511965977 / Math.abs(spin) + 's infinite linear' + (spin > 0 ? ' reverse' : ''));else nodeEdited.style.setProperty('--animation', 'none');redraw()" /></row>
 
-	<row class="sector"><label>Density: </label><input class="normal_slider" id="density" min=0 step=0.01 max=0.3 type="range" style="margin:6px" /></row>
+	<row class="sector"><label>Density: </label><input class="normal_slider" id="density" min=0 step=0.002 max=0.2 value=0.05 type="range" style="margin:6px" /></row>
 
 	<row class="sector"><label>Star ratio: </label><input class="normal_slider" id="starratio" min=0 step=0.05 max=1 value=0.3 type="range" style="margin:6px;--slider-fill: orange" /></row>
 
-	<row class="sector"><label>Centering: </label><input class="normal_slider" id="centering" min=-1 step=0.1 max=1 type="range" style="margin:6px" /></row>
+	<row class="sector"><label>Centering: </label><input class="normal_slider" id="centering" min=-2 step=0.1 max=2 type="range" style="margin:6px" /></row>
 
 	<row class="sector" style="margin-bottom: 20px;">High centering = lots of stars near center</row>
 
@@ -779,9 +779,12 @@ traffic light{
 		readfile(behaviour + "/asteroids").then(a => asteroids = a)
 	})()
   async function srcFor(name){
+		if(srcFor._[name])return srcFor._[name]
     let {images: [{filename}]} = await fetch("/parent/game/Assets.xcassets/" + name + ".imageset/Contents.json").then(a=>a.json())
-    return "/parent/game/Assets.xcassets/" + name + ".imageset/" + filename
+    srcFor._[name] = "/parent/game/Assets.xcassets/" + name + ".imageset/" + filename
+		return srcFor._[name]
   }
+	srcFor._ = Object.create(null)
   let scene = id("scene")
   let elements = new Map()
   let regions = new Map()
@@ -1429,8 +1432,14 @@ traffic light{
 		let starratio = id("starratio").value
 		let centering = id("centering").value
 		let [planets, stars] = planetlist.cat2(a=>a.superhot)
-		function makePlanet(x, y, p){
-			let planet = {textureshort: p.texture, texture: p.texture.split(" "), superhot: p.superhot, radius: p.radius, mass: p.mass, name: p.name, x, y, spin: p.spin,particle: p.particle}
+		planets = planets.sort((a,b)=>b.radius-a.radius)
+		stars = stars.sort((a,b)=>b.radius-a.radius)
+		if(!stars.length)stars = planets
+		if(!planets.length)planets = stars
+		if(!planets.length)return
+		function makePlanet(x, y, o){
+			if(!o)return
+			let planet = {textureshort: o.texture, texture: o.texture.split(" "), superhot: o.superhot, radius: o.radius, mass: o.mass, name: o.name, x, y, spin: o.spin,particle: o.particle}
       sectorEdited.sector.planets.push(planet)
 			let p = document.createElement("planet")
 			p.t = planet.texture
@@ -1442,13 +1451,39 @@ traffic light{
 			p.ondragstart=_=>!1
 			sectorEdited.appendChild(p)
 		}
-		let count = sectorEdited.sector.w * sectorEdited.sector.h * density
-		while(count--){
-			let x = Math.round((Math.random() * sectorEdited.sector.w * 1000) - sectorEdited.sector.w * 500)
-			let y = Math.round((Math.random() * sectorEdited.sector.h * 1000) - sectorEdited.sector.h * 500)
-			let planet = (Math.random() < starratio ? stars : planets)
-			planet = planet[Math.floor(Math.random() * planet.length)]
-			//TODO: reshape x and y, check for safe area, place
+		let {sector} = sectorEdited
+		let count = sector.w * sector.h * density
+		let star = stars[Math.floor(Math.random() * stars.length)]
+		for(let p of sector.planets){
+			if(p.x * p.x + p.y * p.y < (p.radius + star.radius) * (p.radius + star.radius) * 9){
+				star = null
+				break
+			}
+		}
+		makePlanet(0, 0, star)
+		let fails = 0
+		while(fails < count * 0.9){
+			fails = 0
+			top: while(count-- > 0){
+				let x = Math.round((Math.random() * (sector.w * 1000 - 3000)) - sector.w * 500 + 1500)
+				let y = Math.round((Math.random() * (sector.h * 1000 - 3000)) - sector.h * 500 + 1500)
+				let planet = (Math.random() < starratio ? stars : planets)
+				planet = planet[Math.floor(Math.random() * planet.length)]
+				//TODO: reshape x and y
+				let X = 0.004 * Math.abs(x / sector.w)
+				let Y = 0.004 * Math.abs(y / sector.h)
+				let C = Math.max(X, Y)
+				//let T = Math.atan2(Y, X)
+				for(let p of sector.planets){
+					let xx = p.x - x, yy = p.y - y
+					if(xx * xx + yy * yy < (p.radius + planet.radius) * (p.radius + planet.radius) * Math.max(2, 1.5 / density * C ** centering)){
+						fails++
+						continue top
+					}
+				}
+				makePlanet(x, y, planet)
+			}
+			count = sector.w * sector.h * density
 		}
 		acted()
 	})
@@ -1733,6 +1768,10 @@ traffic light{
   link("save", function(){
     let i = $("#planets row input")
     let [,,, {value: name}, {value: radius}, {value: mass}, {value: spin}, {value: particle}, {checked: superhot}] = i
+		radius |= 0
+		mass |= 0
+		spin *= 1
+		particle |= 0
     let textures = Array.from(square.children, i => i.name + ((i=i.style.getPropertyValue("--scale"),i&&i!=1)?":"+i:""))
     let a = {name, superhot, radius, mass, particle, spin, texture: textures.join(" ")}
     square.innerHTML=""
