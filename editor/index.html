@@ -574,7 +574,11 @@ traffic light{
 
   <row class="sector"><label>Asteroids: </label><label id="asteroidcount"></label></row>
 
-  <row class="sector"><label>X: </label><input type="number" id="sx" onchange="acted();let {sector} = sectorEdited;sector.x = +this.value;let right = -100 - (sector.x - sector.w / 2);let left = 600 - (sector.x + sector.w / 2);if(left < 0)this.value = sector.x += left;if(right > 0)this.value = sector.x += right;sectorEdited.style.left = Math.round(sector.x - sector.w / 2) + 'px';acted()" /></row>
+  <row class="sector"><label>Name: </label><input type="text" id="sname" onchange="acted();sectorEdited.sector.name = this.value" /></row>
+
+	<row class="sector"><label>IP: </label><input type="text" id="sip" onchange="acted();sectorEdited.sector.ip = this.value" /><btn onclick="sectorEdited.sector.ip='';let a = sectorEdited.region.map(a=>a.ip.split(':')),p=this.previousElementSibling.value.split(':')[0]||a[0][0];a=a.filter(i=>i[0]==p&&i[1]).map(a=>a[1]);sectorEdited.sector.ip=(a.length?this.previousElementSibling.value=p+':'+(Math.max(...a)+1):this.previousElementSibling.value);acted()">auto</btn></row>
+
+	<row class="sector"><label>X: </label><input type="number" id="sx" onchange="acted();let {sector} = sectorEdited;sector.x = +this.value;let right = -100 - (sector.x - sector.w / 2);let left = 600 - (sector.x + sector.w / 2);if(left < 0)this.value = sector.x += left;if(right > 0)this.value = sector.x += right;sectorEdited.style.left = Math.round(sector.x - sector.w / 2) + 'px';acted()" /></row>
 
   <row class="sector"><label>Y: </label><input type="number" id="sy" onchange="acted();let {sector} = sectorEdited;sector.y = +this.value;let up = -100 - (sector.y - sector.h / 2);let down = 600 - (sector.y + sector.h / 2);if(up > 0)this.value = sector.y += up;if(down < 0)this.value = sector.y += down;sectorEdited.style.bottom = Math.round(sector.y - sector.h / 2) + 'px';acted()" /></row>
 
@@ -1102,6 +1106,8 @@ traffic light{
     sy: id("sy"),
     sw: id("sw"),
     sh: id("sh"),
+		sname: id("sname"),
+		sip: id("sip"),
     planetcount: id("planetcount"),
     asteroidcount: id("asteroidcount")
   }
@@ -1300,7 +1306,7 @@ traffic light{
     }else{
       //create sector
       region(Math.floor(x+0.5),Math.floor(y+0.5)).then(region => {
-        let sector = {planets:[],asteroids:[],x:((x%1+1.5)%1)*500,y:((y%1+1.5)%1)*500,w:50,h:50,region}
+        let sector = {planets:[],asteroids:[],x:((x%1+1.5)%1)*500,y:((y%1+1.5)%1)*500,w:50,h:50,region,ip:"",name:""}
         region.push(sector)
         if(region.element){
           //add square
@@ -1399,12 +1405,16 @@ traffic light{
 	Object.defineProperty(Array.prototype, "cat", {value(fn, ...props){
 		let target = Object.create(null)
 		for(let prop of props)target[prop] = []
-		for(let i in this){
+		if(props.length)for(let i in this){
 			let a = fn(this[i], i, this)
-			if(a != void 0 && target[a])target[a].push(this[i])
+			if(a != void 0 && !target[a])target[a].push(this[i])
 			else if(a != void 0){
 				throw new TypeError("Failed to categorize: property '"+a+"' not indicated")
 			}
+		}
+		else for(let i in this){
+			let a = fn(this[i], i, this)
+			if(a != void 0)(target[a] || (target[a] = [])).push(this[i])
 		}
 		return target
 	}, enumerable: false})
@@ -1761,7 +1771,7 @@ traffic light{
     btn.classList.add("remove")
     currents.appendChild(btn)
   }
-	let planetlist = JSON.parse(localStorage.planets)
+	let planetlist = JSON.parse(localStorage.planets || "[]")
   for(let i of planetlist){
     make(i)
   }
@@ -1910,6 +1920,8 @@ traffic light{
       inputs.sh.value = sectorEdited.sector.h
       inputs.planetcount.textContent = sectorEdited.sector.planets.length
       inputs.asteroidcount.textContent = sectorEdited.sector.asteroids.length
+			inputs.sname.value = sectorEdited.sector.name
+			inputs.sip.value = sectorEdited.sector.ip
     }
   }
   function showeditor(type){
@@ -1942,7 +1954,7 @@ traffic light{
       unsaved.delete(i)
     }
     for(var i in saved){
-      download(saved[i], i+".region")
+      saved[i] && download(saved[i], i+".region")
     }
   })
   function acted(a = nodeEdited || sectorEdited){
