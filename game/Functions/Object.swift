@@ -168,7 +168,8 @@ class Object: SKSpriteNode, DataCodable{
             let x = self.position.x - parent.cam.position.x
             let y = self.position.y - parent.cam.position.y
             if x * x + y * y <= 3e6{
-                self.run(parent.shootSound)
+                  self.run(parent.shootSound) 
+               
                 if self == parent.ship{parent.vibratePhone(.heavy)}
             }
             if shlock > 0{

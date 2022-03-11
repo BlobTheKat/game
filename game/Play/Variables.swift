@@ -269,12 +269,22 @@ class Play: SKScene{
     let mapBG = SKSpriteNode(imageNamed: "mapBG")
     let FakemapBG = SKSpriteNode(imageNamed: "fakeMapBG")
     let avatar = SKSpriteNode(imageNamed: "avatar")
-    
-    
+    //SETTINGS
+        let soundIcon = SKSpriteNode(imageNamed: "settingOn")
+        let hapticIcon = SKSpriteNode(imageNamed: "settingOn")
+        let settingBG = SKSpriteNode(imageNamed: "settingBG")
+        let switchControls = SKSpriteNode(imageNamed: "switchCTRL")
+        var showingSetting = false
+    var DpadPosition = [0.4,-0.4,-50,50]
+    var thrustPosition = [-0.4,-0.4,50,80]
+    var switch1 = false
+    var switch2 = false
+    var switch3 = false
     //NAVIGATION
     let navArrow = SKSpriteNode(imageNamed: "navArrow")
     let navBG = SKSpriteNode(imageNamed: "nav")
     let mapIcon = SKSpriteNode(imageNamed: "map")
+    let repairIcon1 = SKSpriteNode(imageNamed: "repairOff")
     let repairIcon = SKSpriteNode(imageNamed: "repairOff")
     let lightSpeedIcon = SKSpriteNode(imageNamed: "lightSpeedOff")
     let cockpitIcon = SKSpriteNode(imageNamed: "inCockpitOff")

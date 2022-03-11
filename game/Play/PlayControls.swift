@@ -12,8 +12,10 @@ import GameKit
 extension Play{
     
     func clicked(){
+        
         self.run(SKAction.playSoundFileNamed("click.mp3", waitForCompletion: false))
         vibratePhone(.light)
+        
     }
     
     func swapControls(){
@@ -468,15 +470,41 @@ extension Play{
             }
         }
         if repairIcon == node{
-            clicked()
-            if isWarning{
-                warning.removeAction(forKey: "warningAlpha")
-                warning.alpha = 0
-                isWarning = false
+          settings()
+        }
+        if switchControls == node{
+            switch1.toggle()
+            if switch1{
+                thrustPosition = [0.4,-0.4,-50,80]
+                DpadPosition = [-0.4,-0.4,50,50]
+                switchControls.texture =  SKTexture(imageNamed:"switchCTRLoff")
             }else{
-                DisplayWARNING("Placeholder",.warning,true)
-                isWarning = true
-            }
+                DpadPosition = [0.4,-0.4,-50,50]
+                thrustPosition = [-0.4,-0.4,50,80]
+                switchControls.texture =  SKTexture(imageNamed:"switchCTRL") }
+            
+            shipDirection.position = pos(mx: DpadPosition[0], my: DpadPosition[1], x: DpadPosition[2], y: DpadPosition[3])
+            
+            dPad.position = pos(mx: DpadPosition[0], my: DpadPosition[1], x: DpadPosition[2], y: DpadPosition[3])
+            
+            thrustButton.position = pos(mx: thrustPosition[0], my: thrustPosition[1], x: thrustPosition[2], y: thrustPosition[3])
+        }
+        if soundIcon == node{
+            switch2.toggle()
+            if switch2{
+                soundIcon.texture =  SKTexture(imageNamed:"settingOff")
+            }else{  soundIcon.texture =  SKTexture(imageNamed:"settingOn") }
+            
+        }
+        if hapticIcon == node{
+            switch3.toggle()
+            if switch3{
+                hapticIcon.texture =  SKTexture(imageNamed:"settingOff")
+                
+                
+            }else{  hapticIcon.texture =  SKTexture(imageNamed:"settingOn")
+                }
+            
         }
         
         if warning == node{
@@ -668,12 +696,14 @@ extension Play{
             }
         }
         if thrustButton == node{
-            thrustSound.run(SKAction.sequence([
+             thrustSound.run(SKAction.sequence([
                 SKAction.changeVolume(to: 0, duration: 0.2),
                 SKAction.run{
                     self.thrustSound.removeFromParent()
                     self.playingThrustSound = false
                 }
+                
+                
             ]))
             self.playingThrustSound = false
             pauseLazer()
@@ -1203,7 +1233,7 @@ extension Play{
                     self.thrustSound.removeFromParent()
                     self.playingThrustSound = false
                 }
-            ]))
+             ]))
             self.playingThrustSound = false
         }else if key == .keyboardRightArrow || key == .keyboardD{
             ship.thrustRight = false

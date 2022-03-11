@@ -454,7 +454,7 @@ extension Play{
         speedLabel.xScale = 1.3
         
         speedBG.addChild(speedLabel)
-        dPad.position = pos(mx: 0.4, my: -0.4, x: -50, y: 50)
+        dPad.position = pos(mx: DpadPosition[0], my: DpadPosition[1], x: DpadPosition[2], y: DpadPosition[3])
         dPad.zPosition = 10
         dPad.setScale(1.5)
         cam.addChild(dPad)
@@ -610,13 +610,19 @@ extension Play{
         mapIcon.setScale(0.3)
         navBG.addChild(mapIcon)
         
-        repairIcon.position = CGPoint(x: -navBG.size.width/1.2 ,y: mapIcon.position.y + (mapIcon.size.height * 1.2))
-        repairIcon.alpha = 1
-        repairIcon.zPosition = 11
-        repairIcon.setScale(1.1)
-        //navBG.addChild(repairIcon)
+        repairIcon1.position = CGPoint(x: -navBG.size.width/1.2 ,y: mapIcon.position.y + (mapIcon.size.height * 1.3))
+                repairIcon1.alpha = 1
+                repairIcon1.zPosition = 11
+                repairIcon1.setScale(1.1)
+                //navBG.addChild(repairIcon)
+                
+                repairIcon.position = CGPoint(x: -navBG.size.width/1.2 + (repairIcon.size.width * 1.3) ,y: mapIcon.position.y )
+                repairIcon.alpha = 1
+                repairIcon.zPosition = 11
+                repairIcon.setScale(1.1)
+                navBG.addChild(repairIcon)
         
-        lightSpeedIcon.position = CGPoint(x: -navBG.size.width/1.2 ,y: repairIcon.position.y + (repairIcon.size.height * 1.2) )
+        lightSpeedIcon.position = CGPoint(x: -navBG.size.width/1.2 ,y: repairIcon1.position.y + (repairIcon1.size.height * 1.2) )
         lightSpeedIcon.alpha = 1
         lightSpeedIcon.zPosition = 11
         lightSpeedIcon.setScale(1.1)
@@ -661,7 +667,7 @@ extension Play{
         buyIcon.setScale(0.4)
         colonizeBG.addChild(buyIcon)
         
-        coloIcon.position = CGPoint(x: -navBG.size.width/1.2 ,y: repairIcon.position.y + (repairIcon.size.height * 1.2) )
+        coloIcon.position = CGPoint(x: -navBG.size.width/1.2 ,y: repairIcon1.position.y + (repairIcon1.size.height * 1.2) )
         coloIcon.zPosition = 11
         coloIcon.setScale(0.9)
         
@@ -714,7 +720,7 @@ extension Play{
         
        
         
-        editColoIcon.position = CGPoint(x: -navBG.size.width/1.2 ,y: repairIcon.position.y + (repairIcon.size.height * 1.2) )
+        editColoIcon.position = CGPoint(x: -navBG.size.width/1.2 ,y: repairIcon1.position.y + (repairIcon1.size.height * 1.2) )
         editColoIcon.zPosition = 11
         editColoIcon.setScale(0.9)
         
@@ -751,12 +757,12 @@ extension Play{
         playerArrow.zPosition = 9
         playerArrow.setScale(2)
             
-        shipDirection.position = pos(mx: 0.4, my: -0.4, x: -50, y: 50)
+        shipDirection.position = pos(mx: DpadPosition[0], my: DpadPosition[1], x: DpadPosition[2], y: DpadPosition[3])
         shipDirection.zPosition = 10
         shipDirection.setScale(1.5)
         cam.addChild(shipDirection)
         
-        thrustButton.position = pos(mx: -0.4, my: -0.4, x: 50, y: 80)
+        thrustButton.position = pos(mx: thrustPosition[0], my: thrustPosition[1], x: thrustPosition[2], y: thrustPosition[3])
         thrustButton.alpha = 1
         thrustButton.zPosition = 10
         thrustButton.setScale(1.4)
@@ -1452,4 +1458,39 @@ extension Play{
         ]))
         }
     }
+    func settings(){
+            showingSetting.toggle()
+        hideControls()
+        
+        switchControls.position = pos(mx: 0, my: 0.5, x: 0, y: 0)
+        switchControls.setScale(1)
+        switchControls.zPosition = 10001
+        
+        soundIcon.position = pos(mx: 0.3, my: -0.02, x: 0, y: 0)
+        soundIcon.setScale(1)
+        soundIcon.zPosition = 10001
+        
+        hapticIcon.position = pos(mx: 0.3, my: -0.45, x: 0, y: 0)
+        hapticIcon.setScale(1)
+        hapticIcon.zPosition = 10001
+        
+            settingBG.position = pos(mx: 0, my: -0.1, x: 0, y: 0)
+            settingBG.zPosition = 10000
+            settingBG.setScale(0.4)
+            if showingSetting && settingBG.parent == nil{
+                
+                cam.addChild(settingBG)
+                settingBG.addChild(soundIcon)
+                settingBG.addChild(hapticIcon)
+                settingBG.addChild(switchControls)
+                
+            }else{
+                settingBG.removeFromParent()
+                soundIcon.removeFromParent()
+                hapticIcon.removeFromParent()
+                switchControls.removeFromParent()
+            }
+        
+    }
+    
 }

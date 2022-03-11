@@ -22,10 +22,9 @@ enum impactType{
 extension Play{
     func vibratePhone(_ impact: impactType) {
          
-    
-    
+        if !switch3{
         switch impact{
-            case .error:
+        case .error:
                 let generator = UINotificationFeedbackGenerator()
                 generator.notificationOccurred(.error)
 
@@ -54,6 +53,7 @@ extension Play{
                 generator.selectionChanged()
                 
             }
+    }
     }
     override func update(_ currentTime: TimeInterval){
         if view == nil{return}
