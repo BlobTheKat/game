@@ -97,7 +97,7 @@ func vibrateObject(sprite: SKSpriteNode, amount: CGFloat = 10){
                     SKAction.moveBy(x: 0, y: amount, duration: 0.04),
                 ])), withKey: "vibratingObjects")
 }
-func vibrateCamera(camera: SKCameraNode, amount: CGFloat = 0.5){
+func vibrateCamera(camera: SKCameraNode, amount: CGFloat = 0.1){
     camera.run(SKAction.repeatForever(SKAction.sequence([
                     SKAction.moveBy(x: amount, y: 0, duration: 0.1),
                     SKAction.moveBy(x: -amount, y: 0, duration: 0.1),

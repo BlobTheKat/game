@@ -13,7 +13,7 @@ extension Play{
     
     func clicked(){
         
-        self.run(SKAction.playSoundFileNamed("click.mp3", waitForCompletion: false))
+        if !switch2{self.run(SKAction.playSoundFileNamed("click.mp3", waitForCompletion: false))}
         vibratePhone(.light)
         
     }
@@ -474,6 +474,7 @@ extension Play{
         }
         if switchControls == node{
             switch1.toggle()
+            UserDefaults.standard.set(switch1, forKey: "switchcontrols")
             if switch1{
                 thrustPosition = [0.4,-0.4,-50,80]
                 DpadPosition = [-0.4,-0.4,50,50]
@@ -491,19 +492,24 @@ extension Play{
         }
         if soundIcon == node{
             switch2.toggle()
+            UserDefaults.standard.set(switch2, forKey: "nosounds")
             if switch2{
                 soundIcon.texture =  SKTexture(imageNamed:"settingOff")
-            }else{  soundIcon.texture =  SKTexture(imageNamed:"settingOn") }
+                ambient.run(.stop())
+            }else{
+                soundIcon.texture =  SKTexture(imageNamed:"settingOn")
+                
+            }
             
         }
         if hapticIcon == node{
             switch3.toggle()
+            UserDefaults.standard.set(switch3, forKey: "nohaptics")
             if switch3{
                 hapticIcon.texture =  SKTexture(imageNamed:"settingOff")
-                
-                
-            }else{  hapticIcon.texture =  SKTexture(imageNamed:"settingOn")
-                }
+            }else{
+                hapticIcon.texture =  SKTexture(imageNamed:"settingOn")
+            }
             
         }
         
@@ -648,7 +654,7 @@ extension Play{
                 pos = UInt8((start - (start + curGap) / 2) & 255)
             }
             
-            if gap < Int(min(32, ceil(10 / planetLanded!.radius))) * 2 + 1{
+            if gap < Int(min(32, ceil(3000 / planetLanded!.radius))) * 2 + 1{
                 //yell at the user
                 DisplayWARNING("create more space", .warning, true)
                 return
@@ -809,7 +815,7 @@ extension Play{
                 removeTapToStart()
                 ship.position.x = CGFloat(secx) - sector.1.pos.x
                 ship.position.y = CGFloat(secy) - sector.1.pos.y
-                self.run(lightSpeedOut)
+                if !switch2{self.run(lightSpeedOut)}
                 playedLightSpeedOut = true
                 //anim
                 var mov = 0.1
@@ -854,7 +860,7 @@ extension Play{
             guard amount != 0 else {return} //shortcut
             while planetLanded!.items[(Int(itemRot) + Int(amount)) & 255] != nil{amount += sign(amount)}
             let newRot = UInt8((Int(itemRot) + Int(amount)) & 255)
-            let box = UInt8(min(32, ceil(5000 / planetLanded!.radius)))
+            let box = UInt8(min(32, ceil(3000 / planetLanded!.radius)))
             var red = false
             var i = newRot &- box &+ 1
             while i != newRot &+ box{
@@ -1194,7 +1200,7 @@ extension Play{
                     discord.removeFromParent()
                     removeTapToStart()
                     
-                    self.run(lightSpeedOut)
+                    if !switch2{self.run(lightSpeedOut)}
                     playedLightSpeedOut = true
                     //anim
                     var mov = 0.1

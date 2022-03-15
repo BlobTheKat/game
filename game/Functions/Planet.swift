@@ -68,6 +68,9 @@ class Planet: Object{
         node.setScale(1)
         if !(node.userData?["d"] as? Bool ?? false && item.upgradeEnd > 1){
             node.texture = item.lvl > 0 ? SKTexture(imageNamed: "\(coloNames[id])\(destroyed ? 0 : item.lvl)") : SKTexture(imageNamed: "blank")
+            if item.type == .bomb && ownedState == .owned{
+                node.alpha = 0
+            }
         }
         node.userData!["d"] = destroyed
         node.size = node.texture!.size()
@@ -194,11 +197,78 @@ class Planet: Object{
                     lightStrike.run(.changePlaybackRate(to: 1.5, duration: 0))
                     lightStrike.autoplayLooped = false
                     parent.addChild(lightStrike)
-                    lightStrike.run(.play())
+                    if !parent.switch2{lightStrike.run(.play())}
                     let _ = timeout(1){
                         lightStrike.removeFromParent()
                     }
                     break
+                case .fuzzer:
+                    if self.angry % 60 != 0{break}
+                    let item = fuzzers[Int(itm.lvl)]
+                    let x = -sin(node.zRotation + self.zRotation) * self.radius + self.position.x
+                    let y = cos(node.zRotation + self.zRotation) * self.radius + self.position.y
+                    var dx = parent.ship.position.x - x, dy = parent.ship.position.y - y
+                    var force = sqrt(dx * dx + dy * dy)
+                    dx /= force * 20
+                    dy /= force * 20
+                    let delay = (force - 100) / 1050
+                    force = 1 - force / 560
+                    if force < 0{break}
+                    let _ = timeout(delay){
+                        parent.ship.velocity.dx += force * dx * (item["push"]?.number ?? 100)
+                        parent.ship.velocity.dy += force * dy * (item["push"]?.number ?? 100)
+                    }
+                    let fuzz = SKSpriteNode(imageNamed: "fuzz")
+                    fuzz.position = CGPoint(x: x, y: y)
+                    fuzz.zPosition = node.zPosition - 1
+                    parent.addChild(fuzz)
+                    fuzz.setScale(0.5)
+                    fuzz.run(.scale(by: 8, duration: 0.5))
+                    fuzz.run(.fadeOut(withDuration: 0.5))
+                    let _ = timeout(0.5){fuzz.removeFromParent()}
+                    let sound = SKAudioNode(fileNamed: "lightning1.mp3")
+                    sound.run(.changePlaybackRate(to: 1.5, duration: 0))
+                    sound.autoplayLooped = false
+                    parent.addChild(sound)
+                    if !parent.switch2{sound.run(.play())}
+                    let _ = timeout(1){
+                        sound.removeFromParent()
+                    }
+                    break
+                case .bomb:
+                    if parent.planetLanded == self{
+                        let item = bombs[Int(itm.lvl)]
+                        let x = -sin(node.zRotation + self.zRotation) * self.radius + self.position.x
+                        let y = cos(node.zRotation + self.zRotation) * self.radius + self.position.y
+                        let dx = parent.ship.position.x - x, dy = parent.ship.position.y - y
+                        let dist = sqrt(dx * dx + dy * dy)
+                        let range = item["linereach"]?.number ?? 200
+                        if dist < range && node.alpha == 0{
+                            node.run(.sequence([.fadeIn(withDuration: 0.3),.run{
+                                node.run(.sequence([.fadeAlpha(to: 0.01, duration: 0.1),.fadeOut(withDuration: 900)]))
+                                parent.dealDamage(item["damage"]?.number ?? 30, silent: true)
+                                let boom = SKSpriteNode(imageNamed: "fuzz")
+                                boom.position = CGPoint(x: x, y: y)
+                                boom.zPosition = node.zPosition - 1
+                                parent.addChild(boom)
+                                boom.setScale(range / 70)
+                                boom.run(.fadeOut(withDuration: 0.5))
+                                let _ = timeout(0.5){boom.removeFromParent()}
+                                let sound = SKAudioNode(fileNamed: "explode.mp3")
+                                sound.autoplayLooped = false
+                                parent.addChild(sound)
+                                vibrateCamera(camera: parent.cam, amount: 15)
+                                let _ = timeout(0.7){
+                                    parent.cam.removeAction(forKey: "vibratingCamera")
+                                    parent.cam.removeAction(forKey: "vibratingCameras")
+                                }
+                                if !parent.switch2{sound.run(.play())}
+                                let _ = timeout(2){
+                                    sound.removeFromParent()
+                                }
+                            }]))
+                        }
+                    }
                 default:
                     break
                 }
@@ -236,17 +306,23 @@ class Planet: Object{
             let cw = parent!.size.width * cam.xScale / 2
             let ch = parent!.size.height * cam.yScale / 2
             let cpos = cam.position
-            let r = 1.25 * radius
-            if producesParticles && (position.x + r > cpos.x - cw && position.x - r < cpos.x + cw) && (position.y + r > cpos.y - ch && position.y - r < cpos.y + ch){
-                particleQueue += particleFrequency
-                while particleQueue >= 1{
-                    if parent != nil{
-                        parent!.particles.append(self.particle(self))
-                        parent!.addChild(parent!.particles.last!)
+            let r = 1.4 * radius
+            if (position.x + r > cpos.x - cw && position.x - r < cpos.x + cw) && (position.y + r > cpos.y - ch && position.y - r < cpos.y + ch){
+                upgrade()
+                if producesParticles{
+                    particleQueue += particleFrequency
+                    while particleQueue >= 1{
+                        if parent != nil{
+                            parent!.particles.append(self.particle(self))
+                            parent!.addChild(parent!.particles.last!)
+                        }
+                        particleQueue -= 1
                     }
-                    particleQueue -= 1
-                }
-            }else{particleQueue = 1}
+                }else{particleQueue = 1}
+            }else{
+                particleQueue = 1
+                downgrade()
+            }
         }
         zRotation += angularVelocity
     }
@@ -464,7 +540,7 @@ class Planet: Object{
         self.capacity = 0
         self.persec2 = 0
         self.capacity2 = 0
-        self.baseEnergyChunks = Double(len) * 50 //for 20 items you get 1000 per chunk
+        self.baseEnergyChunks = 0
         while(i < len){
             while (self.children.count > child_i ? self.children[child_i].name : nil) != nil{child_i += 1;continue}
             let id: UInt8 = data.readunsafe()
@@ -476,6 +552,7 @@ class Planet: Object{
                 if item.upgradeEnd == 0{item.upgradeEnd = 1}
             }
             self.populate(with: item, rot: rot, node: self.children.count > child_i ? self.children[child_i] as! SKSpriteNode : SKSpriteNode(), destroyed: id > 127 && item.upgradeEnd == 1)
+            self.baseEnergyChunks += Double(item.lvl) * 20
             if (parent as? Play)?.dragRemainder.isNaN ?? true{
                 self.items[Int(rot)] = item
             }
@@ -497,5 +574,35 @@ class Planet: Object{
     }
     override func encode(data: inout Data) {
         //not needed
+    }
+    
+    var smallTextures: Bool = false
+    func downgrade(){
+        guard !smallTextures else {return}
+        smallTextures = true
+        for c in children{
+            if let c = c as? SKSpriteNode, let n = c.name{
+                let x = c.xScale * 5, y = c.yScale * 5
+                c.setScale(1)
+                c.texture = SKTexture(imageNamed: "tiny_\(n)")
+                c.size = c.texture!.size()
+                c.xScale = x
+                c.yScale = y
+            }
+        }
+    }
+    func upgrade(){
+        guard smallTextures else {return}
+        smallTextures = false
+        for c in children{
+            if let c = c as? SKSpriteNode, let n = c.name{
+                let x = c.xScale / 5, y = c.yScale / 5
+                c.setScale(1)
+                c.texture = SKTexture(imageNamed: n)
+                c.size = c.texture!.size()
+                c.xScale = x
+                c.yScale = y
+            }
+        }
     }
 }

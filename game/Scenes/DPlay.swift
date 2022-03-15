@@ -57,7 +57,7 @@ class DPlay: SKScene, SKPhysicsContactDelegate{
     override func didMove(to view: SKView) {
         self.addChild(inShipSound)
         playerWalking.autoplayLooped = true
-        vibrateCamera(camera: cam, amount: 1)
+        vibrateCamera(camera: cam, amount: 0.1)
         //SCENE
         self.addChild(cam)
         self.camera = cam

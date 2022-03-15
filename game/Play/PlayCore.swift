@@ -138,7 +138,7 @@ extension Play{
                 var amount = sign(dragRemainder) * 2
                 while planetLanded!.items[(Int(itemRot) + Int(amount)) & 255] != nil{amount += sign(amount)}
                 let newRot = UInt8((Int(itemRot) + Int(amount)) & 255)
-                let box = UInt8(min(32, ceil(10 / planetLanded!.radius)))
+                let box = UInt8(min(32, ceil(3000 / planetLanded!.radius)))
                 var red = false
                 var i = newRot &- box &+ 1
                 while i != newRot &+ box{
@@ -533,7 +533,7 @@ extension Play{
     }
     func didCollect(_ success: Bool){}
     func didMake(_ success: Bool){renderUpgradeUI()}
-    func dealDamage(_ damage: Double){
+    func dealDamage(_ damage: Double, silent: Bool = false){
         if health > damage{
             let oldRatio = health / maxHealth
             health -= damage
@@ -547,17 +547,19 @@ extension Play{
             if r != Int8(round(oldRatio * 13)){
                 healthBar.texture = SKTexture(imageNamed: "health\(r)")
             }
-            self.run(SKAction.sequence([
-                SKAction.run{
-                    let cam = self.cam
-                    vibrateCamera(camera: cam, amount: 5)
-                },
-                SKAction.wait(forDuration: 0.5),
-                SKAction.run {
-                    self.cam.removeAction(forKey: "vibratingCamera")
-                    self.cam.removeAction(forKey: "vibratingCameras")
-                }
-            ]))
+            if !silent{
+                self.run(SKAction.sequence([
+                    SKAction.run{
+                        let cam = self.cam
+                        vibrateCamera(camera: cam, amount: 5)
+                    },
+                    SKAction.wait(forDuration: 0.5),
+                    SKAction.run {
+                        self.cam.removeAction(forKey: "vibratingCamera")
+                        self.cam.removeAction(forKey: "vibratingCameras")
+                    }
+                ]))
+            }
         }else if ship.dynamic{
             health = 0
             healthBar.texture = SKTexture(imageNamed: "health0")
@@ -584,6 +586,7 @@ extension Play{
             health = maxHealth
         }
         let ratio = health / maxHealth
+        if ratio > 0.25 && warningLabel.text == "warning: low health"{warning.removeFromParent()}
         let r = Int8(round(ratio * 13))
         if r != Int8(round(oldRatio * 13)){
             healthBar.texture = SKTexture(imageNamed: "health\(r)")

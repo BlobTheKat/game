@@ -151,7 +151,7 @@ extension Play{
             }
         ])), withKey: "dotdotdot")
         
-        if !movemode{self.addChild(inlightSpeed)}
+        if !switch2{if !movemode{self.addChild(inlightSpeed)}}
         DEBUG_TXT.fontSize = 15
         DEBUG_TXT.position = pos(mx: -0.5, my: 0.5, x: 20, y: -20)
         DEBUG_TXT.color = UIColor(red: 0, green: 0, blue: 0, alpha: 0.5)
@@ -318,6 +318,8 @@ extension Play{
                 node.addChild(playerArrow)
             }
             node.addChild(box ?? SKShapeNode())
+            box?.strokeColor = x ? .green : .white
+            box?.zPosition = x ? 2 : 1
             return
         }
         let sector = SKNode()
@@ -333,7 +335,8 @@ extension Play{
         }
         if x{mainMap=sector;sector.addChild(playerArrow)}
         let box = SKShapeNode(rectOf: CGSize(width: size.width/10, height: size.height/10))
-        box.strokeColor = .white
+        box.strokeColor = x ? .green : .white
+        box.zPosition = x ? 2 : 1
         box.lineWidth = 30
         box.name = "box"
         sector.addChild(box)
@@ -796,41 +799,33 @@ extension Play{
         tunnel2.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeOut))
         tunnel2.removeFromParent()
         self.ambientSound()
+        if switch1{swapControls()}
     }
     func ambientSound(){
-        
-        
-        
         let randomSound = Int(random(min: 1, max: 4))
-                    ambient = SKAudioNode(fileNamed: "extras/ambient\(randomSound).mp3")
-                    
-                    switch randomSound{
-                    case 1: self.waitForSound = 180
-                        break
-                    case 2: self.waitForSound = 144
-                        break
-                    case 3: self.waitForSound = 89
-                        break
-                    case 4: self.waitForSound = 120
-                        break
-                    case 5: self.waitForSound = 57
-                        break
-                    default:break
-                    }
-                    
+        ambient = SKAudioNode(fileNamed: "extras/ambient\(randomSound).mp3")
+        switch randomSound{
+            case 1: self.waitForSound = 180
+                break
+            case 2: self.waitForSound = 144
+                break
+            case 3: self.waitForSound = 89
+                break
+            case 4: self.waitForSound = 120
+                break
+            case 5: self.waitForSound = 57
+                break
+            default:break
+        }
         ambient.run(SKAction.changeVolume(to: 0.15, duration: 0))
-                        ambient.autoplayLooped = false
-                        self.addChild(ambient)
-                        ambient.run(.play())
+        ambient.autoplayLooped = false
+        self.addChild(ambient)
+        if !switch2{ambient.run(.play())}
         let _ = timeout(self.waitForSound){
             self.ambient.removeFromParent()
             self.ambientSound()
         }
-        
     }
-
-    
-    
     func DisplayWARNING(_ label: String, _ warningType: WarningTypes = .warning, _ blink: Bool = false){
         if cam.action(forKey: "warningAlpha") != nil{
             cam.removeAction(forKey: "warningAlpha")
@@ -1051,6 +1046,18 @@ extension Play{
                 break
             case "accuracy":
                 progressLabel2.text = "Accuracy: \(Int(old*200))% ➪ \(Int(new*200))%"
+                break
+            case "push":
+                progressLabel2.text = "Force: \(Int(old)) ➪ \(Int(new))"
+                break
+            case "spins":
+                progressLabel2.text = "Spins ship: \(Int(old*50))deg ➪ \(Int(new*50))deg"
+                break
+            case "len":
+                progressLabel2.text = "Shield time: \(Int(old))ѕ ➪ \(Int(new))ѕ"
+                break
+            case "linereach":
+                progressLabel2.text = "Reach: \(Int(old)) ➪ \(Int(new))"
                 break
             default:
                 progressLabel2.text = "\(name): \(formatNum(old)) ➪ \(formatNum(new))"

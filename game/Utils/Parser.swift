@@ -101,13 +101,7 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
             if x > pos.x - w2 && x < pos.x + w2 && y > pos.y - h2 && y < pos.y + h2{
                 //reinstate textures
                 for p in sector.0{
-                    p.size = p.texture!.size()
-                    for c in p.children{
-                        if let c = c as? SKSpriteNode, let n = c.name{
-                            c.texture = SKTexture(imageNamed: n)
-                            c.size = c.texture!.size()
-                        }
-                    }
+                    p.downgrade()
                 }
                 completion(sector)
                 return
@@ -171,6 +165,9 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                         p.angularVelocity = CGFloat(data.readunsafe() as Float)
                     }
                     p.superhot = id & 8 != 0
+                    if p.superhot{
+                        p.baseEnergyChunks = floor(p.mass / 1000)
+                    }
                     if !exists{planets.append(p)}
                     var img = (data.read(lentype: UInt8.self) ?? "none").split(separator: " ").map({a in return String(a)})
                     if img.count < 1{img.append("none")}
@@ -192,15 +189,12 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                         let t = String(img[0])
                         let node = SKSpriteNode()
                         p.addChild(node)
-                        if current && !exists{
-                            node.texture = SKTexture(imageNamed: t)
-                            node.size = node.texture!.size()
-                        }
                         node.setScale(scale)
                         node.name = t
                         node.zPosition = 2
                         i += 1
                     }
+                    if current && !exists{p.downgrade()}
                 }
                 var i = 0
                 for owned in UserDefaults.standard.value(forKey: "owned-\(CGFloat(px))-\(CGFloat(py))") as? [Bool] ?? []{

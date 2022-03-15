@@ -36,12 +36,11 @@ var ships = GameData("/ships")!
 var asteroids = GameData("/asteroids")!
 
 //item level dictionaries
-var itemIndex = GameData("/items")!
-var items = itemIndex.map { json -> GameData in
-    return GameData(json["path"]!.string ?? "/null")!
+var items = coloNames.map { a -> GameData in
+    return GameData("/\(a)s")!
 }
 
-let (camps, drills, shooters, satellites, dishes, electros) = (items[0], items[1], items[2], items[3], items[4], items[5])
+let (camps, drills, shooters, satellites, dishes, electros, fuzzers, bombs, shields) = (items[0], items[1], items[2], items[3], items[4], items[5], items[6], items[7], items[8])
 
 //A sector consists of...
 typealias SectorData = ([Planet], (pos: CGPoint, size: CGSize), (name:String,ip:String))

@@ -16,6 +16,7 @@ var controller: UIViewController = UIViewController()
 class GameViewController: UIViewController, GADFullScreenContentDelegate {
 
     override func viewDidLoad() {
+        GADMobileAds.sharedInstance().requestConfiguration.testDeviceIdentifiers = [ "c36c1f52e89aab99ab6d1173968ae751" ]
         SKScene.font = "HalogenbyPixelSurplus-Regular"
         super.viewDidLoad()
         if let view = self.view as! SKView? {

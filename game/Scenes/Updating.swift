@@ -44,6 +44,7 @@ class Updating: SKScene{
             SECTOR_PATH = data["sectors"]!.string!
             UserDefaults.standard.set(SECTOR_PATH, forKey: "secpath")
             version = ov
+            print("Version " + ov)
             if Int(v[0])! > Int(cv[0])! || Int(v[1])! > Int(cv[1])!{
                 //oh no
                 update()
@@ -86,22 +87,19 @@ class Updating: SKScene{
         //load stuff
         //taking advantage of weird global variable behaviour here
         GameData.fetch = fetch
-        i += 4
+        i += 3
         ships.load{self.done();ships = $0}
         asteroids.load{self.done();asteroids = $0}
-        itemIndex.load {
-            self.done()
-            itemIndex = $0
-            var i = 0
-            self.i += items.count
-            for itm in items{
-                let ix = i
-                itm.load{
-                    self.done()
-                    items[ix] = $0
-                }
-                i += 1
+        
+        i += items.count
+        var i1 = 0
+        for itm in items{
+            let ix = i1
+            itm.load{
+                self.done()
+                items[ix] = $0
             }
+            i1 += 1
         }
         missionTXTS.load{
             self.done()

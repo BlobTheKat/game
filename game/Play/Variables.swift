@@ -190,7 +190,7 @@ class Play: SKScene{
     var playingThrustSound = false
     //GameCenter prompt
     var gkview: UIViewController? = nil
-    let addItemIcons: [SKSpriteNode] = [SKSpriteNode(imageNamed: "drillIcon"),SKSpriteNode(imageNamed: "shooterIcon"),SKSpriteNode(imageNamed: "satelliteIcon"),SKSpriteNode(imageNamed: "dishIcon"),SKSpriteNode(imageNamed: "electroIcon")]
+    let addItemIcons: [SKSpriteNode] = coloNames.dropFirst().map{a in return SKSpriteNode(imageNamed: a + "Icon")}
     let addItemPrices: [SKLabelNode] = items.dropFirst().map{a in
         let n = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
         if a.count < 2{
@@ -270,16 +270,17 @@ class Play: SKScene{
     let FakemapBG = SKSpriteNode(imageNamed: "fakeMapBG")
     let avatar = SKSpriteNode(imageNamed: "avatar")
     //SETTINGS
-        let soundIcon = SKSpriteNode(imageNamed: "settingOn")
-        let hapticIcon = SKSpriteNode(imageNamed: "settingOn")
-        let settingBG = SKSpriteNode(imageNamed: "settingBG")
-        let switchControls = SKSpriteNode(imageNamed: "switchCTRL")
-        var showingSetting = false
+    var switch1 = UserDefaults.standard.bool(forKey: "switchcontrols")
+    var switch2 = UserDefaults.standard.bool(forKey: "nosounds")
+    var switch3 = UserDefaults.standard.bool(forKey: "nohaptics")
+    let soundIcon = SKSpriteNode(imageNamed: "setting\(UserDefaults.standard.bool(forKey: "nohaptics") ? "Off" : "On")")
+    let hapticIcon = SKSpriteNode(imageNamed: "setting\(UserDefaults.standard.bool(forKey: "nosounds") ? "Off" : "On")")
+    let settingBG = SKSpriteNode(imageNamed: "settingBG")
+    let switchControls = SKSpriteNode(imageNamed: "switchCTRL\(UserDefaults.standard.bool(forKey: "switchcontrols") ? "off" : "")")
+    var showingSetting = false
     var DpadPosition = [0.4,-0.4,-50,50]
     var thrustPosition = [-0.4,-0.4,50,80]
-    var switch1 = false
-    var switch2 = false
-    var switch3 = false
+    
     //NAVIGATION
     let navArrow = SKSpriteNode(imageNamed: "navArrow")
     let navBG = SKSpriteNode(imageNamed: "nav")
