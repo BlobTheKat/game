@@ -154,7 +154,7 @@ class Story: SKScene{
                     var amount = 4.9995
                     var ad = -0.0001
                     var orx = CGFloat(), ory = CGFloat()
-                    ray.run(.sequence([.scaleX(to: 2.5, y: 1, duration: 0.2),.wait(forDuration: 0.3),.rotate(byAngle: -0.1, duration: 3),.run{
+                    ray.run(.sequence([.scaleX(to: 2.5, y: 1, duration: 0.2),.wait(forDuration: 0.3),.rotate(byAngle: -0.1, duration: 3),.run{ [self] in
                         ad = 0.2
                         planetbg.position.x -= orx
                         planetbg.position.y -= ory
