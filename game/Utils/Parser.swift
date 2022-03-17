@@ -69,6 +69,7 @@ func emptytextures(s: SectorData){
         for c in p.children{
             if c.name != nil{(c as? SKSpriteNode)?.texture = nil}
         }
+        p.smallTextures = false
     }
 }
 

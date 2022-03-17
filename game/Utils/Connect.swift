@@ -18,6 +18,7 @@ func connect(_ host: String, _ a: @escaping (Data) -> ()) -> (Data) -> (){
     var ready = false
     var c = {(_:Data?,_:NWConnection.ContentContext?,_:Bool,_:NWError?)in}
     c = { (data, _, isComplete, err) in
+        dataUsage += data?.count ?? 0
         if isComplete && data != nil{
             DispatchQueue.main.async{a(data!)}
         }
@@ -36,6 +37,7 @@ func connect(_ host: String, _ a: @escaping (Data) -> ()) -> (Data) -> (){
             case .ready:
                 ready = true
                 DispatchQueue.main.async{for data in queue{
+                    dataUsage += data.count
                     connection?.send(content: data, completion: NWConnection.SendCompletion.contentProcessed(({ (NWError) in
                         if NWError != nil {
                         }
@@ -58,6 +60,7 @@ func connect(_ host: String, _ a: @escaping (Data) -> ()) -> (Data) -> (){
     connection?.start(queue: .global(qos: .background))
     return { (_ data: Data) -> () in
         guard ready else {queue.append(data);return}
+        dataUsage += data.count
         bg{connection?.send(content: data, completion: NWConnection.SendCompletion.contentProcessed(({ (NWError) in
             if NWError != nil {
             }
@@ -69,7 +72,9 @@ func fetch<json: Decodable>(_ url: String, _ done: @escaping (json) -> (), _ err
         err("Invalid URL")
         return
     }
+    dataUsage += url.count + 200 //approx. overhead
     URLSession.shared.dataTask(with: uri) {(data, response, error) in
+        dataUsage += (data?.count ?? 0) + 300 //approx. overhead
         if let error = error{
             err(error.localizedDescription)
             return
@@ -86,7 +91,9 @@ func fetch(_ url: String, _ done: @escaping (String) -> (), _ err: @escaping (St
         err("Invalid URL")
         return
     }
+    dataUsage += url.count + 200 //approx. overhead
     URLSession.shared.dataTask(with: uri) {(data, response, error) in
+        dataUsage += (data?.count ?? 0) + 300 //approx. overhead
         if error != nil{
             err(error!.localizedDescription)
         }else{
@@ -99,7 +106,9 @@ func fetch(_ url: String, _ done: @escaping (Data) -> (), _ err: @escaping (Stri
         err("Invalid URL")
         return
     }
+    dataUsage += url.count + 200 //approx. overhead
     URLSession.shared.dataTask(with: uri) {(data, response, error) in
+        dataUsage += (data?.count ?? 0) + 300 //approx. overhead
         if error != nil{
             err(error!.localizedDescription)
         }else{

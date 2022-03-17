@@ -68,7 +68,7 @@ class Play: SKScene{
     var coolingDown = false
     //Which object (if any) was shot since last packet?
     var shotObj: Object? = nil
-    var planetShot: Planet? = nil
+    var planetShot: Int? = nil
     //Is using shoot right now?
     var usingConstantLazer = false
     //List of tracked objects
@@ -139,8 +139,7 @@ class Play: SKScene{
     //Red player arrow on the map
     let playerArrow = SKSpriteNode(imageNamed: "playerArrow")
     //Extremely technical variables for calculating system data usage
-    var lastComplete: UInt64 = SystemDataUsage.complete
-    var lastU: UInt64 = 0
+    var lastU: Int = 0
     var lastMem: UInt16 = 0
     //A timer that loops from 0 to 19 and repeats, used for actions that happen less than 60 times a second
     var clock20 = 0

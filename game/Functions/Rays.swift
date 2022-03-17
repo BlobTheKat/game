@@ -8,25 +8,29 @@
 import Foundation
 import SpriteKit
 //Used for calculating length of a ray from a specific point and direction (length until it hits something)
-func raylength(objs: [Planet], objs2: [Object], rayorigin: CGPoint, raydir: CGVector, this: CGPoint) -> (obj: Object?, len: CGFloat, planet: Planet?){
+func raylength(objs: [Planet], objs2: [Object], rayorigin: CGPoint, raydir: CGVector, this: CGPoint) -> (obj: Int?, len: CGFloat, planet: Int?){
     var len = 3000.0
-    var o: Object? = nil
-    var p: Planet? = nil
+    var o: Int? = nil
+    var p: Int? = nil
+    var i = -1
     for obj in objs{
+        i += 1
         if obj.position == this{continue}
         let l = collision(planetpos: obj.position, planetr: obj.radius, rayorigin: rayorigin, raydir: raydir)
         if l < len{
             len = l
-            p = obj
+            p = i
             o = nil
         }
     }
+    i = -1
     for obj in objs2{
+        i += 1
         if obj.position == this{continue}
         let l = collision(planetpos: obj.position, planetr: obj.radius, rayorigin: rayorigin, raydir: raydir)
         if l < len{
             len = l
-            o = obj
+            o = i
             p = nil
         }
     }

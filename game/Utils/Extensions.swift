@@ -8,6 +8,7 @@
 import Foundation
 import SpriteKit
 
+
 //make CGPoint hashable
 extension CGPoint: Hashable{
     public func hash(into hasher: inout Hasher) {

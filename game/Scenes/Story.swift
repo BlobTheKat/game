@@ -104,7 +104,7 @@ class Story: SKScene{
                 guard let first = lines.first else {
                     liney = self.size.height - 40
                     stop()
-                    let _ = timeout(1){
+                    let _ = timeout(1){ [self] in
                         writing = false
                         tapToContinue.run(.fadeAlpha(by: 1, duration: 0.2))
                     }
@@ -135,12 +135,12 @@ class Story: SKScene{
                 ball.position.y = 40
                 ball.zPosition = 2
                 var stop = {}
-                stop = interval(0.03){
+                stop = interval(0.03){ [self] in
                     let p = PARTICLES_IN()
                     particles.append(p)
                     enemyship.addChild(p)
                 }
-                let _ = timeout(1.5){
+                let _ = timeout(1.5){ [self] in
                     //RAYTIME >:O
                     let ray = SKSpriteNode(imageNamed: "rayline")
                     ray.anchorPoint.x = 0
@@ -162,7 +162,7 @@ class Story: SKScene{
                         enemyship.position.y -= ory
                         ball.run(.fadeOut(withDuration: 0.3))
                     },.fadeOut(withDuration: 0.3)]))
-                    let _ = interval(0.1){
+                    let _ = interval(0.1){ [self] in
                         var d = destruction
                         while d > 0{
                             let p = PARTICLES_SMOKE()
@@ -205,7 +205,7 @@ class Story: SKScene{
                         ory = ry
                     }
                 }
-                ball.run(.sequence([.fadeIn(withDuration: 1),.run{stop();planetbg.run(.fadeAlpha(by: -0.2, duration: 2))}]))
+                ball.run(.sequence([.fadeIn(withDuration: 1),.run{stop();self.planetbg.run(.fadeAlpha(by: -0.2, duration: 2))}]))
             },
             {},
             {}
@@ -274,11 +274,14 @@ class Story: SKScene{
         nextText()
     }
     override func update(_: TimeInterval){
+        var i = 0
         for particle in particles{
             if particle.update(){
                 particle.removeFromParent()
                 particles.remove(at: particles.firstIndex(of: particle)!)
+                i -= 1
             }
+            i += 1
         }
     }
 }

@@ -35,7 +35,6 @@ extension Play{
             if let error = error{print(error.localizedDescription)}
         })
     }
-    
     func construct() {
         debugToggle.position = pos(mx: -0.5, my: 0.5, x: 15, y: -40)
         debugToggle.lineWidth = 0
@@ -325,6 +324,7 @@ extension Play{
         let sector = SKNode()
         for planet in planets{
             let a = SKShapeNode(circleOfRadius: planet.radius/10)
+            planet.circle = a
             a.position = CGPoint(x: planet.position.x/10, y: planet.position.y/10)
             a.zPosition = 8
             a.fillColor = planet.ownedState == .yours ? UIColor(red: 0, green: 0.5, blue: 1, alpha: 1) : (planet.superhot ? .orange : .white)
@@ -746,7 +746,7 @@ extension Play{
             
         mapBG.position = pos(mx: 0, my: 0)
         mapBG.zPosition = 9
-        mapBG.setScale(0.2)
+        mapBG.setScale(0.7)
         mapBG.alpha = 0
         cam.addChild(mapBG)
         
@@ -1030,7 +1030,7 @@ extension Play{
             let outline2 = SKSpriteNode(imageNamed: "progressOutline")
             switch name{
             case "persec":
-                progressLabel2.text = "Energy: \(formatNum(old*3600))/hr ➪ \(formatNum(new*3600))/hr"
+                progressLabel2.text = (id == .drill ? "Energy" : "Rs. pts") + ": \(formatNum(old*3600))/hr ➪ \(formatNum(new*3600))/hr"
                 break
             case "boost":
                 progressLabel2.text = "Boost: \(Int(old*100))% ➪ \(Int(new*100))%"
@@ -1232,6 +1232,7 @@ extension Play{
         collect.removeFromParent()
         coloArrow.removeFromParent()
         buildBG.removeFromParent()
+        coloPlanet.texture = nil
         if !presence{planetLanded = nil}
         else{let _ = timeout(0.5){if self.planetLanded==nil&&self.presence{self.planetEditMode()}}}
     }

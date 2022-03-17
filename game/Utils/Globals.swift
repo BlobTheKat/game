@@ -132,3 +132,6 @@ var zrot = CGFloat()
 var velo = CGVector()
 var zzrot = CGFloat()
 var vvelo = CGVector()
+
+
+var dataUsage = 0

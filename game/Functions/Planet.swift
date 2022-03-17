@@ -8,7 +8,10 @@
 import Foundation
 import SpriteKit
 
+let texturequeue = DispatchQueue(label: "texturequeue", qos: .background)
+
 class Planet: Object{
+    var circle: SKShapeNode? = nil
     override func body(radius: CGFloat, mass: CGFloat, texture: SKTexture? = nil){
         zPosition = 2
         var m = mass
@@ -326,7 +329,7 @@ class Planet: Object{
         }
         zRotation += angularVelocity
     }
-    func gravity(_ n: Object){
+    func gravity(_ n: Object, _ i: Int){
         guard n.dynamic else{ return }
         n.landed = false
         let mass: CGFloat = self.mass
@@ -346,7 +349,7 @@ class Planet: Object{
                     if n == parent!.ship{
                         n.dynamic = false
                         n.controls = false
-                        if let parent = (n.parent as? Play), let i = parent.objects.firstIndex(of: n){
+                        if let parent = n.parent as? Play{
                             n.namelabel?.removeFromParent()
                             n.namelabel = nil
                             parent.objects[i] = Object()
@@ -386,12 +389,11 @@ class Planet: Object{
             let parent = parent as? Play
             if parent != nil && n == parent!.ship{
                 //WHEN THE PLAYER HAS LANDED ON A PLANET
-                let circle = parent!.planetsMap[parent!.planets.firstIndex(of: self)!]
-                circle.fillColor = .green
+                self.circle?.fillColor = .green
                 parent?.playerArrow.removeFromParent()
                 //TO DO WITH COLONISING
                 if self.ownedState == .unowned{
-                    parent!.coloPlanet.texture = (self.children.first as? SKSpriteNode)?.texture
+                    //parent!.coloPlanet.texture = (self.children.first as? SKSpriteNode)?.texture
                     parent!.navArrow.texture = SKTexture(imageNamed: "navArrow2")
                     parent!.navBG.addChild(parent!.coloIcon)
                 }
@@ -399,13 +401,9 @@ class Planet: Object{
                 else{parent?.planetTouched = self}
             }
         }else{
-            
-           
-        
             let parent = parent as? Play
             if parent != nil && n == parent!.ship{
-                let circle = parent!.planetsMap[parent!.planets.firstIndex(of: self)!]
-                circle.fillColor = ownedState == .yours ? UIColor(red: 0, green: 0.5, blue: 1, alpha: 1) : (superhot ? .orange : .white)
+                self.circle?.fillColor = ownedState == .yours ? UIColor(red: 0, green: 0.5, blue: 1, alpha: 1) : (superhot ? .orange : .white)
                 //GANGE MAP HERE
                 if parent!.playerArrow.parent == nil{
                     parent!.mainMap.addChild(parent!.playerArrow)
@@ -423,7 +421,7 @@ class Planet: Object{
                     if n == parent!.ship{
                         n.dynamic = false
                         n.controls = false
-                        if let parent = (n.parent as? Play), let i = parent.objects.firstIndex(of: n){
+                        if let parent = (n.parent as? Play){
                             n.namelabel?.removeFromParent()
                             n.namelabel = nil
                             parent.objects[i] = Object()
@@ -577,32 +575,45 @@ class Planet: Object{
     }
     
     var smallTextures: Bool = false
+    var texturesBusy: UInt8 = 0
     func downgrade(){
         guard !smallTextures else {return}
         smallTextures = true
-        for c in children{
-            if let c = c as? SKSpriteNode, let n = c.name{
-                let x = c.xScale * 5, y = c.yScale * 5
-                c.setScale(1)
-                c.texture = SKTexture(imageNamed: "tiny_\(n)")
-                c.size = c.texture!.size()
-                c.xScale = x
-                c.yScale = y
+        if texturesBusy == 1{ texturesBusy = 2; return }else if texturesBusy == 2{ texturesBusy = 1; return }
+        texturesBusy = 1
+        texturequeue.async {[self] in
+            for c in children{
+                if let c = c as? SKSpriteNode, let n = c.name{
+                    if (c.texture, c.texture = SKTexture(imageNamed: "tiny_\(n)")).0 == nil{
+                        c.size = c.texture!.size()
+                        c.size.width *= c.xScale * 5
+                        c.size.height *= c.xScale * 5
+                    }
+                }
             }
+            if texturesBusy == 2{
+                texturesBusy = 0
+                upgrade()
+            }
+            texturesBusy = 0
         }
     }
     func upgrade(){
         guard smallTextures else {return}
         smallTextures = false
-        for c in children{
-            if let c = c as? SKSpriteNode, let n = c.name{
-                let x = c.xScale / 5, y = c.yScale / 5
-                c.setScale(1)
-                c.texture = SKTexture(imageNamed: n)
-                c.size = c.texture!.size()
-                c.xScale = x
-                c.yScale = y
+        if texturesBusy == 1{ texturesBusy = 2; return }else if texturesBusy == 2{ texturesBusy = 1; return }
+        texturesBusy = 1
+        texturequeue.async {[self] in
+            for c in children{
+                if let c = c as? SKSpriteNode, let n = c.name{
+                    c.texture = SKTexture(imageNamed: n)
+                }
             }
+            if texturesBusy == 2{
+                texturesBusy = 0
+                downgrade()
+            }
+            texturesBusy = 0
         }
     }
 }

@@ -230,11 +230,14 @@ extension Play{
         
         var a = 0
         defer{
+            var i = 0
             for particle in particles{
                 if particle.update(){
-                    particles.remove(at: particles.firstIndex(of: particle)!)
+                    particles.remove(at: i)
+                    i -= 1
                     particle.removeFromParent()
                 }
+                i += 1
             }
         }
         a = 0
@@ -242,9 +245,11 @@ extension Play{
         var d = CGFloat.infinity, closestStar: Planet? = nil
         var canSave = ship.controls
         for planet in planets{
+            var a2 = -1
             for s in objects{
+                a2 += 1
                 if s.landed{continue}
-                planet.gravity(s)
+                planet.gravity(s, a2)
             }
             planet.update(a < planetindicators.count ? planetindicators[a] : nil)
             let x = planet.position.x - ship.position.x
@@ -451,8 +456,8 @@ extension Play{
     
     func drawDebug(){
         if clock20 == 0{
-            lastU = SystemDataUsage.complete &- lastComplete
-            lastComplete = lastComplete &+ lastU
+            lastU = dataUsage
+            dataUsage = 0
             lastMem = report_memory()
         }
         DEBUG_TXT.text = "X: \(%ship.position.x) / Y: \(%ship.position.y)\nDX: \(%ship.velocity.dx) / DY: \(%ship.velocity.dy)\nA: \(%ship.zRotation), AV: \(%ship.angularVelocity)\nVEL: \(%vel) P: \(planets.count) O: \(objects.count)/\(objects.filter({return !$0.asteroid}).count)\nMEM: \(lastMem)MB \"\(name ?? "nil")\"" + (advancedDebug ? "\nIP: \(IPOVERRIDE ?? ip) (\(Int(Double(lastU) * gameFPS / 20480.0))KB/s)\n\(logs.joined(separator: "\n"))" + (IPOVERRIDE != nil ? "\nx: \(Float(reg.x.value)), y: \(rnd(reg.y.value)), s: \(rnd(reg.s.value))\nmx: \(rnd(reg.mx.value)), my: \(rnd(reg.my.value)), z: \(rnd(reg.z.value))\nsx: \(rnd(reg.sx.value)), sy: \(rnd(reg.sy.value)), o: \(rnd(reg.o.value))\nr: \(reg.r.str), g: \(reg.g.str), b: \(reg.b.str)\ni: \(reg.i.str) p: \(reg.p.str)" : "") : "")

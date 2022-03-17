@@ -192,7 +192,8 @@ class Object: SKSpriteNode, DataCodable{
                 let div = sqrt(dx * dx + dy * dy)
                 dx /= div
                 dy /= div
-                let (obj: obj, len: len, planet: planet) = raylength(objs: parent.planets, objs2: parent.objects, rayorigin: bullet.position, raydir: CGVector(dx: dx, dy: dy), this: position)
+                let (obj: obji, len: len, planet: planeti) = raylength(objs: parent.planets, objs2: parent.objects, rayorigin: bullet.position, raydir: CGVector(dx: dx, dy: dy), this: position)
+                let obj = obji != nil ? parent.objects[obji!] : nil
                 if let obj = obj{
                     //obj wasShot
                     obj.death = 600
@@ -208,6 +209,7 @@ class Object: SKSpriteNode, DataCodable{
                         obj.death = 900 //wasShot by me
                     }
                 }
+                let planet = planeti != nil ? parent.planets[planeti!] : nil
                 let sdx = parent.ship.position.x - (planet?.position.x ?? .infinity)
                 let sdy = parent.ship.position.y - (planet?.position.y ?? .infinity)
                 if let planet = planet, !planet.superhot && sdx * sdx + sdy * sdy < planet.radius * planet.radius * 16 && planet.ownedState != .yours{
@@ -215,7 +217,7 @@ class Object: SKSpriteNode, DataCodable{
                     planet.emitq += damage * planet.emitf / 3
                     while planet.emitq > 1{
                         planet.emit(randDir(planet.radius - 50))
-                        if self == parent.ship{planet.angry = 1800;parent.planetShot = planet}
+                        if self == parent.ship{planet.angry = 1800;parent.planetShot = planeti}
                         planet.emitq -= 1
                         let cam = parent.cam
                         vibrateCamera(camera: cam, amount: 5)

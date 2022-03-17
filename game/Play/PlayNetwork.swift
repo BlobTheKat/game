@@ -208,7 +208,7 @@ extension Play{
                 hits.removeLast(hits.count - 7)
             }
             if shotObj != nil && objects.firstIndex(of: shotObj!) == nil{shotObj = nil}
-            if planetShot?.angry ?? 0 < 1770{planetShot = nil} //resend for half a second
+            if planetShot != nil && planets[planetShot!].angry < 1770{planetShot = nil} //resend for half a second
             let a = min(needsNames.count, 7) * 16 + Int(planetShot != nil ? 128 : 0)
             data.write(UInt8(hits.count + Int(shotObj != nil ? 8 : 0) + a))
             if ship.shootFrequency == 0{usedShoot = false}
@@ -223,7 +223,7 @@ extension Play{
             for i in needsNames.prefix(7){
                 data.write(UInt32(i))
             }
-            if planetShot != nil{data.write(UInt16(planets.firstIndex(of: planetShot!) ?? 65535))}
+            if planetShot != nil{data.write(UInt16(planetShot!))}
             data.write(Int32(lastSentEnergy))
             energyAmount += lastSentEnergy
             lastSentEnergy = 0
@@ -264,6 +264,7 @@ extension Play{
                 if c.name != nil{(c as? SKSpriteNode)?.texture = nil}
                 else {c.removeFromParent()}
             }
+            p.smallTextures = false
             p.items = [ColonizeItem?](repeating: nil, count: 256)
             p.namelabel?.removeFromParent()
             p.namelabel = nil

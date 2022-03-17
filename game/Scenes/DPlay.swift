@@ -194,7 +194,6 @@ class DPlay: SKScene, SKPhysicsContactDelegate{
             SKScene.transition = SKTransition.crossFade(withDuration: 1.5)
             Play.renderTo(skview)
             SKScene.transition = SKTransition.crossFade(withDuration: 0)
-            
         }
         
     }
