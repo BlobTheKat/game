@@ -266,7 +266,7 @@ extension Play{
                 guard itm != nil else {continue}
                 used[Int(itm!.type.rawValue)] += 1
                 if itm!.type == .camp{lvl = Int(itm!.lvl)}
-                if itm!.upgradeEnd == 1{lvl = -1}
+                if itm!.upgradeEnd == 1{lvl = -1; break}
             }
             if lvl == -1{
                 //nope

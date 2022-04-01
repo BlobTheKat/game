@@ -827,10 +827,8 @@ extension Play{
         }
     }
     func DisplayWARNING(_ label: String, _ warningType: WarningTypes = .warning, _ blink: Bool = false){
-        if cam.action(forKey: "warningAlpha") != nil{
-            cam.removeAction(forKey: "warningAlpha")
-            warning.alpha = 0
-        }
+        warning.removeAllActions()
+        warning.alpha = 0
         switch warningType{
         case .warning:
             warning.texture = SKTexture(imageNamed: "warning")
@@ -856,7 +854,7 @@ extension Play{
             warning.run(SKAction.fadeAlpha(to: 1, duration: 1).ease(.easeIn))
         }
         let _ = timeout(3){
-            self.cam.removeAction(forKey: "warningAlpha")
+            self.warning.removeAction(forKey: "warningAlpha")
             self.warning.run(SKAction.fadeAlpha(to: 0, duration: 1).ease(.easeIn))
         }
     }
@@ -933,7 +931,7 @@ extension Play{
                 upgradeOld = SKSpriteNode(imageNamed: "repair")
                 upgradeOld.position = pos(mx: 1.5, my: -0.8)
                 buildBG.addChild(upgradeOld)
-                upgradePrice.text = "repair (\(formatPrice(items[Int(id.rawValue)][Int(lvl)], 1.5)))"
+                upgradePrice.text = "repair (\(formatPrice(items[Int(id.rawValue)][Int(lvl)])))"
                 upgradePrice.color = .orange
             }else{
                 upgradeTime.text = "Level \(lvl)"
@@ -1030,7 +1028,7 @@ extension Play{
             let outline2 = SKSpriteNode(imageNamed: "progressOutline")
             switch name{
             case "persec":
-                progressLabel2.text = (id == .drill ? "Energy" : "Rs. pts") + ": \(formatNum(old*3600))/hr ➪ \(formatNum(new*3600))/hr"
+                progressLabel2.text = (id == .drill ? "Energy" : "Research") + ": \(formatNum(old*3600))/hr ➪ \(formatNum(new*3600))/hr"
                 break
             case "boost":
                 progressLabel2.text = "Boost: \(Int(old*100))% ➪ \(Int(new*100))%"

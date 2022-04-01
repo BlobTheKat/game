@@ -270,6 +270,7 @@ extension Play{
             p.namelabel = nil
             p.healthNode1.removeFromParent()
             p.healthNode2.removeFromParent()
+            p.collectibles = []
         }
         send = {(_:Data) in}
         stopPing()

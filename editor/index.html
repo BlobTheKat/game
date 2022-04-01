@@ -1673,6 +1673,16 @@ traffic light{
     if(e.target.parentElement.parentElement.nodeName != "SUBMENU")return
     let {target} = e
     if(target.parentElement.parentElement.previousElementSibling.textContent=="Current Planets"){
+			if(square.children.length==0){
+				let {spin, radius, mass, superhot, name, particle} = target.parentElement
+				let [,,,n,r,m,s,p,S] = $("#planets row input")
+				n.value = name
+				m.value = mass
+				r.value = radius
+				s.value = spin
+				p.value = particle
+				S.checked = superhot
+			}
 			for(let el of target.parentElement.children){
         let g = el.cloneNode()
         let end = square.children.length&1 //if odd, add to end, else add to start

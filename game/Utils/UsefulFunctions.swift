@@ -122,14 +122,14 @@ func pulsate(node: SKNode, amount: CGFloat, duration: CGFloat){
 }
 func bg(_ a: @escaping () -> ()){DispatchQueue.global(qos: .background).async(execute: a)}
 
-func formatPrice(_ thing: [String: JSON], _ multiplier: Double = 1) -> String{
+func formatPrice(_ thing: [String: JSON]) -> String{
     var price1 = "", price2 = ""
     
     if let a = thing["price2"]?.number{
-        price2 = "\(formatNum(a * multiplier)) research"
+        price2 = "\(formatNum(a)) research"
     }
     if let b = thing["price"]?.number{
-        price1 = "\(formatNum(b * multiplier)) energy"
+        price1 = "\(formatNum(b)) energy"
     }
     if price1 != "" && price2 != ""{price1 += " "}
     else if price1 == "" && price2 == ""{price1 = "FREE"}
