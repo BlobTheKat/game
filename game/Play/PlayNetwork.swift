@@ -307,7 +307,7 @@ extension Play{
                 }
             }
             var i = 0
-            toploop: while data.count > 0{
+            toploop: while i < planets.count{
                 var b = data.readunsafe() as UInt8
                 for _ in 1...8{
                     if i >= planets.count{break toploop}
@@ -321,6 +321,10 @@ extension Play{
                 }
             }
             UserDefaults.standard.set(planets.map{a in return a.ownedState == .yours}, forKey: "owned-\(sector.1.pos.x)-\(sector.1.pos.y)")
+            let ticks = data.readunsafe() as Float
+            for p in planets{
+                p.zRotation = (p.angularVelocity * CGFloat(ticks)).truncatingRemainder(dividingBy: .pi*2)
+            }
         }else if code == 127{
             dmessage = data.read() ?? "Disconnected!"
             end()
