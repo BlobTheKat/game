@@ -7,7 +7,7 @@
 
 import Foundation
 import SpriteKit
-
+import StoreKit
 
 enum impactType{
     case light
@@ -460,7 +460,7 @@ extension Play{
             dataUsage = 0
             lastMem = report_memory()
         }
-        DEBUG_TXT.text = "X: \(%ship.position.x) / Y: \(%ship.position.y)\nDX: \(%ship.velocity.dx) / DY: \(%ship.velocity.dy)\nA: \(%ship.zRotation), AV: \(%ship.angularVelocity)\nVEL: \(%vel) P: \(planets.count) O: \(objects.count)/\(objects.filter({return !$0.asteroid}).count)\nMEM: \(lastMem)MB \"\(name ?? "nil")\"" + (planetLanded == nil ? "" : "\n\(Int(sector.1.pos.x+planetLanded!.position.x))_\(Int(sector.1.pos.y+planetLanded!.position.y)).json a:\(planetLanded!.angry/60)") + (advancedDebug ? "\nIP: \(IPOVERRIDE ?? ip) (\(Int(Double(lastU) * gameFPS / 20480.0))KB/s)\n\(logs.joined(separator: "\n"))" + (IPOVERRIDE != nil ? "\nx: \(Float(reg.x.value)), y: \(rnd(reg.y.value)), s: \(rnd(reg.s.value))\nmx: \(rnd(reg.mx.value)), my: \(rnd(reg.my.value)), z: \(rnd(reg.z.value))\nsx: \(rnd(reg.sx.value)), sy: \(rnd(reg.sy.value)), o: \(rnd(reg.o.value))\nr: \(reg.r.str), g: \(reg.g.str), b: \(reg.b.str)\ni: \(reg.i.str) p: \(reg.p.str)" : "") : "")
+        DEBUG_TXT.text = "X: \(%ship.position.x) / Y: \(%ship.position.y)\nDX: \(%ship.velocity.dx) / DY: \(%ship.velocity.dy)\nA: \(%ship.zRotation), AV: \(%ship.angularVelocity)\nVEL: \(%vel) P: \(planets.count) O: \(objects.count)/\(objects.filter({return !$0.asteroid}).count)\nMEM: \(lastMem)MB \"\(name ?? "nil")\"" + (planetLanded == nil ? "" : "\n\(Int(sector.1.pos.x+planetLanded!.position.x))_\(Int(sector.1.pos.y+planetLanded!.position.y)).json A:\(planetLanded!.angry/60)") + (advancedDebug ? "\nIP: \(IPOVERRIDE ?? ip) (\(Int(Double(lastU) * gameFPS / 20480.0))KB/s)\n\(logs.joined(separator: "\n"))" + (fiddlenode?.parent != nil ? "\nx: \(Float(reg.x.value)), y: \(rnd(reg.y.value)), s: \(rnd(reg.s.value))\nmx: \(rnd(reg.mx.value)), my: \(rnd(reg.my.value)), z: \(rnd(reg.z.value))\nsx: \(rnd(reg.sx.value)), sy: \(rnd(reg.sy.value)), o: \(rnd(reg.o.value))\nr: \(reg.r.str), g: \(reg.g.str), b: \(reg.b.str)\ni: \(reg.i.str) p: \(reg.p.str)" : "") : "")
     }
     // USED FOR COLONIZING A PLANET
     func colonize(_ planet: Planet){
@@ -595,6 +595,72 @@ extension Play{
         let r = Int8(round(ratio * 13))
         if r != Int8(round(oldRatio * 13)){
             healthBar.texture = SKTexture(imageNamed: "health\(r)")
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    func initInAppPurchases() {
+        SKPaymentQueue.default().add(self)
+        if request == nil {
+            request = SKProductsRequest(productIdentifiers: Set(["1", "2", "3", "4"]))
+            request.delegate = self
+            request.start()
+        }
+    }
+ 
+    func buy(_ i: Int, _ cb: @escaping () -> ()) {
+        if cbProductIdentifier != ""{ return }
+        let payment = SKPayment(product: products[i])
+        SKPaymentQueue.default().add(payment)
+        boughtCB = cb
+        cbProductIdentifier = products[i].productIdentifier
+    }
+ 
+    // did successfully get the products
+    func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
+        self.products = response.products
+        self.request = nil
+    }
+ 
+    // couldnt get products
+    func request(request: SKRequest, didFailWithError error: NSError?) {
+        if let error = error{print(error)}
+        self.request = nil
+    }
+    // StoreKit protocol method. Called after the purchase
+    func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
+        for transaction in transactions {
+            switch (transaction.transactionState) {
+ 
+            case .purchased:
+                if cbProductIdentifier == transaction.payment.productIdentifier{ boughtCB(); cbProductIdentifier = "" }
+                queue.finishTransaction(transaction)
+            case .restored:
+                if cbProductIdentifier == transaction.payment.productIdentifier{ boughtCB(); cbProductIdentifier = "" }
+                queue.finishTransaction(transaction)
+            case .failed:
+                print("Payment Error:", transaction.error!)
+                queue.finishTransaction(transaction)
+            default:
+                print("Transaction State:", transaction.transactionState)
+            }
         }
     }
 }

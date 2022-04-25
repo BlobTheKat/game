@@ -43,6 +43,7 @@
 		34A5547426BC201800D43C04 /* Disconnected.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A5547326BC201800D43C04 /* Disconnected.swift */; };
 		34B7794A27E117F100B83DAC /* explode.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 34B7794927E117F100B83DAC /* explode.mp3 */; };
 		34C5BC30271ED7F200997B1D /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34C5BC2F271ED7F200997B1D /* GameKit.framework */; platformFilter = ios; };
+		34C6F4202810798700F8513C /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34C6F41F2810798700F8513C /* StoreKit.framework */; };
 		34CE76CA2799A316001D86BA /* PlayControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34CE76C92799A316001D86BA /* PlayControls.swift */; };
 		34CE76CC279B22D4001D86BA /* Story.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34CE76CB279B22D4001D86BA /* Story.swift */; };
 		34E2B92927761DAC007D3C6A /* UsefulFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E2B92827761DAC007D3C6A /* UsefulFunctions.swift */; };
@@ -91,6 +92,7 @@
 		34B7794927E117F100B83DAC /* explode.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = explode.mp3; sourceTree = "<group>"; };
 		34C5BC2D271ED52400997B1D /* game.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = game.entitlements; sourceTree = "<group>"; };
 		34C5BC2F271ED7F200997B1D /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
+		34C6F41F2810798700F8513C /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		34CE76C92799A316001D86BA /* PlayControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayControls.swift; sourceTree = "<group>"; };
 		34CE76CB279B22D4001D86BA /* Story.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Story.swift; sourceTree = "<group>"; };
 		34E2B92827761DAC007D3C6A /* UsefulFunctions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsefulFunctions.swift; sourceTree = "<group>"; };
@@ -111,6 +113,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				34C6F4202810798700F8513C /* StoreKit.framework in Frameworks */,
 				34C5BC30271ED7F200997B1D /* GameKit.framework in Frameworks */,
 				0DBB2EB802135AFEEBAC53F9 /* Pods_game.framework in Frameworks */,
 			);
@@ -211,6 +214,7 @@
 		34C5BC2E271ED7F200997B1D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				34C6F41F2810798700F8513C /* StoreKit.framework */,
 				34C5BC2F271ED7F200997B1D /* GameKit.framework */,
 				69826CF035AF16853F01F5DA /* Pods_game.framework */,
 			);

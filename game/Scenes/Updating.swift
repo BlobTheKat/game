@@ -50,7 +50,7 @@ class Updating: SKScene{
                 update()
                 return
             }
-            DispatchQueue.main.async{reallyDone()}
+            DispatchQueue.main.async{self.reallyDone()}
         } _: { err in
             guard let s = UserDefaults.standard.string(forKey: "secpath") else{
                 let note = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")

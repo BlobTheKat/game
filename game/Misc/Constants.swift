@@ -29,6 +29,8 @@ let gameFPS: CGFloat = 60.0
 let REGIONSIZE = 500000
 //Starting X and Y
 
+var unlockedpacks: UInt32 = 1
+
 var secx = 7000
 var secy = 4000
 var ssecx = 7000
@@ -46,7 +48,7 @@ let SUFFIXES = [
     "%": 0.01
 ]
 
-let BADGES = ["blank", "badge1", "badge2", "badge3", "badge4", "badge5", "badge6", "badge7", "badge8", "badge9", "badge10", "badge11", "badge12", "badge13", "badge14", "badge15", "badge16", "badge17", "badge18", "badge19", "badge20", "badge21", "badge22", "badge23", "badge24", "badge25", "badge26", "badge27", "badge29", "badge30"].map({ badge -> SKSpriteNode in
+let BADGES = ["blank", "badge1", "badge2", "badge3", "badge4", "badge5", "badge6", "badge7", "badge8", "badge9", "badge10", "badge11", "badge12", "badge13", "badge14", "badge15", "badge16", "badge17", "badge18", "badge19", "badge30", "badge31", "badge32"].map({ badge -> SKSpriteNode in
     let node = SKSpriteNode(imageNamed: "boxlock")
     let child = SKSpriteNode(imageNamed: badge)
     child.zPosition = -1
@@ -54,6 +56,26 @@ let BADGES = ["blank", "badge1", "badge2", "badge3", "badge4", "badge5", "badge6
     node.zPosition = 1
     return node
 })
+
+let COLORBOXES = ["thrustbox0", "thrustbox1", "thrustbox2", "thrustbox3"].map({ badge -> SKSpriteNode in
+    let node = SKSpriteNode(imageNamed: "boxlock")
+    let child = SKSpriteNode(imageNamed: badge)
+    child.zPosition = -1
+    node.addChild(child)
+    node.zPosition = 1
+    child.setScale(0.5)
+    return node
+}), NAMEBOXES = ["namebox0", "namebox1", "namebox2", "namebox3"].map({ badge -> SKSpriteNode in
+    let node = SKSpriteNode(imageNamed: "boxlock")
+    let child = SKSpriteNode(imageNamed: badge)
+    child.zPosition = -1
+    node.addChild(child)
+    node.zPosition = 1
+    child.setScale(0.5)
+    return node
+})
+
+let PACKPRICES: [Float] = [0, 500, 300, 500]
 
 let SHIPS = ships.dropFirst().map({a in return a["boximg"]?.string ?? "ship1"}).map({ badge -> SKSpriteNode in
     let node = SKSpriteNode(imageNamed: "boxlock")
@@ -67,8 +89,16 @@ let SHIPS = ships.dropFirst().map({a in return a["boximg"]?.string ?? "ship1"}).
 
 let COLORS: [UIColor] = [
     .green,
-    .yellow,
-    .red
+    .gray,
+    .purple,
+    .orange
+]
+
+let THRUSTCOLORS: [(a: Color, b: Color)] = [
+    (a: (r: 1, g: 1, b: 0), b: (r: 1, g: 0, b: 0)),
+    (a: (r: 0.6, g: 0.7, b: 0.7), b: (r: 1, g: 0, b: 0)),
+    (a: (r: 0.6, g: 0.2, b: 0.6), b: (r: 0.8, g: 0.5, b: 0.8)),
+    (a: (r: 0.9, g: 0.6, b: 0.1), b: (r: 0.9, g: 0.2, b: 0.1))
 ]
 
 

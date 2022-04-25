@@ -30,6 +30,7 @@ extension Play{
         stop = interval(resend){ [self] in
             if ended{return stop()}
             if !crits.contains(s){stop();sent()}else if tries == abandon{
+                print("Critical packet not ack'd after \(abandon) attempts, dropping")
                 abandoned()
                 stop()
                 crits.remove(s)
@@ -325,6 +326,7 @@ extension Play{
             for p in planets{
                 p.zRotation = (p.angularVelocity * CGFloat(ticks)).truncatingRemainder(dividingBy: .pi*2)
             }
+            unlockedpacks = data.readunsafe() as UInt32
         }else if code == 127{
             dmessage = data.read() ?? "Disconnected!"
             end()
@@ -492,6 +494,14 @@ extension Play{
                 let _ = timeout(Double(d)){
                     self.advert.alpha = 1
                 }
+            }
+        }else if code == 123 || code == 124{
+            DisplayWARNING(code == 123 ? "pack bought successfully" : "error", code == 123 ? .achieved : .warning)
+            if code == 123{
+                let i = Int(data.readunsafe() as UInt8)
+                unlockedpacks |= 1 << i
+                packs[i - 1].alpha = 0.5
+                gemCount = data.readunsafe()
             }
         }
     }

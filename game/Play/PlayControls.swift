@@ -44,6 +44,9 @@ extension Play{
             debugPressed = true
             let _ = timeout(0.5){self.debugPressed = false}
         }
+        if bg.parent != nil{
+            return
+        }
         if fiddlenode == nil && nodeToFiddle?.zPosition ?? -.infinity < node.zPosition {nodeToFiddle = node}
         if statsWall.parent != nil && !swiping{
             switch node{
@@ -72,8 +75,46 @@ extension Play{
                     n.lineWidth = 0
                     badgeCropNode.maskNode = n
                     badgeCropNode.removeAllChildren()
+                    for n in NAMEBOXES{
+                        if unlockedpacks & (1 << i) != 0{
+                            n.texture = SKTexture(imageNamed: "box")
+                        }else{
+                            //lock
+                            n.texture = SKTexture(imageNamed: "boxlock")
+                        }
+                        if i == Int(nameColor){
+                            n.setScale(1.2)
+                            n.colorBlendFactor = 0.5
+                        }
+                        n.color = .green
+                        n.removeFromParent()
+                        badgeCropNode.addChild(n)
+                        n.position.y = self.size.height / 4
+                        n.position.x = CGFloat(i - NAMEBOXES.count) * 200 + 200
+                        i += 1
+                    }
+                    i = 0
+                    for n in COLORBOXES{
+                        if unlockedpacks & (1 << i) != 0{
+                            n.texture = SKTexture(imageNamed: "box")
+                        }else{
+                            //lock
+                            n.texture = SKTexture(imageNamed: "boxlock")
+                        }
+                        if i == Int(ship.thrustColor){
+                            n.setScale(1.2)
+                            n.colorBlendFactor = 0.5
+                        }
+                        n.color = .green
+                        n.removeFromParent()
+                        badgeCropNode.addChild(n)
+                        n.position.y = self.size.height / -4
+                        n.position.x = CGFloat(i - COLORBOXES.count) * 200 + 200
+                        i += 1
+                    }
+                    i = 0
                     for b in BADGES{
-                        if i * 2 + 2 <= level{
+                        if i < 20 ? i * 2 + 1 <= level : unlockedpacks & (1 << (i - 19)) != 0{
                             //unlock
                             b.texture = SKTexture(imageNamed: "box")
                         }else{
@@ -88,7 +129,7 @@ extension Play{
                         b.removeFromParent()
                         badgeCropNode.addChild(b)
                         b.position.y = self.size.height / (i & 1 == 0 ? 4 : -4)
-                        b.position.x = CGFloat(i >> 1) * 200 + 150
+                        b.position.x = CGFloat(i >> 1) * 200 + 250
                         i += 1
                     }
                     badgeCropNode.removeFromParent()
@@ -126,41 +167,32 @@ extension Play{
                     badgeCropNode.name = "shop"
                     
                     //DISPLAY SHOP
-                    let pass = SKSpriteNode(imageNamed: "pass")
-                    let cheapPrice = SKSpriteNode(imageNamed: "price300")
-                    let price = SKSpriteNode(imageNamed: "price1000")
-                    let gems1 = SKSpriteNode(imageNamed: "gems60")
-                    let gems2 = SKSpriteNode(imageNamed: "gems300")
-                    let gems3 = SKSpriteNode(imageNamed: "gems1000")
-                    let gems4 = SKSpriteNode(imageNamed: "gems5000")
+                    
                     let dummy = SKSpriteNode(imageNamed: "blank")
                     dummy.setScale(0)
-                    advert.position = CGPoint(x: w, y: 5)
-                    cheapPass.position = CGPoint(x: w * 2.5, y: 80)
-                    cheapPrice.position = CGPoint(x: w * 2.5, y: -100)
-                    pass.position = CGPoint(x: w * 4 + 50, y: 80)
-                    price.position = CGPoint(x: w * 4 + 50, y: -100)
-                    gems1.position = CGPoint(x: w * 6, y: 80)
-                    gems2.position = CGPoint(x: w * 6 + 160, y: 80)
-                    gems3.position = CGPoint(x: w * 6, y: -80)
-                    gems4.position = CGPoint(x: w * 6 + 160, y: -80)
+                    advert.position = CGPoint(x: 300, y: 5)
+                    gems[0].position = CGPoint(x: 600, y: 80)
+                    gems[1].position = CGPoint(x: 760, y: 80)
+                    gems[2].position = CGPoint(x: 600, y: -80)
+                    gems[3].position = CGPoint(x: 760, y: -80)
                     dummy.position.x = w * 5 + 80
                     badgeCropNode.addChild(advert)
-                    badgeCropNode.addChild(cheapPass)
-                    badgeCropNode.addChild(cheapPrice)
-                    badgeCropNode.addChild(pass)
-                    badgeCropNode.addChild(price)
-                    badgeCropNode.addChild(gems1)
-                    badgeCropNode.addChild(gems2)
-                    badgeCropNode.addChild(gems3)
-                    badgeCropNode.addChild(gems4)
+                    badgeCropNode.addChild(gems[0])
+                    badgeCropNode.addChild(gems[1])
+                    badgeCropNode.addChild(gems[2])
+                    badgeCropNode.addChild(gems[3])
                     badgeCropNode.addChild(dummy)
                     advert.setScale(0.5)
-                    pass.setScale(1.2)
-                    price.setScale(1.2)
-                    cheapPass.setScale(1.2)
-                    cheapPrice.setScale(1.2)
-                    
+                    var i = 0.0
+                    for pack in packs{
+                        pack.position = CGPoint(x: 1150 + i * 400, y: 0)
+                        pack.setScale(0.5)
+                        if unlockedpacks & (2 << Int(i)) != 0{
+                            pack.alpha = 0.5
+                        }
+                        badgeCropNode.addChild(pack)
+                        i += 1
+                    }
                     badgeCropNode.removeFromParent()
                     statsWall.addChild(badgeCropNode)
                 }else{
@@ -199,7 +231,7 @@ extension Play{
                     var i = 0
                     for s in SHIPS{
                         s.removeFromParent()
-                        if i * 2 + 1 <= level{
+                        if i < 20 ? i * 2 + 1 <= level : unlockedpacks & (1 << (i - 19)) != 0{
                             //unlock
                             s.texture = SKTexture(imageNamed: "box")
                         }else{
@@ -618,6 +650,20 @@ extension Play{
     }
     
     override func nodeUp(_ node: SKNode, at _: CGPoint, _ exclusive: Bool) {
+        if bg.parent != nil{
+            if confirmOk == node || confirmCancel == node{
+                if confirmOk == node{
+                    confirmCB()
+                }
+                bg.removeFromParent()
+                confirmBG.removeFromParent()
+                confirmLabel.removeFromParent()
+                confirmNode.removeFromParent()
+                confirmCancel.removeFromParent()
+                confirmOk.removeFromParent()
+            }
+            return
+        }
         if !swiping && node.parent == buildBG, var i = addItemIcons.firstIndex(of: node as? SKSpriteNode ?? ship){
             guard node.alpha == 1 else{
                 DisplayWARNING("upgrade main camp to build more",.warning,false)
@@ -677,8 +723,8 @@ extension Play{
             statsLabel2[2].text = "\(Int(dmg)) (\(Int(dmg * (ships[id]["shootspeed"]?.number ?? 0.05) * 60))/s)"
             statsLabel2[1].text = "\(formatNum(ships[id]["mass"]?.number ?? 300))tons"
             statsLabel2[0].text = ""
-            if level < id * 2 - 1{
-                statsLabel[0].text = "Unlocks at level \(id * 2 - 1)"
+            if id > 20 ? unlockedpacks & (1 << (id - 20)) == 0 : level < id * 2 - 1{
+                statsLabel[0].text = id > 20 ? "Available at the shop" : "Unlocks at level \(id * 2 - 1)"
                 statsLabel[0].fontColor = UIColor(red: 0.8, green: 0.1, blue: 0.1, alpha: 1)
                 equip.removeFromParent()
             }else{
@@ -690,15 +736,46 @@ extension Play{
             }
             shipSuit = id
         }
-        if !swiping && node.parent == badgeCropNode && badgeCropNode.name == "badge" && node.position.x < size.width * 0.8{
-            let id = badgeCropNode.children.firstIndex(of: node)!
-            if level >= id * 2{
-                //equip badge
-                BADGES[badge].setScale(1)
-                BADGES[badge].colorBlendFactor = 0
-                node.setScale(1.2)
-                (node as? SKSpriteNode)?.colorBlendFactor = 0.5
-                badge = id
+        if !swiping && node.parent == badgeCropNode && badgeCropNode.name == "badge", let node = node as? SKSpriteNode{
+            if let id = BADGES.firstIndex(of: node){
+                if id < 20{
+                    if level >= id * 2{
+                        //equip badge
+                        BADGES[badge].setScale(1)
+                        BADGES[badge].colorBlendFactor = 0
+                        node.setScale(1.2)
+                        node.colorBlendFactor = 0.5
+                        badge = id
+                    }
+                }else{
+                    if unlockedpacks & (1 << (id - 19)) != 0{
+                        //equip badge
+                        BADGES[badge].setScale(1)
+                        BADGES[badge].colorBlendFactor = 0
+                        node.setScale(1.2)
+                        node.colorBlendFactor = 0.5
+                        badge = id
+                    }
+                }
+            }else if let id = NAMEBOXES.firstIndex(of: node){
+                if unlockedpacks & (1 << id) != 0{
+                    //equip badge
+                    NAMEBOXES[Int(nameColor)].setScale(1)
+                    NAMEBOXES[Int(nameColor)].colorBlendFactor = 0
+                    node.setScale(1.2)
+                    node.colorBlendFactor = 0.5
+                    ship.namelabel?.fontColor = COLORS[id]
+                    nameColor = UInt16(id)
+                }
+            }else if let id = COLORBOXES.firstIndex(of: node){
+                if unlockedpacks & (1 << id) != 0{
+                    //equip badge
+                    COLORBOXES[Int(ship.thrustColor)].setScale(1)
+                    COLORBOXES[Int(ship.thrustColor)].colorBlendFactor = 0
+                    node.setScale(1.2)
+                    node.colorBlendFactor = 0.5
+                    ship.thrustColor = UInt16(id)
+                }
             }
         }
         if thrustButton == node{
@@ -781,6 +858,41 @@ extension Play{
                 //will be sent on next ship packet
                 adWatched = true
             })
+        }
+        if !swiping{
+            var i = 1
+            for pack in packs{
+                if node == pack && pack.alpha > 0.5{
+                    confirmation(texture: pack.texture!, available: gemCount >= PACKPRICES[i], scale: 0.3) {
+                        //buy
+                        var packet = Data()
+                        packet.write(self.critid(122))
+                        packet.write(UInt8(i))
+                        self.critical(packet)
+                    }
+                    break
+                }
+                i += 1
+            }
+            i = 0
+            for pack in gems{
+                if node == pack && pack.alpha > 0.5{
+                    let numberFormatter = NumberFormatter()
+                    numberFormatter.numberStyle = .currency
+                    numberFormatter.locale = products[i].priceLocale
+                    confirmation(texture: pack.texture!, available: true, scale: 1, label: numberFormatter.string(from: products[i].price)!) {
+                        //buy
+                        self.buy(i){
+                            var packet = Data()
+                            packet.write(self.critid(119))
+                            packet.write(UInt8(i))
+                            self.critical(packet)
+                        }
+                    }
+                    break
+                }
+                i += 1
+            }
         }
     }
     

@@ -36,6 +36,7 @@ extension Play{
         })
     }
     func construct() {
+        initInAppPurchases()
         debugToggle.position = pos(mx: -0.5, my: 0.5, x: 15, y: -40)
         debugToggle.lineWidth = 0
         debugToggle.fillColor = UIColor(red: 0.5, green: 0.5, blue: 0.5, alpha: 0.1)
@@ -249,6 +250,7 @@ extension Play{
             started = true
             movemode = false
         }
+        confirmBG.setScale(size.width / 10)
     }
     func startAnimation(){
         if animated{return}
@@ -374,9 +376,9 @@ extension Play{
         stats.xpFill.xScale = 0.0737 * Double(xp) / Double(level)
         stats.xpLabel.text = "\(xp)xp"
         var i = 0
-        for s in SHIPS{ if i * 2 + 1 <= level { s.texture = SKTexture(imageNamed: "box") } else { break }; i += 1 }
+        for s in SHIPS{ if i < 20 ? i * 2 + 1 <= level : unlockedpacks & (1 << (i - 19)) != 0 { s.texture = SKTexture(imageNamed: "box") } else { break }; i += 1 }
         i = 0
-        for b in BADGES{ if i * 2 <= level { b.texture = SKTexture(imageNamed: "box") } else { break }; i += 1 }
+        for b in BADGES{ if i < 20 ? i * 2 <= level : unlockedpacks & (1 << (i - 19)) != 0 { b.texture = SKTexture(imageNamed: "box") } else { break }; i += 1 }
     }
     func startGame(){
         
@@ -1498,5 +1500,34 @@ extension Play{
             }
         
     }
-    
+    func confirmation(texture: SKTexture, available: Bool = true, scale: CGFloat = 1, label: String = "", _ a: @escaping () -> ()){
+        confirmCancel.position = CGPoint(x: -10, y: -50)
+        confirmCancel.anchorPoint = CGPoint(x: 1, y: 1)
+        confirmCancel.setScale(0.3)
+        confirmCancel.zPosition = 999999
+        confirmNode.setScale(1)
+        confirmNode.texture = texture
+        confirmNode.size = texture.size()
+        confirmNode.setScale(scale)
+        confirmNode.position.y = self.size.height / 6
+        confirmNode.zPosition = 999999
+        confirmLabel.position.y = -32
+        confirmLabel.zPosition = 999999
+        confirmLabel.fontSize = 40
+        confirmLabel.text = label
+        confirmOk.position = CGPoint(x: 10, y: -50)
+        confirmOk.anchorPoint = CGPoint(x: 0, y: 1)
+        confirmOk.setScale(0.3)
+        confirmOk.zPosition = 999999
+        bg.zPosition = 999998
+        confirmBG.zPosition = 999998
+        confirmBG.position.y = 35
+        cam.addChild(bg)
+        //cam.addChild(confirmBG)
+        cam.addChild(confirmNode)
+        cam.addChild(confirmLabel)
+        cam.addChild(confirmCancel)
+        if available{cam.addChild(confirmOk)}
+        confirmCB = a
+    }
 }

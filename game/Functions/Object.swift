@@ -66,6 +66,7 @@ class Object: SKSpriteNode, DataCodable{
     //floating name
     var namelabel: SKLabelNode? = nil
     var badgeNode: SKSpriteNode? = nil
+    var thrustColor: UInt16 = 0
     var target: (pos: CGPoint, vel: CGVector, z: CGFloat, dz: CGFloat)? = nil
     //Default particle (the red-yellow one)
     class func defaultParticle(_ ship: Object) -> Particle{
@@ -74,10 +75,10 @@ class Object: SKSpriteNode, DataCodable{
         p.x += c * ship.particleOffset + s * 7
         p.y += s * ship.particleOffset - c * 7
         
-        let start = State(color: (r: 1, g: 1, b: 0), size: CGSize(width: 10, height: 10), zRot: 0, position: p, alpha: 0.9)
+        let start = State(color: THRUSTCOLORS[Int(ship.thrustColor)].a, size: CGSize(width: 10, height: 10), zRot: 0, position: p, alpha: 0.9)
         let endpos = CGPoint(x: p.x + ship.velocity.dx * gameFPS * 1.5 + sin(ship.zRotation) * gameFPS * 0.75, y: p.y + ship.velocity.dy * gameFPS * 1.5 - cos(ship.zRotation) * gameFPS * 0.75)
         
-        let end = State(color: (r: 1, g: 0, b: 0), size: CGSize(width: 20, height: 20), zRot: 5, position: endpos, alpha: 0, delay: TimeInterval(1.5))
+        let end = State(color: THRUSTCOLORS[Int(ship.thrustColor)].b, size: CGSize(width: 20, height: 20), zRot: 5, position: endpos, alpha: 0, delay: TimeInterval(1.5))
         return Particle(states: [start, end])!
     }
     init(radius: CGFloat, mass: CGFloat = -1, texture: SKTexture = SKTexture(), asteroid: Bool = false){
@@ -273,7 +274,7 @@ class Object: SKSpriteNode, DataCodable{
         data.write(Int8(round(self.angularVelocity * 768).clamp(-128, 127)))
         let new = (parent as? Play)?.newShoot ?? false
         data.write(UInt16(thrust ? 1 : 0) + UInt16(thrustLeft ? 2 : 0) + UInt16(thrustRight ? 4 : 0) + UInt16(((parent as? Play)?.usedShoot ?? false) && !new ? 8 : 0) + UInt16(new ? 16 : 0) + UInt16(self.id * 32))
-        data.write(UInt16(badge + nameColor * 1024))
+        data.write(UInt16(UInt16(badge) + (nameColor + thrustColor * 16) * 256))
     }
     
     func decode(data: inout Data){
@@ -307,8 +308,8 @@ class Object: SKSpriteNode, DataCodable{
         let changed = id != self.id || oa != asteroid
         
         var color = data.readunsafe() as UInt16
-        let badge = color & 1023
-        color >>= 10
+        let badge = color & 255
+        color >>= 8
         if let p = parent as? Play, badge > 0 && asteroid{
             //destroy animation
             if !self.asteroidDeathNote{
@@ -318,7 +319,8 @@ class Object: SKSpriteNode, DataCodable{
             }
         }else{
             self.asteroidDeathNote = false
-            self.namelabel?.fontColor = COLORS[Int(color)]
+            self.namelabel?.fontColor = COLORS[Int(color & 15)]
+            self.thrustColor = color >> 8
             if self.badgeNode != nil{
                 self.badgeNode!.texture = (BADGES[Int(badge)].children[0] as! SKSpriteNode).texture
                 self.badgeNode!.size = self.badgeNode!.texture!.size()

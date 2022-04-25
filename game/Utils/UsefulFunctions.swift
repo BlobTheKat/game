@@ -147,3 +147,13 @@ func priceFor(_ a: Int) -> Int{
     return Int(pow) * (a % 3 == 0 ? 1 : (a % 3 == 1 ? 5 : 20))
 }
 //1, 5, 20, 100, 500, 2000, 10000, ...
+
+
+func with<t>(_ a: t, _ b: (t) -> ()) -> t{
+    b(a)
+    return a
+}
+
+func with<t, r>(_ a: t, _ b: (t) -> (r)) -> r{
+    return b(a)
+}

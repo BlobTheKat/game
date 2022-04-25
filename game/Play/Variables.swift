@@ -8,9 +8,10 @@
 import Foundation
 import SpriteKit
 import GoogleMobileAds
+import StoreKit
 
 //Variables for the play scene
-class Play: SKScene{
+class Play: SKScene, SKPaymentTransactionObserver, SKProductsRequestDelegate{
     override init(size: CGSize){
         let diagonal = size.width + size.height
         let divider = pow(diagonal / 1300, 0.6)
@@ -338,10 +339,10 @@ class Play: SKScene{
     let advert = SKSpriteNode(imageNamed: "advert")
     var adIsSliding = false
     
-    let cheapPass = SKSpriteNode(imageNamed: "cheap_pass")
+    let packs: [SKSpriteNode] = [SKSpriteNode(imageNamed: "pack1"), SKSpriteNode(imageNamed: "pack2"), SKSpriteNode(imageNamed: "pack3")]
     var ad: GADRewardedAd? = nil
     var adstop = {}
-    
+    let gems = [SKSpriteNode(imageNamed: "gems60"), SKSpriteNode(imageNamed: "gems300"), SKSpriteNode(imageNamed: "gems1000"), SKSpriteNode(imageNamed: "gems5000")]
     var objBoxes: [SKShapeNode] = []
     
     var killName = ""
@@ -350,4 +351,25 @@ class Play: SKScene{
     var pressed = false
     let discord = SKSpriteNode(imageNamed: "discord")
     var loginFailed = SKSpriteNode(imageNamed: "loginfailed")
+    let bg = with(SKShapeNode(rectOf: CGSize(width: 10, height: 10))){
+        $0.setScale(100)
+        $0.fillColor = .black
+        $0.alpha = 0.8
+        $0.lineWidth = 0
+    }
+    let confirmBG = with(SKShapeNode(rectOf: CGSize(width: 10, height: 4))){
+        $0.fillColor = .black
+        $0.alpha = 1
+        $0.lineWidth = 0
+    }
+    let confirmNode = SKSpriteNode()
+    let confirmLabel = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
+    let confirmCancel = SKSpriteNode(imageNamed: "confirmCancel")
+    let confirmOk = SKSpriteNode(imageNamed: "confirmBuy")
+    var confirmCB = {}
+    
+    var request: SKProductsRequest! = nil
+    var products: [SKProduct] = []
+    var boughtCB = {}
+    var cbProductIdentifier = ""
 }
