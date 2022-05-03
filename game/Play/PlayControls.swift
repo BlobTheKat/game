@@ -840,7 +840,7 @@ extension Play{
                 showNav = false
             }
         }
-        if let n = node.parent as? Planet{
+        if tutorialProgress == .done, let n = node.parent as? Planet{
             if !swiping && n == planetLanded && !presence && planetLanded?.ownedState == .yours && exclusive && statsWall.parent == nil{
                 if !showNav{
                     navArrow.run(SKAction.move(to: pos(mx: 0.43, my: 0 ), duration: 0.35).ease(.easeOut))
@@ -883,6 +883,7 @@ extension Play{
                     confirmation(texture: pack.texture!, available: true, scale: 1, label: numberFormatter.string(from: products[i].price)!) {
                         //buy
                         self.buy(i){
+                            fatalError("App purchase succeded. Congratulations!")
                             var packet = Data()
                             packet.write(self.critid(119))
                             packet.write(UInt8(i))
