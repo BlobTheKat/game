@@ -372,4 +372,5 @@ class Play: SKScene, SKPaymentTransactionObserver, SKProductsRequestDelegate{
     var products: [SKProduct] = []
     var boughtCB = {}
     var cbProductIdentifier = ""
+    var planetColonizing = ""
 }

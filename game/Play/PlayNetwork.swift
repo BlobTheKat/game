@@ -307,21 +307,17 @@ extension Play{
                     self.advert.alpha = 1
                 }
             }
-            var i = 0
-            toploop: while i < planets.count{
-                var b = data.readunsafe() as UInt8
-                for _ in 1...8{
-                    if i >= planets.count{break toploop}
-                    if b & 128 != 0{
-                        planets[i].ownedState = .yours
-                    }else{
-                        planets[i].ownedState = .unowned
-                    }
-                    i += 1
-                    b <<= 1
+            var i = data.readunsafe() as UInt32
+            while(i > 0){
+                let x = Int(data.readunsafe() as Int32)
+                let y = Int(data.readunsafe() as Int32)
+                myplanets.insert("\(x) \(y)")
+                if let p = find(x, y){
+                    p.circle?.fillColor = UIColor(red: 0, green: 0.5, blue: 1, alpha: 1)
+                    p.ownedState = .yours
                 }
+                i -= 1
             }
-            UserDefaults.standard.set(planets.map{a in return a.ownedState == .yours}, forKey: "owned-\(sector.1.pos.x)-\(sector.1.pos.y)")
             let ticks = data.readunsafe() as Float
             for p in planets{
                 p.zRotation = (p.angularVelocity * CGFloat(ticks)).truncatingRemainder(dividingBy: .pi*2)
@@ -420,7 +416,6 @@ extension Play{
         }else if code == 2{
             //STATS DATA
             travel = Double(data.readunsafe() as Float)
-            planetsOwned = Int(data.readunsafe() as UInt16)
             gemCount = data.readunsafe()
             var i = 0
             var oldmap: [String: Int] = [:]
@@ -503,6 +498,10 @@ extension Play{
                 packs[i - 1].alpha = 0.5
                 gemCount = data.readunsafe()
             }
+        }else if code == 120{
+            let g = gemCount
+            gemCount = data.readunsafe() as Float
+            DisplayWARNING("+\(gemCount - g) gems", .achieved)
         }
     }
     

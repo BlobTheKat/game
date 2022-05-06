@@ -86,7 +86,7 @@ extension Play{
             statsLabel2[0].text = "\(kills)"
             statsLabel2[1].text = "\(deaths)"
             statsLabel2[2].text = "\(String(format: "%.2f", kdr))"
-            statsLabel2[3].text = "\(planetsOwned)"
+            statsLabel2[3].text = "\(myplanets.count)"
             statsLabel2[4].text = "\(Int(travel/1000))ly"
         }
         if !swiping && badgeCropNode.parent != nil && badgeCropNode.children.count > 0{
@@ -467,6 +467,7 @@ extension Play{
         var data = Data()
         data.write(critid(10))
         data.write(UInt32(planets.firstIndex(of: planet)!))
+        planetColonizing = "\(Int(planet.position.x)) \(Int(planet.position.y))"
         critical(data, abandoned: {
             //Error: NOT_ACK'D
             self.didBuy(false)

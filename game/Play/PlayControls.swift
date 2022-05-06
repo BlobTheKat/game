@@ -344,7 +344,7 @@ extension Play{
             if tutorialProgress == .buyPlanet{
                 nextStep()
             }
-            if energyAmount >= pow(100, Double(planetsOwned + 1)) {
+            if energyAmount >= pow(100, Double(myplanets.count + 1)) {
                 if buyScreenShowing{
                     colonizeBG.removeFromParent()
                     coloIcon.removeFromParent()
@@ -883,7 +883,6 @@ extension Play{
                     confirmation(texture: pack.texture!, available: true, scale: 1, label: numberFormatter.string(from: products[i].price)!) {
                         //buy
                         self.buy(i){
-                            fatalError("App purchase succeded. Congratulations!")
                             var packet = Data()
                             packet.write(self.critid(119))
                             packet.write(UInt8(i))

@@ -1219,7 +1219,7 @@ extension Play{
             tutInfo.fontColor = UIColor(red: 0.8, green: 0.1, blue: 0.1, alpha: 1)
         }
         vibratePhone(.light)
-        coloStatsPrice.text = "price: \(formatNum(pow(100, Double(planetsOwned + 1)))) energy"
+        coloStatsPrice.text = "price: \(formatNum(pow(100, Double(myplanets.count + 1)))) energy"
     }
     func takeoff(){
         if tutorialProgress == .followPlanet{
@@ -1255,6 +1255,7 @@ extension Play{
             DisplayWARNING("error: try again later", .warning, false)
             return
         }
+        myplanets.insert(planetColonizing)
         DisplayWARNING("colonized successfuly", .achieved,false)
     }
     

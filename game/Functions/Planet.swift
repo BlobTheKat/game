@@ -518,7 +518,6 @@ class Planet: Object{
                     for i in boom2(self.position, self.radius){p.particles.append(i);p.addChild(i)}
                 }
                 self.ownedState = ownedState
-                UserDefaults.standard.set(p.planets.map{a in return a.ownedState == .yours}, forKey: "owned-\(p.sector.1.pos.x)-\(p.sector.1.pos.y)")
             }else{self.ownedState = ownedState}
             if self.ownedState == .yours{self.angry = 0}
             if let parent = parent as? Play{

@@ -158,6 +158,9 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                     let y = Int(data.readunsafe() as Int32)
                     let p = Planet(radius: CGFloat(id / 256 + UInt16(id2) * 256), mass: CGFloat(data.readunsafe() as Int32))
                     p.position = CGPoint(x: x, y: y)
+                    if myplanets.contains("\(x) \(y)"){
+                        p.ownedState = .yours
+                    }
                     if id & 2 != 0{
                         p.producesParticles = true
                         p.particle = particles[Int(data.readunsafe() as Int16)]
@@ -197,11 +200,6 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
                     }
                     if current && !exists{p.downgrade()}
                 }
-                var i = 0
-                for owned in UserDefaults.standard.value(forKey: "owned-\(CGFloat(px))-\(CGFloat(py))") as? [Bool] ?? []{
-                    if owned && i < planets.count{planets[i].ownedState = .yours}
-                    i += 1
-                }
                 s.0 = planets
                 if px < xx || px > xx + REGIONSIZE || py < yy || py > yy + REGIONSIZE{
                     let delegated = CGPoint(x: 0, y: 0)//fdiv(px, REGIONSIZE), y: fdiv(py, REGIONSIZE))
@@ -227,4 +225,9 @@ func sector(x: Int, y: Int, completion: @escaping (SectorData) -> (), err: @esca
         err(e)
     }
     
+}
+func find(_ x: Int, _ y: Int) -> Planet?{
+    guard let r = regions[CGPoint(x: fdiv(x, REGIONSIZE), y: fdiv(y, REGIONSIZE))] else {return nil}
+    guard let s = r.first(where: {return abs($0.1.pos.x - CGFloat(x)) < $0.1.size.width / 2 && abs($0.1.pos.y - CGFloat(y)) < $0.1.size.height / 2 }) else {return nil}
+    return s.0.first{a in return abs(a.position.x + s.1.pos.x - CGFloat(x)) < 5 && abs(a.position.y + s.1.pos.y - CGFloat(y)) < 5 }
 }
