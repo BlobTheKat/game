@@ -474,6 +474,7 @@ extension Play{
             didMake(true)
         }else if code == 24{
             gemCount = data.readunsafe()
+            if !switch2{self.run(SKAction.playSoundFileNamed("gemcollect.mp3", waitForCompletion: false))}
         }else if code == 27{
             energyAmount = data.readunsafe()
             researchAmount = data.readunsafe()
@@ -482,6 +483,7 @@ extension Play{
         }else if code == 126{
             guard let g: Float = data.read() else {return}
             gemCount = g
+            if !switch2{self.run(SKAction.playSoundFileNamed("gemcollect.mp3", waitForCompletion: false))}
             let d = data.readunsafe() as Float
             
             if d > 0{
@@ -497,11 +499,13 @@ extension Play{
                 unlockedpacks |= 1 << i
                 packs[i - 1].alpha = 0.5
                 gemCount = data.readunsafe()
+                if !switch2{self.run(SKAction.playSoundFileNamed("gemcollect.mp3", waitForCompletion: false))}
             }
         }else if code == 120{
             let g = gemCount
             gemCount = data.readunsafe() as Float
             DisplayWARNING("+\(gemCount - g) gems", .achieved)
+            if !switch2{self.run(SKAction.playSoundFileNamed("gemcollect.mp3", waitForCompletion: false))}
         }
     }
     

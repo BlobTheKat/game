@@ -870,7 +870,7 @@ extension Play{
                         packet.write(UInt8(i))
                         self.critical(packet)
                     }
-                    break
+                    return
                 }
                 i += 1
             }
@@ -889,7 +889,7 @@ extension Play{
                             self.critical(packet)
                         }
                     }
-                    break
+                    return
                 }
                 i += 1
             }

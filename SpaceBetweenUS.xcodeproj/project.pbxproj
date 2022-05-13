@@ -19,6 +19,7 @@
 		33CF26192722C46500D25508 /* DPlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33CF26182722C46500D25508 /* DPlay.swift */; };
 		33E378B726BD57780034B14E /* PlayerDied.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33E378B626BD57780034B14E /* PlayerDied.swift */; };
 		341B34FE26C557F6006115F1 /* Particles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 341B34FD26C557F6006115F1 /* Particles.swift */; };
+		341F7CA7282C190F004915B6 /* gemcollect.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 341F7CA6282C190F004915B6 /* gemcollect.mp3 */; };
 		343E313C276A3C03007F753D /* Play.swift in Sources */ = {isa = PBXBuildFile; fileRef = 343E313B276A3C03007F753D /* Play.swift */; };
 		343E313E276A3C92007F753D /* Variables.swift in Sources */ = {isa = PBXBuildFile; fileRef = 343E313D276A3C92007F753D /* Variables.swift */; };
 		343E3141276A3DAD007F753D /* Object.swift in Sources */ = {isa = PBXBuildFile; fileRef = 343E3140276A3DAD007F753D /* Object.swift */; };
@@ -66,6 +67,7 @@
 		33CF26182722C46500D25508 /* DPlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DPlay.swift; sourceTree = "<group>"; };
 		33E378B626BD57780034B14E /* PlayerDied.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerDied.swift; sourceTree = "<group>"; };
 		341B34FD26C557F6006115F1 /* Particles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Particles.swift; sourceTree = "<group>"; };
+		341F7CA6282C190F004915B6 /* gemcollect.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = gemcollect.mp3; sourceTree = "<group>"; };
 		343E313B276A3C03007F753D /* Play.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Play.swift; sourceTree = "<group>"; };
 		343E313D276A3C92007F753D /* Variables.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Variables.swift; sourceTree = "<group>"; };
 		343E3140276A3DAD007F753D /* Object.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Object.swift; sourceTree = "<group>"; };
@@ -145,6 +147,7 @@
 				34753DC327C6309800D259FC /* lightning1.mp3 */,
 				34753DC227C6309500D259FC /* lightning2.mp3 */,
 				34753DC427C6309B00D259FC /* lightning3.mp3 */,
+				341F7CA6282C190F004915B6 /* gemcollect.mp3 */,
 				33592F69278065B50010EF7E /* extras */,
 			);
 			path = soundEffect;
@@ -334,6 +337,7 @@
 				3340582B27234E6C0068C811 /* InLightSpeed.mp3 in Resources */,
 				33A879212725EC4B0096A6C4 /* inshipSound.mp3 in Resources */,
 				33A8791F2725EC460096A6C4 /* playerWalking.mp3 in Resources */,
+				341F7CA7282C190F004915B6 /* gemcollect.mp3 in Resources */,
 				34753DC727C6309B00D259FC /* lightning3.mp3 in Resources */,
 				33592F6A278065B50010EF7E /* extras in Resources */,
 				34B7794A27E117F100B83DAC /* explode.mp3 in Resources */,
