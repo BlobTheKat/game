@@ -616,6 +616,14 @@ extension Play{
             }
             if !buyScreenShowing{
                 buyScreenShowing = true
+                coloPlanet.removeAllChildren()
+                for s in planetLanded?.children ?? []{
+                    if s.name == nil{continue}
+                    guard let s = s as? SKSpriteNode else { continue }
+                    let node = SKSpriteNode(texture: s.texture)
+                    node.setScale((s.xScale + s.yScale) / 2 / planetLanded!.radius * 140)
+                    coloPlanet.addChild(node)
+                }
                 cam.addChild(colonizeBG)
                 hideControls()
             }

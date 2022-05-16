@@ -1232,7 +1232,7 @@ extension Play{
         collect.removeFromParent()
         coloArrow.removeFromParent()
         buildBG.removeFromParent()
-        coloPlanet.texture = nil
+        coloPlanet.removeAllChildren()
         if !presence{planetLanded = nil}
         else{let _ = timeout(0.5){if self.planetLanded==nil&&self.presence{self.planetEditMode()}}}
     }

@@ -220,7 +220,7 @@ class Play: SKScene, SKPaymentTransactionObserver, SKProductsRequestDelegate{
     
     var buyScreenShowing = false
     let colonizeBG = SKSpriteNode(imageNamed: "coloBG")
-    let coloPlanet = SKSpriteNode(imageNamed: "coloPlanet")
+    let coloPlanet = SKNode()
     let buyIcon = SKSpriteNode(imageNamed: "buyIcon")
     let backIcon = SKSpriteNode(imageNamed: "backIcon")
     let planetAncher = SKSpriteNode(imageNamed: "planetAncher")

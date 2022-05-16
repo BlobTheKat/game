@@ -393,7 +393,6 @@ class Planet: Object{
                 parent?.playerArrow.removeFromParent()
                 //TO DO WITH COLONISING
                 if self.ownedState == .unowned{
-                    //parent!.coloPlanet.texture = (self.children.first as? SKSpriteNode)?.texture
                     parent!.navArrow.texture = SKTexture(imageNamed: "navArrow2")
                     parent!.navBG.addChild(parent!.coloIcon)
                 }
@@ -513,12 +512,10 @@ class Planet: Object{
         let bits = data.readunsafe() as UInt8
         let ownedState = OwnedState(rawValue: bits & 192)!
         if self.ownedState != ownedState{
-            if let p = parent as? Play{
-                if self.ownedState == .owned && ownedState == .yours, let p = parent as? Play{
-                    for i in boom2(self.position, self.radius){p.particles.append(i);p.addChild(i)}
-                }
-                self.ownedState = ownedState
-            }else{self.ownedState = ownedState}
+            if self.ownedState == .owned && ownedState == .yours, let p = parent as? Play{
+                for i in boom2(self.position, self.radius){p.particles.append(i);p.addChild(i)}
+            }
+            self.ownedState = ownedState
             if self.ownedState == .yours{self.angry = 0}
             if let parent = parent as? Play{
                 parent.hideLandedUI()
