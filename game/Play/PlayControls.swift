@@ -1146,7 +1146,7 @@ extension Play{
         if tutorialProgress == .done{
             let _ = timeout(0.3){ [self] in
                 ship.controls = true
-                tutArrow.position = .zero
+               /* tutArrow.position = .zero
                 tutArrow.setScale(1)
                 tutArrow.texture = SKTexture(imageNamed: "tutdone")
                 tutArrow.size = tutArrow.texture!.size()
@@ -1155,7 +1155,9 @@ extension Play{
                 tutInfo.text = "done"
                 tutArrow.removeFromParent()
                 cam.addChild(tutArrow)
-                tutArrow.run(.fadeIn(withDuration: 0.2))
+                tutArrow.run(.fadeIn(withDuration: 0.2))*/
+                tutArrow.removeFromParent()
+                tutInfo.removeFromParent()
             }
             return
         }

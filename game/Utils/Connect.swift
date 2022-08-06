@@ -33,11 +33,12 @@ func connect(_ host: String, _ a: @escaping (Data) -> ()) -> (Data) -> (){
     connection = NWConnection(host: host, port: port, using: .udp)
     connection?.stateUpdateHandler = { (newState) in
         let p = skview.scene as? Play
+        print(newState)
         switch (newState) {
             case .ready:
                 ready = true
                 DispatchQueue.main.async{for data in queue{
-                    dataUsage += data.count
+                    dataUsage += data.count + 24
                     connection?.send(content: data, completion: NWConnection.SendCompletion.contentProcessed(({ (NWError) in
                         if NWError != nil {
                         }
@@ -60,7 +61,7 @@ func connect(_ host: String, _ a: @escaping (Data) -> ()) -> (Data) -> (){
     connection?.start(queue: .global(qos: .background))
     return { (_ data: Data) -> () in
         guard ready else {queue.append(data);return}
-        dataUsage += data.count
+        dataUsage += data.count + 24
         bg{connection?.send(content: data, completion: NWConnection.SendCompletion.contentProcessed(({ (NWError) in
             if NWError != nil {
             }

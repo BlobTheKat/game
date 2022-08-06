@@ -3,4 +3,114 @@
    uuid = "744D9C1C-50A8-4B4A-80B7-1A6B181D512D"
    type = "0"
    version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "63E79A22-F5F5-44AC-832A-473B291856E1"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "game/Functions/Planet.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "14"
+            endingLineNumber = "14"
+            landmarkName = "Planet"
+            landmarkType = "3">
+            <Locations>
+               <Location
+                  uuid = "63E79A22-F5F5-44AC-832A-473B291856E1 - 36c8e9ccb25d0a39"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "game.Planet.circle.getter : Swift.Optional&lt;__C.SKShapeNode&gt;"
+                  moduleName = "game"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/adamreiner/Downloads/spaceship/game/Functions/Planet.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "14"
+                  endingLineNumber = "14"
+                  offsetFromSymbolStart = "88">
+               </Location>
+               <Location
+                  uuid = "63E79A22-F5F5-44AC-832A-473B291856E1 - 68d5beb79d9b26c5"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "game.Planet.circle.setter : Swift.Optional&lt;__C.SKShapeNode&gt;"
+                  moduleName = "game"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/adamreiner/Downloads/spaceship/game/Functions/Planet.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "14"
+                  endingLineNumber = "14"
+                  offsetFromSymbolStart = "108">
+               </Location>
+               <Location
+                  uuid = "63E79A22-F5F5-44AC-832A-473B291856E1 - b186266913896178"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "game.Planet.circle.modify : Swift.Optional&lt;__C.SKShapeNode&gt;"
+                  moduleName = "game"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/adamreiner/Downloads/spaceship/game/Functions/Planet.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "0"
+                  endingLineNumber = "0"
+                  offsetFromSymbolStart = "20">
+               </Location>
+               <Location
+                  uuid = "63E79A22-F5F5-44AC-832A-473B291856E1 - df9ce807545ed9c5"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "game.Planet.circle.modify : Swift.Optional&lt;__C.SKShapeNode&gt; with unmangled suffix &quot;.resume.0&quot;"
+                  moduleName = "game"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/adamreiner/Downloads/spaceship/game/Functions/Planet.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "14"
+                  endingLineNumber = "14"
+                  offsetFromSymbolStart = "16">
+               </Location>
+               <Location
+                  uuid = "63E79A22-F5F5-44AC-832A-473B291856E1 - fa7d15da4de2452a"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "game.Planet.init(radius: CoreGraphics.CGFloat, mass: CoreGraphics.CGFloat, texture: __C.SKTexture, asteroid: Swift.Bool) -&gt; game.Planet"
+                  moduleName = "game"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/adamreiner/Downloads/spaceship/game/Functions/Planet.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "14"
+                  endingLineNumber = "14"
+                  offsetFromSymbolStart = "288">
+               </Location>
+               <Location
+                  uuid = "63E79A22-F5F5-44AC-832A-473B291856E1 - 1429c15aa79c3718"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "game.Planet.init(coder: __C.NSCoder) -&gt; Swift.Optional&lt;game.Planet&gt;"
+                  moduleName = "game"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/adamreiner/Downloads/spaceship/game/Functions/Planet.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "14"
+                  endingLineNumber = "14"
+                  offsetFromSymbolStart = "244">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
 </Bucket>
