@@ -176,7 +176,7 @@ extension Play{
                     gems[2].position = CGPoint(x: 600, y: -80)
                     gems[3].position = CGPoint(x: 760, y: -80)
                     dummy.position.x = w * 5 + 80
-                    badgeCropNode.addChild(advert)
+                    //badgeCropNode.addChild(advert)
                     badgeCropNode.addChild(gems[0])
                     badgeCropNode.addChild(gems[1])
                     badgeCropNode.addChild(gems[2])
@@ -862,10 +862,10 @@ extension Play{
         
         if advert == node && advert.alpha == 1 && !swiping{
             clicked()
-            playAd({
+            /*playAd({
                 //will be sent on next ship packet
                 adWatched = true
-            })
+            })*/
         }
         if !swiping{
             var i = 1

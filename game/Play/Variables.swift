@@ -7,7 +7,7 @@
 
 import Foundation
 import SpriteKit
-import GoogleMobileAds
+//import GoogleMobileAds
 import StoreKit
 
 //Variables for the play scene
@@ -340,7 +340,7 @@ class Play: SKScene, SKPaymentTransactionObserver, SKProductsRequestDelegate{
     var adIsSliding = false
     
     let packs: [SKSpriteNode] = [SKSpriteNode(imageNamed: "pack1"), SKSpriteNode(imageNamed: "pack2"), SKSpriteNode(imageNamed: "pack3")]
-    var ad: GADRewardedAd? = nil
+    var ad: /*GADRewardedAd*/Int? = nil
     var adstop = {}
     let gems = [SKSpriteNode(imageNamed: "gems60"), SKSpriteNode(imageNamed: "gems300"), SKSpriteNode(imageNamed: "gems1000"), SKSpriteNode(imageNamed: "gems5000")]
     var objBoxes: [SKShapeNode] = []
