@@ -7,7 +7,8 @@
 
 import SpriteKit
 import GameKit
-import GoogleMobileAds
+//import GoogleMobileAds
+
 var waitForSound = Int()
 
 let stopSound = SKAction.stop()
@@ -18,7 +19,7 @@ var currentPlanetTexture = SKTexture()
 
 
 extension Play{
-    func playAd(_ done: @escaping () -> () = {}){
+    /*func playAd(_ done: @escaping () -> () = {}){
         adstop()
         adstop = timeout((ad?.adMetadata?[.init(rawValue: "CreativeDurationMs")] as? Double ?? 15000) / 1000 + 1){ [self] in
             //if ad is fullscreen then reward
@@ -34,7 +35,7 @@ extension Play{
             self.ad = ad
             if let error = error{print(error.localizedDescription)}
         })
-    }
+    }*/
     func construct() {
         initInAppPurchases()
         debugToggle.position = pos(mx: -0.5, my: 0.5, x: 15, y: -40)
@@ -274,7 +275,7 @@ extension Play{
         vibrateObject(sprite: border1)
         vibrateObject(sprite: border2)
         
-        playAd()
+        //playAd()
     }
     func moveTrail(trail: SKSpriteNode, _ delay: Double){
         var stop = {}
