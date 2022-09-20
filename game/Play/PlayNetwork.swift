@@ -550,7 +550,6 @@ extension Play{
         data.write(UInt16(self.size.width + self.size.height))
         critical(data, abandoned: { [self] in
             dmessage = "Could not connect"
-            fatalError("Failed connecting! This is a crash for debug purposes. Please send the crash logs to us as feedback so we can resolve the issue")
             //end()
             DispatchQueue.main.async{Disconnected.renderTo(skview)}
         })

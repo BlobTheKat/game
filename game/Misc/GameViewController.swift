@@ -38,7 +38,6 @@ class GameViewController: UIViewController/*, GADFullScreenContentDelegate*/ {
             skview = view
             SKScene.transition.pausesIncomingScene = false
             view.preferredFramesPerSecond = 120
-            view.showsFPS = true
         }
     }
     override var shouldAutorotate: Bool {

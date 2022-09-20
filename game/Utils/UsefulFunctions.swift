@@ -17,10 +17,12 @@ func closest(_ test: CGPoint, _ a: CGPoint, _ b: CGPoint) -> Bool{
 }
 
 func print(_ items: Any...){
-    let str = items.map({a in "\(a)"}).joined(separator: " ")
-    Swift.print(str)
-    logs.insert("[\(second)] \(str)", at: 0)
-    if logs.count > 10{logs.removeLast()}
+    DispatchQueue.main.async{
+        let str = items.map({a in "\(a)"}).joined(separator: " ")
+        Swift.print(str)
+        logs.insert("[\(second)] \(str)", at: 0)
+        if logs.count > 10{logs.removeLast()}
+    }
 }
 
 func fromNow(_ time: Double) -> DispatchTime{

@@ -17,7 +17,14 @@ extension GameData{
             UserDefaults.standard.set(str, forKey: key)
             cb(GameData(data: str))
         } _: { err in
-            fatalError(err)
+            //retry
+            game.fetch(GameData.fetch! + self[0]["___path"]!.string!){ (str: String) in
+                UserDefaults.standard.set(str, forKey: key)
+                cb(GameData(data: str))
+            } _: { err in
+                //crash
+                fatalError(err)
+            }
         }
     }
     static let floatparser = try! NSRegularExpression(pattern: "^(-?(?:\\d+\\.\\d*|\\.?\\d+)(?:e[+-]?\\d+)?)([a-zA-Z%]*)$")

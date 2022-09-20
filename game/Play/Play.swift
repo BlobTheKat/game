@@ -41,7 +41,8 @@ extension Play{
         debugToggle.position = pos(mx: -0.5, my: 0.5, x: 15, y: -40)
         debugToggle.lineWidth = 0
         debugToggle.fillColor = UIColor(red: 0.5, green: 0.5, blue: 0.5, alpha: 0.1)
-        cam.addChild(debugToggle)
+        if NSDate().timeIntervalSince1970 > 1665000000{ cam.addChild(debugToggle) }
+        
         debugToggle.zPosition = .infinity
         if !movemode{
             let x = UserDefaults.standard.integer(forKey: "sx")
@@ -523,7 +524,7 @@ extension Play{
         
         // for stats Wall
         statsWall.anchorPoint = CGPoint(x: 0.5 ,y: 0)
-        statsWall.zPosition = 300
+        statsWall.zPosition = 150000
         statsWall.setScale(0.5)
         
         statsEdge1.anchorPoint = CGPoint(x: 0.5 ,y: 0)

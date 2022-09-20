@@ -176,8 +176,8 @@ class Story: SKScene{
                         planetbg.colorBlendFactor += 0.004
                         if amount >= 5{
                             var rayPos = ray.position
-                            rayPos.y += sin(ray.zRotation) * ray.frame.width
-                            rayPos.x += cos(ray.zRotation) * ray.frame.width
+                            rayPos.y += sin(ray.zRotation) * ray.frame.width * 1.05
+                            rayPos.x += cos(ray.zRotation) * ray.frame.width * 1.05
                             for _ in 1...5{
                                 destruction += 1
                                 if destruction % 60 == 0{

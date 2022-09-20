@@ -812,7 +812,7 @@ extension Play{
         if mapIcon == node{
             mapIcon.texture = SKTexture(imageNamed: "map")
         }
-        if cockpitIcon == node && statsWall.parent == nil && tutorialProgress.rawValue > tutorial.finishEditing.rawValue{
+        if cockpitIcon == node && statsWall.parent == nil{
             clicked()
             if tutorialProgress == .openProfile{ nextStep() }
             if presence{ planetEditMode() }
@@ -1162,8 +1162,8 @@ extension Play{
             return
         }
         tutInfo.fontSize = 25
-        tutInfo.zPosition = .infinity
-        tutArrow.zPosition = .infinity
+        tutInfo.zPosition = 100000
+        tutArrow.zPosition = 100000
         tutInfo.numberOfLines = 10
         let _ = timeout(0.3){ [self] in
             let (hori, verti, mx: mx, my: my, x: x, y: y, text) = tutorials[i]

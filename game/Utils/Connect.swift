@@ -33,7 +33,6 @@ func connect(_ host: String, _ a: @escaping (Data) -> ()) -> (Data) -> (){
     connection = NWConnection(host: host, port: port, using: .udp)
     connection?.stateUpdateHandler = { (newState) in
         let p = skview.scene as? Play
-        print(newState)
         switch (newState) {
             case .ready:
                 ready = true
@@ -89,31 +88,32 @@ func fetch<json: Decodable>(_ url: String, _ done: @escaping (json) -> (), _ err
 }
 func fetch(_ url: String, _ done: @escaping (String) -> (), _ err: @escaping (String) -> ()){
     guard let uri = URL(string: url) else{
-        err("Invalid URL")
+        DispatchQueue.main.async{err("Invalid URL")}
         return
     }
     dataUsage += url.count + 200 //approx. overhead
     URLSession.shared.dataTask(with: uri) {(data, response, error) in
         dataUsage += (data?.count ?? 0) + 300 //approx. overhead
         if error != nil{
-            err(error!.localizedDescription)
+            DispatchQueue.main.async{err(error!.localizedDescription)}
         }else{
-            done(String(data: data ?? Data(), encoding: String.Encoding.utf8) ?? "")
+            let txt = String(data: data ?? Data(), encoding: String.Encoding.utf8) ?? ""
+            DispatchQueue.main.async{done(txt)}
         }
     }.resume()
 }
 func fetch(_ url: String, _ done: @escaping (Data) -> (), _ err: @escaping (String) -> ()){
     guard let uri = URL(string: url) else{
-        err("Invalid URL")
+        DispatchQueue.main.async{err("Invalid URL")}
         return
     }
     dataUsage += url.count + 200 //approx. overhead
     URLSession.shared.dataTask(with: uri) {(data, response, error) in
         dataUsage += (data?.count ?? 0) + 300 //approx. overhead
         if error != nil{
-            err(error!.localizedDescription)
+            DispatchQueue.main.async{err(error!.localizedDescription)}
         }else{
-            done(data ?? Data())
+            DispatchQueue.main.async{done(data ?? Data())}
         }
     }.resume()
 }

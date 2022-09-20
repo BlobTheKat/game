@@ -24,6 +24,7 @@ class Play: SKScene, SKPaymentTransactionObserver, SKProductsRequestDelegate{
     var swiping = false
     var DEBUG_TXT = SKLabelNode(fontNamed: "Menlo")
     var advancedDebug = false
+    
     var debugToggle = SKShapeNode(rectOf: CGSize(width: 30, height: 80))
     var debugPressed = false
     //Minimum Number of nodes to start the game (to detect when textures have all loaded)
