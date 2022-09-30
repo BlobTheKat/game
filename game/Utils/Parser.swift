@@ -11,6 +11,7 @@ import SpriteKit
 typealias GameData = [[String: JSON]]
 extension GameData{
     static var fetch: String? = nil
+    static var err = {(a: String) in}
     func load(_ cb: @escaping (GameData) -> ()){
         let key = "data"+self[0]["___path"]!.string!
         game.fetch(GameData.fetch! + self[0]["___path"]!.string!){ (str: String) in
@@ -23,7 +24,7 @@ extension GameData{
                 cb(GameData(data: str))
             } _: { err in
                 //crash
-                fatalError(err)
+                GameData.err(err)
             }
         }
     }

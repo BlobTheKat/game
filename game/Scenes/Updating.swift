@@ -54,7 +54,7 @@ class Updating: SKScene{
         } _: { err in
             guard let s = UserDefaults.standard.string(forKey: "secpath") else{
                 let note = SKLabelNode(fontNamed: "HalogenbyPixelSurplus-Regular")
-                note.text = "internet connection required"
+                note.text = "\(err)"
                 note.fontSize = 40
                 note.position = self.pos()
                 self.addChild(note)
@@ -87,6 +87,11 @@ class Updating: SKScene{
         //load stuff
         //taking advantage of weird global variable behaviour here
         GameData.fetch = fetch
+        GameData.err = { err in
+            note.text = "\(err)"
+            self.loading.removeFromParent()
+            self.loadingbg.removeFromParent()
+        }
         i += 3
         ships.load{self.done();ships = $0}
         asteroids.load{self.done();asteroids = $0}

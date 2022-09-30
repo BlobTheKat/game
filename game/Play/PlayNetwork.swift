@@ -254,9 +254,11 @@ extension Play{
         }
     }
     func end(){
-        if !ended{send(Data([127]))}
         inlightSpeed.removeFromParent()
         //release texture objects
+        if ended{ return }
+        ended = true
+        send(Data([127]))
         for p in sector.0{
             p.namelabel?.removeFromParent()
             p.namelabel = nil
@@ -276,7 +278,7 @@ extension Play{
         send = {(_:Data) in}
         stopPing()
         datastop()
-        ended = true
+        
     }
     func recieved(_ d: Data){
         if ended{return}
@@ -548,7 +550,7 @@ extension Play{
         self.name = local
         data.write(local, lentype: UInt8.self)
         data.write(UInt16(self.size.width + self.size.height))
-        critical(data, abandoned: { [self] in
+        critical(data, abandoned: {
             dmessage = "Could not connect"
             //end()
             DispatchQueue.main.async{Disconnected.renderTo(skview)}
