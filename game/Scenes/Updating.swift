@@ -35,7 +35,7 @@ class Updating: SKScene{
     let loadingbg = SKShapeNode(rect: CGRect(x: -150, y: 0, width: 300, height: 3))
 
     override func didMove(to view: SKView){
-        game.fetch("https://locus.tunnelvision.online/files") { [self] (str: String) in
+        game.fetch("https://raw.githubusercontent.com/BlobTheKat/blobthekat.github.io/main/files") { [self] (str: String) in
             let data = GameData(data: str)[0]
             let ov = data["version"]!.string!
             let v = ov.split(separator: ".")

@@ -698,7 +698,7 @@ traffic light{
     let hd = function(e){
       let t = touches.get(-1)
       if(!t)return
-      if(t[3]-->0)return
+      if(t[3] -- > 0)return
       touches.set(-1, [0, e.clientX, e.clientY,0])
       let dx = e.clientX - t[1]
       let dy = e.clientY - t[2]
@@ -779,7 +779,7 @@ traffic light{
   let ANIMS = true
   let asteroids = []
 	;(async function(){
-		let behaviour = (await readfile('https://locus.tunnelvision.online/files'))[0].behaviour
+		let behaviour = (await readfile('https://raw.githubusercontent.com/BlobTheKat/blobthekat.github.io/main/files'))[0].behaviour
 		readfile(behaviour + "/asteroids").then(a => asteroids = a)
 	})()
   async function srcFor(name){
